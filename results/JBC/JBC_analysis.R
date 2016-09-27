@@ -78,7 +78,7 @@ JBCresults <- mylasso(potentialClus, clusters, numberCenters, JBCinit, Time, int
 ####################################################
 #Set Risk Ratio Vectors Based on QIC
 ####################################################
-rr <- setRR(JBCresults, JBCinit, Time=5)
+rr <- setRR(JBCresults, JBCinit, Time=5, E0byrow=FALSE)
 
 ####################################################
 #Map RR to Colors
