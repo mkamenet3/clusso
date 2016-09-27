@@ -1,0 +1,173 @@
+---
+title: "cluST Vignette1"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{cluST Vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{cluST}
+---
+
+#An Introduction to the cluST Package
+
+
+```{r, warning=FALSE, message=FALSE}
+#import libraries
+library("Rcpp")
+library("MASS")
+library("RColorBrewer")
+library("geosphere")
+library(Matrix)
+library(glmnet)
+library(maps)
+library(truncnorm)
+
+#Source .cpp files
+sourceCpp("../src/maxcol.cpp")
+sourceCpp("../src/st_matCppTest.cpp")
+sourceCpp("../src/prod_yxTest.cpp")
+
+
+#temporarily source my cluST.R file
+source("../R/cluST.R")
+
+```
+
+
+#Maps
+
+This package presently does not integrate maps into it. Maps should be created separately and the risk ratios from $cluST$ can then be mapped onto the map. The example below does this.
+
+
+#An Example - Simulated Data
+
+Suppose we want to look at at the Midwest and to examine a measure where we expect some noise (especially considering that the Midwest is not a "small" area and we would expect quite a bit of heterogeneity). Let's take state-county as the observational unit. For the purposes of this vignette, we will simulate data and artificially place a cluster, then run $cluST$ and show how we can map those results onto our map and then interpret.
+
+##Get a Map
+
+Let's suppose we want to define the Midwest as Illinois, Indiana, Iowa, Michigan, Minnesota, and Wisconsin. We will use the $maps$ library for this.
+
+```{r}
+#########################
+#Make the map
+#########################
+m <- map('county', region = c("Illinois", "Indiana", "Iowa", "Michigan", "Minnesota", "Wisconsin"))
+
+#print State,County names(order in 'maps')
+m$names                                                
+
+```
+
+As sometimes is the case, perhaps values for some counties are grouped together when in fact, we want to be able to map to individual counties. For example, let's say that in Wisconsin, for Menominee, Shawano, and Oconto counties we have a single value. In order for us to map this to our map (where the observational unit is state-county), we need to be able to separate these out. The code chunk below here will do this. If this isn't an issue for your dataset, you can skip the bit below. 
+
+
+```{r}
+#we need to expand our dataset by 2 to account for the fact that we have a single measurement for three counties
+#below, we create a sequence that will help us do this.
+colSeq = c(1:504,533,505:519,533,520:532,533)   
+
+pcounty=as.character(df$county)
+pcounty[533]<-"OCONTO"                                 ###### MENOMINEE, SHAWANO and OCONTO are clustered together
+
+tmp=tolower(paste(df$state,',',pcounty,sep='')) ###### State,County names (order in the poor dataset)
+
+tmp=tmp[colSeq]                                        ###### reorder the counties in the poor dataset
+
+not=which(m$names!=tmp)              
+m$names[not];tmp[not]    
+
+```
+
+
+##Create Some Fake Data
+
+Let's say I want to create the center of my cluster to be at 100, with a max radius of 20 km. I want this cluster to be present in the first three time periods (out of a total of 5 time periods) and for the risk ratio to be set to 2 (the risk in this fake cluster will be twice that of the background risk, $\alpha$). Set $n$ to be the total number of counties.
+
+First, we need to set our initial conditions
+```{r}
+#Set seed
+set.seed(51920161)
+
+#Set parameters of your fake cluster
+center <- list(100)
+r_list <- list(20)
+cluster_end <- 3
+rr.ratio<- 2
+period <- c(rep("1", n), rep("2", n), rep("3", n), rep("4", n), rep("5", n))
+
+#Number of counties
+n <- length(m$names)
+Time <- 5
+
+##Note: since we're pretending like we have this issue where 3 counties were given the same value, we need to account for that when generating our values
+
+#Create Initial Expected Counts + random noise
+E0_0 <-rnbinom((n*Time), mu = 7, size = 1) + rtruncnorm((n*Time), a= 0, mean = 0, sd = 1)
+Y0_0 <- rnbinom((n*Time), mu =, size = 1)
+
+outinit <- glm.nb(Y0_0 ~ 1)
+out <- glm.nb(Y0_0 ~ 1 + as.factor(period)  + offset(log(E0_0)), init.theta = outinit$theta, 
+              link=log,control=glm.control(maxit=10000))
+
+E0 <- out$fitted
+
+```
+
+Create the clusters dataframe of all of our potential clusters using our $clustersDF$ function. You will need to have the coordinates in either lat-long or utm (the function takes parameter **utm**, for which the default is FALSE (so default is lat-long), but can be switched to TRUE for UTM). The maps package does allow us to extract the x and y coordinates. However, the data appears to be missing 
+
+```{r}
+#**SOMEHOW MASK THE DATASET; Go BACK THROUGH OLD LECTURE NOTES OF HOW TO DO THIS
+#Create dataset which contains 'x', 'y' coordinates and the 'county' and 'state'
+pov <-  read.csv("../../../data/MidwestPov/upMidWestpov_Iowa_cluster_names60_06_final_wide.csv")
+coords <- pov[c("x","y","county","state")]
+
+#Set x and y
+xP=coords$x
+yP=coords$y
+
+#Find max radius between the x and y (scaled by 1000 so x and y are in kilometers)
+r.max <- round((max(distm(cbind(xP, yP), fun=distHaversine))/2)/1000)
+
+#Create Our Clusters DataFrame
+myclusters <- clustersDF(xP, yP, r.max, utm=FALSE, length(xP))
+
+```
+
+Create those fake clusters.
+
+```{r}
+tmp <- myclusters[myclusters$center==center,]
+cluster <- tmp[(tmp$r <= r_list),]
+rr = matrix(1, nrow=n, ncol=Time)
+rr[cluster$last, cluster_end:Time] = rr.ratio
+expect_fake <- as.vector(rr)*E0
+
+#Need to obtain an initial theta for the negative binomial
+init <- glm.nb(round(expect_fake) ~ 1)
+obs_fake <- rnegbin(n*Time,expect_fake, theta= outinit$theta)
+```
+
+
+Set up your initial vectors with our $setVectors$ function:
+
+```{r}
+myvectors <- setVectors(period, expect_fake, obs_fake, Time=5, byrow=FALSE)
+
+```
+
+Run the model:
+
+```{r}
+myresults <- mylasso(n, myclusters, n, myvectors, Time=5)
+
+```
+
+Map results to appropriate vectors for mapping.
+
+```{r}
+RRobs <- matrix(as.vector(Y0)/as.vector(E0),ncol=Time)
+RRbic <- matrix(fake_result[[1]]/as.vector(E0),ncol=Time)
+RRaic <- matrix(fake_result[[2]]/as.vector(E0),ncol=Time)
+RRaicc <- matrix(fake_result[[3]]/as.vector(E0),ncol=Time)
+
+```
+

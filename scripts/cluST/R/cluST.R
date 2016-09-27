@@ -117,7 +117,7 @@ dpoisson <- function(y, lambda, log = FALSE) {
 #' @export
 #' @examples
 setVectors <- function(year, expect, observed,Time, byrow=TRUE) {
-    if (byrow=TRUE){
+    if (byrow==TRUE){
         E0=as.vector(matrix(expect, byrow=T, ncol=Time))
         Y.vec <- as.vector(matrix(observed,byrow=T, ncol=Time))
         Year <- as.vector(matrix(year, byrow=T, ncol=Time)) 
@@ -173,7 +173,7 @@ sparseMe <- function(clusters, numCenters){
 
 sparseTime <- function(potClus, clusters, numCenters, Time){
     #create mysparse
-    mysparse <- sparseMe(potClus, clusters, numCenters, intercept=FALSE)
+    mysparse <- sparseMe(clusters, numCenters)
     #block1
     p1 <- cBind(mysparse, Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-1), sparse=TRUE))
     p2 <- cBind(Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-4), sparse=TRUE), mysparse, 
@@ -238,7 +238,7 @@ myoverdisp <- function(object) {
 #' @return This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
 #' a list of observed counts (Yx), the lasso object, a list of K values (number of unique values in each decision path), and n (length of unique centers in the clusters dataframe)
 #' @export
-mylasso <- function(potClus, clusters, numCenters, vectors, Time){
+mylasso <- function(potClus, clusters, numCenters, vectors, Time, intercept=FALSE){
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
