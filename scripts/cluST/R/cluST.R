@@ -284,10 +284,12 @@ mylasso <- function(potClus, clusters, numCenters, vectors, Time, intercept=FALS
 #' 
 #' This function will create vectors of the risk ratios as determined by observed counts, QBIC, QAIC, and QAICc, respectively.
 #' @param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso function
+#' @param vectors dataframe of initial vectors of the observed and expected counts
+#' @param Time number of time period
 #' @return This returns a list of the risk ratios (observed over expected) as determined by 1) pure observed/expected counts,
 #' 2) observed based on QBIC path/expected; 3) observed based on QAIC path/expected; 4) observed based on QAICc path/expected.
 #' @export
-setRR <- function(lassoresult, vectors, Time){
+setRR <- function(lassoresult, vectors, Time, E0){
     RRobs <- matrix(as.vector(vectors$Y.vec)/as.vector(vectors$E0),ncol=Time)
     RRbic <- matrix(lassoresult[[1]]/as.vector(vectors$E0),ncol=Time)
     RRaic <- matrix(lassoresult[[2]]/as.vector(vectors$E0),ncol=Time)
