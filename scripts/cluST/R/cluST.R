@@ -292,7 +292,7 @@ setRR <- function(lassoresult, vectors, Time){
     RRbic <- matrix(lassoresult[[1]]/as.vector(vectors$E0),ncol=Time)
     RRaic <- matrix(lassoresult[[2]]/as.vector(vectors$E0),ncol=Time)
     RRaicc <- matrix(lassoresult[[3]]/as.vector(vectors$E0),ncol=Time)
-    return(list(RRobs, RRbic, RRaic, RRaicc))  
+    return(list(RRobs=RRobs, RRbic=RRbic, RRaic=RRaic, RRaicc=RRaicc))  
 }
 
 #' redblue
@@ -316,7 +316,7 @@ colormapping <- function(riskratios,Time) {
     color.qbic <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRbic[,i],2)))/log(4))) #NOTE THESE ARE NOT ACTUALLY QUASI,just poor coding
     color.qaic <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRaic[,i],2)))/log(4)))
     color.qaicc <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRaicc[,i],2)))/log(4)))
-    return(list(color.obs, color.qbic, color.qaic, color.qaicc)) 
+    return(list(colors.obs = color.obs, color.qbic = color.qbic, color.qaic = color.qaic, color.qaicc = color.qaicc)) 
 }
 
 
