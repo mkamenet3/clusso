@@ -234,21 +234,38 @@ spacetimeLasso <- function(potClus, clusters, numCenters, vectors, Time, spaceti
     offset_reg <- glm(Yx ~ offset(log(Ex)),family=poisson)
     overdisp <- myoverdisp(offset_reg)
     
-    #QBIC
-    PLL.qbic  <- (loglike/overdisp)-log(n*Time)/2*K
-    qbicMax <- which.max(PLL.qbic)
-    E.qbic <- mu[,qbicMax]
-    
-    #QAIC
-    PLL.qaic = (loglike/overdisp) - K
-    qaicMax <- which.max(PLL.qaic)
-    E.qaic <- mu[,qaicMax]
-    
-    #QAICc
-    PLL.qaicc=(loglike/overdisp)- ((K*n*Time)/(n*Time-K-1))
-    qaiccMax <- which.max(PLL.qaicc)
-    E.qaicc <- mu[,qaiccMax]
-
+    if(spacetime==TRUE){
+        #QBIC
+        PLL.qbic  <- (loglike/overdisp)-log(n*Time)/2*K
+        qbicMax <- which.max(PLL.qbic)
+        E.qbic <- mu[,qbicMax]
+        
+        #QAIC
+        PLL.qaic = (loglike/overdisp) - K
+        qaicMax <- which.max(PLL.qaic)
+        E.qaic <- mu[,qaicMax]
+        
+        #QAICc
+        PLL.qaicc=(loglike/overdisp)- ((K*n*Time)/(n*Time-K-1))
+        qaiccMax <- which.max(PLL.qaicc)
+        E.qaicc <- mu[,qaiccMax]
+    }
+    else{
+        #BIC
+        PLL.qbic  <- (loglike)-log(n*Time)/2*K
+        qbicMax <- which.max(PLL.qbic)
+        E.qbic <- mu[,qbicMax]
+        
+        #AIC
+        PLL.qaic = (loglike) - K
+        qaicMax <- which.max(PLL.qaic)
+        E.qaic <- mu[,qaicMax]
+        
+        #AICc
+        PLL.qaicc=(loglike)- ((K*n*Time)/(n*Time-K-1))
+        qaiccMax <- which.max(PLL.qaicc)
+        E.qaicc <- mu[,qaiccMax]
+    }
     return(list(E.qbic, E.qaic, E.qaicc,Ex, Yx, lasso, K,n))    
 }
 
@@ -287,7 +304,7 @@ redblue=function(x) {
 #' @export
 colormapping <- function(riskratios,Time) {
     color.obs <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRobs[,i],2)))/log(4)))
-    color.qbic <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRbic[,i],2)))/log(4))) #NOTE THESE ARE NOT ACTUALLY QUASI,just poor coding
+    color.qbic <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRbic[,i],2)))/log(4))) 
     color.qaic <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRaic[,i],2)))/log(4)))
     color.qaicc <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRaicc[,i],2)))/log(4)))
     return(list(colors.obs = color.obs, color.qbic = color.qbic, color.qaic = color.qaic, color.qaicc = color.qaicc)) 
