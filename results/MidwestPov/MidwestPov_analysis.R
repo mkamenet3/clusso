@@ -80,7 +80,7 @@ MPDinit <- cbind.data.frame(period,E0, Y.vec)
 potentialClus <- max(clusters$center)
 numberCenters <- max(clusters$center)
 
-MPDresults <- mylasso(potentialClus, clusters, numberCenters, MPDinit, Time, intercept=FALSE)
+MPDresults <- spacetimeLasso(potentialClus, clusters, numberCenters, MPDinit, Time, spacetime=TRUE)
 
 
 ####################################################

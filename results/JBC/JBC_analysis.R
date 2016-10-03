@@ -72,7 +72,7 @@ E0 <- out$fitted
 potentialClus <- max(clusters$center)
 numberCenters <- max(clusters$center)
 
-JBCresults <- mylasso(potentialClus, clusters, numberCenters, JBCinit, Time, intercept=FALSE)
+JBCresults <- spacetimeLasso(potentialClus, clusters, numberCenters, JBCinit, Time, spacetime=TRUE)
 
 
 ####################################################

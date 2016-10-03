@@ -206,14 +206,20 @@ myoverdisp <- function(object) {
 #' @param numCenters the number of centers
 #' @param vectors takes in the list of expected and observed counts from setVectors function
 #' @param Time number of time periods in the dataset
+#' @param spacetime indicator of whether the cluster detection method should be run on all space-time clusters(default) or on only the potential space clusters.
 #' @return This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
 #' a list of observed counts (Yx), the lasso object, a list of K values (number of unique values in each decision path), and n (length of unique centers in the clusters dataframe)
 #' @export
-mylasso <- function(potClus, clusters, numCenters, vectors, Time, intercept=FALSE){
+spacetimeLasso <- function(potClus, clusters, numCenters, vectors, Time, spacetime=TRUE){
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
-    sparseMAT <- spaceTimeMat(clusters, numCenters, Time)
+    if(spacetime==TRUE){
+        sparseMAT <- spaceTimeMat(clusters, numCenters, Time)
+    }
+    else{
+        sparseMAT <- spaceMat(clusters, numCenters)
+    }
     Ex <- vectors$E0
     Yx <- vectors$Y.vec
     lasso <- glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex))
