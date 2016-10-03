@@ -44,6 +44,7 @@ pov <- read.csv("../../data/MidwestPov//upMidWestpov_Iowa_cluster_names60_06_fin
 df$year <- factor(df$year, levels=c("1960","1970","1980","1990","2000"))
 df$county <- as.factor(sub(".*,","", df$statecounty))
 df$state <- as.factor(gsub("\\,.*","",df$statecounty))
+df <- df[df$year=="1990",]
 
 #Set Coordinates Dataframe
 coords <- pov[c("x","y","county","state")]
@@ -52,7 +53,7 @@ coords <- pov[c("x","y","county","state")]
 x=coords$x
 y=coords$y
 rMax <- round((max(distm(cbind(x, y), fun=distHaversine))/10)/1000)
-Time=5  
+Time=1  
 
 #Create Potential Clusters Dataframe
 clusters <- clustersDF(x,y,rMax, utm=FALSE, length(x))
@@ -64,7 +65,7 @@ period<- as.vector(df$year)
 
 #Adjust for observed given expected counts as coming from negative binomial distribution
 outinit <- glm.nb(Y.vec ~1)
-out <- glm.nb(Y.vec ~ 1 + as.factor(period)  + offset(log(pop)), init.theta = outinit$theta, 
+out <- glm.nb(Y.vec ~ 1 + offset(log(pop)), init.theta = outinit$theta, 
               link=log,control=glm.control(maxit=10000))
 
 
@@ -80,18 +81,18 @@ MPDinit <- cbind.data.frame(period,E0, Y.vec)
 potentialClus <- max(clusters$center)
 numberCenters <- max(clusters$center)
 
-MPDresults <- spacetimeLasso(potentialClus, clusters, numberCenters, MPDinit, Time, spacetime=TRUE)
+MPDresults <- spacetimeLasso(potentialClus, clusters, numberCenters, MPDinit, Time, spacetime=FALSE)
 
 
 ####################################################
 #Set Risk Ratio Vectors Based on QIC
 ####################################################
-rr <- setRR(MPDresults, MPDinit, Time=5)
+rr <- setRR(MPDresults, MPDinit, Time)
 
 ####################################################
 #Map RR to Colors
 ####################################################
-rrcolors <- colormapping(rr, Time=5)
+rrcolors <- colormapping(rr, Time)
 
 
 ####################################################
@@ -115,104 +116,38 @@ m$names[not];tmp[not]
 
 
 #Create Empty PDF to Map Onto
-pdf("../../figures/MidwestPov/MidwestPov_map.pdf", height=11, width=10)
+pdf("../../figures/MidwestPov/MidwestPov_map_space.pdf", height=11, width=10)
 
 #Set Plots
 par(mfrow = c(4,5))
 
 #Maps of Observed Counts
+
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
     fill=TRUE,col=rrcolors$colors.obs[,1][colSeq])
-    title(main="Obs - 1960")
-
-map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$colors.obs[,2][colSeq])
-    title(main="Obs - 1970")
-
-map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$colors.obs[,3][colSeq])
-    title(main="Obs - 1980")
-
-map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$colors.obs[,4][colSeq])
-    title(main="Obs - 1990")
-
-map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$colors.obs[,5][colSeq])
-    title(main="Obs - 2000")
-
+title(main="Obs - 1990")
 
 #Maps of AIC Path
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),
     fill=TRUE,col=rrcolors$color.qaic[,1][colSeq])
-    title(main="AIC - 1960")
-
-map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qaic[,2][colSeq])
-    title(main="AIC - 1970")
-
-map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qaic[,3][colSeq])
-    title(main="AIC - 1980")
-
-map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),
-    fill=TRUE,col=rrcolors$color.qaic[,4][colSeq])
-    title(main="AIC - 1990")
-
-map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qaic[,5][colSeq])
-    title(main="AIC - 2000")
+title(main="AIC - 1990")
 
 #Maps of AICc Path
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
     fill=TRUE,col=rrcolors$color.qaicc[,1][colSeq])
-    title(main="AICc - 1960")
-
-map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qaicc[,2][colSeq])
-    title(main="AICc - 1970")
-
-map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qaicc[,3][colSeq])
-    title(main="AICc - 1980")
-
-map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qaicc[,4][colSeq])
-    title(main="AICc - 1990")
-
-map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qaicc[,5][colSeq])
-    title(main="AICc - 2000")
-
+title(main="AICc - 1990")
 
 #Maps of BIC Path
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
     fill=TRUE,col=rrcolors$color.qbic[,1][colSeq])
-    title(main="BIC - 1960")
-
-map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qbic[,2][colSeq])
-    title(main="BIC - 1970")
-
-map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qbic[,3][colSeq])
-    title(main="BIC - 1980")
-
-map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qbic[,4][colSeq])
-    title(main="BIC - 1990")
-
-map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qbic[,5][colSeq])
-    title(main="BIC - 2000")
+title(main="BIC - 1990")
 
 
 #Turn off pdf development
 dev.off()
-
 
 
 
