@@ -23,8 +23,8 @@ library(truncnorm)
 
 #Source .cpp files
 sourceCpp("../../scripts/cluST/src/maxcol.cpp")
-sourceCpp("../../scripts/cluST/src/st_matCppTest.cpp")
-sourceCpp("../../scripts/cluST/src/prod_yxTest.cpp")
+sourceCpp("../../scripts/cluST/src/st_matCpp.cpp")
+sourceCpp("../../scripts/cluST/src/prod_yx.cpp")
 
 
 #temporarily source my cluST.R file
