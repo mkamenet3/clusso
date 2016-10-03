@@ -131,7 +131,7 @@ par(fig=c(0,.2,0,.4), mar=c(.5,0.5,0.5,0), new=T)
 plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
 polygon(japan.poly2,col=rrcolors$color.qbic[,1],border=F)
 segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
-text(355,4120,'Period 1 - QBI',cex=1.00)
+text(355,4120,'Period 1 - QBIC',cex=1.00)
 
 
 #Turn off pdf development
