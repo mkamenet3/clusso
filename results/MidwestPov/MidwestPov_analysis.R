@@ -33,7 +33,7 @@ source("../../scripts/cluST//R//cluST.R")
 
 
 ####################################################
-#LOAD JBC Data and Set Up
+#LOAD MPD Data and Set Up
 ####################################################
 
 #Load Data
@@ -63,8 +63,8 @@ Y.vec <- as.vector(df$poor)
 period<- as.vector(df$year)
 
 #Adjust for observed given expected counts as coming from negative binomial distribution
-outinit <- glm.nb(Y0 ~1)
-out <- glm.nb(Y0 ~ 1 + as.factor(period)  + offset(log(pop)), init.theta = outinit$theta, 
+outinit <- glm.nb(Y.vec ~1)
+out <- glm.nb(Y.vec ~ 1 + as.factor(period)  + offset(log(pop)), init.theta = outinit$theta, 
               link=log,control=glm.control(maxit=10000))
 
 

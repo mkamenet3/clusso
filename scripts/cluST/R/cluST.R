@@ -134,13 +134,13 @@ setVectors <- function(year, expect, observed,Time, byrow=TRUE) {
 }
 
 
-#' sparseMe
+#' spaceMat
 #' 
 #' This function creates a sparse matrix of 1's of all potential clusters for the Lasso algorithm to cycle over; this incorporates space
 #' @param clusters clusters dataframe from (clustersDF function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)
 #' @param numCenters the number of centers
 #' @return returns sparse matrix of 1's
-sparseMe <- function(clusters, numCenters){
+spaceMat <- function(clusters, numCenters){
     potClus <- numCenters
     mymat <- NULL
     for(i in 1:nrow(clusters)){
@@ -150,7 +150,6 @@ sparseMe <- function(clusters, numCenters){
     xx <- NULL
     jj <- NULL
     ii <- NULL
-    
     for(k in 1:length(mymat)){
         xx<- c(xx, mymat[[k]]@x)
         jj <- c(jj, mymat[[k]]@i)
@@ -159,64 +158,36 @@ sparseMe <- function(clusters, numCenters){
     return(t(sparseMatrix(i = ii, j = jj, x =xx, dims = c(length(mymat), numCenters))))
 }
 
-
-
-
-#' sparseTime
+#' timeMat
 #' 
-#' This function expands the matrix from sparseMe (above) across time. The matrix above is replicated in blocks downward and across for the space-time periods.
-#' @param potClus number of potential clusters. This will usually be the same as 'numCenters'
-#' @param clusters clusters dataframe from (clustersDF function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)
-#' @param numCenters the number of centers
-#' @param Time number of time periods in the dataset
-#' @return returns sparse matrix of 1's
-
-sparseTime <- function(potClus, clusters, numCenters, Time){
-    #create mysparse
-    mysparse <- sparseMe(clusters, numCenters)
-    #block1
-    p1 <- cBind(mysparse, Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-1), sparse=TRUE))
-    p2 <- cBind(Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-4), sparse=TRUE), mysparse, 
-                Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-2), sparse=TRUE))
-    p3 <- cBind(Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-3), sparse=TRUE), mysparse,
-                Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-3), sparse=TRUE))
-    p4 <- cBind(Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-2), sparse=TRUE), mysparse,
-                Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-4), sparse=TRUE))
-    p5 <- cBind(Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-1), sparse=TRUE), mysparse)
-    block1 <- rBind(p1,p2,p3,p4,p5)
-    #block2
-    p1 <- cBind(mysparse, Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-2), sparse=TRUE))
-    p2 <- cBind(mysparse, mysparse, Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-3), sparse=TRUE))
-    p3 <- cBind(Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-4), sparse=TRUE), mysparse, mysparse,
-                Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-4), sparse=TRUE))
-    p4 <- cBind(Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-3), sparse=TRUE), mysparse, mysparse)
-    p5 <- cBind(Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-2), sparse=TRUE), mysparse)
-    block2 <- rBind(p1,p2, p3,p4,p5)
-    #block3
-    p1 <- cBind(mysparse, Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-3), sparse=TRUE))
-    p2 <- cBind(mysparse, mysparse, Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-4), sparse=TRUE))
-    p3 <- cBind(mysparse,mysparse,mysparse)
-    p4 <- cBind(Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-4), sparse=TRUE), mysparse,mysparse)
-    p5 <- cBind(Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-3), sparse=TRUE),mysparse)
-    block3 <- rBind(p1,p2,p3,p4,p5)
-    #block4
-    p1 <- cBind(mysparse,Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-4), sparse=TRUE))
-    p2 <- cBind(mysparse, mysparse)
-    p3 <- cBind(mysparse,mysparse)
-    p4 <- cBind(mysparse, mysparse)
-    p5 <- cBind(Matrix(0, nrow=length(unique(clusters$center)), ncol=nrow(clusters)*(Time-4), sparse=TRUE),mysparse)
-    block4 <- rBind(p1,p2,p3,p4,p5)
-    #block5
-    p1 <- cBind(mysparse)
-    p2 <- cBind(mysparse)
-    p3 <- cBind(mysparse)
-    p4 <- cBind(mysparse)
-    p5 <- cBind(mysparse)
-    block5 <- rBind(p1,p2,p3,p4,p5)
-    sparseMAT <- cBind(block1,block2, block3,block4, block5)
-    return(sparseMAT)
+#' This function creates a sparse matrix of 1's of all of the potential time periods for the cluster to be in. The number of 
+#' potential time periods is determined by [(Time*(Time-1)]/2.
+#' @param Time Number of time periods in the data
+#' @return returns sparse matrix of 1's as indicators of membership in the time cluster
+timeMat <-function(Time){
+    block <- Matrix(diag(1,Time),sparse=TRUE)
+    master <- block
+    for(i in 1:(Time-2)){
+        diag(block[(i+1):Time,])<-1
+        master <- cBind(master, block[,1:(Time-i)])        
+    }
+    master <- cBind(master, Matrix(rep(1,Time)))
+    return(master)
 }
-
+    
+    
+#' spaceTimeMat
+#' 
+#' This function takes the Kronecker product of the space and time matrices to create the space-time matrix
+#' @param timeMat Time matrix
+#' @param spaceMat Space matrix
+#' @return Returns sparse space time matrix          
+spaceTimeMat <- function(clusters, numCenters, Time){
+    space <- spaceMat(clusters, numCenters)
+    time <- timeMat(Time)
+    spaceTimeMat <- kronecker(time, space)
+    return(spaceTimeMat)
+}
 
 #' myoverdisp
 #' 
@@ -242,7 +213,7 @@ mylasso <- function(potClus, clusters, numCenters, vectors, Time, intercept=FALS
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
-    sparseMAT <- sparseTime(potClus, clusters, numCenters, Time)
+    sparseMAT <- spaceTimeMat(clusters, numCenters, Time)
     Ex <- vectors$E0
     Yx <- vectors$Y.vec
     lasso <- glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex))
@@ -274,11 +245,6 @@ mylasso <- function(potClus, clusters, numCenters, vectors, Time, intercept=FALS
 
     return(list(E.qbic, E.qaic, E.qaicc,Ex, Yx, lasso, K,n))    
 }
-
-
-#
-#fake_result3 <- list(E.qbic, E.qaic, E.qaicc,Ex, Yx_avg,Yx, lasso, K,n)    
-#return(list(E.qbic, E.qaic, E.qaicc,Ex, Yx, lasso, K,n))
 
 #' setRR
 #' 
