@@ -92,7 +92,7 @@ clustersDF <- function(xP,yP, r.max, utm=FALSE,n){
 #' @param y observed values
 #' @param lambda vector of expected outcomes * exp(each column of each potential path)
 #' @param log whether or not the log-likelihood should be returned or the likelihood. Default is to be TRUE
-#' @return returns a matrix of ________
+#' @return returns a matrix 
 
 dpoisson <- function(y, lambda, log = FALSE) {
     if(log == FALSE) 
@@ -198,7 +198,7 @@ myoverdisp <- function(object) {
     with(object,sum((weights * residuals^2)[weights > 0])/df.residual)
 }
 
-#' mylasso
+#' spacetimeLasso
 #' 
 #' This function runs the Lasso regularization technique on our large sparse matric of potential space-time clusters.
 #' @param potClus number of potential clusters. This will usually be the same as 'numCenters'
@@ -268,6 +268,82 @@ spacetimeLasso <- function(potClus, clusters, numCenters, vectors, Time, spaceti
     }
     return(list(E.qbic, E.qaic, E.qaicc,Ex, Yx, lasso, K,n))    
 }
+
+
+#' spacetimeLasso.sim
+#' 
+#' This function runs the Lasso regularization technique on our large sparse matric of potential space-time clusters.It is specifically created to use with simulations.
+#' @param potClus number of potential clusters. This will usually be the same as 'numCenters'
+#' @param clusters clusters dataframe from (clustersDF function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)
+#' @param numCenters the number of centers
+#' @param vectors takes in the list of expected and observed counts from setVectors function
+#' @param Time number of time periods in the dataset
+#' @param spacetime indicator of whether the cluster detection method should be run on all space-time clusters(default) or on only the potential space clusters.
+#' @return This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
+#' a list of observed counts (Yx), the lasso object, a list of K values (number of unique values in each decision path), and n (length of unique centers in the clusters dataframe)
+#' @export
+spacetimeLasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spacetime=TRUE,nsim,YSIM){
+    n <- length(unique(clusters$center))
+    potClus <- n
+    numCenters <- n
+    if(spacetime==TRUE){
+        sparseMAT <- spaceTimeMat(clusters, numCenters, Time)
+    }
+    else{
+        sparseMAT <- spaceMat(clusters, numCenters)
+    }
+    Ex <- vectors$E0
+    Yx <- YSIM
+    lasso <- lapply(1:nsim, function(i) glmnet(sparseMAT, Yx[,i], family=("poisson"), alpha=1, offset=log(Ex)))
+    coefs.lasso.all <- lapply(1:nsim, function(i) coef(lasso[[i]]))
+    intercept <- rep(1, dim(sparseMAT)[1])
+    sparseMAT <- cBind(intercept, sparseMAT)
+    xbetaPath<- lapply(1:nsim, function(i) sparseMAT%*%coefs.lasso.all[[i]])
+    mu <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), function(i) Ex * exp(xbetaPath[[j]][,i])))    
+    loglike <- lapply(1:nsim, function(k) sapply(1:length(lasso[[k]]$lambda), 
+                                                 function(i) sum(dpoisson(Yx[,k], mu[[k]][,i],log=TRUE))))
+    K <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), function(i) length(unique(xbetaPath[[j]][,i]))))
+    offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ offset(log(Ex)),family=poisson))
+    overdisp <- lapply(1:nsim, function(i) myoverdisp(offset_reg[[i]]))
+    mean_mu <- sapply(1:nsim, function(j) sapply(1:nrow(YSIM), function(i) mean(mu[[1]][i,j]:mu[[nsim]][i,j])))
+    
+    if(spacetime==TRUE){
+        #QBIC
+        PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]])-log(n*Time)/2*K[[i]])
+        mean_qbic <- which.max(unlist(lapply(1:nsim, function(i) mean(PLL.qbic[[1]][i]:PLL.qbic[[nsim]][i]))))
+        E.qbic <- mean_mu[,mean_qbic]
+        
+        #QAIC
+        PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]]) - K[[i]])
+        mean_qaic <- which.max(unlist(lapply(1:nsim, function(i) mean(PLL.qaic[[1]][i]:PLL.qaic[[nsim]][i]))))
+        E.qaic <- mean_mu[,mean_qaic]
+        
+        #QAICc
+        PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]])- ((K[[i]]*n*Time)/(n*Time-K[[i]]-1)))
+        mean_qaicc <- which.max(unlist(lapply(1:nsim, function(i) mean(PLL.qaicc[[1]][i]:PLL.qaicc[[nsim]][i]))))
+        E.qaicc <- mean_mu[,mean_qaicc]
+    }
+    else{
+        #BIC
+        PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]])-log(n*Time)/2*K[[i]])
+        mean_qbic <- which.max(unlist(lapply(1:nsim, function(i) mean(PLL.qbic[[1]][i]:PLL.qbic[[nsim]][i]))))
+        E.qbic <- mean_mu[,mean_qbic]
+        
+        #AIC
+        PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]) - K[[i]])
+        mean_qaic <- which.max(unlist(lapply(1:nsim, function(i) mean(PLL.qaic[[1]][i]:PLL.qaic[[nsim]][i]))))
+        E.qaic <- mean_mu[,mean_qaic]
+        
+        #AICc
+        PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]])- ((K[[i]]*n*Time)/(n*Time-K[[i]]-1)))
+        mean_qaicc <- which.max(unlist(lapply(1:nsim, function(i) mean(PLL.qaicc[[1]][i]:PLL.qaicc[[nsim]][i]))))
+        E.qaicc <- mean_mu[,mean_qaicc]
+    }
+    mean_Yx <- round(rowSums(Yx)/nsim)
+    return(list(E.qbic, E.qaic, E.qaicc,Ex, mean_Yx, Yx, lasso, K,n))    
+}
+
+
 
 #' setRR
 #' 
