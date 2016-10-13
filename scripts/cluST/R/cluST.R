@@ -354,11 +354,19 @@ spacetimeLasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spa
 #' @return This returns a list of the risk ratios (observed over expected) as determined by 1) pure observed/expected counts,
 #' 2) observed based on QBIC path/expected; 3) observed based on QAIC path/expected; 4) observed based on QAICc path/expected.
 #' @export
-setRR <- function(lassoresult, vectors, Time){
-    RRobs <- matrix(as.vector(vectors$Y.vec)/as.vector(vectors$E0),ncol=Time)
-    RRbic <- matrix(lassoresult[[1]]/as.vector(vectors$E0),ncol=Time)
-    RRaic <- matrix(lassoresult[[2]]/as.vector(vectors$E0),ncol=Time)
-    RRaicc <- matrix(lassoresult[[3]]/as.vector(vectors$E0),ncol=Time)
+setRR <- function(lassoresult, vectors, Time, YSIM){
+    if(missing(YSIM)){
+        RRobs <- matrix(as.vector(vectors$Y.vec)/as.vector(vectors$E0),ncol=Time)
+        RRbic <- matrix(lassoresult[[1]]/as.vector(vectors$E0),ncol=Time)
+        RRaic <- matrix(lassoresult[[2]]/as.vector(vectors$E0),ncol=Time)
+        RRaicc <- matrix(lassoresult[[3]]/as.vector(vectors$E0),ncol=Time)
+    }
+    else{
+        RRobs <- matrix(as.vector(YSIM)/as.vector(vectors$E0),ncol=Time)
+        RRbic <- matrix(lassoresult[[1]]/as.vector(vectors$E0),ncol=Time)
+        RRaic <- matrix(lassoresult[[2]]/as.vector(vectors$E0),ncol=Time)
+        RRaicc <- matrix(lassoresult[[3]]/as.vector(vectors$E0),ncol=Time)    
+    }
     return(list(RRobs=RRobs, RRbic=RRbic, RRaic=RRaic, RRaicc=RRaicc))  
 }
 
