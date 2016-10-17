@@ -120,7 +120,7 @@ JBCresults.sim <- spacetimeLasso.sim(potentialClusters, clusters, numCenters,
 ####################################################
 ##Calculate average observed for simulated
 ##RR calculations
-riskratios <- setRR(JBCresults.sim, JBCinit, Time, YSIM)
+riskratios <- setRR(JBCresults.sim, JBCinit, Time, JBCinit.sim)
 
 rrcolors <- colormapping(riskratios,Time)
 
