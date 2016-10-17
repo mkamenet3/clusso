@@ -1,7 +1,7 @@
 ########################################################################################################
 ########################################################################################################
 ########################################################################################################
-#Simulations of Space-time Analysis Based on Midwest Poverty Data using cluST.R
+#Simulations of Space-time Analysis Based on JBC Data using cluST.R
 #Maria Kamenetsky
 #10-3-16
 ########################################################################################################
@@ -29,7 +29,7 @@ sourceCpp("scripts/cluST/src/prod_yx.cpp")
 
 
 #temporarily source my cluST.R file
-source("scripts/cluST//R//cluST.R")
+#source("scripts/cluST//R//cluST.R")
 
 
 
@@ -54,9 +54,6 @@ Time=5
 #Set number of simulations
 nsim=100
 
-#Set probability of success
-mymu <-7
-
 #Number of time periods and centers
 n <- 208
 Time <- 5
@@ -69,7 +66,6 @@ rr.ratio<- 2
 
 #Create Potential Clusters Dataframe
 clusters <- clustersDF(x1,y1,rMax, utm=TRUE, length(x1))
-
 
 
 #Set initial expected and observed
@@ -92,9 +88,12 @@ rr = matrix(1, nrow=n, ncol=Time)
 rr[cluster$last, cluster_end:Time] = rr.ratio
 expect_fake <- as.vector(rr)*E0
 
-#Need to obtain an initial theta for the negative binomial
-init <- glm.nb(round(expect_fake) ~ 1)
-obs_fake <- rnegbin(n*Time,expect_fake, theta= outinit$theta)
+
+#Set Vectors
+Y.vec <- JBCinit$Y.vec
+Period <- JBCinit$Year
+
+JBCinit.sim <- cbind.data.frame(Period, E0=expect_fake)
 
 ####################################################
 #Sim Response
@@ -105,6 +104,7 @@ for(i in 1:nsim){
     YSIMT <- cbind(YSIMT, YSIMT_i)
 }
 
+
 ####################################################
 #Set up and Run Model
 ####################################################
@@ -112,18 +112,15 @@ potentialClusters <- max(clusters$center)
 numCenters <- max(clusters$center)
 
 JBCresults.sim <- spacetimeLasso.sim(potentialClusters, clusters, numCenters,
-                           JBCinit, Time, spacetime=TRUE, nsim, YSIMT)
-
+                           JBCinit.sim, Time, spacetime=TRUE, nsim, YSIMT)
 
 
 ####################################################
 #Risk Ratios
 ####################################################
 ##Calculate average observed for simulated
-Yx_bar <- round(rowSums(YSIMT)/nsim)
-
 ##RR calculations
-riskratios <- setRR(JBCresults.sim, JBCinit, Time, Yx_bar)
+riskratios <- setRR(JBCresults.sim, JBCinit, Time, YSIM)
 
 rrcolors <- colormapping(riskratios,Time)
 

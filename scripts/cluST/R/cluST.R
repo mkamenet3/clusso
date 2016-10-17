@@ -362,7 +362,7 @@ setRR <- function(lassoresult, vectors, Time, YSIM){
         RRaicc <- matrix(lassoresult[[3]]/as.vector(vectors$E0),ncol=Time)
     }
     else{
-        RRobs <- matrix(as.vector(YSIM)/as.vector(vectors$E0),ncol=Time)
+        RRobs <- matrix(as.vector(lassoresult[[5]])/as.vector(vectors$E0),ncol=Time)
         RRbic <- matrix(lassoresult[[1]]/as.vector(vectors$E0),ncol=Time)
         RRaic <- matrix(lassoresult[[2]]/as.vector(vectors$E0),ncol=Time)
         RRaicc <- matrix(lassoresult[[3]]/as.vector(vectors$E0),ncol=Time)    
