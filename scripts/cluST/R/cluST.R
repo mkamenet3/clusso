@@ -305,42 +305,47 @@ spacetimeLasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spa
     K <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), function(i) length(unique(xbetaPath[[j]][,i]))))
     offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ offset(log(Ex)),family=poisson))
     overdisp <- lapply(1:nsim, function(i) myoverdisp(offset_reg[[i]]))
-    mean_mu <- sapply(1:nsim, function(j) sapply(1:nrow(YSIM), function(i) mean(mu[[1]][i,j]:mu[[nsim]][i,j])))
     
     if(spacetime==TRUE){
         #QBIC
         PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]])-log(n*Time)/2*K[[i]])
-        mean_qbic <- which.max(unlist(lapply(1:nsim, function(i) mean(PLL.qbic[[1]][i]:PLL.qbic[[nsim]][i]))))
-        E.qbic <- mean_mu[,mean_qbic]
+        select.qbic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qbic[[i]])))
+        select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))
+        E.qbic <- Reduce("+", select_mu.qbic)/length(select_mu.qbic)
         
         #QAIC
         PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]]) - K[[i]])
-        mean_qaic <- which.max(unlist(lapply(1:nsim, function(i) mean(PLL.qaic[[1]][i]:PLL.qaic[[nsim]][i]))))
-        E.qaic <- mean_mu[,mean_qaic]
+        select.qaic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaic[[i]])))
+        select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
+        E.qaic <- Reduce("+", select_mu.qaic)/length(select_mu.qaic)
         
         #QAICc
         PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]])- ((K[[i]]*n*Time)/(n*Time-K[[i]]-1)))
-        mean_qaicc <- which.max(unlist(lapply(1:nsim, function(i) mean(PLL.qaicc[[1]][i]:PLL.qaicc[[nsim]][i]))))
-        E.qaicc <- mean_mu[,mean_qaicc]
+        select.qaicc <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaicc[[i]])))
+        select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
+        E.qaicc <- Reduce("+", select_mu.qaicc)/length(select_mu.qaicc)
     }
     else{
         #BIC
         PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]])-log(n*Time)/2*K[[i]])
-        mean_qbic <- which.max(unlist(lapply(1:nsim, function(i) mean(PLL.qbic[[1]][i]:PLL.qbic[[nsim]][i]))))
-        E.qbic <- mean_mu[,mean_qbic]
+        select.qbic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qbic[[i]])))
+        select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))
+        E.qbic <- Reduce("+", select_mu.qbic)/length(select_mu.qbic)
         
         #AIC
         PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]) - K[[i]])
-        mean_qaic <- which.max(unlist(lapply(1:nsim, function(i) mean(PLL.qaic[[1]][i]:PLL.qaic[[nsim]][i]))))
-        E.qaic <- mean_mu[,mean_qaic]
+        select.qaic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaic[[i]])))
+        select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
+        E.qaic <- Reduce("+", select_mu.qaic)/length(select_mu.qaic)
         
         #AICc
         PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]])- ((K[[i]]*n*Time)/(n*Time-K[[i]]-1)))
-        mean_qaicc <- which.max(unlist(lapply(1:nsim, function(i) mean(PLL.qaicc[[1]][i]:PLL.qaicc[[nsim]][i]))))
-        E.qaicc <- mean_mu[,mean_qaicc]
+        select.qaicc <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaicc[[i]])))
+        select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
+        E.qaicc <- Reduce("+", select_mu.qaicc)/length(select_mu.qaicc)
     }
-    mean_Yx <- round(rowSums(Yx)/nsim)
-    return(list(E.qbic, E.qaic, E.qaicc,Ex, mean_Yx, Yx, lasso, K,n))    
+    return(list(E.qbic, E.qaic, E.qaicc,Ex, mu, Yx, PLL.qbic, PLL.qaic, PLL.qaicc, select.qbic, select.qaic, select.qaicc,
+                select_mu.qbic, select_mu.qaic, select_mu.qaicc, xbetaPath, coefs.lasso.all))    
 }
 
 
