@@ -114,7 +114,7 @@ numCenters <- max(clusters$center)
 JBCresults.sim <- spacetimeLasso.sim(potentialClusters, clusters, numCenters,
                            JBCinit.sim, Time, spacetime=TRUE, nsim, YSIMT)
 
-
+save(JBCresults.sim, file="simR2_center100_r20.RData")
 ####################################################
 #Risk Ratios
 ####################################################
