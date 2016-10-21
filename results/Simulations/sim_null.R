@@ -59,10 +59,10 @@ n <- 208
 Time <- 5
 
 #Set parameters of your fake cluster
-center <- list(100)
-r_list <- list(20)
+center <- 100
+r_list <- 18
 cluster_end <- 3
-rr.ratio<- 1.5
+rr.ratio<- 1
 
 #Create Potential Clusters Dataframe
 clusters <- clustersDF(x1,y1,rMax, utm=TRUE, length(x1))
@@ -112,9 +112,9 @@ potentialClusters <- max(clusters$center)
 numCenters <- max(clusters$center)
 
 JBCresults.sim <- spacetimeLasso.sim(potentialClusters, clusters, numCenters,
-                           JBCinit.sim, Time, spacetime=TRUE, nsim, YSIMT)
+                                     JBCinit.sim, Time, spacetime=TRUE, nsim, YSIMT)
 
-
+save(JBCresults.sim, file="SimulationOutput//sim_null.RData")
 ####################################################
 #Risk Ratios
 ####################################################
@@ -137,7 +137,7 @@ dframe.prefect2 <- read.csv("data/JBC/japan_prefect2.csv")
 japan.prefect2 <- dframe.prefect2[,2:5]
 
 #Create Empty PDF to Map Onto
-pdf("figures/simulations/japan_map_R1_5.pdf", height=11, width=10)
+pdf("figures/simulations/japan_map_null.pdf", height=11, width=10)
 
 #Maps of Observed Counts
 par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))
