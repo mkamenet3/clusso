@@ -22,13 +22,13 @@ library(maps)
 library(truncnorm)
 
 #Source .cpp files
-sourceCpp("../../scripts/cluST/src/maxcol.cpp")
-sourceCpp("../../scripts/cluST/src/st_matCpp.cpp")
-sourceCpp("../../scripts/cluST/src/prod_yx.cpp")
+sourceCpp("scripts/cluST/src/maxcol.cpp")
+sourceCpp("scripts/cluST/src/st_matCpp.cpp")
+sourceCpp("scripts/cluST/src/prod_yx.cpp")
 
 
 #temporarily source my cluST.R file
-source("../../scripts/cluST//R//cluST.R")
+source("scripts/cluST//R//cluST.R")
 
 
 
@@ -37,8 +37,8 @@ source("../../scripts/cluST//R//cluST.R")
 ####################################################
 
 #Load Data
-df <- read.csv("../../data/MidwestPov/povertydataNew.csv")
-pov <- read.csv("../../data/MidwestPov//upMidWestpov_Iowa_cluster_names60_06_final_wide.csv")
+df <- read.csv("data/MidwestPov/povertydataNew.csv")
+pov <- read.csv("data/MidwestPov//upMidWestpov_Iowa_cluster_names60_06_final_wide.csv")
 
 #Clean the Dataset 
 df$year <- factor(df$year, levels=c("1960","1970","1980","1990","2000"))
@@ -115,98 +115,137 @@ m$names[not];tmp[not]
 
 
 #Create Empty PDF to Map Onto
-pdf("../../figures/MidwestPov/MidwestPov_map.pdf", height=11, width=10)
+pdf("figures/MidwestPov/MidwestPov_map.pdf", height=11, width=10)
 
 #Set Plots
 par(mfrow = c(4,5))
 
 #Maps of Observed Counts
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$colors.obs[,1][colSeq])
+    col=rrcolors$colors.obs[,1][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
     title(main="Obs - 1960")
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$colors.obs[,2][colSeq])
+    col=rrcolors$colors.obs[,2][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
     title(main="Obs - 1970")
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$colors.obs[,3][colSeq])
+    col=rrcolors$colors.obs[,3][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
     title(main="Obs - 1980")
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$colors.obs[,4][colSeq])
+    col=rrcolors$colors.obs[,4][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
     title(main="Obs - 1990")
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$colors.obs[,5][colSeq])
+    col=rrcolors$colors.obs[,5][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
     title(main="Obs - 2000")
 
 
 #Maps of AIC Path
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),
-    fill=TRUE,col=rrcolors$color.qaic[,1][colSeq])
-    title(main="AIC - 1960")
+    col=rrcolors$color.qaic[,1][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qaic[,2][colSeq])
+    col=rrcolors$color.qaic[,2][colSeq],fill=TRUE,lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
     title(main="AIC - 1970")
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qaic[,3][colSeq])
+    col=rrcolors$color.qaic[,3][colSeq], fill=TRUE,lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
     title(main="AIC - 1980")
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),
-    fill=TRUE,col=rrcolors$color.qaic[,4][colSeq])
+    col=rrcolors$color.qaic[,4][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
     title(main="AIC - 1990")
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qaic[,5][colSeq])
+    col=rrcolors$color.qaic[,5][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
     title(main="AIC - 2000")
 
 #Maps of AICc Path
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qaicc[,1][colSeq])
+    col=rrcolors$color.qaicc[,1][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
     title(main="AICc - 1960")
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qaicc[,2][colSeq])
+    col=rrcolors$color.qaicc[,2][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
     title(main="AICc - 1970")
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qaicc[,3][colSeq])
+    col=rrcolors$color.qaicc[,3][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
     title(main="AICc - 1980")
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qaicc[,4][colSeq])
+    col=rrcolors$color.qaicc[,4][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
     title(main="AICc - 1990")
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qaicc[,5][colSeq])
+    col=rrcolors$color.qaicc[,5][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
     title(main="AICc - 2000")
 
 
 #Maps of BIC Path
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qbic[,1][colSeq])
+    col=rrcolors$color.qbic[,1][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
     title(main="BIC - 1960")
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qbic[,2][colSeq])
+    col=rrcolors$color.qbic[,2][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
     title(main="BIC - 1970")
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qbic[,3][colSeq])
+    col=rrcolors$color.qbic[,3][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
     title(main="BIC - 1980")
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qbic[,4][colSeq])
+    col=rrcolors$color.qbic[,4][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
     title(main="BIC - 1990")
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qbic[,5][colSeq])
+    col=rrcolors$color.qbic[,5][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
     title(main="BIC - 2000")
 
 

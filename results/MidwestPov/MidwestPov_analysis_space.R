@@ -22,13 +22,13 @@ library(maps)
 library(truncnorm)
 
 #Source .cpp files
-sourceCpp("../../scripts/cluST/src/maxcol.cpp")
-sourceCpp("../../scripts/cluST/src/st_matCpp.cpp")
-sourceCpp("../../scripts/cluST/src/prod_yx.cpp")
+sourceCpp("scripts/cluST/src/maxcol.cpp")
+sourceCpp("scripts/cluST/src/st_matCpp.cpp")
+sourceCpp("scripts/cluST/src/prod_yx.cpp")
 
 
 #temporarily source my cluST.R file
-source("../../scripts/cluST//R//cluST.R")
+source("scripts/cluST//R//cluST.R")
 
 
 
@@ -37,8 +37,8 @@ source("../../scripts/cluST//R//cluST.R")
 ####################################################
 
 #Load Data
-df <- read.csv("../../data/MidwestPov/povertydataNew.csv")
-pov <- read.csv("../../data/MidwestPov//upMidWestpov_Iowa_cluster_names60_06_final_wide.csv")
+df <- read.csv("data/MidwestPov/povertydataNew.csv")
+pov <- read.csv("data/MidwestPov//upMidWestpov_Iowa_cluster_names60_06_final_wide.csv")
 
 #Clean the Dataset 
 df$year <- factor(df$year, levels=c("1960","1970","1980","1990","2000"))
@@ -116,33 +116,40 @@ m$names[not];tmp[not]
 
 
 #Create Empty PDF to Map Onto
-pdf("../../figures/MidwestPov/MidwestPov_map_space.pdf", height=11, width=10)
+pdf("figures/MidwestPov/MidwestPov_map_space.pdf", height=11, width=10)
 
 #Set Plots
 par(mfrow = c(4,5))
 
 #Maps of Observed Counts
-
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$colors.obs[,1][colSeq])
+    col=rrcolors$colors.obs[,1][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
 title(main="Obs - 1990")
 
 #Maps of AIC Path
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),
-    fill=TRUE,col=rrcolors$color.qaic[,1][colSeq])
+    col=rrcolors$color.qaic[,1][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
 title(main="AIC - 1990")
 
 #Maps of AICc Path
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qaicc[,1][colSeq])
+    col=rrcolors$color.qaicc[,1][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
 title(main="AICc - 1990")
 
 #Maps of BIC Path
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    fill=TRUE,col=rrcolors$color.qbic[,1][colSeq])
+    col=rrcolors$color.qbic[,1][colSeq], fill=TRUE, lty=0)
+map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
+    fill=FALSE, add=TRUE)
 title(main="BIC - 1990")
 
 
