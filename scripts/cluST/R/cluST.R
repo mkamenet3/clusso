@@ -407,6 +407,23 @@ colormapping <- function(riskratios,Time) {
     color.qaicc <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRaicc[,i],2)))/log(4)))
     return(list(colors.obs = color.obs, color.qbic = color.qbic, color.qaic = color.qaic, color.qaicc = color.qaicc)) 
 }
+
+#'scale
+#'
+#'This function standardizes the fitted values by the sum of the observed/the sum of the expected within each time period. Inputs should all be in vector form.
+#'The function handles standardizing within time period as long.
+#'@param Y.vec vector of observed (in vector format)
+#'@param out.sim simulated data based on the simulate(out) step above #TODO integrate this into this step above and streamline into a single function
+#'@param nsim number of simulations performed in out.sim
+#'@param Time number of time periods
+#'@export
+scale <- function(Y.vec, out.sim, nsim,Time){
+    std <- lapply(1:nsim, function(i) sapply(1:Time, function(j) 
+        (matrix(out.sim[[i]]$fitted.values,ncol=Time)[,j])*(sum(matrix(Y.vec,ncol=Time)[,j])/sum(matrix(out.sim[[i]]$fitted.values,ncol=Time)[,j]))))
+    E0 <- lapply(1:nsim, function(i) as.vector(std[[i]])) 
+    return(E0)
+}
+
 # 
 # #'probmap
 # #'

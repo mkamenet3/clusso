@@ -111,8 +111,8 @@ out.sim <- lapply(1:nsim, function(i) glm.nb(YSIM[,i] ~ 1 + as.factor(JBCinit$Ye
                   link=log,control=glm.control(maxit=10000)))
 
 #Set initial expected to the fitted values and standardize
-E0 <- lapply(1:nsim, function(i) sapply(1:Time, function(j) 
-    (matrix(out.sim[[i]]$fitted.values,ncol=Time)[,j])*(sum(matrix(Y.vec,ncol=Time)[,j])/sum(matrix(out.sim[[i]]$fitted.values,ncol=Time)[,j]))))
+E0 <- scale(Y.vec, out.sim, nsim, Time)
+
 JBCinit.sim <- list(Period = Period, E0=E0, E0_fit=E0_fit, Y.vec=Y.vec)
 
 ####################################################
@@ -122,7 +122,7 @@ potentialClusters <- max(clusters$center)
 numCenters <- max(clusters$center)
 
 JBCresults.sim <- spacetimeLasso.sim(potentialClusters, clusters, numCenters,
-                           JBCinit.sim, Time, spacetime=TRUE, nsim, YSIMT)
+                           JBCinit.sim, Time, spacetime=TRUE, nsim, YSIM)
 
 save(JBCresults.sim, file="simR2_center100_r18.RData")
 ####################################################
