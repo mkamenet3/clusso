@@ -58,6 +58,9 @@ nsim=100
 n <- 208
 Time <- 5
 
+#Set theta parameter
+thetainit = 1000
+
 #Set parameters of your fake cluster
 center <- 100
 r_list <- 18
@@ -71,14 +74,15 @@ clusters <- clustersDF(x1,y1,rMax, utm=TRUE, length(x1))
 #Set initial expected and observed
 JBCinit <- setVectors(dframe$period, dframe$expdeath, dframe$death, Time=5, byrow=TRUE)
 
+
 #Adjust for observed given expected counts as coming from negative binomial distribution
-outinit <- glm.nb(JBCinit$Y.vec ~1)
-out <- glm.nb(JBCinit$Y.vec ~ 1 + as.factor(JBCinit$Year)  + offset(log(JBCinit$E0)), init.theta = outinit$theta, 
+out <- glm.nb(JBCinit$Y.vec ~ 1 + as.factor(JBCinit$Year)  + offset(log(JBCinit$E0)), init.theta = thetainit, 
               link=log,control=glm.control(maxit=10000))
+E0_fit <- out$fitted.values
 
 #Set initial expected to the fitted values
-E0 <- out$fitted
-
+#E0 <- out$fitted
+E0_0 <- JBCinit$E0
 ####################################################
 #Create Fake Clusters
 ####################################################
@@ -86,24 +90,41 @@ tmp <- clusters[clusters$center==center,]
 cluster <- tmp[(tmp$r <= r_list),]
 rr = matrix(1, nrow=n, ncol=Time)
 rr[cluster$last, cluster_end:Time] = rr.ratio
-expect_fake <- as.vector(rr)*E0
+expect_fake <- as.vector(rr)*E0_0
 
 
 #Set Vectors
 Y.vec <- JBCinit$Y.vec
 Period <- JBCinit$Year
 
-JBCinit.sim <- cbind.data.frame(Period, E0=expect_fake)
+
 
 ####################################################
 #Sim Response
 ####################################################
-YSIMT <- NULL
-for(i in 1:nsim){
-    YSIMT_i <- rnegbin(n*Time,expect_fake, theta= outinit$theta)
-    YSIMT <- cbind(YSIMT, YSIMT_i)
-}
+# YSIMT <- NULL
+# for(i in 1:nsim){
+#     YSIMT_i <- rnegbin(expect_fake, theta=thetainit)
+#     #YSIMT_i <- round(jitter(rnegbin(expect_fake, theta= thetainit)))
+#     YSIMT <- cbind(YSIMT, YSIMT_i)
+# }
+# #YSIMT[which(YSIMT <0)] <-0
+# 
+# head(rnegbin(expect_fake, theta=thetainit))
 
+####################################################
+#Refit E0 for each simulation and scale
+####################################################
+#Adjust for observed given expected counts as coming from negative binomial distribution
+YSIM <- simulate(out, nsim=nsim)
+
+out.sim <- lapply(1:nsim, function(i) glm.nb(YSIM[,i] ~ 1 + as.factor(JBCinit$Year)  + offset(log(expect_fake)), init.theta = thetainit, 
+                  link=log,control=glm.control(maxit=10000)))
+
+
+#Set initial expected to the fitted values
+E0 <- lapply(1:nsim, function(i) out.sim[[i]]$fitted.values)
+JBCinit.sim <- list(Period = Period, E0=E0, E0_fit=E0_fit, Y.vec=Y.vec)
 
 ####################################################
 #Set up and Run Model
@@ -114,13 +135,13 @@ numCenters <- max(clusters$center)
 JBCresults.sim <- spacetimeLasso.sim(potentialClusters, clusters, numCenters,
                            JBCinit.sim, Time, spacetime=TRUE, nsim, YSIMT)
 
-save(JBCresults.sim, file="simR2_center100_r20.RData")
+save(JBCresults.sim, file="simR2_center100_r18.RData")
 ####################################################
 #Risk Ratios
 ####################################################
 ##Calculate average observed for simulated
 ##RR calculations
-riskratios <- setRR(JBCresults.sim, JBCinit, Time, JBCinit.sim)
+riskratios <- setRR(JBCresults.sim, JBCinit.sim, Time, sim=TRUE)
 
 rrcolors <- colormapping(riskratios,Time)
 
@@ -273,3 +294,127 @@ text(355,4120,'Period 5 - QBIC',cex=1.00)
 
 #Turn off pdf development
 dev.off()
+
+####################################################
+#Make Probability Maps
+####################################################
+indx <- which(rr !=1)
+
+rr.sim <- lapply(1:nsim, function(i) JBCresults.sim[[13]][[i]]/JBCinit$E0)
+
+#create empty
+prob.sim <- lapply(1:nsim, function(x) matrix(0, n*Time))
+
+#by time period extract background rate
+alpha <- lapply(1:nsim, function(i) lapply(1:Time, function(k) sort(table(matrix(rr.sim[[i]], ncol=Time)[,k]),
+                                                                    decreasing=TRUE)[1]))
+
+probmap <- function(indx, rr.sim, alpha, rr.ratio){
+    if (rr.sim[[1]][indx[i]] >= rr.ratio*as.numeric(attributes(alpha[[1]][[1]])[[1]])) {
+        prob.sim[[1]][indx[i]] <- 1
+        #print("yes")
+        print(cbind(rr.ratio*as.numeric(attributes(alpha[[1]][[1]])[[1]]), rr.sim[[1]][indx[[i]]])) 
+        #return(prob.sim[[1]])
+    }
+    else {
+        prob.sim[[1]][indx[i]] <- 0
+        #return(prob.sim[[1]])
+    }
+    return(prob.sim[[1]])
+}
+probmap(indx)
+test <- sapply(1:length(indx), function(i) probmap(indx[i], rr.sim, alpha, rr.ratio))
+#############################
+prob.sim <- lapply(1:nsim, function(x) matrix(0, n*Time))
+for(j in 1:length(prob.sim)){
+    for(i in 1:1040){
+        #if (rr.sim[[j]][indx[i]] >= rr.ratio*as.numeric(attributes(alpha[[j]][[1]])[[1]])) {
+        if (rr.sim[[j]][[i]] >= rr.ratio*as.numeric(attributes(alpha[[j]][[1]])[[1]])) {
+            prob.sim[[j]][[i]] <- 1
+            #print("yes")
+            #print(cbind(rr.ratio*as.numeric(attributes(alpha[[j]][[1]])[[1]]), rr.sim[[j]][indx[[i]]])) 
+            #return(prob.sim[[1]])
+        }
+        else {
+            prob.sim[[j]][[i]] <- 0
+            #return(prob.sim[[1]])
+        }
+    }
+}
+myprobs <- Reduce("+", prob.sim)/length(prob.sim)
+
+
+#####################
+#any 1's'
+
+
+
+
+
+for(j in 1:length(prob.sim)){
+    for(i in 1:length(indx)){
+        print(indx[i])
+        if (rr.sim[[j]][indx[i]] >= rr.ratio*as.numeric(attributes(alpha[[j]][[1]])[[1]])) {
+            prob.sim[[j]][indx[i]] <- 1
+            #print("yes")
+            print(cbind(rr.ratio*as.numeric(attributes(alpha[[j]][[1]])[[1]]), rr.sim[[j]][indx[[i]]])) 
+            #return(prob.sim[[1]])
+        }
+        else {
+            prob.sim[[j]][indx[i]] <- 0
+            #return(prob.sim[[1]])
+        }
+    }
+}
+myprobs <- Reduce("+", prob.sim)/length(prob.sim)
+
+color.obs <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(matrix(E.qbic/E0_0, ncol=Time)[,i],2)))/log(4)))
+
+pdf("figures/simulations/probmap.pdf", height=11, width=10)
+
+
+par(fig=c(0,.2,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=color.obs[,1],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 1',cex=1.00)
+
+par(fig=c(0.2,.4,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=color.obs[,2],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 2',cex=1.00)
+
+par(fig=c(0.4,.6,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=color.obs[,3],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 3',cex=1.00)
+
+par(fig=c(0.6,.8,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=color.obs[,4],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 4',cex=1.00)
+
+par(fig=c(0.8,1,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=color.obs[,5],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 5',cex=1.00)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
