@@ -51,6 +51,9 @@ y1=dframe2$utmy/1000
 rMax <- 30 
 Time=5  
 
+#Set theta parameter
+thetainit = 1000
+
 #Set number of simulations
 nsim=100
 
@@ -72,12 +75,12 @@ clusters <- clustersDF(x1,y1,rMax, utm=TRUE, length(x1))
 JBCinit <- setVectors(dframe$period, dframe$expdeath, dframe$death, Time=5, byrow=TRUE)
 
 #Adjust for observed given expected counts as coming from negative binomial distribution
-outinit <- glm.nb(JBCinit$Y.vec ~1)
-out <- glm.nb(JBCinit$Y.vec ~ 1 + as.factor(JBCinit$Year)  + offset(log(JBCinit$E0)), init.theta = outinit$theta, 
-              link=log,control=glm.control(maxit=10000))
+out <- glm.nb(JBCinit$Y.vec ~ 1 + as.factor(JBCinit$Year)  + offset(log(JBCinit$E0)), init.theta = thetainit, 
+              link=log,control=glm.control(maxit=1000000))
+E0_fit <- out$fitted.values
 
 #Set initial expected to the fitted values
-E0 <- out$fitted
+E0_0 <- JBCinit$E0
 
 ####################################################
 #Create Fake Clusters
@@ -86,23 +89,30 @@ tmp <- clusters[clusters$center==center,]
 cluster <- tmp[(tmp$r <= r_list),]
 rr = matrix(1, nrow=n, ncol=Time)
 rr[cluster$last, cluster_end:Time] = rr.ratio
-expect_fake <- as.vector(rr)*E0
+expect_fake <- as.vector(rr)*E0_0
 
 
 #Set Vectors
 Y.vec <- JBCinit$Y.vec
 Period <- JBCinit$Year
 
-JBCinit.sim <- cbind.data.frame(Period, E0=expect_fake)
-
 ####################################################
 #Sim Response
 ####################################################
-YSIMT <- NULL
-for(i in 1:nsim){
-    YSIMT_i <- rnegbin(n*Time,expect_fake, theta= outinit$theta)
-    YSIMT <- cbind(YSIMT, YSIMT_i)
-}
+YSIM <- simulate(out, nsim=nsim)
+
+
+####################################################
+#Refit E0 for each simulation and scale
+####################################################
+#Adjust for observed given expected counts as coming from negative binomial distribution
+out.sim <- lapply(1:nsim, function(i) glm.nb(YSIM[,i] ~ 1 + as.factor(JBCinit$Year)  + offset(log(expect_fake)), init.theta = thetainit, 
+                                             link=log,control=glm.control(maxit=1000000, epsilon=1e-2))
+
+#Set initial expected to the fitted values and standardize
+E0 <- scale(Y.vec, out.sim, nsim, Time)
+
+JBCinit.sim <- list(Period = Period, E0=E0, E0_fit=E0_fit, Y.vec=Y.vec)
 
 
 ####################################################
@@ -112,7 +122,7 @@ potentialClusters <- max(clusters$center)
 numCenters <- max(clusters$center)
 
 JBCresults.sim <- spacetimeLasso.sim(potentialClusters, clusters, numCenters,
-                                     JBCinit.sim, Time, spacetime=TRUE, nsim, YSIMT)
+                                     JBCinit.sim, Time, spacetime=TRUE, nsim, YSIM)
 
 save(JBCresults.sim, file="SimulationOutput//sim_null.RData")
 ####################################################
@@ -120,7 +130,7 @@ save(JBCresults.sim, file="SimulationOutput//sim_null.RData")
 ####################################################
 ##Calculate average observed for simulated
 ##RR calculations
-riskratios <- setRR(JBCresults.sim, JBCinit, Time, JBCinit.sim)
+riskratios <- setRR(JBCresults.sim, JBCinit.sim, Time, sim=TRUE)
 
 rrcolors <- colormapping(riskratios,Time)
 
