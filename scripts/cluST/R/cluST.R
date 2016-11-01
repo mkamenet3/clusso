@@ -292,18 +292,20 @@ spacetimeLasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spa
     else{
         sparseMAT <- spaceMat(clusters, numCenters)
     }
-    Ex <- vectors$E0
+    Ex <- vectors[[2]]
     Yx <- YSIM
-    lasso <- lapply(1:nsim, function(i) glmnet(sparseMAT, Yx[,i], family=("poisson"), alpha=1, offset=log(Ex)))
+    Period <- vectors[[1]]
+    lasso <- lapply(1:nsim, function(i) glmnet(sparseMAT, Yx[,i], family=("poisson"), alpha=1, offset=log(Ex[[i]])))
     coefs.lasso.all <- lapply(1:nsim, function(i) coef(lasso[[i]]))
     intercept <- rep(1, dim(sparseMAT)[1])
     sparseMAT <- cBind(intercept, sparseMAT)
     xbetaPath<- lapply(1:nsim, function(i) sparseMAT%*%coefs.lasso.all[[i]])
-    mu <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), function(i) Ex * exp(xbetaPath[[j]][,i])))    
+    mu <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), 
+                                            function(i) Ex[[j]] * exp(xbetaPath[[j]][,i])))    
     loglike <- lapply(1:nsim, function(k) sapply(1:length(lasso[[k]]$lambda), 
                                                  function(i) sum(dpoisson(Yx[,k], mu[[k]][,i],log=TRUE))))
     K <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), function(i) length(unique(xbetaPath[[j]][,i]))))
-    offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ offset(log(Ex)),family=poisson))
+    offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ 1 + as.factor(vectors$Period) +offset(log(Ex[[i]])),family=poisson))
     overdisp <- lapply(1:nsim, function(i) myoverdisp(offset_reg[[i]]))
     
     if(spacetime==TRUE){
@@ -313,6 +315,7 @@ spacetimeLasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spa
         select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))
         E.qbic <- Reduce("+", select_mu.qbic)/length(select_mu.qbic)
         
+               
         #QAIC
         PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]]) - K[[i]])
         select.qaic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaic[[i]])))
@@ -344,8 +347,10 @@ spacetimeLasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spa
         select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
         E.qaicc <- Reduce("+", select_mu.qaicc)/length(select_mu.qaicc)
     }
-    return(list(E.qbic, E.qaic, E.qaicc,Ex, mu, Yx, PLL.qbic, PLL.qaic, PLL.qaicc, select.qbic, select.qaic, select.qaicc,
-                select_mu.qbic, select_mu.qaic, select_mu.qaicc, xbetaPath, coefs.lasso.all))    
+    return(list(nsim = nsim, E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc,Ex = Ex,mu = mu, Yx = Yx, PLL.qbic = PLL.qbic, 
+                PLL.qaic = PLL.qaic, PLL.qaicc = PLL.qaicc, select.qbic = select.qbic, select.qaic = select.qaic, 
+                select.qaicc = select.qaicc, select_mu.qbic = select_mu.qbic, select_mu.qaic = select_mu.qaic, 
+                select_mu.qaicc = select_mu.qaicc, xbetaPath = xbetaPath, coefs.lasso.all = coefs.lasso.all))    
 }
 
 
@@ -359,18 +364,22 @@ spacetimeLasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spa
 #' @return This returns a list of the risk ratios (observed over expected) as determined by 1) pure observed/expected counts,
 #' 2) observed based on QBIC path/expected; 3) observed based on QAIC path/expected; 4) observed based on QAICc path/expected.
 #' @export
-setRR <- function(lassoresult, vectors, Time, vectors.sim){
-    if(missing(vectors.sim)){
+setRR <- function(lassoresult, vectors, Time, sim=FALSE){
+    if(sim==FALSE){
         RRobs <- matrix(as.vector(vectors$Y.vec)/as.vector(vectors$E0),ncol=Time)
-        RRbic <- matrix(lassoresult[[1]]/as.vector(vectors$E0),ncol=Time)
-        RRaic <- matrix(lassoresult[[2]]/as.vector(vectors$E0),ncol=Time)
-        RRaicc <- matrix(lassoresult[[3]]/as.vector(vectors$E0),ncol=Time)
+        RRbic <- matrix(lassoresult$E.qbic/as.vector(vectors$E0),ncol=Time)
+        RRaic <- matrix(lassoresult$E.qaic/as.vector(vectors$E0),ncol=Time)
+        RRaicc <- matrix(lassoresult$E.qaicc/as.vector(vectors$E0),ncol=Time)
+        print("Relative risks from observed data")
     }
     else{
-        RRobs <- matrix(as.vector(vectors.sim$E0)/as.vector(vectors$E0),ncol=Time)
-        RRbic <- matrix(lassoresult[[1]]/as.vector(vectors$E0),ncol=Time)
-        RRaic <- matrix(lassoresult[[2]]/as.vector(vectors$E0),ncol=Time)
-        RRaicc <- matrix(lassoresult[[3]]/as.vector(vectors$E0),ncol=Time)    
+        E0_avg <- Reduce("+", vectors$E0)/length(vectors$E0)
+        #RRobs <- matrix(as.vector(vectors.sim$E0)/as.vector(vectors$E0),ncol=Time)
+        RRobs <- matrix(as.vector(E0_avg)/as.vector(vectors$E0_fit),ncol=Time)
+        RRbic <- matrix(lassoresult$E.qbic/as.vector(vectors$E0_fit),ncol=Time)
+        RRaic <- matrix(lassoresult$E.qaic/as.vector(vectors$E0_fit),ncol=Time)
+        RRaicc <- matrix(lassoresult$E.qaicc/as.vector(vectors$E0_fit),ncol=Time) 
+        print("Relative risks from simulated data")
     }
     return(list(RRobs=RRobs, RRbic=RRbic, RRaic=RRaic, RRaicc=RRaicc))  
 }
@@ -385,7 +394,7 @@ redblue=function(x) {
 }
 
 
-#' redblue
+#' colormapping
 #' 
 #' This function establishes the spread of reds and blues for the risk ratios to be mapped to. Higher risk ratios will be deeper red colors and lower risk ratios will be deeper blue colors.
 #' @param x this will be the risk ratios shrunk to be on the scale of half risk to twice the risk as end points.
@@ -398,16 +407,13 @@ colormapping <- function(riskratios,Time) {
     color.qaicc <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRaicc[,i],2)))/log(4)))
     return(list(colors.obs = color.obs, color.qbic = color.qbic, color.qaic = color.qaic, color.qaicc = color.qaicc)) 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
+# 
+# #'probmap
+# #'
+# #'This function will create a probability map based on simulation data
+# #'@param YSIM matrix of simulated observed values
+# #'@param spacetimeLassosim object from spacetimeLasso.sim
+# #'@return returns vector which calculated the number of time the cluster was correctly identified out of the simulations
+# #'@export
+# probmap <- function()
+# 
