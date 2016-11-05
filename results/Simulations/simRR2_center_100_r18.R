@@ -20,7 +20,6 @@ library("geosphere")
 library(Matrix)
 library(glmnet)
 library(maps)
-library(truncnorm)
 
 #Source .cpp files
 sourceCpp("scripts/cluST/src/maxcol.cpp")
@@ -36,7 +35,7 @@ source("scripts/cluST//R//cluST.R")
 ####################################################
 #Create Some Fake Data
 ####################################################
-set.seed(1032016)
+set.seed(11042016)
 
 #Load Data
 dframe1 <- read.csv("data/JBC/jap.breast.F.9.10.11.csv")
@@ -62,7 +61,7 @@ Time <- 5
 thetainit = 1000
 
 #Set parameters of your fake cluster
-center <- 100
+center <- 50
 r_list <- 18
 cluster_end <- 3
 rr.ratio<- 2
@@ -123,15 +122,15 @@ numCenters <- max(clusters$center)
 
 JBCresults.sim <- spacetimeLasso.sim(potentialClusters, clusters, numCenters,
                            JBCinit.sim, Time, spacetime=TRUE, nsim, YSIM)
-save(JBCresults.sim, file="SimulationOutput//simR2_center100_r18.RData")
+save(JBCresults.sim, file="SimulationOutput//simR2_center50_r18.RData")
 ####################################################
 #Risk Ratios
 ####################################################
 ##Calculate average observed for simulated
 ##RR calculations
-riskratios <- setRR(JBCresults.sim, JBCinit.sim, Time, sim=TRUE)
-
+riskratios <- getRR(JBCresults.sim, JBCinit.sim, Time, sim=TRUE)
 rrcolors <- colormapping(riskratios,Time)
+
 
 
 

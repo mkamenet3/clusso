@@ -214,15 +214,19 @@ spacetimeLasso <- function(potClus, clusters, numCenters, vectors, Time, spaceti
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
+    print("Creating space-time matrix")
     if(spacetime==TRUE){
         sparseMAT <- spaceTimeMat(clusters, numCenters, Time)
     }
     else{
         sparseMAT <- spaceMat(clusters, numCenters)
     }
+    print("Space-time matrix created")
     Ex <- vectors$E0
     Yx <- vectors$Y.vec
+    print("Running Lasso - stay tuned")
     lasso <- glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex))
+    print("Lasso complete - extracting estimates and paths")
     coefs.lasso.all <- coef(lasso)
     intercept <- rep(1, dim(sparseMAT)[1])
     sparseMAT <- cBind(intercept, sparseMAT)
@@ -233,7 +237,7 @@ spacetimeLasso <- function(potClus, clusters, numCenters, vectors, Time, spaceti
     
     offset_reg <- glm(Yx ~ offset(log(Ex)),family=poisson)
     overdisp <- myoverdisp(offset_reg)
-    
+    print("Selecting best paths")
     if(spacetime==TRUE){
         #QBIC
         PLL.qbic  <- (loglike/overdisp)-log(n*Time)/2*K
@@ -266,6 +270,7 @@ spacetimeLasso <- function(potClus, clusters, numCenters, vectors, Time, spaceti
         qaiccMax <- which.max(PLL.qaicc)
         E.qaicc <- mu[,qaiccMax]
     }
+    print("Returning results")
     return(list(E.qbic, E.qaic, E.qaicc,Ex, Yx, lasso, K,n))    
 }
 
@@ -291,16 +296,20 @@ spacetimeLasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spa
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
+    print("Creating space-time matrix")
     if(spacetime==TRUE){
         sparseMAT <- spaceTimeMat(clusters, numCenters, Time)
     }
     else{
         sparseMAT <- spaceMat(clusters, numCenters)
     }
+    print("Space-time matrix created")
     Ex <- vectors[[2]]
     Yx <- YSIM
     Period <- vectors[[1]]
+    print("Running Lasso - stay tuned")
     lasso <- lapply(1:nsim, function(i) glmnet(sparseMAT, Yx[,i], family=("poisson"), alpha=1, offset=log(Ex[[i]])))
+    print("Lasso complete - extracting estimates and paths")
     coefs.lasso.all <- lapply(1:nsim, function(i) coef(lasso[[i]]))
     intercept <- rep(1, dim(sparseMAT)[1])
     sparseMAT <- cBind(intercept, sparseMAT)
@@ -316,7 +325,7 @@ spacetimeLasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spa
     K <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), function(i) length(unique(xbetaPath[[j]][,i]))))
     offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ 1 + as.factor(vectors$Period) +offset(log(Ex[[i]])),family=poisson))
     overdisp <- lapply(1:nsim, function(i) myoverdisp(offset_reg[[i]]))
-    
+    print("Selecting best paths")
     if(spacetime==TRUE){
         #QBIC
         PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]])-log(n*Time)/2*K[[i]])
@@ -398,6 +407,7 @@ spacetimeLasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spa
             E.qaicc <- Reduce("+", select_mu.qaicc)/nsim
         }        
     }
+    print("Returning results")
     return(list(nsim = nsim, E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc,Ex = Ex,mu = mu, Yx = Yx, PLL.qbic = PLL.qbic, 
                 PLL.qaic = PLL.qaic, PLL.qaicc = PLL.qaicc, select.qbic = select.qbic, select.qaic = select.qaic, 
                 select.qaicc = select.qaicc, select_mu.qbic = select_mu.qbic, select_mu.qaic = select_mu.qaic, 
@@ -448,13 +458,13 @@ setRR <- function(lassoresult, vectors, Time, sim=FALSE){
 #' @return This returns a list of the risk ratios (observed over expected) as determined by 1) pure observed/expected counts,
 #' 2) observed based on QBIC path/expected; 3) observed based on QAIC path/expected; 4) observed based on QAICc path/expected.
 #' @export
-getRR <- function(JBCresults.sim, JBCinit.sim, Time, sim=TRUE){
-    E0_avg <- Reduce("+", JBCinit.sim$E0)/length(JBCinit.sim$E0)
-    RRobs <- matrix(as.vector(E0_avg)/as.vector(JBCinit.sim$E0_fit),ncol=Time)
+getRR <- function(lassoresult,vectors, Time, sim=TRUE){
+    E0_avg <- Reduce("+", vectors$E0)/length(vectors$E0)
+    RRobs <- matrix(as.vector(E0_avg)/as.vector(vectors$E0_fit),ncol=Time)
     print("Relative risk ratios from simulated data - average RR over nsim")
-    return(list(RRbic=matrix(JBCresults.sim$E.qbic,ncol=Time),
-                RRaic=matrix(JBCresults.sim$E.qaic,ncol=Time),
-                RRaicc=matrix(JBCresults.sim$E.qaicc,ncol=Time),
+    return(list(RRbic=matrix(lassoresult$E.qbic,ncol=Time),
+                RRaic=matrix(lassoresult$E.qaic,ncol=Time),
+                RRaicc=matrix(lassoresult$E.qaicc,ncol=Time),
                 RRobs= RRobs))
 }
 
