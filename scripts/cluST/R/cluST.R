@@ -313,20 +313,23 @@ spacetimeLasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spa
         PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]])-log(n*Time)/2*K[[i]])
         select.qbic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qbic[[i]])))
         select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))
-        E.qbic <- Reduce("+", select_mu.qbic)/length(select_mu.qbic)
+        select_muRR.qbic <- lapply(1:nsim, function(i) select_mu.qbic[[i]]/vectors[[3]])
+        E.qbic <- Reduce("+", select_muRR.qbic)/length(select_mu.qbic)
         
                
         #QAIC
         PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]]) - K[[i]])
         select.qaic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaic[[i]])))
         select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
-        E.qaic <- Reduce("+", select_mu.qaic)/length(select_mu.qaic)
+        select_muRR.qaic <- lapply(1:nsim, function(i) select_mu.qaic[[i]]/vectors[[3]])
+        E.qaic <- Reduce("+", select_muRR.qaic)/length(select_mu.qaic)
         
         #QAICc
         PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]])- ((K[[i]]*n*Time)/(n*Time-K[[i]]-1)))
         select.qaicc <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaicc[[i]])))
         select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
-        E.qaicc <- Reduce("+", select_mu.qaicc)/length(select_mu.qaicc)
+        select_muRR.qaicc <- lapply(1:nsim, function(i) select_mu.qaicc[[i]]/vectors[[3]])
+        E.qaicc <- Reduce("+", select_muRR.qaicc)/length(select_mu.qaicc)
     }
     else{
         #BIC
