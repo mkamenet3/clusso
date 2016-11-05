@@ -281,8 +281,13 @@ spacetimeLasso <- function(potClus, clusters, numCenters, vectors, Time, spaceti
 #' @param spacetime indicator of whether the cluster detection method should be run on all space-time clusters(default) or on only the potential space clusters.
 #' @return This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
 #' a list of observed counts (Yx), the lasso object, a list of K values (number of unique values in each decision path), and n (length of unique centers in the clusters dataframe)
+#' @param nsim number of simulations
+#' @param YSIM vector of simulated observed counts
+#' @param getRR default is TRUE. Determines how relative risk is calculated. If getRR=TRUE, then relative risk is first calculated in each simulation and averaged over simulations.
+#' If getRR is FALSE, then relative risk will come from averaging the expected counts from each of the Lasso results by the number of simulations. This should then
+#' by used in conjunction with the setRR function to get the relative risk. TODO integrate this into one flow.
 #' @export
-spacetimeLasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spacetime=TRUE,nsim,YSIM){
+spacetimeLasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spacetime=TRUE,nsim,YSIM, getRR=TRUE){
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
@@ -301,7 +306,11 @@ spacetimeLasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spa
     sparseMAT <- cBind(intercept, sparseMAT)
     xbetaPath<- lapply(1:nsim, function(i) sparseMAT%*%coefs.lasso.all[[i]])
     mu <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), 
-                                            function(i) Ex[[j]] * exp(xbetaPath[[j]][,i])))    
+                                            function(i) exp(xbetaPath[[j]][,i])))    
+    if(getRR==FALSE){
+        mu <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), 
+                                                function(i) Ex[[i]]*exp(xbetaPath[[j]][,i])))    
+    }
     loglike <- lapply(1:nsim, function(k) sapply(1:length(lasso[[k]]$lambda), 
                                                  function(i) sum(dpoisson(Yx[,k], mu[[k]][,i],log=TRUE))))
     K <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), function(i) length(unique(xbetaPath[[j]][,i]))))
@@ -312,43 +321,82 @@ spacetimeLasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spa
         #QBIC
         PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]])-log(n*Time)/2*K[[i]])
         select.qbic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qbic[[i]])))
-        select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))
-        select_muRR.qbic <- lapply(1:nsim, function(i) select_mu.qbic[[i]]/vectors[[3]])
-        E.qbic <- Reduce("+", select_muRR.qbic)/length(select_mu.qbic)
-        
+        if(getRR==FALSE){
+            select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))    
+            E.qbic <- Reduce("+", select_mu.qbic)/nsim
+        }
+        else{
+            select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]*Ex[[i]]))    
+            select_muRR.qbic <- lapply(1:nsim, function(i) select_mu.qbic[[i]]/vectors[[3]])
+            E.qbic <- Reduce("+", select_muRR.qbic)/nsim   
+        }
                
         #QAIC
         PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]]) - K[[i]])
         select.qaic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaic[[i]])))
-        select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
-        select_muRR.qaic <- lapply(1:nsim, function(i) select_mu.qaic[[i]]/vectors[[3]])
-        E.qaic <- Reduce("+", select_muRR.qaic)/length(select_mu.qaic)
+        if(getRR==FALSE){
+            select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
+            E.qaic <- Reduce("+", select_mu.qaic)/nsim    
+        }
+        else{
+            select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]*Ex[[i]]))
+            select_muRR.qaic <- lapply(1:nsim, function(i) select_mu.qaic[[i]]/vectors[[3]])
+            E.qaic <- Reduce("+", select_muRR.qaic)/nsim  
+        }
         
         #QAICc
         PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]])- ((K[[i]]*n*Time)/(n*Time-K[[i]]-1)))
         select.qaicc <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaicc[[i]])))
-        select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
-        select_muRR.qaicc <- lapply(1:nsim, function(i) select_mu.qaicc[[i]]/vectors[[3]])
-        E.qaicc <- Reduce("+", select_muRR.qaicc)/length(select_mu.qaicc)
+        if(getRR==FALSE){
+            select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
+            E.qaicc <- Reduce("+", select_mu.qaicc)/nsim    
+        }
+        else{
+            select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]*Ex[[i]]))
+            select_muRR.qaicc <- lapply(1:nsim, function(i) select_mu.qaicc[[i]]/vectors[[3]])
+            E.qaicc <- Reduce("+", select_muRR.qaicc)/nsim  
+        }
+        
     }
     else{
         #BIC
         PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]])-log(n*Time)/2*K[[i]])
         select.qbic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qbic[[i]])))
-        select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))
-        E.qbic <- Reduce("+", select_mu.qbic)/length(select_mu.qbic)
+        if(getRR==FALSE){
+            select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))    
+            E.qbic <- Reduce("+", select_mu.qbic)/nsim    
+        }
+        else{
+            select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]*Ex[[i]]))    
+            select_muRR.qbic <- lapply(1:nsim, function(i) select_mu.qbic[[i]]/vectors[[3]])
+            E.qbic <- Reduce("+", select_mu.qbic)/nsim    
+        }
         
         #AIC
         PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]) - K[[i]])
         select.qaic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaic[[i]])))
-        select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
-        E.qaic <- Reduce("+", select_mu.qaic)/length(select_mu.qaic)
+        if(getRR==FALSE){
+            select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
+            E.qaic <- Reduce("+", select_mu.qaic)/nsim
+        }
+        else{
+            select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]*Ex[[i]]))
+            select_muRR.qaic <- lapply(1:nsim, function(i) select_mu.qaic[[i]]/vectors[[3]])
+            E.qaic <- Reduce("+", select_mu.qaic)/nsim    
+        }        
         
         #AICc
         PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]])- ((K[[i]]*n*Time)/(n*Time-K[[i]]-1)))
         select.qaicc <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaicc[[i]])))
-        select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
-        E.qaicc <- Reduce("+", select_mu.qaicc)/length(select_mu.qaicc)
+        if(getRR==FALSE){
+            select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
+            E.qaicc <- Reduce("+", select_mu.qaicc)/nsim
+        }
+        else{
+            select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]*Ex[[i]]))
+            select_muRR.qaicc <- lapply(1:nsim, function(i) select_mu.qaicc[[i]]/vectors[[3]])
+            E.qaicc <- Reduce("+", select_mu.qaicc)/nsim
+        }        
     }
     return(list(nsim = nsim, E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc,Ex = Ex,mu = mu, Yx = Yx, PLL.qbic = PLL.qbic, 
                 PLL.qaic = PLL.qaic, PLL.qaicc = PLL.qaicc, select.qbic = select.qbic, select.qaic = select.qaic, 
@@ -377,7 +425,6 @@ setRR <- function(lassoresult, vectors, Time, sim=FALSE){
     }
     else{
         E0_avg <- Reduce("+", vectors$E0)/length(vectors$E0)
-        #RRobs <- matrix(as.vector(vectors.sim$E0)/as.vector(vectors$E0),ncol=Time)
         RRobs <- matrix(as.vector(E0_avg)/as.vector(vectors$E0_fit),ncol=Time)
         RRbic <- matrix(lassoresult$E.qbic/as.vector(vectors$E0_fit),ncol=Time)
         RRaic <- matrix(lassoresult$E.qaic/as.vector(vectors$E0_fit),ncol=Time)
@@ -385,6 +432,30 @@ setRR <- function(lassoresult, vectors, Time, sim=FALSE){
         print("Relative risks from simulated data")
     }
     return(list(RRobs=RRobs, RRbic=RRbic, RRaic=RRaic, RRaicc=RRaicc))  
+}
+
+
+#' getRR
+#' 
+#' This function will extract the relative risk ratios as determined by observed counts, QBIC, QAIC, and QAICc, respectively. This method determines the 
+#' relative risk by averageing the relative risk in each simulation over the number of simulations. This is in contrast to $setRR$ where the expected counts
+#' are first average over the number of simulations and then we determine the relative risk to the initial expected counts. Both methods return the same results,
+#' however this method returns a smoother background ratio that does not vary across time periods as much
+#' @param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso function
+#' @param vectors dataframe of initial vectors of the observed and expected counts
+#' @param Time number of time period
+#' @param sim default is TRUE. Signals whether these values are to be extracted from a simulated model or real data.
+#' @return This returns a list of the risk ratios (observed over expected) as determined by 1) pure observed/expected counts,
+#' 2) observed based on QBIC path/expected; 3) observed based on QAIC path/expected; 4) observed based on QAICc path/expected.
+#' @export
+getRR <- function(JBCresults.sim, JBCinit.sim, Time, sim=TRUE){
+    E0_avg <- Reduce("+", JBCinit.sim$E0)/length(JBCinit.sim$E0)
+    RRobs <- matrix(as.vector(E0_avg)/as.vector(JBCinit.sim$E0_fit),ncol=Time)
+    print("Relative risk ratios from simulated data - average RR over nsim")
+    return(list(RRbic=matrix(JBCresults.sim$E.qbic,ncol=Time),
+                RRaic=matrix(JBCresults.sim$E.qaic,ncol=Time),
+                RRaicc=matrix(JBCresults.sim$E.qaicc,ncol=Time),
+                RRobs= RRobs))
 }
 
 #' redblue
