@@ -508,13 +508,39 @@ scale <- function(Y.vec, out.sim, nsim,Time){
     return(E0)
 }
 
-# 
-# #'probmap
-# #'
-# #'This function will create a probability map based on simulation data
-# #'@param YSIM matrix of simulated observed values
-# #'@param spacetimeLassosim object from spacetimeLasso.sim
-# #'@return returns vector which calculated the number of time the cluster was correctly identified out of the simulations
-# #'@export
-# probmap <- function()
-# 
+
+#'probmap
+#'
+#'This function will create a probability map based on simulation data. In each simulation, it identifies where a cluster was selected,
+#'compared to the background rate. It then average over the number of simulations, giving us a matrix which ranges from 0 to 1 in probability.
+#'To map this probabilities into a color scheme, please see the $colormapping$ function and select probmap=TRUE. TODO integrate all of this
+#'into a workflow and extend to observed data, not only simulated data.
+#'@param YSIM matrix of simulated observed values
+#'@param spacetimeLassosim object from spacetimeLasso.sim
+#'@return returns vector which calculated the number of time the cluster was correctly identified out of the simulations
+#'@export
+probmap <- function(lassoresult, vectors.sim, rr, nsim, Time, colormap=FALSE){
+    prob.sim <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    indx <- which(rr !=1)
+    rr.sim <- lapply(1:nsim, function(i) lassoresult$select_mu.qbic[[i]]/vectors.sim$E0_fit)
+    alpha <- lapply(1:nsim, function(i) lapply(1:Time, function(k) 
+        sort(table(matrix(rr.sim[[i]], ncol=Time)[,k]),decreasing=TRUE)[1]))
+    for(j in 1:length(prob.sim)){
+        for(i in 1:length(indx)){
+            if (rr.sim[[j]][indx[i]] >= as.numeric(attributes(alpha[[j]][[1]])[[1]])) {
+                prob.sim[[j]][indx[i]] <- 1
+            }
+            else {
+                prob.sim[[j]][indx[i]] <- 0
+            }
+        }
+    }
+    myprobs <- Reduce("+", prob.sim)/nsim
+    if (colormap==TRUE){
+        color.probmap <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(matrix(myprobs,ncol=Time)[,i],2)))/log(4)))    
+        return(list(probabilities = myprobs, colors = color.probmap))
+    }
+    else{
+        return(probabilities = myprobs)   
+    }
+}    
