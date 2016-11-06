@@ -515,8 +515,13 @@ scale <- function(Y.vec, out.sim, nsim,Time){
 #'compared to the background rate. It then average over the number of simulations, giving us a matrix which ranges from 0 to 1 in probability.
 #'To map this probabilities into a color scheme, please see the $colormapping$ function and select probmap=TRUE. TODO integrate all of this
 #'into a workflow and extend to observed data, not only simulated data.
-#'@param YSIM matrix of simulated observed values
-#'@param spacetimeLassosim object from spacetimeLasso.sim
+#'@param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso.sim function
+#'@param vectors dataframe of initial vectors of the observed and expected counts that went into mylasso.sim function
+#'@param rr risk ratio matrix that was used in the simulation
+#'@param nsim number of simulations
+#'@param Time number of time period
+#'@param colormap default is FALSE. Signals whether the probabilities should directly be mapped to the red-blue color scheme. If this is false,
+#'only the probability values will be returned. If true, then the probability values and the mapped colors will be returned in a list.
 #'@return returns vector which calculated the number of time the cluster was correctly identified out of the simulations
 #'@export
 probmap <- function(lassoresult, vectors.sim, rr, nsim, Time, colormap=FALSE){
