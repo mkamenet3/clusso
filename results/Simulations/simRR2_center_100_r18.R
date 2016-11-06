@@ -131,11 +131,12 @@ save(JBCresults.sim, file="SimulationOutput//simR2_center50_r18.RData")
 riskratios <- getRR(JBCresults.sim, JBCinit.sim, Time, sim=TRUE)
 rrcolors <- colormapping(riskratios,Time)
 
-
+##Probability map calculations
+probcolors <- probmap(JBCresults.sim, JBCinit.sim, rr, nsim, Time, colormap=TRUE)
 
 
 ####################################################
-#Make Maps
+#Make Maps - RR Map
 ####################################################
 
 #Import Datasets with Map Polygons
@@ -283,4 +284,45 @@ text(355,4120,'Period 5 - QBIC',cex=1.00)
 dev.off()
 
 
+
+####################################################
+#Make Maps - Probability Map
+####################################################
+#Create Empty PDF to Map Onto
+pdf("figures/simulations/japan_probmap_R2_center50_r18.pdf", height=11, width=10)
+
+#Probability Maps
+par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$colors[,1],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 1',cex=1.00)
+
+par(fig=c(0.2,.4,.6,1), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$colors[,2],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 2',cex=1.00)
+
+par(fig=c(0.4,.6,.6,1), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$colors[,3],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 3',cex=1.00)
+
+par(fig=c(0.6,.8,.6,1), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$colors[,4],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 4',cex=1.00)
+
+par(fig=c(0.8,1,.6,1), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$colors[,5],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 5',cex=1.00)
+
+
+#Turn off pdf development
+dev.off()
 
