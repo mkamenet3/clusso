@@ -525,27 +525,68 @@ scale <- function(Y.vec, out.sim, nsim,Time){
 #'@return returns vector which calculated the number of time the cluster was correctly identified out of the simulations
 #'@export
 probmap <- function(lassoresult, vectors.sim, rr, nsim, Time, colormap=FALSE){
-    prob.sim <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    prob.simBIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    prob.simAIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    prob.simAICc <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
     indx <- which(rr !=1)
-    rr.sim <- lapply(1:nsim, function(i) lassoresult$select_mu.qbic[[i]]/vectors.sim$E0_fit)
-    alpha <- lapply(1:nsim, function(i) lapply(1:Time, function(k) 
-        sort(table(matrix(rr.sim[[i]], ncol=Time)[,k]),decreasing=TRUE)[1]))
-    for(j in 1:length(prob.sim)){
+    rr.simBIC <- lapply(1:nsim, function(i) lassoresult$select_mu.qbic[[i]]/vectors.sim$E0_fit)
+    rr.simAIC <- lapply(1:nsim, function(i) lassoresult$select_mu.qaic[[i]]/vectors.sim$E0_fit)
+    rr.simAICc <- lapply(1:nsim, function(i) lassoresult$select_mu.qaicc[[i]]/vectors.sim$E0_fit)
+    alphaBIC <- lapply(1:nsim, function(i) lapply(1:Time, function(k) 
+        sort(table(matrix(rr.simBIC[[i]], ncol=Time)[,k]),decreasing=TRUE)[1]))
+    alphaAIC <- lapply(1:nsim, function(i) lapply(1:Time, function(k) 
+        sort(table(matrix(rr.simAIC[[i]], ncol=Time)[,k]),decreasing=TRUE)[1]))
+    alphaAICc <- lapply(1:nsim, function(i) lapply(1:Time, function(k) 
+        sort(table(matrix(rr.simAICc[[i]], ncol=Time)[,k]),decreasing=TRUE)[1]))
+    
+    for(j in 1:length(prob.simBIC)){
         for(i in 1:length(indx)){
-            if (rr.sim[[j]][indx[i]] >= as.numeric(attributes(alpha[[j]][[1]])[[1]])) {
-                prob.sim[[j]][indx[i]] <- 1
+            if (rr.simBIC[[j]][indx[i]] >= as.numeric(attributes(alphaBIC[[j]][[1]])[[1]]))  {
+                prob.simBIC[[j]][indx[i]] <- 1
             }
             else {
-                prob.sim[[j]][indx[i]] <- 0
+                prob.simBIC[[j]][indx[i]] <- 0
             }
         }
     }
-    myprobs <- Reduce("+", prob.sim)/nsim
+    for(j in 1:length(prob.simAIC)){
+        for(i in 1:length(indx)){
+            if (rr.simAIC[[j]][indx[i]] >= as.numeric(attributes(alphaAIC[[j]][[1]])[[1]]))  {
+                prob.simAIC[[j]][indx[i]] <- 1
+            }
+            else {
+                prob.simAIC[[j]][indx[i]] <- 0
+            }
+        }
+    }
+    for(j in 1:length(prob.simAICc)){
+        for(i in 1:length(indx)){
+            if (rr.simAICc[[j]][indx[i]] >= as.numeric(attributes(alphaAICc[[j]][[1]])[[1]]))  {
+                prob.simAICc[[j]][indx[i]] <- 1
+            }
+            else {
+                prob.simAICc[[j]][indx[i]] <- 0
+            }
+        }
+    }
+    prob <- as.vector(rr)
+    prob[prob==1] <-0
+    prob[prob!=0] <-1
+    probBIC <- Reduce("+", prob.simBIC)/nsim
+    probAIC <- Reduce("+", prob.simAIC)/nsim
+    probAICc <- Reduce("+", prob.simAICc)/nsim
     if (colormap==TRUE){
-        color.probmap <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(matrix(myprobs,ncol=Time)[,i],2)))/log(4)))    
-        return(list(probabilities = myprobs, colors = color.probmap))
+        color.probmap <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(matrix(prob,ncol=Time)[,i],2)))/log(4)))    
+        color.probmapBIC <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(matrix(probBIC,ncol=Time)[,i],2)))/log(4)))    
+        color.probmapAIC <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(matrix(probAIC,ncol=Time)[,i],2)))/log(4)))    
+        color.probmapAICc <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(matrix(probAICc,ncol=Time)[,i],2)))/log(4)))    
+        return(list(prob = prob, probBIC = probBIC, probAIC = probAIC, probAICc = probAICc, 
+                    color.probmap = color.probmap,
+                    color.probmapBIC = color.probmapBIC,
+                    color.probmapAIC = color.probmapAIC,
+                    color.probmapAICc = color.probmapAICc))
     }
     else{
-        return(probabilities = myprobs)   
+        return(list(prob=prob, probBIC = probBIC,probAIC = probAIC, probAICc = probAICc ))
     }
 }    

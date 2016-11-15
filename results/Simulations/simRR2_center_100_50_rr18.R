@@ -129,9 +129,11 @@ save(JBCresults.sim, file="SimulationOutput//simR2_center100_50_r18.RData")
 ####################################################
 ##Calculate average observed for simulated
 ##RR calculations
-riskratios <- setRR(JBCresults.sim, JBCinit.sim, Time, sim=TRUE)
-
+riskratios <- getRR(JBCresults.sim, JBCinit.sim, Time, sim=TRUE)
 rrcolors <- colormapping(riskratios,Time)
+
+##Probability map calculations
+probcolors <- probmap(JBCresults.sim, JBCinit.sim, rr, nsim,Time, colormap=TRUE)
 
 
 
@@ -282,3 +284,115 @@ text(355,4120,'Period 5 - QBIC',cex=1.00)
 
 #Turn off pdf development
 dev.off()
+
+
+
+####################################################
+#Make Maps - Probability Map
+####################################################
+#Create Empty PDF to Map Onto
+pdf("figures/simulations/japan_probmap_R2_2clus.pdf", height=11, width=10)
+
+#Probability Maps AIC
+
+par(fig=c(0,.2,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapAIC[,1],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 1 - QAIC',cex=1.00)
+
+par(fig=c(0.2,.4,.4,.8), mar=c(.5,0.5,0.5,0), new=T)   
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapAIC[,2],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 2 - QAIC',cex=1.00)
+
+par(fig=c(0.4,.6,.4,.8), mar=c(.5,0.5,0.5,0), new=T) 
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapAIC[,3],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 3 - QAIC',cex=1.00)
+
+par(fig=c(0.6,.8,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapAIC[,4],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 4 - QAIC',cex=1.00)
+
+par(fig=c(0.8,1,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapAIC[,5],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 5 - QAIC',cex=1.00)
+
+#Probability Map AICc
+
+
+par(fig=c(0,.2,.2,.6), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapAICc[,1],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 1 - QAICc',cex=1.00)
+
+par(fig=c(0.2,.4,.2,.6), mar=c(.5,0.5,0.5,0), new=T) 
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapAICc[,2],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 2 - QAICc',cex=1.00)
+
+par(fig=c(0.4,.6,.2,.6), mar=c(.5,0.5,0.5,0), new=T) 
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapAICc[,3],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 3 - QAICc',cex=1.00)
+
+par(fig=c(0.6,.8,.2,.6), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapAICc[,4],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 4 - QAICc',cex=1.00)
+
+par(fig=c(0.8,1,.2,.6), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapAICc[,5],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 5 - QAICc',cex=1.00)
+
+#Probability Map of BIC
+
+par(fig=c(0,.2,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapBIC[,1],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 1 - QBI',cex=1.00)
+
+par(fig=c(0.2,.4,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapBIC[,2],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 2 - QBIC',cex=1.00)
+
+par(fig=c(0.4,.6,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapBIC[,3],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 3 - QBIC',cex=1.00)
+
+
+par(fig=c(0.6,.8,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapBIC[,4],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 4 - QBIC',cex=1.00)
+
+
+par(fig=c(0.8,1,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapBIC[,5],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 5 - QBIC',cex=1.00)
+
+
+#Turn off pdf development
+dev.off()
+

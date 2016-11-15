@@ -58,6 +58,9 @@ nsim=100
 n <- 208
 Time <- 5
 
+#Set theta parameter
+thetainit = 1000
+
 #Set parameters of your fake cluster
 center <- 50
 r_list <- 9.5
@@ -72,12 +75,12 @@ clusters <- clustersDF(x1,y1,rMax, utm=TRUE, length(x1))
 JBCinit <- setVectors(dframe$period, dframe$expdeath, dframe$death, Time=5, byrow=TRUE)
 
 #Adjust for observed given expected counts as coming from negative binomial distribution
-outinit <- glm.nb(JBCinit$Y.vec ~1)
-out <- glm.nb(JBCinit$Y.vec ~ 1 + as.factor(JBCinit$Year)  + offset(log(JBCinit$E0)), init.theta = outinit$theta, 
+out <- glm.nb(JBCinit$Y.vec ~ 1 + as.factor(JBCinit$Year)  + offset(log(JBCinit$E0)), init.theta = thetainit, 
               link=log,control=glm.control(maxit=10000))
+E0_fit <- out$fitted.values
 
 #Set initial expected to the fitted values
-E0 <- out$fitted
+E0_0 <- out$fitted
 
 ####################################################
 #Create Fake Clusters
@@ -86,23 +89,31 @@ tmp <- clusters[clusters$center==center,]
 cluster <- tmp[(tmp$r <= r_list),]
 rr = matrix(1, nrow=n, ncol=Time)
 rr[cluster$last, cluster_end:Time] = rr.ratio
-expect_fake <- as.vector(rr)*E0
+expect_fake <- as.vector(rr)*E0_0
 
 
 #Set Vectors
 Y.vec <- JBCinit$Y.vec
 Period <- JBCinit$Year
 
-JBCinit.sim <- cbind.data.frame(Period, E0=expect_fake)
 
 ####################################################
 #Sim Response
 ####################################################
-YSIMT <- NULL
-for(i in 1:nsim){
-    YSIMT_i <- rnegbin(n*Time,expect_fake, theta= outinit$theta)
-    YSIMT <- cbind(YSIMT, YSIMT_i)
-}
+YSIM <- simulate(out, nsim=nsim)
+
+
+####################################################
+#Refit E0 for each simulation and scale
+####################################################
+#Adjust for observed given expected counts as coming from negative binomial distribution
+out.sim <- lapply(1:nsim, function(i) glm.nb(YSIM[,i] ~ 1 + as.factor(JBCinit$Year)  + offset(log(expect_fake)), init.theta = thetainit, 
+                                             link=log,control=glm.control(maxit=10000)))
+
+#Set initial expected to the fitted values and standardize
+E0 <- scale(Y.vec, out.sim, nsim, Time)
+
+JBCinit.sim <- list(Period = Period, E0=E0, E0_fit=E0_fit, Y.vec=Y.vec)
 
 
 ####################################################
@@ -112,7 +123,7 @@ potentialClusters <- max(clusters$center)
 numCenters <- max(clusters$center)
 
 JBCresults.sim <- spacetimeLasso.sim(potentialClusters, clusters, numCenters,
-                                     JBCinit.sim, Time, spacetime=TRUE, nsim, YSIMT)
+                                     JBCinit.sim, Time, spacetime=TRUE, nsim, YSIM)
 
 save(JBCresults.sim, file="SimulationOutput//simRR2_center50_r9_5.RData")
 ####################################################
@@ -120,14 +131,14 @@ save(JBCresults.sim, file="SimulationOutput//simRR2_center50_r9_5.RData")
 ####################################################
 ##Calculate average observed for simulated
 ##RR calculations
-riskratios <- setRR(JBCresults.sim, JBCinit, Time, JBCinit.sim)
-
+riskratios <- getRR(JBCresults.sim, JBCinit.sim, Time, sim=TRUE)
 rrcolors <- colormapping(riskratios,Time)
 
-
+##Probability map calculations
+probcolors <- probmap(JBCresults.sim, JBCinit.sim, rr, nsim, Time, colormap=TRUE)
 
 ####################################################
-#Make Maps
+#Make Maps - RR Map
 ####################################################
 
 #Import Datasets with Map Polygons
@@ -137,7 +148,7 @@ dframe.prefect2 <- read.csv("data/JBC/japan_prefect2.csv")
 japan.prefect2 <- dframe.prefect2[,2:5]
 
 #Create Empty PDF to Map Onto
-pdf("figures/simulations/japan_map_R2_smallR_T4.pdf", height=11, width=10)
+pdf("figures/simulations/japan_map_R2_r9_5.pdf", height=11, width=10)
 
 #Maps of Observed Counts
 par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))
@@ -273,3 +284,115 @@ text(355,4120,'Period 5 - QBIC',cex=1.00)
 
 #Turn off pdf development
 dev.off()
+
+
+
+####################################################
+#Make Maps - Probability Map
+####################################################
+#Create Empty PDF to Map Onto
+pdf("figures/simulations/japan_probmap_R2_center50_r9_5.pdf", height=11, width=10)
+
+#Probability Maps AIC
+
+par(fig=c(0,.2,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapAIC[,1],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 1 - QAIC',cex=1.00)
+
+par(fig=c(0.2,.4,.4,.8), mar=c(.5,0.5,0.5,0), new=T)   
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapAIC[,2],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 2 - QAIC',cex=1.00)
+
+par(fig=c(0.4,.6,.4,.8), mar=c(.5,0.5,0.5,0), new=T) 
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapAIC[,3],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 3 - QAIC',cex=1.00)
+
+par(fig=c(0.6,.8,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapAIC[,4],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 4 - QAIC',cex=1.00)
+
+par(fig=c(0.8,1,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapAIC[,5],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 5 - QAIC',cex=1.00)
+
+#Probability Map AICc
+
+
+par(fig=c(0,.2,.2,.6), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapAICc[,1],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 1 - QAICc',cex=1.00)
+
+par(fig=c(0.2,.4,.2,.6), mar=c(.5,0.5,0.5,0), new=T) 
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapAICc[,2],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 2 - QAICc',cex=1.00)
+
+par(fig=c(0.4,.6,.2,.6), mar=c(.5,0.5,0.5,0), new=T) 
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapAICc[,3],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 3 - QAICc',cex=1.00)
+
+par(fig=c(0.6,.8,.2,.6), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapAICc[,4],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 4 - QAICc',cex=1.00)
+
+par(fig=c(0.8,1,.2,.6), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapAICc[,5],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 5 - QAICc',cex=1.00)
+
+#Probability Map of BIC
+
+par(fig=c(0,.2,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapBIC[,1],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 1 - QBI',cex=1.00)
+
+par(fig=c(0.2,.4,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapBIC[,2],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 2 - QBIC',cex=1.00)
+
+par(fig=c(0.4,.6,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapBIC[,3],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 3 - QBIC',cex=1.00)
+
+
+par(fig=c(0.6,.8,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapBIC[,4],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 4 - QBIC',cex=1.00)
+
+
+par(fig=c(0.8,1,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+polygon(japan.poly2,col=probcolors$color.probmapBIC[,5],border=F)
+segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+text(355,4120,'Period 5 - QBIC',cex=1.00)
+
+
+#Turn off pdf development
+dev.off()
+

@@ -1,9 +1,9 @@
 ########################################################################################################
 ########################################################################################################
 ########################################################################################################
-#Simulations of Space-time Analysis Based on JBC Data using cluST.R
+#Simulations of Space-Only Analysis Based on JBC Data using cluST.R
 #Maria Kamenetsky
-#10-3-16
+#10-23-16
 ########################################################################################################
 ########################################################################################################
 ########################################################################################################
@@ -20,7 +20,7 @@ library("geosphere")
 library(Matrix)
 library(glmnet)
 library(maps)
-
+library(truncnorm)
 
 #Source .cpp files
 sourceCpp("scripts/cluST/src/maxcol.cpp")
@@ -36,7 +36,7 @@ source("scripts/cluST//R//cluST.R")
 ####################################################
 #Create Some Fake Data
 ####################################################
-set.seed(1172016)
+set.seed(1032016)
 
 #Load Data
 dframe1 <- read.csv("data/JBC/jap.breast.F.9.10.11.csv")
@@ -51,9 +51,6 @@ y1=dframe2$utmy/1000
 rMax <- 30 
 Time=5  
 
-#Set theta parameter
-thetainit = 1000
-
 #Set number of simulations
 nsim=100
 
@@ -61,11 +58,8 @@ nsim=100
 n <- 208
 Time <- 5
 
-#Set theta parameter
-thetainit = 1000
-
 #Set parameters of your fake cluster
-center <- 50
+center <- 100
 r_list <- 18
 cluster_end <- 3
 rr.ratio<- 1
@@ -78,12 +72,12 @@ clusters <- clustersDF(x1,y1,rMax, utm=TRUE, length(x1))
 JBCinit <- setVectors(dframe$period, dframe$expdeath, dframe$death, Time=5, byrow=TRUE)
 
 #Adjust for observed given expected counts as coming from negative binomial distribution
-out <- glm.nb(JBCinit$Y.vec ~ 1 + as.factor(JBCinit$Year)  + offset(log(JBCinit$E0)), init.theta = thetainit, 
+outinit <- glm.nb(JBCinit$Y.vec ~1)
+out <- glm.nb(JBCinit$Y.vec ~ 1 + as.factor(JBCinit$Year)  + offset(log(JBCinit$E0)), init.theta = outinit$theta, 
               link=log,control=glm.control(maxit=10000))
-E0_fit <- out$fitted.values
 
 #Set initial expected to the fitted values
-E0_0 <- JBCinit$E0
+E0 <- out$fitted
 
 ####################################################
 #Create Fake Clusters
@@ -92,30 +86,23 @@ tmp <- clusters[clusters$center==center,]
 cluster <- tmp[(tmp$r <= r_list),]
 rr = matrix(1, nrow=n, ncol=Time)
 rr[cluster$last, cluster_end:Time] = rr.ratio
-expect_fake <- as.vector(rr)*E0_0
+expect_fake <- as.vector(rr)*E0
 
 
 #Set Vectors
 Y.vec <- JBCinit$Y.vec
 Period <- JBCinit$Year
 
+JBCinit.sim <- cbind.data.frame(Period, E0=expect_fake)
+
 ####################################################
 #Sim Response
 ####################################################
-YSIM <- simulate(out, nsim=nsim)
-
-
-####################################################
-#Refit E0 for each simulation and scale
-####################################################
-#Adjust for observed given expected counts as coming from negative binomial distribution
-out.sim <- lapply(1:nsim, function(i) glm.nb(YSIM[,i] ~ 1 + as.factor(JBCinit$Year)  + offset(log(expect_fake)), init.theta = thetainit, 
-                                             link=log,control=glm.control(maxit=10000)))
-
-#Set initial expected to the fitted values and standardize
-E0 <- scale(Y.vec, out.sim, nsim, Time)
-
-JBCinit.sim <- list(Period = Period, E0=E0, E0_fit=E0_fit, Y.vec=Y.vec)
+YSIMT <- NULL
+for(i in 1:nsim){
+    YSIMT_i <- rnegbin(n*Time,expect_fake, theta= outinit$theta)
+    YSIMT <- cbind(YSIMT, YSIMT_i)
+}
 
 
 ####################################################
@@ -125,7 +112,7 @@ potentialClusters <- max(clusters$center)
 numCenters <- max(clusters$center)
 
 JBCresults.sim <- spacetimeLasso.sim(potentialClusters, clusters, numCenters,
-                                     JBCinit.sim, Time, spacetime=TRUE, nsim, YSIM)
+                                     JBCinit.sim, Time, spacetime=TRUE, nsim, YSIMT)
 
 save(JBCresults.sim, file="SimulationOutput//sim_null.RData")
 ####################################################
@@ -133,15 +120,14 @@ save(JBCresults.sim, file="SimulationOutput//sim_null.RData")
 ####################################################
 ##Calculate average observed for simulated
 ##RR calculations
-riskratios <- getRR(JBCresults.sim, JBCinit.sim, Time, sim=TRUE)
+riskratios <- setRR(JBCresults.sim, JBCinit, Time, JBCinit.sim)
+
 rrcolors <- colormapping(riskratios,Time)
 
-##Probability map calculations
-probcolors <- probmap(JBCresults.sim, JBCinit.sim, rr, nsim, Time, colormap=TRUE)
 
 
 ####################################################
-#Make Maps - RR Map
+#Make Maps
 ####################################################
 
 #Import Datasets with Map Polygons
@@ -284,50 +270,6 @@ plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
 polygon(japan.poly2,col=rrcolors$color.qbic[,5],border=F)
 segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
 text(355,4120,'Period 5 - QBIC',cex=1.00)
-
-#Turn off pdf development
-dev.off()
-
-
-
-####################################################
-#Make Maps - Probability Map
-####################################################
-#Create Empty PDF to Map Onto
-pdf("figures/simulations/japan_probmap_null.pdf", height=11, width=10)
-
-
-#Probability Maps
-par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))
-plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-polygon(japan.poly2,col=probcolors$colors[,1],border=F)
-segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
-text(355,4120,'Period 1',cex=1.00)
-
-par(fig=c(0.2,.4,.6,1), mar=c(.5,0.5,0.5,0), new=T)
-plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-polygon(japan.poly2,col=probcolors$colors[,2],border=F)
-segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
-text(355,4120,'Period 2',cex=1.00)
-
-par(fig=c(0.4,.6,.6,1), mar=c(.5,0.5,0.5,0), new=T)
-plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-polygon(japan.poly2,col=probcolors$colors[,3],border=F)
-segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
-text(355,4120,'Period 3',cex=1.00)
-
-par(fig=c(0.6,.8,.6,1), mar=c(.5,0.5,0.5,0), new=T)
-plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-polygon(japan.poly2,col=probcolors$colors[,4],border=F)
-segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
-text(355,4120,'Period 4',cex=1.00)
-
-par(fig=c(0.8,1,.6,1), mar=c(.5,0.5,0.5,0), new=T)
-plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-polygon(japan.poly2,col=probcolors$colors[,5],border=F)
-segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
-text(355,4120,'Period 5',cex=1.00)
-
 
 #Turn off pdf development
 dev.off()
