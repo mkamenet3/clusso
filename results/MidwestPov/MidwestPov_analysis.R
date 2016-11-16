@@ -19,7 +19,7 @@ library("geosphere")
 library(Matrix)
 library(glmnet)
 library(maps)
-library(truncnorm)
+
 
 #Source .cpp files
 sourceCpp("scripts/cluST/src/maxcol.cpp")
@@ -81,12 +81,15 @@ potentialClus <- max(clusters$center)
 numberCenters <- max(clusters$center)
 
 MPDresults <- spacetimeLasso(potentialClus, clusters, numberCenters, MPDinit, Time, spacetime=TRUE)
+save(MPDresults, file="SimulationOutput//RealOutput//Midwest_spacetime")
 
 
 ####################################################
 #Set Risk Ratio Vectors Based on QIC
 ####################################################
-rr <- setRR(MPDresults, MPDinit, Time=5)
+##Relative Risks
+rr <- setRR(MPDresults, MPDinit, Time=5, sim=FALSE)
+
 
 ####################################################
 #Map RR to Colors
@@ -115,7 +118,7 @@ m$names[not];tmp[not]
 
 
 #Create Empty PDF to Map Onto
-pdf("figures/MidwestPov/MidwestPov_map.pdf", height=11, width=10)
+pdf("figures/MidwestPov/MidwestPov_map1.pdf", height=11, width=10)
 
 #Set Plots
 par(mfrow = c(4,5))
@@ -158,6 +161,7 @@ map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wis
     col=rrcolors$color.qaic[,1][colSeq], fill=TRUE, lty=0)
 map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
     fill=FALSE, add=TRUE)
+    title(main="AIC - 1970")
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
     col=rrcolors$color.qaic[,2][colSeq],fill=TRUE,lty=0)

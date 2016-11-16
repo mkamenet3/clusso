@@ -122,7 +122,7 @@ numCenters <- max(clusters$center)
 
 JBCresults.sim <- spacetimeLasso.sim(potentialClusters, clusters, numCenters,
                            JBCinit.sim, Time, spacetime=TRUE, nsim, YSIM)
-save(JBCresults.sim, file="SimulationOutput//simR2_center50_r18.RData")
+save(JBCresults.sim, file="SimulationOutput//simR2_center50_r18_3periods.RData")
 ####################################################
 #Risk Ratios
 ####################################################
@@ -146,7 +146,7 @@ dframe.prefect2 <- read.csv("data/JBC/japan_prefect2.csv")
 japan.prefect2 <- dframe.prefect2[,2:5]
 
 #Create Empty PDF to Map Onto
-pdf("figures/simulations/japan_map_R2.pdf", height=11, width=10)
+pdf("figures/simulations/japan_map_R2_center50_r18.pdf", height=11, width=10)
 
 #Maps of Observed Counts
 par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))

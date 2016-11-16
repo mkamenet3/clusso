@@ -271,7 +271,7 @@ spacetimeLasso <- function(potClus, clusters, numCenters, vectors, Time, spaceti
         E.qaicc <- mu[,qaiccMax]
     }
     print("Returning results")
-    return(list(E.qbic, E.qaic, E.qaicc,Ex, Yx, lasso, K,n))    
+    return(list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, Ex = Ex, Yx = Yx, lasso = lasso, K = K, n = n))    
 }
 
 
