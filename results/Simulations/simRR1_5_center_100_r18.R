@@ -1,12 +1,13 @@
 ########################################################################################################
 ########################################################################################################
 ########################################################################################################
-#Space-time Analysis of Japanese Breast Cancer Data using cluST.R
+#Simulations of Space-time Analysis Based on JBC Data using cluST.R
 #Maria Kamenetsky
-#9-26-16
+#10-3-16
 ########################################################################################################
 ########################################################################################################
 ########################################################################################################
+
 
 ####################################################
 #Source Files, Scripts, and Packages
@@ -22,23 +23,24 @@ library(maps)
 library(truncnorm)
 
 #Source .cpp files
-sourceCpp("../../scripts/cluST/src/maxcol.cpp")
-sourceCpp("../../scripts/cluST/src/st_matCpp.cpp")
-sourceCpp("../../scripts/cluST/src/prod_yx.cpp")
+sourceCpp("scripts/cluST/src/maxcol.cpp")
+sourceCpp("scripts/cluST/src/st_matCpp.cpp")
+sourceCpp("scripts/cluST/src/prod_yx.cpp")
 
 
 #temporarily source my cluST.R file
-source("../../scripts/cluST//R//cluST.R")
+source("scripts/cluST//R//cluST.R")
 
 
 
 ####################################################
-#LOAD JBC Data and Set Up
+#Create Some Fake Data
 ####################################################
+set.seed(1032016)
 
 #Load Data
-dframe1 <- read.csv("../../data/JBC/jap.breast.F.9.10.11.csv")
-dframe2 <- read.csv("../../data//JBC//utmJapan.csv")
+dframe1 <- read.csv("data/JBC/jap.breast.F.9.10.11.csv")
+dframe2 <- read.csv("data//JBC//utmJapan.csv")
 dframe3 <- aggregate(dframe1, by=list(as.factor(rep(1:(nrow(dframe1)/4),each=4))), FUN="sum")
 dframe=data.frame(id=as.factor(dframe3$id/4),period=as.factor(dframe3$year),death=dframe3$death,expdeath=dframe3$expdeath)
 levels(dframe$period) <- c("1","2","3","4","5")
@@ -49,55 +51,102 @@ y1=dframe2$utmy/1000
 rMax <- 30 
 Time=5  
 
+#Set number of simulations
+nsim=100
+
+#Number of time periods and centers
+n <- 208
+Time <- 5
+
+#Set theta parameter
+thetainit = 1000
+
+#Set parameters of your fake cluster
+center <- 100
+r_list <- 18
+cluster_end <- 3
+rr.ratio<- 1.5
+
 #Create Potential Clusters Dataframe
 clusters <- clustersDF(x1,y1,rMax, utm=TRUE, length(x1))
 
+
 #Set initial expected and observed
-JBCinit <- setVectors(dframe$period, dframe$expdeath, dframe$death, Time=5, byrow=TRUE)
+JBCinit <- setVectors(dframe$period, dframe$expdeath, dframe$death, Time=Time, byrow=TRUE)
 
 #Adjust for observed given expected counts as coming from negative binomial distribution
-outinit <- glm.nb(JBCinit$Y.vec ~1)
-out <- glm.nb(JBCinit$Y.vec ~ 1 + as.factor(JBCinit$Year)  + offset(log(JBCinit$E0)), init.theta = outinit$theta, 
+out <- glm.nb(JBCinit$Y.vec ~ 1 + as.factor(JBCinit$Year)  + offset(log(JBCinit$E0)), init.theta = thetainit, 
               link=log,control=glm.control(maxit=10000))
+E0_fit <- out$fitted.values
 
 #Set initial expected to the fitted values
-E0 <- out$fitted
+E0_0 <- JBCinit$E0
+
+####################################################
+#Create Fake Clusters
+####################################################
+tmp <- clusters[clusters$center==center,]
+cluster <- tmp[(tmp$r <= r_list),]
+rr = matrix(1, nrow=n, ncol=Time)
+rr[cluster$last, cluster_end:Time] = rr.ratio
+expect_fake <- as.vector(rr)*E0_0
+
+
+#Set Vectors
+Y.vec <- JBCinit$Y.vec
+Period <- JBCinit$Year
+
+####################################################
+#Sim Response
+####################################################
+YSIM <- simulate(out, nsim=nsim)
+
+####################################################
+#Refit E0 for each simulation and scale
+####################################################
+#Adjust for observed given expected counts as coming from negative binomial distribution
+out.sim <- lapply(1:nsim, function(i) glm.nb(YSIM[,i] ~ 1 + as.factor(JBCinit$Year)  + offset(log(expect_fake)), init.theta = thetainit, 
+                                             link=log,control=glm.control(maxit=10000)))
+
+#Set initial expected to the fitted values and standardize
+E0 <- scale(Y.vec, out.sim, nsim, Time)
+
+JBCinit.sim <- list(Period = Period, E0=E0, E0_fit=E0_fit, Y.vec=Y.vec)
 
 
 ####################################################
-#RUN Model
+#Set up and Run Model
 ####################################################
+potentialClusters <- max(clusters$center)
+numCenters <- max(clusters$center)
 
-#set initial conditions for function (all centers can be potential origin of the cluster)
-potentialClus <- max(clusters$center)
-numberCenters <- max(clusters$center)
+JBCresults.sim <- spacetimeLasso.sim(potentialClusters, clusters, numCenters,
+                           JBCinit.sim, Time, spacetime=TRUE, nsim, YSIM)
 
-JBCresults <- spacetimeLasso(potentialClus, clusters, numberCenters, JBCinit, Time, spacetime=TRUE)
+save(JBCresults.sim, file="SimulationOutput//simR1_5_center100_r18.RData")
+####################################################
+#Risk Ratios
+####################################################
+##Calculate average observed for simulated
+##RR calculations
+riskratios <- setRR(JBCresults.sim, JBCinit.sim, Time, sim=TRUE)
+
+rrcolors <- colormapping(riskratios,Time)
+
 
 
 ####################################################
-#Set Risk Ratio Vectors Based on QIC
-####################################################
-rr <- setRR(JBCresults, JBCinit, Time=5)
-
-####################################################
-#Map RR to Colors
-####################################################
-rrcolors <- colormapping(rr, Time=5)
-
-
-####################################################
-#Map Colors to Maps
+#Make Maps
 ####################################################
 
 #Import Datasets with Map Polygons
-dframe.poly2 <- read.csv("../../data/JBC/japan_poly2.csv")
+dframe.poly2 <- read.csv("data/JBC/japan_poly2.csv")
 japan.poly2 <- dframe.poly2[,2:3]
-dframe.prefect2 <- read.csv("../../data/JBC/japan_prefect2.csv")
+dframe.prefect2 <- read.csv("data/JBC/japan_prefect2.csv")
 japan.prefect2 <- dframe.prefect2[,2:5]
 
 #Create Empty PDF to Map Onto
-pdf("../../figures/JBC/japan_map.pdf", height=11, width=10)
+pdf("figures/simulations/japan_map_R1_5.pdf", height=11, width=10)
 
 #Maps of Observed Counts
 par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))
@@ -233,10 +282,3 @@ text(355,4120,'Period 5 - QBIC',cex=1.00)
 
 #Turn off pdf development
 dev.off()
-
-
-
-
-
-
-
