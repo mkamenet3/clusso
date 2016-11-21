@@ -22,13 +22,13 @@ library(maps)
 library(truncnorm)
 
 #Source .cpp files
-sourceCpp("scripts/cluST/src/maxcol.cpp")
-sourceCpp("scripts/cluST/src/st_matCpp.cpp")
-sourceCpp("scripts/cluST/src/prod_yx.cpp")
+sourceCpp("../../scripts/cluST/src/maxcol.cpp")
+sourceCpp("../../scripts/cluST/src/st_matCpp.cpp")
+sourceCpp("../../scripts/cluST/src/prod_yx.cpp")
 
 
 #temporarily source my cluST.R file
-source("scripts/cluST//R//cluST.R")
+source("../../scripts/cluST//R//cluST.R")
 
 
 
@@ -62,10 +62,8 @@ out <- glm.nb(JBCinit$Y.vec ~ 1 + as.factor(JBCinit$Year)  + offset(log(JBCinit$
 
 #Set initial expected to the fitted values
 E0 <- out$fitted
-Y.vec <- JBCinit$Y.vec
-Period <- JBCinit$Year
 
-JBCinit <- cbind.data.frame(Period, E0, Y.vec)
+
 ####################################################
 #RUN Model
 ####################################################
@@ -93,13 +91,13 @@ rrcolors <- colormapping(rr, Time=5)
 ####################################################
 
 #Import Datasets with Map Polygons
-dframe.poly2 <- read.csv("data/JBC/japan_poly2.csv")
+dframe.poly2 <- read.csv("../../data/JBC/japan_poly2.csv")
 japan.poly2 <- dframe.poly2[,2:3]
-dframe.prefect2 <- read.csv("data/JBC/japan_prefect2.csv")
+dframe.prefect2 <- read.csv("../../data/JBC/japan_prefect2.csv")
 japan.prefect2 <- dframe.prefect2[,2:5]
 
 #Create Empty PDF to Map Onto
-pdf("figures/JBC/japan_map.pdf", height=11, width=10)
+pdf("../../figures/JBC/japan_map.pdf", height=11, width=10)
 
 #Maps of Observed Counts
 par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))
