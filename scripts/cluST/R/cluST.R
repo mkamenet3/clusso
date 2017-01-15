@@ -105,7 +105,7 @@ dpoisson <- function(y, lambda, log = FALSE) {
 
 #' Creates a List Arranged by Time Period with Expected and Observed Counts and Time Period
 #' 
-#' @param year vector of periods or years in dataset. Should be imported as a factor.
+#' @param period vector of periods or years in dataset. Should be imported as a factor.
 #' @param expect vector of expected counts. Expected counts must match up with the year and observed vectors.
 #' @param observed vector of observed counts. Observed counts must match up with the year and expected vectors.
 #' @param Time Number of time periods or years in your dataset. Must be declared as numeric.
@@ -116,16 +116,16 @@ dpoisson <- function(y, lambda, log = FALSE) {
 #' @return This function returns a list of expected and observed counts along with the period. 
 #' @export
 #' @examples
-setVectors <- function(year, expect, observed,Time, byrow=TRUE) {
+setVectors <- function(period, expect, observed,Time, byrow=TRUE) {
     if (byrow==TRUE){
         E0=as.vector(matrix(expect, byrow=T, ncol=Time))
         Y.vec <- as.vector(matrix(observed,byrow=T, ncol=Time))
-        Year <- as.vector(matrix(year, byrow=T, ncol=Time)) 
+        Year <- as.vector(matrix(period, byrow=T, ncol=Time)) 
     }
     else {
         E0=as.vector(matrix(expect, ncol=Time))
         Y.vec <- as.vector(matrix(observed, ncol=Time))
-        Year <- as.vector(matrix(year, ncol=Time))
+        Year <- as.vector(matrix(period, ncol=Time))
     }
     return(list(
         E0 = E0,
@@ -910,14 +910,14 @@ detect_set <- function(lassoresult, vectors.sim, rr){
 #'(for aic/aicc/bic and qaic/qaicc/qbic, respectively).
 #'@return returns
 detect_incluster <- function(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period = FALSE, IC, Time){
-    if(multi_period=TRUE){
+    if(multi_period==TRUE){
         period = period_start:period_end
     }
     else{
         period = c(period_start, period_end)
     }
     #for only AIC/QAIC
-    if(IC=aic | IC = qaic){
+    if(IC==aic | IC == qaic){
         ix <- lapply(1: length(prob.simAIC), 
                      function(j) sapply(1:Time, 
                                         function(k) 
@@ -927,13 +927,15 @@ detect_incluster <- function(lassoresult, vectors.sim, rr, res, period_start, pe
                                                 function(k) sum((ix[[j]][[k]] %in% res$idx_truth[[k]])*1)/length(res$idx_truth[[k]])))
         idx_avg <- unlist(lapply(1:length(prob.simAIC), 
                                  function(j) mean(in_cluster[[j]][period])))
+        mean_detect = mean(idx_avg)
+        min_detect = min(idx_avg)
         return(list(
-            mean_detect = mean(idx_avg),
-            min_detect = min(idx_avg)
+            mean_detect = mean_detect,
+            min_detect = min_detect
         ))
     }
     #for only AICc/QAICc
-    if(IC=aicc | IC = qaicc){
+    if(IC==aicc | IC == qaicc){
         ix <- lapply(1: length(prob.simAICc), 
                      function(j) sapply(1:Time, 
                                         function(k) 
@@ -949,7 +951,7 @@ detect_incluster <- function(lassoresult, vectors.sim, rr, res, period_start, pe
         ))
     }
     #for only BIC/QBIC
-    if(IC=bic | IC = qbic){
+    if(IC==bic | IC == qbic){
         ix <- lapply(1: length(prob.simBIC), 
                      function(j) sapply(1:Time, 
                                         function(k) 
@@ -966,7 +968,7 @@ detect_incluster <- function(lassoresult, vectors.sim, rr, res, period_start, pe
     }
     
     #for all IC (return (Q)AIC, (Q)AICc, and (Q)BIC)
-    if(IC= ic | IC = qic){
+    if(IC== ic | IC == qic){
         #(Q)AIC
         ix <- lapply(1: length(prob.simAIC), 
                      function(j) sapply(1:Time, 
@@ -1034,7 +1036,7 @@ detect_incluster <- function(lassoresult, vectors.sim, rr, res, period_start, pe
 #'@return returns list of average false clusters across all simulations and the lowest number of false clusters detected across clusters
 
 detect_falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period=FALSE, IC, Time){
-    if(multi_period=TRUE){
+    if(multi_period==TRUE){
         period = period_start:period_end
     }
     else{
@@ -1042,7 +1044,7 @@ detect_falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start,
     }
     #for only AIC/QAIC
     
-    if(IC=aic | IC = qaic){
+    if(IC==aic | IC == qaic){
         ix <- lapply(1: length(prob.simAIC), 
                      function(j) sapply(1:Time, 
                                         function(k) 
@@ -1053,13 +1055,13 @@ detect_falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start,
                                              function(k) length(which(ix[[j]][[k]] %in% res$idx_truth[[k]] == FALSE))/length(res$idx[[j]][[k]])))
         idx_avg <- unlist(lapply(1:length(prob.simAIC), 
                                  function(j) mean(in_fake[[j]][period])))
+        mean_fp.aic = mean(idx_avg)
+        min_fp.aic = min(idx_avg)
         return(list(
-            mean_fp.aic = mean(idx_avg),
-            min_fp.aic = min(idx_avg)
-        ))								
+            mean_fp.aic = mean_fp.aic, min_fp.aic = min_fp.aic))								
     }
     #for only AICc/QAICc
-    if(IC=aicc | IC = qaicc){
+    if(IC==aicc | IC == qaicc){
         ix <- lapply(1: length(prob.simAICc), 
                      function(j) sapply(1:Time, 
                                         function(k) 
@@ -1076,7 +1078,7 @@ detect_falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start,
         ))
     }
     #for only BIC/QBIC
-    if(IC=bic | IC = qbic){
+    if(IC==bic | IC == qbic){
         ix <- lapply(1: length(prob.simBIC), 
                      function(j) sapply(1:Time, 
                                         function(k) 
@@ -1092,7 +1094,7 @@ detect_falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start,
             min_fp.bic = min(idx_avg)
         ))
     }
-    if(IC= ic | IC = qic){
+    if(IC== ic | IC == qic){
         #(Q)AIC
         ix <- lapply(1: length(prob.simAIC), 
                      function(j) sapply(1:Time, 
@@ -1105,7 +1107,7 @@ detect_falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start,
         idx_avg <- unlist(lapply(1:length(prob.simAIC), 
                                  function(j) mean(in_fake[[j]][period])))
         
-        mean_fp.aic = mean(idx_avg),
+        mean_fp.aic = mean(idx_avg)
         min_fp.aic = min(idx_avg)
         
         #(Q)AICc
@@ -1120,7 +1122,7 @@ detect_falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start,
         idx_avg <- unlist(lapply(1:length(prob.simAICc), 
                                  function(j) mean(in_fake[[j]][period])))
         
-        mean_fp.aicc = mean(idx_avg),
+        mean_fp.aicc = mean(idx_avg)
         min_fp.aicc = min(idx_avg)
         
         #(Q)BIC
@@ -1135,7 +1137,7 @@ detect_falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start,
         idx_avg <- unlist(lapply(1:length(prob.simBIC), 
                                  function(j) mean(in_fake[[j]][period])))
         
-        mean_fp.bic = mean(idx_avg),
+        mean_fp.bic = mean(idx_avg)
         min_fp.bic = min(idx_avg)
         
         return(list(mean_fp.aic = mean_fp.aic, min_fp.bic = min_fp.aic,
@@ -1164,14 +1166,14 @@ detect_falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start,
 #'@return returns list of average false clusters across all simulations and the lowest number of false clusters detected across clusters
 
 detect_inbackground <-function(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period=FALSE, IC, Time){
-    if(multi_period=TRUE){
+    if(multi_period==TRUE){
         period = period_start:period_end
     }
     else{
         period = c(period_start, period_end)
     }
     #for only AIC/QAIC
-    if(IC = aic | IC = qaic){
+    if(IC == aic | IC == qaic){
         ix <- lapply(1: length(prob.simAIC), 
                      function(j) sapply(1:Time, 
                                         function(k) 
@@ -1191,7 +1193,7 @@ detect_inbackground <-function(lassoresult, vectors.sim, rr, res, period_start, 
         ))
     }
     #for only AICc/QAICc
-    if(IC = aicc | IC = qaicc){
+    if(IC == aicc | IC == qaicc){
         ix <- lapply(1: length(prob.simAICc), 
                      function(j) sapply(1:Time, 
                                         function(k) 
@@ -1211,7 +1213,7 @@ detect_inbackground <-function(lassoresult, vectors.sim, rr, res, period_start, 
         ))
     }	
     #for only BIC/QBIC
-    if(IC = bic | IC = qbic){
+    if(IC == bic | IC == qbic){
         ix <- lapply(1: length(prob.simBIC), 
                      function(j) sapply(1:Time, 
                                         function(k) 
@@ -1231,7 +1233,7 @@ detect_inbackground <-function(lassoresult, vectors.sim, rr, res, period_start, 
         ))
     }	
     #ALL
-    if(IC= ic | IC = qic){
+    if(IC== ic | IC == qic){
         #(Q)AIC
         ix <- lapply(1: length(prob.simAIC), 
                      function(j) sapply(1:Time, 
@@ -1285,8 +1287,6 @@ detect_inbackground <-function(lassoresult, vectors.sim, rr, res, period_start, 
 
 
 
-
-
 #'detect
 #'
 #'This function will create a probability map based on simulation data. In each simulation, it identifies where a cluster was selected,
@@ -1311,7 +1311,7 @@ detect_inbackground <-function(lassoresult, vectors.sim, rr, res, period_start, 
 #'
 detect <- function(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period = FALSE,  IC, Time,...){
     #determined time period span
-    if(multi_period=TRUE){
+    if(multi_period==TRUE){
         period = period_start:period_end
     }
     else{
@@ -1338,13 +1338,13 @@ detect <- function(lassoresult, vectors.sim, rr, res, period_start, period_end, 
 #'clust
 #'
 #'This function runs both the space and space-time Lasso model. This function is to be run on observed data. A separate function (clust.sim) can be used for simulating data and running diagnostics on simulations.
-#'@param x
-#'@param y
-#'@param rMax
-#'@param period
-#'@param expected
-#'@param observed
-#'@param Time
+#'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
+#'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
+#'@param rMax set max radius (in km)
+#'@param period vector of periods or years in dataset. Should be imported as a factor.
+#'@param expected vector of expected counts. Expected counts must match up with the year and observed vectors.
+#'@param observed vector of observed counts. Observed counts must match up with the year and expected vectors.
+#'@param Time Number of time periods or years in your dataset. Must be declared as numeric.
 #'@param spacetime default is TRUE. To run the space-only model, specify `spacetime=FALSE'
 #'@return
 #'@details Optional functions include:
@@ -1352,14 +1352,14 @@ detect <- function(lassoresult, vectors.sim, rr, res, period_start, period_end, 
 #'@export
 #'
 clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, ...){
-    if(utm=FALSE){
+    if(utm==FALSE){
         message("Coordinates are assumed to be in lat/long coordinates. For utm coordinates, please specify 'utm=TRUE'")
         utm=FALSE
     }
     else{
         utm=TRUE
     }
-    if(byrow=FALSE){
+    if(byrow==FALSE){
         byrow=FALSE
     }
     else{
@@ -1370,7 +1370,7 @@ clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, 
     clusters <- clustersDF(x, y, rMax, utm=utm, length(x))
     init <- setVectors(period, expected, observed, Time, byrow=byrow)
     outinit <- glm.nb(init$Y.vec ~ 1)
-    if(spacetime=FALSE){
+    if(spacetime==FALSE){
         spacetime=FALSE
         out <- glm.nb(init$Y.vec ~ 1 + offset(log(init$E0)), init.theta = outinit$theta, 
                       link=log,control=glm.control(maxit=10000))
@@ -1396,45 +1396,49 @@ clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, 
 #'clust.sim
 #'
 #'This function runs both the space and space-time Lasso model simulations. This function is to be run on simulated data. A separate function (clust) can be used for observed data.
-#'@param x
-#'@param y
-#'@param rMax
-#'@param period if you are only exploring the space-only model, please provide a vector of a single period here then.
-#'@param expected
-#'@param observed
-#'@param Time
+#'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
+#'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
+#'@param rMax set max radius (in km)
+#'@param period vector of periods or years in dataset. Should be imported as a factor.
+#'@param expected vector of expected counts. Expected counts must match up with the year and observed vectors.
+#'@param observed vector of observed counts. Observed counts must match up with the year and expected vectors.
+#'@param Time Number of time periods or years in your dataset. Must be declared as numeric.
 #'@param spacetime default is TRUE. To run the space-only model, specify `spacetime=FALSE'
 #'@param nsim Number of simulations you would like to run
 #'@param center can be a single center or for multiple clusters, concatenate them. Max three TODO extend this
-#'@param radius
-#'@parm risk.ratio
-#'@param period_start
-#'@param period_end
-#'@param multi_period
+#'@param radius radius for the cluster you want in the simulation
+#'@parm risk.ratio setting for what the risk ratio should be in the cluster to be detected by the simulation
+#'@param period_start time period where the cluster  starts in the simulation
+#'@param period_end time period where cluster ends in the simulation TODO
+#'we will only be looking at periods 2 and 5. If multi_period is TRUE, then we will instead consider period_start through period_end (period_start:period_end). Following the same example,
+#'this would mean we look at periods 2, 3, 4, and 5.
 #'@return
 #'@details Optional functions include:
 #'- 1) utm - default is FALSE. If you have utm coordinates, you want to change this to TRUE.
 #'@export
 #'TODO allow user to change theta parameter in simulation
-clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, nsim, center, radius, risk.ratio, period_start, period_end, multi_period,colors=NULL,...){
+clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, nsim, center, radius, risk.ratio, period_start,colors=NULL,utm=TRUE, byrow=TRUE,...){
     #initial user setting
-    if(utm=FALSE){
+    if(utm==FALSE){
         message("Coordinates are assumed to be in lat/long coordinates. For utm coordinates, please specify 'utm=TRUE'")
         utm=FALSE
     }
     else{
         utm=TRUE
     }
-    if(byrow=FALSE){
-        byrow=FALSE
+    if(byrow==FALSE){
+        row=FALSE
     }
     else{
-        byrow=TRUE
+        row=TRUE
         message("Data assumed to be in panel data. To use vector data instead, please specify 'byrow=FALSE'")
     }
     #set up clusters and fitted values
     clusters <- clustersDF(x,y,rMax, utm=TRUE, length(x))
-    init <- setVectors(period, expected, observed, Time=Time, byrow=byrow)
+    n <- length(x)
+    init <- setVectors(period, expected, observed, Time=Time, row)
+    #hardcoded thetainit
+    thetainit = 1000
     out <- glm.nb(init$Y.vec ~ 1 + as.factor(init$Year)  + offset(log(init$E0)), init.theta = thetainit, 
                   link=log,control=glm.control(maxit=10000))
     E0_fit <- out$fitted.values
@@ -1449,9 +1453,9 @@ clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, 
     else{
         tmp <- clusters[clusters$center==center,]
     }
-    cluster <- tmp[(tmp$r <= r_list),]
+    cluster <- tmp[(tmp$r <= radius),]
     rr = matrix(1, nrow=n, ncol=Time)
-    rr[cluster$last, cluster_end:Time] = rr.ratio
+    rr[cluster$last, period_start:Time] = risk.ratio
     expect_fake <- as.vector(rr)*E0_0
     #set vectors
     Y.vec <- init$Y.vec
@@ -1459,7 +1463,7 @@ clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, 
     #simulate response
     YSIM <- simulate(out, nsim=nsim)
     #refit E0 for each simlation and scale
-    if(spacetime=FALSE){
+    if(spacetime==FALSE){
         spacetime=FALSE
         out.sim <- lapply(1:nsim, function(i) glm.nb(YSIM[,i] ~ 1  + offset(log(expect_fake)), init.theta = thetainit, 
                                                      link=log,control=glm.control(maxit=10000)))
@@ -1485,11 +1489,14 @@ clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, 
     else{
         probcolors <- probmap(lassoresult, vectors.sim, rr, nsim,Time, colormap=FALSE)    
     }
+    return(list(lassoresult = lassoresult,
+                rr = riskratios,
+                rrcolors = rrcolors))
 }
     
     
 
 
-#end clust.sim function
+
     
 
