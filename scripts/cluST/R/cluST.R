@@ -6,7 +6,7 @@
 #' Dependencies and inputs are documented here.
 #' Data used for this analysis comes from MidWest Poverty data.
 #' @references Xu, Jiale, Gangnon, Ronald: "Stagewise and Stepwise Methods for Space and Space-Time Cluster Detection"
-#' @references Xu, Jiale, Gangnon, Ronald: "Stagewise and Stepwise Methods for Space and Space-Time Cluster Detection"
+#' @references Kamenetsky, M., Gangnon, R., Zhu, J., Lee, J. "Space and Space-Time Cluster Detection Using the Lasso"
 #' 
 #' 
 #' 
@@ -366,8 +366,6 @@ spacetimeLasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spa
     loglike <- lapply(1:nsim, function(k) sapply(1:length(lasso[[k]]$lambda), 
                                                  function(i) sum(dpoisson(Yx[,k], mu[[k]][,i],log=TRUE))))
     K <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), function(i) length(unique(xbetaPath[[j]][,i]))))
-#     offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ 1 + as.factor(vectors$Period) +offset(log(Ex[[i]])),family=poisson))
-#     overdisp <- lapply(1:nsim, function(i) myoverdisp(offset_reg[[i]]))
     message("Selecting best paths")
     if(spacetime==TRUE){
         message("returning results for space-time model")
