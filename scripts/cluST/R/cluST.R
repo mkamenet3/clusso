@@ -64,10 +64,10 @@ unlist2 <- function(x, recursive=TRUE, use.names=TRUE, what.names="inherited")
 #' @return This function returns a dataframe that contains 
 #' @export
 #' @examples
-#' clustersDF(x1,y1,rMax, utm=TRUE, length(x1))
-#' clustersDF(lat, long, utm=FALSE, length(lat))
+#' cluster.df(x1,y1,rMax, utm=TRUE, length(x1))
+#' cluster.df(lat, long, utm=FALSE, length(lat))
 
-clustersDF <- function(xP,yP, r.max, utm=FALSE,n){
+clusters.df <- function(xP,yP, r.max, utm=FALSE,n){
     indR = (1:n)[!duplicated(cbind(xP,yP))] 
     if(utm==FALSE){
         tmpR <- (as.matrix(distm(cbind(xP, yP), fun=distHaversine))[indR,])/1000    
@@ -117,7 +117,7 @@ dpoisson <- function(y, lambda, log = FALSE) {
 #' @return This function returns a list of expected and observed counts along with the period. 
 #' @export
 #' @examples
-setVectors <- function(period, expect, observed,Time, byrow=TRUE,...) {
+set.vectors <- function(period, expect, observed,Time, byrow=TRUE,...) {
     if (byrow==TRUE){
         E0=as.vector(matrix(expect, byrow=T, ncol=Time))
         Y.vec <- as.vector(matrix(observed,byrow=T, ncol=Time))
@@ -135,14 +135,14 @@ setVectors <- function(period, expect, observed,Time, byrow=TRUE,...) {
 }
 
 
-#' spaceMat
+#' space.mat
 #' 
 #' This function creates a sparse matrix of 1's of all potential clusters for the Lasso algorithm to cycle over; this incorporates space
-#' @param clusters clusters dataframe from (clustersDF function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)
+#' @param clusters clusters dataframe from (cluster.df function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)
 #' @param numCenters the number of centers
 #' @return returns sparse matrix of 1's
 #' @export
-spaceMat <- function(clusters, numCenters,...){
+space.mat <- function(clusters, numCenters,...){
     potClus <- numCenters
     mymat <- NULL
     for(i in 1:nrow(clusters)){
@@ -160,14 +160,14 @@ spaceMat <- function(clusters, numCenters,...){
     return(t(sparseMatrix(i = ii, j = jj, x =xx, dims = c(length(mymat), numCenters))))
 }
 
-#' timeMat
+#' time.mat
 #' 
 #' This function creates a sparse matrix of 1's of all of the potential time periods for the cluster to be in. The number of 
 #' potential time periods is determined by [(Time*(Time-1)]/2.
 #' @param Time Number of time periods in the data
 #' @return returns sparse matrix of 1's as indicators of membership in the time cluster
 #' @export
-timeMat <-function(Time,..){
+time.mat <-function(Time,..){
     block <- Matrix(diag(1,Time),sparse=TRUE)
     master <- block
     for(i in 1:(Time-2)){
@@ -179,46 +179,46 @@ timeMat <-function(Time,..){
 }
     
     
-#' spaceTimeMat
+#' spacetime.mat
 #' 
 #' This function takes the Kronecker product of the space and time matrices to create the space-time matrix
-#' @param timeMat Time matrix
+#' @param time.mat Time matrix
 #' @param numCenters number of centroids in space matrix
 #' @param Time number of time periods
 #' @return Returns sparse space time matrix     
 #' @export     
-spaceTimeMat <- function(clusters, numCenters, Time,...){
-    space <- spaceMat(clusters, numCenters)
-    time <- timeMat(Time)
-    spaceTimeMat <- kronecker(time, space)
-    return(spaceTimeMat)
+spacetime.mat <- function(clusters, numCenters, Time,...){
+    space <- space.mat(clusters, numCenters)
+    time <- time.mat(Time)
+    spacetime.mat <- kronecker(time, space)
+    return(spacetime.mat)
 }
 
 
 
-#' spaceTimeMatGroup
+#' spacetime.mat.group
 #' 
 #' This function creates a space-time matrix for the group Lasso procedure, where group is the number of time periods. 
-#' This function is used in conjunection with "spacetimeLassoGroup".
-#' @param timeMat Time matrix
+#' This function is used in conjunection with "spacetime.lasso.group".
+#' @param time.mat Time matrix
 #' @param numCenters number of centroids in space matrix
 #' @param Time number of time periods
 #' @return Returns sparse space time matrix for group Lasso.         
-spaceTimeMatGroup <- function(clusters, numCenters, Time,...){
+spacetime.mat.group <- function(clusters, numCenters, Time,...){
     time <- Matrix(diag(1,Time),sparse=TRUE)
-    space <- spaceMat(clusters, numCenters)
-    spaceTimeMatGroup <- kronecker(time, space)
-    return(spaceTimeMatGroup)
+    space <- space.mat(clusters, numCenters)
+    spacetimematgroup <- kronecker(time, space)
+    return(spacetimematgroup)
 }
 
-#' getGroups
+#' get.groups
 #' 
 #' This function creates a vector of the groups used for the group Lasso.
-#' This function is used in conjunection with "spacetimeLassoGroup".
-#' @param space space-only vector from the spaceTimeMatGroup function
+#' This function is used in conjunection with "spacetime.lasso.group".
+#' @param space space-only vector from the spacetime.matGroup function
 #' @param Time number of time periods
 #' @return Returns sparse space time matrix for group Lasso.         
-getGroups <- function(space, Time,...){
+get.groups <- function(space, Time,...){
     vec <- NULL
     for (i in 1:Time){
         vec <-c(vec,rep(i,(ncol(space)/Time)))
@@ -231,37 +231,37 @@ getGroups <- function(space, Time,...){
 
 
 
-#' myoverdisp
+#' overdisp
 #' 
 #' This function calculates the overdispersion parameter for the QIC 'c' overdispersion parameter.
 #' @param 
 #' @return returns sparse matrix of 1's
-myoverdisp <- function(object) {
+overdisp <- function(object) {
     with(object,sum((weights * residuals^2)[weights > 0])/df.residual)
 }
 
-#' spacetimeLasso
+#' spacetime.lasso
 #' 
 #' This function runs the Lasso regularization technique on our large sparse matric of potential space-time clusters.
 #' @param potClus number of potential clusters. This will usually be the same as 'numCenters'
-#' @param clusters clusters dataframe from (clustersDF function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)
+#' @param clusters clusters dataframe from (cluster.df function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)
 #' @param numCenters the number of centers
-#' @param vectors takes in the list of expected and observed counts from setVectors function
+#' @param vectors takes in the list of expected and observed counts from set.vectors function
 #' @param Time number of time periods in the dataset
 #' @param spacetime indicator of whether the cluster detection method should be run on all space-time clusters(default) or on only the potential space clusters.
 #' @return This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
 #' a list of observed counts (Yx), the lasso object, a list of K values (number of unique values in each decision path), and n (length of unique centers in the clusters dataframe)
 #' @export
-spacetimeLasso <- function(potClus, clusters, numCenters, vectors, Time, spacetime=TRUE, ...){
+spacetime.lasso <- function(potClus, clusters, numCenters, vectors, Time, spacetime=TRUE, ...){
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
     message("Creating space-time matrix")
     if(spacetime==TRUE){
-        sparseMAT <- spaceTimeMat(clusters, numCenters, Time)
+        sparseMAT <- spacetime.mat(clusters, numCenters, Time)
     }
     else{
-        sparseMAT <- spaceMat(clusters, numCenters)
+        sparseMAT <- space.mat(clusters, numCenters)
     }
     message("Space-time matrix created")
     Ex <- vectors$E0
@@ -279,7 +279,7 @@ spacetimeLasso <- function(potClus, clusters, numCenters, vectors, Time, spaceti
     K <- sapply(1:length(lasso$lambda), function(i) length(unique(xbetaPath[,i])))
     
     offset_reg <- glm(Yx ~ offset(log(Ex)),family=poisson)
-    overdisp <- myoverdisp(offset_reg)
+    overdisp <- overdisp(offset_reg)
     message("Selecting best paths")
     if(spacetime==TRUE){
         #QBIC
@@ -318,13 +318,13 @@ spacetimeLasso <- function(potClus, clusters, numCenters, vectors, Time, spaceti
 }
 
 
-#' spacetimeLasso.sim
+#' spacetime.lasso.sim
 #' 
 #' This function runs the Lasso regularization technique on our large sparse matric of potential space-time clusters.It is specifically created to use with simulations.
 #' @param potClus number of potential clusters. This will usually be the same as 'numCenters'
-#' @param clusters clusters dataframe from (clustersDF function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)
+#' @param clusters clusters dataframe from (cluster.df function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)
 #' @param numCenters the number of centers
-#' @param vectors takes in the list of expected and observed counts from setVectors function
+#' @param vectors takes in the list of expected and observed counts from set.vectors function
 #' @param Time number of time periods in the dataset
 #' @param spacetime indicator of whether the cluster detection method should be run on all space-time clusters(default) or on only the potential space clusters.
 #' @return This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
@@ -333,18 +333,18 @@ spacetimeLasso <- function(potClus, clusters, numCenters, vectors, Time, spaceti
 #' @param YSIM vector of simulated observed counts
 #' @param getRR default is TRUE. Determines how relative risk is calculated. If getRR=TRUE, then relative risk is first calculated in each simulation and averaged over simulations.
 #' If getRR is FALSE, then relative risk will come from averaging the expected counts from each of the Lasso results by the number of simulations. This should then
-#' by used in conjunction with the setRR function to get the relative risk. TODO integrate this into one flow.
+#' by used in conjunction with the set.rrfunction to get the relative risk. TODO integrate this into one flow.
 #' @export
-spacetimeLasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spacetime=TRUE,nsim,YSIM, getRR=TRUE,...){
+spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spacetime=TRUE,nsim,YSIM, getRR=TRUE,...){
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
     message("Creating space-time matrix")
     if(spacetime==TRUE){
-        sparseMAT <- spaceTimeMat(clusters, numCenters, Time)
+        sparseMAT <- spacetime.mat(clusters, numCenters, Time)
     }
     else{
-        sparseMAT <- spaceMat(clusters, numCenters)
+        sparseMAT <- space.mat(clusters, numCenters)
     }
     message("Space-time matrix created")
     Ex <- vectors[[2]]
@@ -370,7 +370,7 @@ spacetimeLasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spa
     if(spacetime==TRUE){
         message("returning results for space-time model")
         offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ 1 + as.factor(vectors$Period) +offset(log(Ex[[i]])),family=poisson))
-        overdisp <- lapply(1:nsim, function(i) myoverdisp(offset_reg[[i]]))
+        overdisp <- lapply(1:nsim, function(i) overdisp(offset_reg[[i]]))
         #QBIC
         PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]])-log(n*Time)/2*K[[i]])
         select.qbic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qbic[[i]])))
@@ -414,7 +414,7 @@ spacetimeLasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spa
     else{
         message("Returning results for space-only model")
         offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ 1 +offset(log(Ex[[i]])),family=poisson))
-        overdisp <- lapply(1:nsim, function(i) myoverdisp(offset_reg[[i]]))
+        overdisp <- lapply(1:nsim, function(i) overdisp(offset_reg[[i]]))
         #BIC
         PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]])-log(n*Time)/2*K[[i]])
         select.qbic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qbic[[i]])))
@@ -461,27 +461,27 @@ spacetimeLasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spa
 }
 
 
-#' spacetimeLassoGroup
+#' spacetime.lasso.group
 #' 
 #' This function runs the *group* Lasso regularization technique on our large sparse matric of potential space-time clusters. Groups are each of the
 #' time periods in the data. For example, if there are 5 time periods, then there are 5 groups.
 #' @param potClus number of potential clusters. This will usually be the same as 'numCenters'
-#' @param clusters clusters dataframe from (clustersDF function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)
+#' @param clusters clusters dataframe from (cluster.df function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)
 #' @param numCenters the number of centers
-#' @param vectors takes in the list of expected and observed counts from setVectors function
+#' @param vectors takes in the list of expected and observed counts from set.vectors function
 #' @param Time number of time periods in the dataset
 #' @param spacetime indicator of whether the cluster detection method should be run on all space-time clusters(default) or on only the potential space clusters.
 #' @param group option which allows user to specify the model should be run using group Lasso with time periods as the group.
 #' @return This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
 #' a list of observed counts (Yx), the lasso object, a list of K values (number of unique values in each decision path), and n (length of unique centers in the clusters dataframe)
 #' @export
-spacetimeLassoGroup <- function(potClus, clusters, numCenters, vectors, Time, ...){
+spacetime.lasso.group <- function(potClus, clusters, numCenters, vectors, Time, ...){
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
     message("Creating space-time matrix grouped on time")
-    sparseMAT <- spaceTimeMatGroup(clusters, numCenters, Time)
-    groups <- getGroups(sparseMAT, Time)
+    sparseMAT <- spacetime.matGroup(clusters, numCenters, Time)
+    groups <- get.groups(sparseMAT, Time)
     message("Space-time matrix created")
     Ex <- vectors$E0
     Yx <- vectors$Y.vec
@@ -500,7 +500,7 @@ spacetimeLassoGroup <- function(potClus, clusters, numCenters, vectors, Time, ..
     K <- sapply(1:length(lasso$lambda), function(i) length(unique(xbetaPath[,i])))
     
     offset_reg <- glm(Yx ~ offset(log(Ex)),family=poisson)
-    overdisp <- myoverdisp(offset_reg)
+    overdisp <- overdisp(offset_reg)
     message("Selecting best paths")
     
     #QBIC
@@ -525,13 +525,13 @@ spacetimeLassoGroup <- function(potClus, clusters, numCenters, vectors, Time, ..
     return(list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, Ex = Ex, Yx = Yx, lasso = lasso, K = K, n = n))    
 }
 
-#' spacetimeLassoGroup.sim
+#' spacetime.lasso.group.sim
 #' 
 #' This function runs the Lasso regularization technique on our large sparse matric of potential space-time clusters.It is specifically created to use with simulations.
 #' @param potClus number of potential clusters. This will usually be the same as 'numCenters'
-#' @param clusters clusters dataframe from (clustersDF function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)
+#' @param clusters clusters dataframe from (cluster.df function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)
 #' @param numCenters the number of centers
-#' @param vectors takes in the list of expected and observed counts from setVectors function
+#' @param vectors takes in the list of expected and observed counts from set.vectors function
 #' @param Time number of time periods in the dataset
 #' @param spacetime indicator of whether the cluster detection method should be run on all space-time clusters(default) or on only the potential space clusters.
 #' @return This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
@@ -540,15 +540,15 @@ spacetimeLassoGroup <- function(potClus, clusters, numCenters, vectors, Time, ..
 #' @param YSIM vector of simulated observed counts
 #' @param getRR default is TRUE. Determines how relative risk is calculated. If getRR=TRUE, then relative risk is first calculated in each simulation and averaged over simulations.
 #' If getRR is FALSE, then relative risk will come from averaging the expected counts from each of the Lasso results by the number of simulations. This should then
-#' by used in conjunction with the setRR function to get the relative risk. TODO integrate this into one flow.
+#' by used in conjunction with the set.rr function to get the relative risk. TODO integrate this into one flow.
 #' @export
-spacetimeLassoGroup.sim <- function(potClus, clusters, numCenters, vectors, Time, spacetime=TRUE,nsim,YSIM, getRR=TRUE,...){
+spacetime.lasso.group.sim <- function(potClus, clusters, numCenters, vectors, Time, spacetime=TRUE,nsim,YSIM, getRR=TRUE,...){
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
     message("Creating space-time matrix")
-    sparseMAT <- spaceTimeMatGroup(clusters, numCenters, Time)
-    groups <- getGroups(sparseMAT, Time)
+    sparseMAT <- spacetime.matGroup(clusters, numCenters, Time)
+    groups <- get.groups(sparseMAT, Time)
     message("Space-time matrix created")
     Ex <- vectors[[2]]
     Yx <- YSIM
@@ -584,7 +584,7 @@ spacetimeLassoGroup.sim <- function(potClus, clusters, numCenters, vectors, Time
                                                  function(i) sum(dpoisson(Yx[,k], mu[[k]][,i],log=TRUE))))
     K <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), function(i) length(unique(xbetaPath[[j]][,i]))))
     offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ 1 + as.factor(vectors$Period) +offset(log(Ex[[i]])),family=poisson))
-    overdisp <- lapply(1:nsim, function(i) myoverdisp(offset_reg[[i]]))
+    overdisp <- lapply(1:nsim, function(i) overdisp(offset_reg[[i]]))
     message("Selecting best paths")
     if(spacetime==TRUE){
         #QBIC
@@ -685,7 +685,7 @@ spacetimeLassoGroup.sim <- function(potClus, clusters, numCenters, vectors, Time
 
 
 
-#' setRR
+#' set.rr
 #' 
 #' This function will create vectors of the risk ratios as determined by observed counts, QBIC, QAIC, and QAICc, respectively.
 #' @param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso function
@@ -694,7 +694,7 @@ spacetimeLassoGroup.sim <- function(potClus, clusters, numCenters, vectors, Time
 #' @return This returns a list of the risk ratios (observed over expected) as determined by 1) pure observed/expected counts,
 #' 2) observed based on QBIC path/expected; 3) observed based on QAIC path/expected; 4) observed based on QAICc path/expected.
 #' @export
-setRR <- function(lassoresult, vectors, Time, sim=FALSE,...){
+set.rr<- function(lassoresult, vectors, Time, sim=FALSE,...){
     if(sim==FALSE){
         RRobs <- matrix(as.vector(vectors$Y.vec)/as.vector(vectors$E0),ncol=Time)
         RRbic <- matrix(lassoresult$E.qbic/as.vector(vectors$E0),ncol=Time)
@@ -714,7 +714,7 @@ setRR <- function(lassoresult, vectors, Time, sim=FALSE,...){
 }
 
 
-#' getRR
+#' get.rr
 #' 
 #' This function will extract the relative risk ratios as determined by observed counts, QBIC, QAIC, and QAICc, respectively. This method determines the 
 #' relative risk by averageing the relative risk in each simulation over the number of simulations. This is in contrast to $setRR$ where the expected counts
@@ -727,7 +727,7 @@ setRR <- function(lassoresult, vectors, Time, sim=FALSE,...){
 #' @return This returns a list of the risk ratios (observed over expected) as determined by 1) pure observed/expected counts,
 #' 2) observed based on QBIC path/expected; 3) observed based on QAIC path/expected; 4) observed based on QAICc path/expected.
 #' @export
-getRR <- function(lassoresult,vectors, Time, sim=TRUE,...){
+get.rr <- function(lassoresult,vectors, Time, sim=TRUE,...){
     E0_avg <- Reduce("+", vectors$E0)/length(vectors$E0)
     RRobs <- matrix(as.vector(E0_avg)/as.vector(vectors$E0_fit),ncol=Time)
     message("Relative risk ratios from simulated data - average RR over nsim")
@@ -861,7 +861,7 @@ probmap <- function(lassoresult, vectors.sim, rr, nsim, Time, colormap=FALSE,...
 }    
 
 
-#'detect_set
+#'detect.set
 #'
 #'This function will extract and set the necessary vectors in order to detect what percent of clusters
 #'in the simulation were detected (true positives), what percent of clusters were incorrectly in the background (false negatives),
@@ -873,8 +873,8 @@ probmap <- function(lassoresult, vectors.sim, rr, nsim, Time, colormap=FALSE,...
 #'should be, 2) indx, which contains the index of cluster as determined where the risk ratio in the rr matrix is not 1,
 #'3) rr.simBIC, rr.simAIC, rr.simAICc - the risk ratios as determined by BIC, AIC, and AICc (respectively), and 4) alphaBIC, alphaAIC, alphaAICc - the calculated
 #'background risk rates as determined by BIC, AIC, and AICc or QBIC, QAIC, QAICc. 
-detect_set <- function(lassoresult, vectors.sim, rr,...){
-    idx_truth <- sapply(1:Time, function(i) which(rr[,i] !=1))
+detect.set <- function(lassoresult, vectors.sim, rr, Time,...){
+    indx_truth <- sapply(1:Time, function(i) which(rr[,i] !=1))
     indx <- which(rr !=1)
     rr.simBIC <- lapply(1:nsim, function(i) lassoresult$select_mu.qbic[[i]]/vectors.sim$E0_fit)
     rr.simAIC <- lapply(1:nsim, function(i) lassoresult$select_mu.qaic[[i]]/vectors.sim$E0_fit)
@@ -898,15 +898,126 @@ detect_set <- function(lassoresult, vectors.sim, rr,...){
 }
 
 
+#'detect.incluster.aic
+#'
+#'
+detect.incluster.aic <- function(lassoresult, vectors.sim, rr, res, period, Time){
+    prob.simAIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    ix <- lapply(1: length(prob.simAIC), 
+                 function(j) sapply(1:Time, 
+                                    function(k) 
+                                        which(round(matrix(res$rr.simAIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(res$alphaAIC[[j]][[k]])),6))))
+    in_cluster <- lapply(1:length(prob.simAIC), 
+                         function(j) sapply(1:Time, 
+                                            function(k) sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1)/length(res$indx_truth[[k]])))
+    idx_avg <- unlist(lapply(1:length(prob.simAIC), 
+                             function(j) mean(in_cluster[[j]][period])))
+    return(list(
+        mean_detect = mean(idx_avg),
+        min_detect = min(idx_avg)
+    ))
+}
+ 
+#'detect.incluster.aicc
+#'
+#'
+detect.incluster.aicc <- function(lassoresult, vectors.sim, rr, res, period,Time){
+    prob.simAICc <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    ix <- lapply(1: length(prob.simAICc), 
+                 function(j) sapply(1:Time, 
+                                    function(k) 
+                                        which(round(matrix(res$rr.simAICc[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(res$alphaAICc[[j]][[k]])),6))))
+    in_cluster <- lapply(1:length(prob.simAICc), 
+                         function(j) sapply(1:Time, 
+                                            function(k) sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1)/length(res$indx_truth[[k]])))
+    idx_avg <- unlist(lapply(1:length(prob.simAICc), 
+                             function(j) mean(in_cluster[[j]][period])))
+    return(list(
+        mean_detect = mean(idx_avg),
+        min_detect = min(idx_avg)
+    ))
+}
 
-#'detect_incluster
+
+#'detect.incluster.bic
+#'
+#'
+detect.incluster.bic <- function(lassoresult, vectors.sim, rr, res, period, Time){
+    prob.simBIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    ix <- lapply(1: length(prob.simBIC), 
+                 function(j) sapply(1:Time, 
+                                    function(k) 
+                                        which(round(matrix(res$rr.simBIC[[j]], ncol=Time)[,k],6) >round(as.numeric(attributes(res$alphaBIC[[j]][[k]])),6))))
+    in_cluster <- lapply(1:length(prob.simBIC), 
+                         function(j) sapply(1:Time, 
+                                            function(k) sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1)/length(res$indx_truth[[k]])))
+    idx_avg <- unlist(lapply(1:length(prob.simBIC), 
+                             function(j) mean(in_cluster[[j]][period])))
+    return(list(
+        mean_detect = mean(idx_avg),
+        min_detect = min(idx_avg)
+    ))
+}
+
+#'detect.incluster.ic
+#'
+#'
+detect.incluster.ic <- function(lassoresult, vectors.sim, rr, res, period, Time){
+    prob.simBIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    prob.simAIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    prob.simAICc <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    #(Q)AIC
+    ix <- lapply(1: length(prob.simAIC), 
+                 function(j) sapply(1:Time, 
+                                    function(k) 
+                                        which(round(matrix(res$rr.simAIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(res$alphaAIC[[j]][[k]])),6))))
+    in_cluster <- lapply(1:length(prob.simAIC), 
+                         function(j) sapply(1:Time, 
+                                            function(k) sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1)/length(res$indx_truth[[k]])))
+    idx_avg <- unlist(lapply(1:length(prob.simAIC), 
+                             function(j) mean(in_cluster[[j]][period])))
+    
+    mean_detect.aic = mean(idx_avg)
+    min_detect.aic = min(idx_avg)
+    #(Q)AICc
+    ix <- lapply(1: length(prob.simAICc), 
+                 function(j) sapply(1:Time, 
+                                    function(k) 
+                                        which(round(matrix(res$rr.simAICc[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(res$alphaAICc[[j]][[k]])),6))))
+    in_cluster <- lapply(1:length(prob.simAICc), 
+                         function(j) sapply(1:Time, 
+                                            function(k) sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1)/length(res$indx_truth[[k]])))
+    idx_avg <- unlist(lapply(1:length(prob.simAICc), 
+                             function(j) mean(in_cluster[[j]][period])))
+    mean_detect.aicc = mean(idx_avg)
+    min_detect.aicc = min(idx_avg)
+    
+    #(Q)BIC
+    ix <- lapply(1: length(prob.simBIC), 
+                 function(j) sapply(1:Time, 
+                                    function(k) 
+                                        which(round(matrix(res$rr.simBIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(res$alphaBIC[[j]][[k]])),6))))
+    in_cluster <- lapply(1:length(prob.simBIC), 
+                         function(j) sapply(1:Time, 
+                                            function(k) sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1)/length(res$indx_truth[[k]])))
+    idx_avg <- unlist(lapply(1:length(prob.simBIC), 
+                             function(j) mean(in_cluster[[j]][period])))
+    mean_detect.bic = mean(idx_avg)
+    min_detect.bic = min(idx_avg)
+    return(list(mean_detect.aic = mean_detect.aic, min_detect.aic = min_detect.aic,
+                mean_detect.aicc = mean_detect.aicc, min_detect.aicc = min_detect.aicc,
+                mean_detect.bic = mean_detect.bic, min_detect.bic = min_detect.bic))
+}
+
+
+#'detect.incluster
 #'
 #'This function will calculate the percent of simulations which correctly identify elements in cluster based on (Q)AIC, (Q)AICc, and (Q)BIC. The user can specify
 #'if they want to only return one of these criterion or all three for further analysis.
 #'@param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso.sim function
 #'@param vectors.sim  dataframe of initial vectors of the observed and expected counts that went into simulation function
 #'@param rr risk ratio matrix that was used in the simulation
-#'@param res result of detect_set function
+#'@param res result of detect.set function
 #'@param period_start time period where the cluster  starts in the simulation
 #'@param period_end time period where cluster ends in the simulation
 #'@param multi_period FALSE by default meaning that period_start and period_end are two unique periods. For example, if period_start = 2 and period_end =5, then
@@ -914,124 +1025,32 @@ detect_set <- function(lassoresult, vectors.sim, rr,...){
 #'this would mean we look at periods 2, 3, 4, and 5.
 #'@param IC the information criteria you would like to be returned. Options are: IC = aic or IC = qaic; IC = aicc or IC = qaicc; IC = bic or IC = qbic; IC = ic or IC = qic 
 #'(for aic/aicc/bic and qaic/qaicc/qbic, respectively).
+#'TODO add cluster detection in case where risk ratio is less than background rate
 #'@return returns
-detect_incluster <- function(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period = FALSE, IC, Time,...){
+detect.incluster <- function(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period = FALSE, IC = c("aic","aicc","bic","ic"), Time,...){
     if(multi_period==TRUE){
         period = period_start:period_end
     }
     else{
         period = c(period_start, period_end)
     }
-    #for only AIC/QAIC
-    if(IC==aic | IC == qaic){
-        ix <- lapply(1: length(prob.simAIC), 
-                     function(j) sapply(1:Time, 
-                                        function(k) 
-                                            which(round(matrix(res$rr.simAIC[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaAIC[[j]][[k]])),6))))
-        in_cluster <- lapply(1:length(prob.simAIC), 
-                             function(j) sapply(1:Time, 
-                                                function(k) sum((ix[[j]][[k]] %in% res$idx_truth[[k]])*1)/length(res$idx_truth[[k]])))
-        idx_avg <- unlist(lapply(1:length(prob.simAIC), 
-                                 function(j) mean(in_cluster[[j]][period])))
-        mean_detect = mean(idx_avg)
-        min_detect = min(idx_avg)
-        return(list(
-            mean_detect = mean_detect,
-            min_detect = min_detect
-        ))
-    }
-    #for only AICc/QAICc
-    if(IC==aicc | IC == qaicc){
-        ix <- lapply(1: length(prob.simAICc), 
-                     function(j) sapply(1:Time, 
-                                        function(k) 
-                                            which(round(matrix(res$rr.simAICc[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaAICc[[j]][[k]])),6))))
-        in_cluster <- lapply(1:length(prob.simAICc), 
-                             function(j) sapply(1:Time, 
-                                                function(k) sum((ix[[j]][[k]] %in% res$idx_truth[[k]])*1)/length(res$idx_truth[[k]])))
-        idx_avg <- unlist(lapply(1:length(prob.simAICc), 
-                                 function(j) mean(in_cluster[[j]][period])))
-        return(list(
-            mean_detect = mean(idx_avg),
-            min_detect = min(idx_avg)
-        ))
-    }
-    #for only BIC/QBIC
-    if(IC==bic | IC == qbic){
-        ix <- lapply(1: length(prob.simBIC), 
-                     function(j) sapply(1:Time, 
-                                        function(k) 
-                                    which(round(matrix(res$rr.simBIC[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaBIC[[j]][[k]])),6))))
-        in_cluster <- lapply(1:length(prob.simBIC), 
-                             function(j) sapply(1:Time, 
-                                                function(k) sum((ix[[j]][[k]] %in% res$idx_truth[[k]])*1)/length(res$idx_truth[[k]])))
-        idx_avg <- unlist(lapply(1:length(prob.simBIC), 
-                                 function(j) mean(in_cluster[[j]][period])))
-        return(list(
-            mean_detect = mean(idx_avg),
-            min_detect = min(idx_avg)
-        ))
-    }
-    
-    #for all IC (return (Q)AIC, (Q)AICc, and (Q)BIC)
-    if(IC== ic | IC == qic){
-        #(Q)AIC
-        ix <- lapply(1: length(prob.simAIC), 
-                     function(j) sapply(1:Time, 
-                                        function(k) 
-                                            which(round(matrix(res$rr.simAIC[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaAIC[[j]][[k]])),6))))
-        in_cluster <- lapply(1:length(prob.simAIC), 
-                             function(j) sapply(1:Time, 
-                                                function(k) sum((ix[[j]][[k]] %in% res$idx_truth[[k]])*1)/length(res$idx_truth[[k]])))
-        idx_avg <- unlist(lapply(1:length(prob.simAIC), 
-                                 function(j) mean(in_cluster[[j]][period])))
+    IC <- match.arg(IC, several.ok= TRUE)
+    switch(IC,
+          aic = detect.incluster.aic(lassoresult, vectors.sim, rr, res, period, Time),
+          aicc = detect.incluster.aicc(lassoresult, vectors.sim, rr, res, period, Time),
+          bic = detect.incluster.bic(lassoresult, vectors.sim, rr, res, period, Time),
+          ic = detect.incluster.ic(lassoresult, vectors.sim, rr, res, period, Time))
+} 
 
-        mean_detect.aic = mean(idx_avg)
-        min_detect.aic = min(idx_avg)
-    
-        #(Q)AICc
-        ix <- lapply(1: length(prob.simAICc), 
-                     function(j) sapply(1:Time, 
-                                        function(k) 
-                                            which(round(matrix(res$rr.simAICc[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaAICc[[j]][[k]])),6))))
-        in_cluster <- lapply(1:length(prob.simAICc), 
-                             function(j) sapply(1:Time, 
-                                                function(k) sum((ix[[j]][[k]] %in% res$idx_truth[[k]])*1)/length(res$idx_truth[[k]])))
-        idx_avg <- unlist(lapply(1:length(prob.simAICc), 
-                                 function(j) mean(in_cluster[[j]][period])))
-        mean_detect.aicc = mean(idx_avg)
-        min_detect.aicc = min(idx_avg)
-    
-        #(Q)BIC
-        ix <- lapply(1: length(prob.simBIC), 
-                     function(j) sapply(1:Time, 
-                                        function(k) 
-                                            which(round(matrix(res$rr.simBIC[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaBIC[[j]][[k]])),6))))
-        in_cluster <- lapply(1:length(prob.simBIC), 
-                             function(j) sapply(1:Time, 
-                                                function(k) sum((ix[[j]][[k]] %in% res$idx_truth[[k]])*1)/length(res$idx_truth[[k]])))
-        idx_avg <- unlist(lapply(1:length(prob.simBIC), 
-                                 function(j) mean(in_cluster[[j]][period])))
-        mean_detect.bic = mean(idx_avg)
-        min_detect.bic = min(idx_avg)
-        
-        #return all IC
-        return(list(mean_detect.aic = mean_detect.aic, min_detect.aic = min_detect.aic,
-                    mean_detect.aicc = mean_detect.aicc, min_detect.aicc = min_detect.aicc,
-                    mean_detect.bic = mean_detect.bic, min_detect.bic = min_detect.bic))
-        
-    }
-    
-}
 
-#'detect_falsecluster
+#'detect.falsecluster
 #'
 #'This function will calculate the percent of simulations which correctly identify elements in cluster based on (Q)AIC, (Q)AICc, and (Q)BIC. The user can specify
 #'if they want to only return one of these criterion or all three for further analysis.
 #'@param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso.sim function
 #'@param vectors.sim  dataframe of initial vectors of the observed and expected counts that went into simulation function
 #'@param rr risk ratio matrix that was used in the simulation
-#'@param res result of detect_set function
+#'@param res result of detect.set function
 #'@param period_start time period where the cluster  starts in the simulation
 #'@param period_end time period where cluster ends in the simulation
 #'@param multi_period FALSE by default meaning that period_start and period_end are two unique periods. For example, if period_start = 2 and period_end =5, then
@@ -1041,7 +1060,7 @@ detect_incluster <- function(lassoresult, vectors.sim, rr, res, period_start, pe
 #'(for aic/aicc/bic and qaic/qaicc/qbic, respectively).
 #'@return returns list of average false clusters across all simulations and the lowest number of false clusters detected across clusters
 
-detect_falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period=FALSE, IC, Time,...){
+detect.falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period=FALSE, IC, Time,...){
     if(multi_period==TRUE){
         period = period_start:period_end
     }
@@ -1058,7 +1077,7 @@ detect_falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start,
         
         in_fake <- lapply(1:length(prob.simAIC), 
                           function(j) sapply(1:Time, 
-                                             function(k) length(which(ix[[j]][[k]] %in% res$idx_truth[[k]] == FALSE))/length(res$idx[[j]][[k]])))
+                                             function(k) length(which(ix[[j]][[k]] %in% res$indx_truth[[k]] == FALSE))/length(res$idx[[j]][[k]])))
         idx_avg <- unlist(lapply(1:length(prob.simAIC), 
                                  function(j) mean(in_fake[[j]][period])))
         mean_fp.aic = mean(idx_avg)
@@ -1075,7 +1094,7 @@ detect_falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start,
         
         in_fake <- lapply(1:length(prob.simAICc), 
                           function(j) sapply(1:Time, 
-                                             function(k) length(which(ix[[j]][[k]] %in% res$idx_truth[[k]] == FALSE))/length(res$idx[[j]][[k]])))
+                                             function(k) length(which(ix[[j]][[k]] %in% res$indx_truth[[k]] == FALSE))/length(res$idx[[j]][[k]])))
         idx_avg <- unlist(lapply(1:length(prob.simAICc), 
                                  function(j) mean(in_fake[[j]][period])))
         return(list(
@@ -1092,7 +1111,7 @@ detect_falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start,
         
         in_fake <- lapply(1:length(prob.simBIC), 
                           function(j) sapply(1:Time, 
-                                             function(k) length(which(ix[[j]][[k]] %in% res$idx_truth[[k]] == FALSE))/length(res$idx[[j]][[k]])))
+                                             function(k) length(which(ix[[j]][[k]] %in% res$indx_truth[[k]] == FALSE))/length(res$idx[[j]][[k]])))
         idx_avg <- unlist(lapply(1:length(prob.simBIC), 
                                  function(j) mean(in_fake[[j]][period])))
         return(list(
@@ -1109,7 +1128,7 @@ detect_falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start,
         
         in_fake <- lapply(1:length(prob.simAICc), 
                           function(j) sapply(1:Time, 
-                                             function(k) length(which(ix[[j]][[k]] %in% res$idx_truth[[k]] == FALSE))/length(res$idx[[j]][[k]])))
+                                             function(k) length(which(ix[[j]][[k]] %in% res$indx_truth[[k]] == FALSE))/length(res$idx[[j]][[k]])))
         idx_avg <- unlist(lapply(1:length(prob.simAIC), 
                                  function(j) mean(in_fake[[j]][period])))
         
@@ -1124,7 +1143,7 @@ detect_falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start,
         
         in_fake <- lapply(1:length(prob.simAICc), 
                           function(j) sapply(1:Time, 
-                                             function(k) length(which(ix[[j]][[k]] %in% res$idx_truth[[k]] == FALSE))/length(res$idx[[j]][[k]])))
+                                             function(k) length(which(ix[[j]][[k]] %in% res$indx_truth[[k]] == FALSE))/length(res$idx[[j]][[k]])))
         idx_avg <- unlist(lapply(1:length(prob.simAICc), 
                                  function(j) mean(in_fake[[j]][period])))
         
@@ -1139,7 +1158,7 @@ detect_falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start,
         
         in_fake <- lapply(1:length(prob.simBIC), 
                           function(j) sapply(1:Time, 
-                                             function(k) length(which(ix[[j]][[k]] %in% res$idx_truth[[k]] == FALSE))/length(res$idx[[j]][[k]])))
+                                             function(k) length(which(ix[[j]][[k]] %in% res$indx_truth[[k]] == FALSE))/length(res$idx[[j]][[k]])))
         idx_avg <- unlist(lapply(1:length(prob.simBIC), 
                                  function(j) mean(in_fake[[j]][period])))
         
@@ -1154,14 +1173,14 @@ detect_falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start,
 }
 
 
-#'detect_inbackground
+#'detect.inbackground
 #'
 #'This function will calculate the percent of simulations which correctly identify elements in cluster based on (Q)AIC, (Q)AICc, and (Q)BIC. The user can specify
 #'if they want to only return one of these criterion or all three for further analysis.
 #'@param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso.sim function
 #'@param vectors.sim  dataframe of initial vectors of the observed and expected counts that went into simulation function
 #'@param rr risk ratio matrix that was used in the simulation
-#'@param res result of detect_set function
+#'@param res result of detect.set function
 #'@param period_start time period where the cluster  starts in the simulation
 #'@param period_end time period where cluster ends in the simulation
 #'@param multi_period FALSE by default meaning that period_start and period_end are two unique periods. For example, if period_start = 2 and period_end =5, then
@@ -1171,7 +1190,7 @@ detect_falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start,
 #'(for aic/aicc/bic and qaic/qaicc/qbic, respectively).
 #'@return returns list of average false clusters across all simulations and the lowest number of false clusters detected across clusters
 
-detect_inbackground <-function(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period=FALSE, IC, Time,...){
+detect.inbackground <-function(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period=FALSE, IC, Time,...){
     if(multi_period==TRUE){
         period = period_start:period_end
     }
@@ -1187,8 +1206,8 @@ detect_inbackground <-function(lassoresult, vectors.sim, rr, res, period_start, 
         in_background <- lapply(1:length(prob.simAIC), 
                                 function(j) sapply(1:Time, 
                                                    function(k) 
-                                                       ((sum((ix[[j]][[k]] %in% res$idx_truth[[k]])*1) - 
-                                                             length(res$idx_truth[[k]]))/length(res$idx_truth[[k]]))*-1))
+                                                       ((sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1) - 
+                                                             length(res$indx_truth[[k]]))/length(res$indx_truth[[k]]))*-1))
         in_bsum <- lapply(1:length(prob.simAIC), 
                           function(j) mean(in_background[[j]][period]))
         mean_bkgrd = mean(unlist(in_bsum))
@@ -1207,8 +1226,8 @@ detect_inbackground <-function(lassoresult, vectors.sim, rr, res, period_start, 
         in_background <- lapply(1:length(prob.simAICc), 
                                 function(j) sapply(1:Time, 
                                                    function(k) 
-                                                       ((sum((ix[[j]][[k]] %in% res$idx_truth[[k]])*1) - 
-                                                             length(res$idx_truth[[k]]))/length(res$idx_truth[[k]]))*-1))
+                                                       ((sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1) - 
+                                                             length(res$indx_truth[[k]]))/length(res$indx_truth[[k]]))*-1))
         in_bsum <- lapply(1:length(prob.simAICc), 
                           function(j) mean(in_background[[j]][period]))
         mean_bkgrd = mean(unlist(in_bsum))
@@ -1227,8 +1246,8 @@ detect_inbackground <-function(lassoresult, vectors.sim, rr, res, period_start, 
         in_background <- lapply(1:length(prob.simBIC), 
                                 function(j) sapply(1:Time, 
                                                    function(k) 
-                                                       ((sum((ix[[j]][[k]] %in% res$idx_truth[[k]])*1) - 
-                                                             length(res$idx_truth[[k]]))/length(res$idx_truth[[k]]))*-1))
+                                                       ((sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1) - 
+                                                             length(res$indx_truth[[k]]))/length(res$indx_truth[[k]]))*-1))
         in_bsum <- lapply(1:length(prob.simBIC), 
                           function(j) mean(in_background[[j]][period]))
         mean_bkgrd = mean(unlist(in_bsum))
@@ -1248,8 +1267,8 @@ detect_inbackground <-function(lassoresult, vectors.sim, rr, res, period_start, 
         in_background <- lapply(1:length(prob.simAIC), 
                                 function(j) sapply(1:Time, 
                                                    function(k) 
-                                                       ((sum((ix[[j]][[k]] %in% res$idx_truth[[k]])*1) - 
-                                                             length(res$idx_truth[[k]]))/length(res$idx_truth[[k]]))*-1))
+                                                       ((sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1) - 
+                                                             length(res$indx_truth[[k]]))/length(res$indx_truth[[k]]))*-1))
         in_bsum <- lapply(1:length(prob.simAIC), 
                           function(j) mean(in_background[[j]][period]))
         mean_bkgrd.aic = mean(unlist(in_bsum))
@@ -1262,8 +1281,8 @@ detect_inbackground <-function(lassoresult, vectors.sim, rr, res, period_start, 
         in_background <- lapply(1:length(prob.simAICc), 
                                 function(j) sapply(1:Time, 
                                                    function(k) 
-                                                       ((sum((ix[[j]][[k]] %in% res$idx_truth[[k]])*1) - 
-                                                             length(res$idx_truth[[k]]))/length(res$idx_truth[[k]]))*-1))
+                                                       ((sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1) - 
+                                                             length(res$indx_truth[[k]]))/length(res$indx_truth[[k]]))*-1))
         in_bsum <- lapply(1:length(prob.simAICc), 
                           function(j) mean(in_background[[j]][period]))
         mean_bkgrd.aicc = mean(unlist(in_bsum))
@@ -1276,8 +1295,8 @@ detect_inbackground <-function(lassoresult, vectors.sim, rr, res, period_start, 
         in_background <- lapply(1:length(prob.simBIC), 
                                 function(j) sapply(1:Time, 
                                                    function(k) 
-                                                       ((sum((ix[[j]][[k]] %in% res$idx_truth[[k]])*1) - 
-                                                             length(res$idx_truth[[k]]))/length(res$idx_truth[[k]]))*-1))
+                                                       ((sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1) - 
+                                                             length(res$indx_truth[[k]]))/length(res$indx_truth[[k]]))*-1))
         in_bsum <- lapply(1:length(prob.simBIC), 
                           function(j) mean(in_background[[j]][period]))
         mean_bkgrd.bic = mean(unlist(in_bsum))
@@ -1302,7 +1321,7 @@ detect_inbackground <-function(lassoresult, vectors.sim, rr, res, period_start, 
 #'@param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso.sim function
 #'@param vectors.sim dataframe of initial vectors of the observed and expected counts that went into mylasso.sim function
 #'@param rr risk ratio matrix that was used in the simulation
-#'@param res result of detect_set function
+#'@param res result of detect.set function
 #'@param period_start start period of the simulation
 #'@param period_end end period of the simulation
 #'@param multi_period FALSE by default meaning that period_start and period_end are two unique periods. For example, if period_start = 2 and period_end =5, then
@@ -1315,7 +1334,7 @@ detect_inbackground <-function(lassoresult, vectors.sim, rr, res, period_start, 
 #'All of these are reported as determined by (Q)AIC, (Q)AICc, (Q)BIC, or all three IC.
 #'@export
 #'
-detect <- function(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period = FALSE,  IC, Time,...){
+detect <- function(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period = FALSE, IC, Time,...){
     #determined time period span
     if(multi_period==TRUE){
         period = period_start:period_end
@@ -1324,15 +1343,15 @@ detect <- function(lassoresult, vectors.sim, rr, res, period_start, period_end, 
         period = c(period_start, period_end)
     }
     #run set-up
-    res <- detect_set(lassoresult, vectors.sim, rr)
+    res <- detect.set(lassoresult, vectors.sim, rr, Time)
     #create empty lists to fill in
     prob.simBIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
     prob.simAIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
     prob.simAICc <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
     #run detection
-    in_cluster <- detect_incluster(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period, IC, Time)
-    false_cluster <- detect_falsecluster(lassoresult, vectors.sim, rr, period_start, period_end, multi_period, IC, Time)
-    in_background <- detect_inbackground(lassoresult, vectors.sim, rr, period_start, period_end, multi_period, IC, Time)
+    in_cluster <- detect.incluster(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period, IC, Time)
+    false_cluster <- detect.falsecluster(lassoresult, vectors.sim, rr, period_start, period_end, multi_period, IC, Time)
+    in_background <- detect.inbackground(lassoresult, vectors.sim, rr, period_start, period_end, multi_period, IC, Time)
     #return as lists
     return(list(in_cluster = in_cluster,
                 false_cluster = false_cluster,
@@ -1373,8 +1392,8 @@ clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, 
         message("Data assumed to be in panel data. To use vector data instead, please specify 'byrow=FALSE'")
        
     }
-    clusters <- clustersDF(x, y, rMax, utm=utm, length(x))
-    init <- setVectors(period, expected, observed, Time, byrow=byrow)
+    clusters <- cluster.df(x, y, rMax, utm=utm, length(x))
+    init <- set.vectors(period, expected, observed, Time, byrow=byrow)
     outinit <- glm.nb(init$Y.vec ~ 1)
     if(spacetime==FALSE){
         spacetime=FALSE
@@ -1389,7 +1408,7 @@ clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, 
     E0 <- out$fitted
     potentialClus <- max(clusters$center)
     numberCenters <- max(clusters$center)
-    lassoresult <- spacetimeLasso(potentialClus, clusters, numberCenters, JBCinit, Time, spacetime=spacetime)
+    lassoresult <- spacetime.lasso(potentialClus, clusters, numberCenters, JBCinit, Time, spacetime=spacetime)
     rr <- setRR(lassoresult, init, Time=Time)
     rrcolors <- colormapping(rr, Time=Time)
     return(list(lassoresult = lassoresult,
@@ -1440,9 +1459,9 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
         message("Data assumed to be in panel data. To use vector data instead, please specify 'byrow=FALSE'")
     }
     #set up clusters and fitted values
-    clusters <- clustersDF(x,y,rMax, utm=TRUE, length(x))
+    clusters <- clusters.df(x,y,rMax, utm=TRUE, length(x))
     n <- length(x)
-    init <- setVectors(period, expected, observed, Time=Time, byrow=row)
+    init <- set.vectors(period, expected, observed, Time=Time, byrow=row)
     #hardcoded thetainit
     thetainit = 1000
     if(spacetime==TRUE){
@@ -1501,9 +1520,9 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
     #set up and run simulation model
     potentialClusters <- max(clusters$center)
     numCenters <- max(clusters$center)
-    lassoresult <- spacetimeLasso.sim(potentialClusters, clusters, numCenters,
+    lassoresult <- spacetime.lasso.sim(potentialClusters, clusters, numCenters,
                                          vectors.sim, Time, spacetime=spacetime, nsim, YSIM)
-    riskratios <- getRR(lassoresult, vectors.sim, Time, sim=TRUE)
+    riskratios <- get.rr(lassoresult, vectors.sim, Time, sim=TRUE)
     rrcolors <- colormapping(riskratios,Time)
     if(!is.null(colors)){
         probcolors <- probmap(lassoresult, vectors.sim, rr, nsim,Time, colormap=TRUE)    
@@ -1512,8 +1531,10 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
         probcolors <- probmap(lassoresult, vectors.sim, rr, nsim,Time, colormap=FALSE)    
     }
     return(list(lassoresult = lassoresult,
-                rr = riskratios,
-                rrcolors = rrcolors))
+                riskratios = riskratios,
+                rrcolors = rrcolors,
+                rr.mat = rr,
+                init.vec = vectors.sim))
 }
     
     
