@@ -1060,116 +1060,168 @@ detect.incluster <- function(lassoresult, vectors.sim, rr, res, period_start, pe
 #'(for aic/aicc/bic and qaic/qaicc/qbic, respectively).
 #'@return returns list of average false clusters across all simulations and the lowest number of false clusters detected across clusters
 
-detect.falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period=FALSE, IC, Time,...){
+detect.falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period = FALSE, IC = c("aic","aicc","bic","ic"), Time,...){
     if(multi_period==TRUE){
         period = period_start:period_end
     }
     else{
         period = c(period_start, period_end)
     }
-    #for only AIC/QAIC
+    IC <- match.arg(IC, several.ok= TRUE)
+    switch(IC,
+           aic = detect.falsecluster.aic(lassoresult, vectors.sim, rr, res, period, Time),
+           aicc = detect.falsecluster.aicc(lassoresult, vectors.sim, rr, res, period, Time),
+           bic = detect.falsecluster.bic(lassoresult, vectors.sim, rr, res, period, Time),
+           ic = detect.falsecluster.ic(lassoresult, vectors.sim, rr, res, period, Time))
+} 
     
-    if(IC==aic | IC == qaic){
-        ix <- lapply(1: length(prob.simAIC), 
-                     function(j) sapply(1:Time, 
-                                        function(k) 
-                                            which(round(matrix(res$rr.simAIC[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaAIC[[j]][[k]])),6))))
-        
-        in_fake <- lapply(1:length(prob.simAIC), 
-                          function(j) sapply(1:Time, 
-                                             function(k) length(which(ix[[j]][[k]] %in% res$indx_truth[[k]] == FALSE))/length(res$idx[[j]][[k]])))
-        idx_avg <- unlist(lapply(1:length(prob.simAIC), 
-                                 function(j) mean(in_fake[[j]][period])))
-        mean_fp.aic = mean(idx_avg)
-        min_fp.aic = min(idx_avg)
-        return(list(
-            mean_fp.aic = mean_fp.aic, min_fp.aic = min_fp.aic))								
-    }
-    #for only AICc/QAICc
-    if(IC==aicc | IC == qaicc){
-        ix <- lapply(1: length(prob.simAICc), 
-                     function(j) sapply(1:Time, 
-                                        function(k) 
-                                            which(round(matrix(res$rr.simAICc[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaAICc[[j]][[k]])),6))))
-        
-        in_fake <- lapply(1:length(prob.simAICc), 
-                          function(j) sapply(1:Time, 
-                                             function(k) length(which(ix[[j]][[k]] %in% res$indx_truth[[k]] == FALSE))/length(res$idx[[j]][[k]])))
-        idx_avg <- unlist(lapply(1:length(prob.simAICc), 
-                                 function(j) mean(in_fake[[j]][period])))
-        return(list(
-            mean_fp.aicc = mean(idx_avg),
-            min_fp.aicc = min(idx_avg)
-        ))
-    }
-    #for only BIC/QBIC
-    if(IC==bic | IC == qbic){
-        ix <- lapply(1: length(prob.simBIC), 
-                     function(j) sapply(1:Time, 
-                                        function(k) 
-                                            which(round(matrix(res$rr.simBIC[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaBIC[[j]][[k]])),6))))
-        
-        in_fake <- lapply(1:length(prob.simBIC), 
-                          function(j) sapply(1:Time, 
-                                             function(k) length(which(ix[[j]][[k]] %in% res$indx_truth[[k]] == FALSE))/length(res$idx[[j]][[k]])))
-        idx_avg <- unlist(lapply(1:length(prob.simBIC), 
-                                 function(j) mean(in_fake[[j]][period])))
-        return(list(
-            mean_fp.bic = mean(idx_avg),
-            min_fp.bic = min(idx_avg)
-        ))
-    }
-    if(IC== ic | IC == qic){
-        #(Q)AIC
-        ix <- lapply(1: length(prob.simAIC), 
-                     function(j) sapply(1:Time, 
-                                        function(k) 
-                                            which(round(matrix(res$rr.simAIC[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaAIC[[j]][[k]])),6))))
-        
-        in_fake <- lapply(1:length(prob.simAICc), 
-                          function(j) sapply(1:Time, 
-                                             function(k) length(which(ix[[j]][[k]] %in% res$indx_truth[[k]] == FALSE))/length(res$idx[[j]][[k]])))
-        idx_avg <- unlist(lapply(1:length(prob.simAIC), 
-                                 function(j) mean(in_fake[[j]][period])))
-        
-        mean_fp.aic = mean(idx_avg)
-        min_fp.aic = min(idx_avg)
-        
-        #(Q)AICc
-        ix <- lapply(1: length(prob.simAICc), 
-                     function(j) sapply(1:Time, 
-                                        function(k) 
-                                            which(round(matrix(res$rr.simAICc[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaAICc[[j]][[k]])),6))))
-        
-        in_fake <- lapply(1:length(prob.simAICc), 
-                          function(j) sapply(1:Time, 
-                                             function(k) length(which(ix[[j]][[k]] %in% res$indx_truth[[k]] == FALSE))/length(res$idx[[j]][[k]])))
-        idx_avg <- unlist(lapply(1:length(prob.simAICc), 
-                                 function(j) mean(in_fake[[j]][period])))
-        
-        mean_fp.aicc = mean(idx_avg)
-        min_fp.aicc = min(idx_avg)
-        
-        #(Q)BIC
-        ix <- lapply(1: length(prob.simBIC), 
-                     function(j) sapply(1:Time, 
-                                        function(k) 
-                                            which(round(matrix(res$rr.simBIC[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaBIC[[j]][[k]])),6))))
-        
-        in_fake <- lapply(1:length(prob.simBIC), 
-                          function(j) sapply(1:Time, 
-                                             function(k) length(which(ix[[j]][[k]] %in% res$indx_truth[[k]] == FALSE))/length(res$idx[[j]][[k]])))
-        idx_avg <- unlist(lapply(1:length(prob.simBIC), 
-                                 function(j) mean(in_fake[[j]][period])))
-        
-        mean_fp.bic = mean(idx_avg)
-        min_fp.bic = min(idx_avg)
-        
-        return(list(mean_fp.aic = mean_fp.aic, min_fp.bic = min_fp.aic,
-                    mean_fp.aicc = mean_fp.aicc, min_fp.aicc = min_fp.aicc,
-                    mean_fp.bic = mean_fp.bic, min_fp.bic = min_fp.bic))
-    }
+#'
+#'detect.falsecluster.aic
+#'
+#'        
+#'                        
+detect.falsecluster.aic <- function(lassoresult, vectors.sim, rr, res, period, Time){
+    prob.simAIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    ix <- lapply(1: length(prob.simAIC), 
+                 function(j) sapply(1:Time, 
+                                    function(k) 
+                                        which(round(matrix(res$rr.simAIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(res$alphaAIC[[j]][[k]])),6))))
     
+    in_fake <- lapply(1:length(prob.simAIC), 
+                      function(j) sapply(1:Time, 
+                                         function(k) length(which(ix[[j]][[k]] %in% res$indx_truth[[k]] == FALSE))/length(res$indx_truth[[k]])))
+    idx_avg <- unlist(lapply(1:length(prob.simAIC), 
+                             function(j) mean(in_fake[[j]][period])))
+    mean_fp = mean(idx_avg)
+    min_fp = min(idx_avg)
+    max_fp = max(idx_avg)
+    sd_fp = sd(idx_avg)
+    message("Results for (Q)AIC")
+    return(list(
+        mean_fp = mean_fp, min_fp = min_fp, max_fp = max_fp, sd_fp = sd_fp))								
+}
+
+
+#'
+#'detect.falsecluster.aicc
+#'
+#'        
+#'                        
+detect.falsecluster.aicc <- function(lassoresult, vectors.sim, rr, res, period, Time){
+    prob.simAICc <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    ix <- lapply(1: length(prob.simAICc), 
+                 function(j) sapply(1:Time, 
+                                    function(k) 
+                                        which(round(matrix(res$rr.simAICc[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(res$alphaAICc[[j]][[k]])),6))))
+    
+    in_fake <- lapply(1:length(prob.simAICc), 
+                      function(j) sapply(1:Time, 
+                                         function(k) length(which(ix[[j]][[k]] %in% res$indx_truth[[k]] == FALSE))/length(res$indx_truth[[k]])))
+    idx_avg <- unlist(lapply(1:length(prob.simAICc), 
+                             function(j) mean(in_fake[[j]][period])))
+    mean_fp = mean(idx_avg)
+    min_fp = min(idx_avg)
+    max_fp = max(idx_avg)
+    sd_fp = sd(idx_avg)
+    message("Results for (Q)AICc")
+    return(list(
+        mean_fp = mean_fp, min_fp = min_fp, max_fp = max_fp, sd_fp = sd_fp))
+}
+
+
+
+#'
+#'detect.falsecluster.bic
+#'
+#'        
+#'                        
+detect.falsecluster.bic <- function(lassoresult, vectors.sim, rr, res, period, Time){
+    prob.simBIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    ix <- lapply(1: length(prob.simBIC), 
+                 function(j) sapply(1:Time, 
+                                    function(k) 
+                                        which(round(matrix(res$rr.simBIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(res$alphaBIC[[j]][[k]])),6))))
+    
+    in_fake <- lapply(1:length(prob.simBIC), 
+                      function(j) sapply(1:Time, 
+                                         function(k) length(which(ix[[j]][[k]] %in% res$indx_truth[[k]] == FALSE))/length(res$indx_truth[[k]])))
+    idx_avg <- unlist(lapply(1:length(prob.simBIC), 
+                             function(j) mean(in_fake[[j]][period])))
+    mean_fp = mean(idx_avg)
+    min_fp = min(idx_avg)
+    max_fp = max(idx_avg)
+    sd_fp = sd(idx_avg)
+    message("Results for (Q)BIC")
+    return(list(
+        mean_fp = mean_fp, min_fp = min_fp, max_fp = max_fp, sd_fp = sd_fp))
+}
+
+
+
+
+#'
+#'detect.falsecluster.ic
+#'
+#'        
+#'                        
+detect.falsecluster.ic <- function(lassoresult, vectors.sim, rr, res, period, Time){
+    prob.simBIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    prob.simAIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    prob.simAICc <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    #(Q)AIC
+    ix <- lapply(1: length(prob.simAIC), 
+                 function(j) sapply(1:Time, 
+                                    function(k) 
+                                        which(round(matrix(res$rr.simAIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(res$alphaAIC[[j]][[k]])),6))))
+    
+    in_fake <- lapply(1:length(prob.simAICc), 
+                      function(j) sapply(1:Time, 
+                                         function(k) length(which(ix[[j]][[k]] %in% res$indx_truth[[k]] == FALSE))/length(res$indx_truth[[k]])))
+    idx_avg <- unlist(lapply(1:length(prob.simAIC), 
+                             function(j) mean(in_fake[[j]][period])))
+    
+    mean_fp.aic = mean(idx_avg)
+    min_fp.aic = min(idx_avg)
+    max_fp.aic = max(idx_avg)
+    sd_fp.aic = sd(idx_avg)
+    
+    #(Q)AICc
+    ix <- lapply(1: length(prob.simAICc), 
+                 function(j) sapply(1:Time, 
+                                    function(k) 
+                                        which(round(matrix(res$rr.simAICc[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(res$alphaAICc[[j]][[k]])),6))))
+    
+    in_fake <- lapply(1:length(prob.simAICc), 
+                      function(j) sapply(1:Time, 
+                                         function(k) length(which(ix[[j]][[k]] %in% res$indx_truth[[k]] == FALSE))/length(res$indx_truth[[k]])))
+    idx_avg <- unlist(lapply(1:length(prob.simAICc), 
+                             function(j) mean(in_fake[[j]][period])))
+    
+    mean_fp.aicc = mean(idx_avg)
+    min_fp.aicc = min(idx_avg)
+    max_fp.aicc = max(idx_avg)
+    sd_fp.aicc = sd(idx_avg)
+    
+    #(Q)BIC
+    ix <- lapply(1: length(prob.simBIC), 
+                 function(j) sapply(1:Time, 
+                                    function(k) 
+                                        which(round(matrix(res$rr.simBIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(res$alphaBIC[[j]][[k]])),6))))
+    
+    in_fake <- lapply(1:length(prob.simBIC), 
+                      function(j) sapply(1:Time, 
+                                         function(k) length(which(ix[[j]][[k]] %in% res$indx_truth[[k]] == FALSE))/length(res$indx_truth[[k]])))
+    idx_avg <- unlist(lapply(1:length(prob.simBIC), 
+                             function(j) mean(in_fake[[j]][period])))
+    
+    mean_fp.bic = mean(idx_avg)
+    min_fp.bic = min(idx_avg)
+    max_fp.bic = max(idx_avg)
+    sd_fp.bic = sd(idx_avg)
+    
+    return(list(mean_fp.aic = mean_fp.aic, min_fp.bic = min_fp.aic, max_fp.aic = max_fp.aic, sd_fp.aic = sd_fp.aic,
+                mean_fp.aicc = mean_fp.aicc, min_fp.aicc = min_fp.aicc, max_fp.aicc = max_fp.aicc, sd_fp.aicc = sd_fp.aicc,
+                mean_fp.bic = mean_fp.bic, min_fp.bic = min_fp.bic, max_fp.bic = max_fp.bic, sd_fp.bic = sd_fp.bic))
 }
 
 
@@ -1190,126 +1242,175 @@ detect.falsecluster <- function(lassoresult, vectors.sim, rr, res, period_start,
 #'(for aic/aicc/bic and qaic/qaicc/qbic, respectively).
 #'@return returns list of average false clusters across all simulations and the lowest number of false clusters detected across clusters
 
-detect.inbackground <-function(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period=FALSE, IC, Time,...){
+detect.inbackground <-function(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period=FALSE, IC = c("aic","aicc","bic","ic"), Time,...){
     if(multi_period==TRUE){
         period = period_start:period_end
     }
     else{
         period = c(period_start, period_end)
     }
-    #for only AIC/QAIC
-    if(IC == aic | IC == qaic){
-        ix <- lapply(1: length(prob.simAIC), 
-                     function(j) sapply(1:Time, 
-                                        function(k) 
-                                            which(round(matrix(res$rr.simAIC[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaAIC[[j]][[k]])),6))))
-        in_background <- lapply(1:length(prob.simAIC), 
-                                function(j) sapply(1:Time, 
-                                                   function(k) 
-                                                       ((sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1) - 
-                                                             length(res$indx_truth[[k]]))/length(res$indx_truth[[k]]))*-1))
-        in_bsum <- lapply(1:length(prob.simAIC), 
-                          function(j) mean(in_background[[j]][period]))
-        mean_bkgrd = mean(unlist(in_bsum))
-        max_bkgrd = max(unlist(in_bsum))
-        return(list(
-            mean_bkgrd = mean_bkgrd,
-            max_bkgrd = max_bkgrd
-        ))
-    }
-    #for only AICc/QAICc
-    if(IC == aicc | IC == qaicc){
-        ix <- lapply(1: length(prob.simAICc), 
-                     function(j) sapply(1:Time, 
-                                        function(k) 
-                                            which(round(matrix(res$rr.simAICc[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaAICc[[j]][[k]])),6))))
-        in_background <- lapply(1:length(prob.simAICc), 
-                                function(j) sapply(1:Time, 
-                                                   function(k) 
-                                                       ((sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1) - 
-                                                             length(res$indx_truth[[k]]))/length(res$indx_truth[[k]]))*-1))
-        in_bsum <- lapply(1:length(prob.simAICc), 
-                          function(j) mean(in_background[[j]][period]))
-        mean_bkgrd = mean(unlist(in_bsum))
-        max_bkgrd = max(unlist(in_bsum))
-        return(list(
-            mean_bkgrd = mean_bkgrd,
-            max_bkgrd = max_bkgrd
-        ))
-    }	
-    #for only BIC/QBIC
-    if(IC == bic | IC == qbic){
-        ix <- lapply(1: length(prob.simBIC), 
-                     function(j) sapply(1:Time, 
-                                        function(k) 
-                                            which(round(matrix(res$rr.simBIC[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaBIC[[j]][[k]])),6))))
-        in_background <- lapply(1:length(prob.simBIC), 
-                                function(j) sapply(1:Time, 
-                                                   function(k) 
-                                                       ((sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1) - 
-                                                             length(res$indx_truth[[k]]))/length(res$indx_truth[[k]]))*-1))
-        in_bsum <- lapply(1:length(prob.simBIC), 
-                          function(j) mean(in_background[[j]][period]))
-        mean_bkgrd = mean(unlist(in_bsum))
-        max_bkgrd = max(unlist(in_bsum))
-        return(list(
-            mean_bkgrd = mean_bkgrd,
-            max_bkgrd = max_bkgrd
-        ))
-    }	
-    #ALL
-    if(IC== ic | IC == qic){
-        #(Q)AIC
-        ix <- lapply(1: length(prob.simAIC), 
-                     function(j) sapply(1:Time, 
-                                        function(k) 
-                                            which(round(matrix(res$rr.simAIC[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaAIC[[j]][[k]])),6))))
-        in_background <- lapply(1:length(prob.simAIC), 
-                                function(j) sapply(1:Time, 
-                                                   function(k) 
-                                                       ((sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1) - 
-                                                             length(res$indx_truth[[k]]))/length(res$indx_truth[[k]]))*-1))
-        in_bsum <- lapply(1:length(prob.simAIC), 
-                          function(j) mean(in_background[[j]][period]))
-        mean_bkgrd.aic = mean(unlist(in_bsum))
-        max_bkgrd.aic = max(unlist(in_bsum))
-        #(Q)AICc
-        ix <- lapply(1: length(prob.simAICc), 
-                     function(j) sapply(1:Time, 
-                                        function(k) 
-                                            which(round(matrix(res$rr.simAICc[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaAICc[[j]][[k]])),6))))
-        in_background <- lapply(1:length(prob.simAICc), 
-                                function(j) sapply(1:Time, 
-                                                   function(k) 
-                                                       ((sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1) - 
-                                                             length(res$indx_truth[[k]]))/length(res$indx_truth[[k]]))*-1))
-        in_bsum <- lapply(1:length(prob.simAICc), 
-                          function(j) mean(in_background[[j]][period]))
-        mean_bkgrd.aicc = mean(unlist(in_bsum))
-        max_bkgrd.aicc = max(unlist(in_bsum))
-        #(Q)BIC
-        ix <- lapply(1: length(prob.simBIC), 
-                     function(j) sapply(1:Time, 
-                                        function(k) 
-                                            which(round(matrix(res$rr.simBIC[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaBIC[[j]][[k]])),6))))
-        in_background <- lapply(1:length(prob.simBIC), 
-                                function(j) sapply(1:Time, 
-                                                   function(k) 
-                                                       ((sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1) - 
-                                                             length(res$indx_truth[[k]]))/length(res$indx_truth[[k]]))*-1))
-        in_bsum <- lapply(1:length(prob.simBIC), 
-                          function(j) mean(in_background[[j]][period]))
-        mean_bkgrd.bic = mean(unlist(in_bsum))
-        max_bkgrd.bic = max(unlist(in_bsum))
-        
-        return(list(mean_bkgrd.aic = mean_bkgrd.aic, max_bkgrd.aic = max_bkgrd.aic,
-                    mean_bkgrd.aicc = mean_bkgrd.aicc, max_bkgrd.aicc = max_bkgrd.aicc,
-                    mean_bkgrd.bic = mean_bkgrd.bic, max_bkgrd.bic = max_bkgrd.bic
-        ))
-        
-    }
+    IC <- match.arg(IC, several.ok= TRUE)
+    switch(IC,
+           aic = detect.inbackground.aic(lassoresult, vectors.sim, rr, res, period, Time),
+           aicc = detect.inbackground.aicc(lassoresult, vectors.sim, rr, res, period, Time),
+           bic = detect.inbackground.bic(lassoresult, vectors.sim, rr, res, period, Time),
+           ic = detect.inbackground.ic(lassoresult, vectors.sim, rr, res, period, Time))
 }
 
+#'detect.inbackground.aic
+#'
+#'
+#'TODO
+#'
+detect.inbackground.aic <- function(lassoresult, vectors.sim, rr, res, period, Time){
+    prob.simAIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    ix <- lapply(1: length(prob.simAIC), 
+                 function(j) sapply(1:Time, 
+                                    function(k) 
+                                        which(round(matrix(res$rr.simAIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(res$alphaAIC[[j]][[k]])),6))))
+    in_background <- lapply(1:length(prob.simAIC), 
+                            function(j) sapply(1:Time, 
+                                               function(k) 
+                                                   ((sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1) - 
+                                                         length(res$indx_truth[[k]]))/length(res$indx_truth[[k]]))*-1))
+    in_bsum <- lapply(1:length(prob.simAIC), 
+                      function(j) mean(in_background[[j]][period]))
+    mean_bkgrd = mean(unlist(in_bsum))
+    max_bkgrd = max(unlist(in_bsum))
+    min_bkgrd = min(unlist(in_bsum))
+    sd_bkgrd = sd(unlist(in_bsum))
+    return(list(
+        mean_bkgrd = mean_bkgrd,
+        max_bkgrd = max_bkgrd,
+        min_bkgrd = min_bkgrd,
+        sd_bkgrd = sd_bkgrd
+    ))
+}
+
+
+
+#'detect.inbackground.aicc
+#'
+#'
+#'TODO
+#'
+detect.inbackground.aicc <- function(lassoresult, vectors.sim, rr, res, period, Time){
+    prob.simAICc <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    ix <- lapply(1: length(prob.simAICc), 
+                 function(j) sapply(1:Time, 
+                                    function(k) 
+                                        which(round(matrix(res$rr.simAICc[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaAICc[[j]][[k]])),6))))
+    in_background <- lapply(1:length(prob.simAICc), 
+                            function(j) sapply(1:Time, 
+                                               function(k) 
+                                                   ((sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1) - 
+                                                         length(res$indx_truth[[k]]))/length(res$indx_truth[[k]]))*-1))
+    in_bsum <- lapply(1:length(prob.simAICc), 
+                      function(j) mean(in_background[[j]][period]))
+    mean_bkgrd = mean(unlist(in_bsum))
+    max_bkgrd = max(unlist(in_bsum))
+    min_bkgrd = min(unlist(in_bsum))
+    sd_bkgrd = sd(unlist(in_bsum))
+    return(list(
+        mean_bkgrd = mean_bkgrd,
+        max_bkgrd = max_bkgrd,
+        min_bkgrd = min_bkgrd,
+        sd_bkgrd = sd_bkgrd
+    ))
+}	
+
+
+
+#'detect.inbackground.bic
+#'
+#'
+#'TODO
+#'
+detect.inbackground.bic <- function(lassoresult, vectors.sim, rr, res, period, Time){
+    prob.simBIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    ix <- lapply(1: length(prob.simBIC), 
+                 function(j) sapply(1:Time, 
+                                    function(k) 
+                                        which(round(matrix(res$rr.simBIC[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaBIC[[j]][[k]])),6))))
+    in_background <- lapply(1:length(prob.simBIC), 
+                            function(j) sapply(1:Time, 
+                                               function(k) 
+                                                   ((sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1) - 
+                                                         length(res$indx_truth[[k]]))/length(res$indx_truth[[k]]))*-1))
+    in_bsum <- lapply(1:length(prob.simBIC), 
+                      function(j) mean(in_background[[j]][period]))
+    mean_bkgrd = mean(unlist(in_bsum))
+    max_bkgrd = max(unlist(in_bsum))
+    min_bkgrd = min(unlist(in_bsum))
+    sd_bkgrd = sd(unlist(in_bsum))
+    return(list(
+        mean_bkgrd = mean_bkgrd,
+        max_bkgrd = max_bkgrd,
+        min_bkgrd = min_bkgrd,
+        sd_bkgrd = sd_bkgrd
+    ))
+}	
+
+
+
+#'detect.inbackground.ic
+#'
+#'
+#'TODO
+#'
+detect.inbackground.ic <- function(lassoresult, vectors.sim, rr, res, period, Time){
+    prob.simBIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    prob.simAIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    prob.simAICc <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    #(Q)AIC
+    ix <- lapply(1: length(prob.simAIC), 
+                 function(j) sapply(1:Time, 
+                                    function(k) 
+                                        which(round(matrix(res$rr.simAIC[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaAIC[[j]][[k]])),6))))
+    in_background <- lapply(1:length(prob.simAIC), 
+                            function(j) sapply(1:Time, 
+                                               function(k) 
+                                                   ((sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1) - 
+                                                         length(res$indx_truth[[k]]))/length(res$indx_truth[[k]]))*-1))
+    in_bsum <- lapply(1:length(prob.simAIC), 
+                      function(j) mean(in_background[[j]][period]))
+    mean_bkgrd.aic = mean(unlist(in_bsum))
+    max_bkgrd.aic = max(unlist(in_bsum))
+    #(Q)AICc
+    ix <- lapply(1: length(prob.simAICc), 
+                 function(j) sapply(1:Time, 
+                                    function(k) 
+                                        which(round(matrix(res$rr.simAICc[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaAICc[[j]][[k]])),6))))
+    in_background <- lapply(1:length(prob.simAICc), 
+                            function(j) sapply(1:Time, 
+                                               function(k) 
+                                                   ((sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1) - 
+                                                         length(res$indx_truth[[k]]))/length(res$indx_truth[[k]]))*-1))
+    in_bsum <- lapply(1:length(prob.simAICc), 
+                      function(j) mean(in_background[[j]][period]))
+    mean_bkgrd.aicc = mean(unlist(in_bsum))
+    max_bkgrd.aicc = max(unlist(in_bsum))
+    #(Q)BIC
+    ix <- lapply(1: length(prob.simBIC), 
+                 function(j) sapply(1:Time, 
+                                    function(k) 
+                                        which(round(matrix(res$rr.simBIC[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(res$alphaBIC[[j]][[k]])),6))))
+    in_background <- lapply(1:length(prob.simBIC), 
+                            function(j) sapply(1:Time, 
+                                               function(k) 
+                                                   ((sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1) - 
+                                                         length(res$indx_truth[[k]]))/length(res$indx_truth[[k]]))*-1))
+    in_bsum <- lapply(1:length(prob.simBIC), 
+                      function(j) mean(in_background[[j]][period]))
+    mean_bkgrd.bic = mean(unlist(in_bsum))
+    max_bkgrd.bic = max(unlist(in_bsum))
+    
+    return(list(mean_bkgrd.aic = mean_bkgrd.aic, max_bkgrd.aic = max_bkgrd.aic,
+                mean_bkgrd.aicc = mean_bkgrd.aicc, max_bkgrd.aicc = max_bkgrd.aicc,
+                mean_bkgrd.bic = mean_bkgrd.bic, max_bkgrd.bic = max_bkgrd.bic
+    ))
+    
+}
 
 
 #'detect
@@ -1321,7 +1422,6 @@ detect.inbackground <-function(lassoresult, vectors.sim, rr, res, period_start, 
 #'@param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso.sim function
 #'@param vectors.sim dataframe of initial vectors of the observed and expected counts that went into mylasso.sim function
 #'@param rr risk ratio matrix that was used in the simulation
-#'@param res result of detect.set function
 #'@param period_start start period of the simulation
 #'@param period_end end period of the simulation
 #'@param multi_period FALSE by default meaning that period_start and period_end are two unique periods. For example, if period_start = 2 and period_end =5, then
@@ -1334,7 +1434,7 @@ detect.inbackground <-function(lassoresult, vectors.sim, rr, res, period_start, 
 #'All of these are reported as determined by (Q)AIC, (Q)AICc, (Q)BIC, or all three IC.
 #'@export
 #'
-detect <- function(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period = FALSE, IC, Time,...){
+detect <- function(lassoresult, vectors.sim, rr, period_start, period_end, multi_period = FALSE, IC = NULL, Time,...){
     #determined time period span
     if(multi_period==TRUE){
         period = period_start:period_end
@@ -1344,10 +1444,7 @@ detect <- function(lassoresult, vectors.sim, rr, res, period_start, period_end, 
     }
     #run set-up
     res <- detect.set(lassoresult, vectors.sim, rr, Time)
-    #create empty lists to fill in
-    prob.simBIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
-    prob.simAIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
-    prob.simAICc <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    IC = IC
     #run detection
     in_cluster <- detect.incluster(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period, IC, Time)
     false_cluster <- detect.falsecluster(lassoresult, vectors.sim, rr, period_start, period_end, multi_period, IC, Time)

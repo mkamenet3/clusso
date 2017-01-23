@@ -451,3 +451,59 @@ text(355,4120,'Period 1 - QBIC',cex=1.00)
 #Turn off pdf development
 dev.off()
 
+
+########################################################################################################
+########################################################################################################
+########################################################################################################
+
+####################################################
+#rmax 30, time = 1,2, rr.ratio = 1.1, center = 75, r = 18km
+####################################################
+#Set Some Initial Conditions
+x=dframe2$utmx/1000
+y=dframe2$utmy/1000
+rMax=30 
+Time=5
+nsim=100
+center=75
+radius=18
+period_start=c(1,2)
+risk.ratio=1.1
+
+
+
+
+result <- clust.sim(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time, spacetime=TRUE, 
+                 nsim,center, radius, risk.ratio, period_start, colors=TRUE, utm=TRUE, byrow=TRUE)
+
+
+#diagnostics
+set <- detect.set(res$lassoresult, res$init.vec, res$rr.mat, Time=5)
+
+det <- detect(res$lassoresult, res$init.vec, res$rr.mat, period_start=1,period_end= 2, multi_period = FALSE, IC="aic", Time)
+
+detin <- detect.incluster(res$lassoresult, res$init.vec, res$rr.mat, set,period_start=1, period_end=2, multi_period=FALSE, IC = "ic", Time=5) #this works
+detfalse <- detect.falsecluster(result$lassoresult, result$init.vec, result$rr.mat, set,period_start=1, period_end=2, multi_period=FALSE, IC = "aic", Time=5)
+detfalse <- detect.falsecluster(result$lassoresult, result$init.vec, result$rr.mat, set,period_start=1, period_end=2, multi_period=FALSE, IC = "ic", Time=5)
+
+
+detbk <- detect.inbackground(result$lassoresult, result$init.vec, result$rr.mat, set,period_start=1, period_end=2, multi_period=FALSE, IC = "bic", Time=5)
+
+
+#TODO in background - clarify
+#borders - best by plot?
+#AIC, BIC should work
+#Pois - space, quasi-pois - ST
+
+
+
+
+
+
+
+
+
+
+
+
+
