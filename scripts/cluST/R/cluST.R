@@ -907,17 +907,40 @@ detect.incluster.aic <- function(lassoresult, vectors.sim, rr, res, period, Time
                  function(j) sapply(1:Time, 
                                     function(k) 
                                         which(round(matrix(res$rr.simAIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(res$alphaAIC[[j]][[k]])),6))))
+    #     in_cluster <- lapply(1:length(prob.simAIC), 
+    #                          function(j) sapply(1:Time, 
+    #                                             function(k) sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1)/length(res$indx_truth[[k]])))
     in_cluster <- lapply(1:length(prob.simAIC), 
                          function(j) sapply(1:Time, 
-                                            function(k) sum((ix[[j]][[k]] %in% res$indx_truth[[k]])*1)/length(res$indx_truth[[k]])))
+                                            function(k) ix[[j]][[k]] %in% res$indx_truth[[k]]))
+    
+    
+    #did it find at least one cell in the cluster?
+    atleastonecell <- lapply(1:length(prob.simAIC),
+                             function(j) sapply(1:2,#change this to be specific to the period
+                                                function(k) sum(in_cluster[[j]][[k]]*1)>1))
+    celldetected <- length(which(unlist(atleastonecell)==TRUE))/length(period)
+    
+    #did it find all cells in the cluster and nothing else?
+    clusteronly_idx <- lapply(1:length(prob.simAIC),
+                          function(j) unlist(sapply(1:Time,
+                                             function(k) which(in_cluster[[j]][[k]]==FALSE))))
+    clusteronly <- (nsim - sum(unlist(lapply(1:length(prob.simAIC),
+                   function(j) any(clusteronly_idx[[j]] >0)*1))))/100
+    
+    #if it found something beyond the cluster, was it something beyond the buffer zone?
+    
     idx_avg <- unlist(lapply(1:length(prob.simAIC), 
                              function(j) mean(in_cluster[[j]][period])))
     return(list(
+        incluster = in_cluster,
+        clusteronly = clusteronly,
+        celldetected = celldetected,
         mean_detect = mean(idx_avg),
         min_detect = min(idx_avg)
     ))
 }
- 
+
 #'detect.incluster.aicc
 #'
 #'
@@ -1604,12 +1627,13 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
     #refit E0 for each simlation and scale
     if(spacetime==FALSE){
         spacetime=FALSE
-        out.sim <- lapply(1:nsim, function(i) glm(YSIM[,i] ~ 1  + offset(log(expect_fake)),family="poisson"))
+        out.sim <- lapply(1:nsim, function(i) glm(YSIM[,i] ~ 1  + offset(log(expect_fake)),family="quasipoisson"))
     }
     else{
         spacetime=TRUE
-        out.sim <- lapply(1:nsim, function(i) glm.nb(YSIM[,i] ~ 1 + as.factor(init$Year)  + offset(log(expect_fake)), init.theta = thetainit, 
-                                                     link=log,control=glm.control(maxit=10000)))
+        #out.sim <- lapply(1:nsim, function(i) glm.nb(YSIM[,i] ~ 1 + as.factor(init$Year)  + offset(log(expect_fake)), init.theta = thetainit, 
+         #                                            link=log,control=glm.control(maxit=10000)))
+        out.sim <- lapply(1:nsim, function(i) glm(YSIM[,i] ~ 1  +  as.factor(init$Year)  + offset(log(expect_fake)),family="quasipoisson"))
     }
     #Set initial expected to the fitted values and standardize
     E0 <- scale(Y.vec, out.sim, nsim, Time)

@@ -404,9 +404,11 @@ radius=18
 period_start= 1
 risk.ratio=1.5
 
-df <- subset(dframe, period=="4")
+#create average dataframe for spaceonly
 
-
+death <- with(dframe, tapply(death, id, function(x) round(mean(x))))
+expdeath <- with(dframe, tapply(expdeath, id, function(x) mean(x)))
+df <- cbind.data.frame(id = unique(dframe$id), period = rep("1", length(unique(dframe$id))), death = death, expdeath=expdeath)
 
 res <- clust.sim(x,y,rMax,df$period, df$expdeath, df$death, Time, spacetime=FALSE, 
                  nsim,center, radius, risk.ratio, period_start, colors=TRUE, utm=TRUE, byrow=TRUE)
@@ -477,17 +479,32 @@ result <- clust.sim(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
                  nsim,center, radius, risk.ratio, period_start, colors=TRUE, utm=TRUE, byrow=TRUE)
 
 
-#diagnostics
-set <- detect.set(res$lassoresult, res$init.vec, res$rr.mat, Time=5)
 
-det <- detect(res$lassoresult, res$init.vec, res$rr.mat, period_start=1,period_end= 2, multi_period = FALSE, IC="aic", Time)
+###did it find at least 1 cell in the cluster?
 
-detin <- detect.incluster(res$lassoresult, res$init.vec, res$rr.mat, set,period_start=1, period_end=2, multi_period=FALSE, IC = "ic", Time=5) #this works
-detfalse <- detect.falsecluster(result$lassoresult, result$init.vec, result$rr.mat, set,period_start=1, period_end=2, multi_period=FALSE, IC = "aic", Time=5)
-detfalse <- detect.falsecluster(result$lassoresult, result$init.vec, result$rr.mat, set,period_start=1, period_end=2, multi_period=FALSE, IC = "ic", Time=5)
+set <- detect.set(result$lassoresult, result$init.vec, result$rr.mat, Time=5)
+index_truth <- sapply(1:Time, function(i) which( result$rr.mat[,i] !=1))
+index <- which( result$rr.mat !=1)
+
+incluster <-detect.incluster.aic(result$lassoresult, result$init.vec, result$rr.mat, set, period=c(1,2),Time=5)
 
 
-detbk <- detect.inbackground(result$lassoresult, result$init.vec, result$rr.mat, set,period_start=1, period_end=2, multi_period=FALSE, IC = "bic", Time=5)
+
+
+
+# 
+# 
+# #diagnostics
+# set <- detect.set(res$lassoresult, res$init.vec, res$rr.mat, Time=5)
+# 
+# det <- detect(res$lassoresult, res$init.vec, res$rr.mat, period_start=1,period_end= 2, multi_period = FALSE, IC="aic", Time)
+# 
+# detin <- detect.incluster(res$lassoresult, res$init.vec, res$rr.mat, set,period_start=1, period_end=2, multi_period=FALSE, IC = "ic", Time=5) #this works
+# detfalse <- detect.falsecluster(result$lassoresult, result$init.vec, result$rr.mat, set,period_start=1, period_end=2, multi_period=FALSE, IC = "aic", Time=5)
+# detfalse <- detect.falsecluster(result$lassoresult, result$init.vec, result$rr.mat, set,period_start=1, period_end=2, multi_period=FALSE, IC = "ic", Time=5)
+# 
+# 
+# detbk <- detect.inbackground(result$lassoresult, result$init.vec, result$rr.mat, set,period_start=1, period_end=2, multi_period=FALSE, IC = "bic", Time=5)
 
 
 #TODO in background - clarify
