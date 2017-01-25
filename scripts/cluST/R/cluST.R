@@ -901,52 +901,96 @@ detect.set <- function(lassoresult, vectors.sim, rr, Time,...){
 #'detect.incluster.aic
 #'
 #'
-detect.incluster.aic <- function(lassoresult, vectors.sim, rr, res, period, Time){
-    prob.simAIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
-    ix <- lapply(1: length(prob.simAIC), 
+detect.incluster.aic <- function(lassoresult, vectors.sim, rr, set, period, Time, nsim, nb, x, y, rMax, center, radius){
+    if(tail(period, n=1) == Time){
+        maxTime = tail(period, n=1)    
+    }
+    else{
+        maxTime = tail(period, n=1) +1
+    }
+    if(period[1] == 1){
+        minTime = 1
+    }
+    else{
+        minTime = period[1]-1
+    }
+    #extract things that are not the background rate
+    ix <- lapply(1:nsim, 
                  function(j) sapply(1:Time, 
                                     function(k) 
-                                        which(round(matrix(res$rr.simAIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(res$alphaAIC[[j]][[k]])),6))))
-    in_cluster <- lapply(1:length(prob.simAIC), 
+                                        which(round(matrix(set$rr.simAIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaAIC[[j]][[k]])),6))))
+    #of the cells that are not the background, what are they? Are they the true cluster?
+    in_cluster <- lapply(1:nsim, 
                          function(j) sapply(1:Time, 
-                                            function(k) ix[[j]][[k]] %in% res$indx_truth[[k]]))
+                                            function(k) ix[[j]][[k]] %in% set$indx_truth[[k]]))
     
-    #did it find at least one cell in the cluster?
-    atleastonecell <- lapply(1:length(prob.simAIC),
+    #of the things not in the background, did it find at least one cell in the cluster?
+    atleastonecell <- lapply(1:nsim,
                              function(j) sapply(period[1]:tail(period,n=1),
                                                 function(k) sum(in_cluster[[j]][[k]]*1)>1))
     celldetected <- length(which(unlist(atleastonecell)==TRUE))/length(period)
     
-    #did it find all cells in the cluster and nothing else?
-    clusteronly_idx <- lapply(1:length(prob.simAIC),
-                          function(j) unlist(sapply(1:Time,
-                                             function(k) which(in_cluster[[j]][[k]]==FALSE))))
-    clusteronly <- (nsim - sum(unlist(lapply(1:length(prob.simAIC),
+    #dof the things not in the background, did it find all cells in the cluster and nothing else?
+    clusteronly_idxall <- lapply(1:nsim,
+                              function(j) sapply(1:Time,
+                                                        function(k) which(in_cluster[[j]][[k]]==FALSE)))
+    
+    clusteronly_idx <- lapply(1:nsim, 
+                              function(j) unlist(sapply(period[1]:tail(period,n=1),
+                                                 function(k) clusteronly_idxall[[j]][[k]])))
+    clusteronly <- (nsim - sum(unlist(lapply(1:nsim,
                    function(j) any(clusteronly_idx[[j]] >0)*1))))/100
     
-    idx_avg <- unlist(lapply(1:length(prob.simAIC), 
-                             function(j) mean(in_cluster[[j]][period])))
+    #create neighbors for cluster
+    neighs <- findneighbors(nb, x, y, rMax, center, radius)
+    
+    #of what was found, how much of it was in the border
+    in_cluster_border <- lapply(1:nsim, 
+                                    function(j) unlist(sapply(minTime:maxTime, 
+                                                       function(k) ix[[j]][[k]] %in% neighs$nbs)))
+    clusterback_idx <- lapply(1:nsim,
+                              function(j) length(which(in_cluster_border[[j]]==TRUE))/length(in_cluster_border[[j]]))
+    
+    clusterback <- mean(unlist(clusterback_idx))
+    
+    # clusterback_idx <- lapply(1:nsim,
+    #                           function(j) unlist(sapply(minTime:maxTime,
+    #                                                     function(k) which(in_cluster_border[[j]][[k]]==TRUE))))
+    
+    #clusterback <- (nsim - sum(unlist(lapply(1:nsim,
+#                                             function(j) any(clusterback_idx[[j]] >0)*1))))/100
+    
+    #what percentage of cluster cells + background cells are found?
+    allcells <- sort(unique(unlist(neighs)))
+    in_cluster_background <- lapply(1:nsim, 
+                                function(j) unlist(sapply(minTime:maxTime, 
+                                                   function(k) clusteronly_idxall[[j]][[k]] %in% allcells)))
+    #out of each sim, how many TRUE were there?
+    test <- lapply(1:nsim, function(i) sum(in_cluster_background[[i]])/length(in_cluster_background[[i]]))
+    
+    #what is average TRUE across all sim?
+    
+    
     return(list(
         incluster = in_cluster,
         clusteronly = clusteronly,
-        celldetected = celldetected,
-        mean_detect = mean(idx_avg),
-        min_detect = min(idx_avg)
+        cluster_bkgrd = clusterback,
+        celldetected = celldetected
     ))
 }
 
 #'detect.incluster.aicc
 #'
 #'
-detect.incluster.aicc <- function(lassoresult, vectors.sim, rr, res, period,Time){
+detect.incluster.aicc <- function(lassoresult, vectors.sim, rr, set, period,Time){
     prob.simAICc <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
     ix <- lapply(1: length(prob.simAICc), 
                  function(j) sapply(1:Time, 
                                     function(k) 
-                                        which(round(matrix(res$rr.simAICc[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(res$alphaAICc[[j]][[k]])),6))))
+                                        which(round(matrix(set$rr.simAICc[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaAICc[[j]][[k]])),6))))
     in_cluster <- lapply(1:length(prob.simAICc), 
                          function(j) sapply(1:Time, 
-                                            function(k) ix[[j]][[k]] %in% res$indx_truth[[k]]))
+                                            function(k) ix[[j]][[k]] %in% set$indx_truth[[k]]))
     
     #did it find at least one cell in the cluster?
     atleastonecell <- lapply(1:length(prob.simAIC),
@@ -976,15 +1020,15 @@ detect.incluster.aicc <- function(lassoresult, vectors.sim, rr, res, period,Time
 #'detect.incluster.bic
 #'
 #'
-detect.incluster.bic <- function(lassoresult, vectors.sim, rr, res, period, Time){
+detect.incluster.bic <- function(lassoresult, vectors.sim, rr, set, period, Time){
     prob.simBIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
     ix <- lapply(1: length(prob.simBIC), 
                  function(j) sapply(1:Time, 
                                     function(k) 
-                                        which(round(matrix(res$rr.simBIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(res$alphaBIC[[j]][[k]])),6))))
+                                        which(round(matrix(set$rr.simBIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaBIC[[j]][[k]])),6))))
     in_cluster <- lapply(1:length(prob.simBIC), 
                          function(j) sapply(1:Time, 
-                                            function(k) ix[[j]][[k]] %in% res$indx_truth[[k]]))
+                                            function(k) ix[[j]][[k]] %in% set$indx_truth[[k]]))
     
     #did it find at least one cell in the cluster?
     atleastonecell <- lapply(1:length(prob.simBIC),
@@ -1013,7 +1057,7 @@ detect.incluster.bic <- function(lassoresult, vectors.sim, rr, res, period, Time
 #'detect.incluster.ic
 #'
 #'
-detect.incluster.ic <- function(lassoresult, vectors.sim, rr, res, period, Time){
+detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time){
     prob.simBIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
     prob.simAIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
     prob.simAICc <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
@@ -1021,10 +1065,10 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, res, period, Time)
     ix <- lapply(1: length(prob.simAIC), 
                  function(j) sapply(1:Time, 
                                     function(k) 
-                                        which(round(matrix(res$rr.simAIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(res$alphaAIC[[j]][[k]])),6))))
+                                        which(round(matrix(set$rr.simAIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaAIC[[j]][[k]])),6))))
     in_cluster <- lapply(1:length(prob.simAIC), 
                          function(j) sapply(1:Time, 
-                                            function(k) ix[[j]][[k]] %in% res$indx_truth[[k]]))
+                                            function(k) ix[[j]][[k]] %in% set$indx_truth[[k]]))
     
     #did it find at least one cell in the cluster?
     atleastonecell <- lapply(1:length(prob.simAIC),
@@ -1051,10 +1095,10 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, res, period, Time)
     ix <- lapply(1: length(prob.simAICc), 
                  function(j) sapply(1:Time, 
                                     function(k) 
-                                        which(round(matrix(res$rr.simAICc[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(res$alphaAICc[[j]][[k]])),6))))
+                                        which(round(matrix(set$rr.simAICc[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaAICc[[j]][[k]])),6))))
     in_cluster <- lapply(1:length(prob.simAICc), 
                          function(j) sapply(1:Time, 
-                                            function(k) ix[[j]][[k]] %in% res$indx_truth[[k]]))
+                                            function(k) ix[[j]][[k]] %in% set$indx_truth[[k]]))
     
     #did it find at least one cell in the cluster?
     atleastonecell <- lapply(1:length(prob.simAIC),
@@ -1083,10 +1127,10 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, res, period, Time)
     ix <- lapply(1: length(prob.simBIC), 
                  function(j) sapply(1:Time, 
                                     function(k) 
-                                        which(round(matrix(res$rr.simBIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(res$alphaBIC[[j]][[k]])),6))))
+                                        which(round(matrix(set$rr.simBIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaBIC[[j]][[k]])),6))))
     in_cluster <- lapply(1:length(prob.simBIC), 
                          function(j) sapply(1:Time, 
-                                            function(k) ix[[j]][[k]] %in% res$indx_truth[[k]]))
+                                            function(k) ix[[j]][[k]] %in% set$indx_truth[[k]]))
     
     #did it find at least one cell in the cluster?
     atleastonecell <- lapply(1:length(prob.simBIC),
@@ -1741,8 +1785,23 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
                 init.vec = vectors.sim))
 }
     
-    
 
+#'findneighbors
+#'uses global parameters. An object of class 'nb' must be passed here. Consider creating a neighborhood class via poly2nb.
+#'
+findneighbors <- function(nb, x1, y1, rMax,center, radius){
+    clusters <- clusters.df(x1,y1,rMax, utm=TRUE, length(x1))
+    tmp <- clusters[clusters$center==center,]
+    cluster <- tmp[(tmp$r <= radius),]
+    
+    last <- sort(cluster$last)
+    myneigh <- NULL
+    for(i in last){
+        myneigh <- c(myneigh, unlist(nb[[i]]))
+    }
+    nbs <- setdiff(unique(myneigh),last)
+    return(list(cluster = last, nbs = nbs))
+}
 
 
     
