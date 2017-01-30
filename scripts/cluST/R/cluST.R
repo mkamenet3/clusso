@@ -1075,7 +1075,7 @@ detect.incluster.bic <- function(lassoresult, vectors.sim, rr, set, period, Time
     ix <- lapply(1:nsim, 
                  function(j) sapply(1:Time, 
                                     function(k) 
-                                        which(round(matrix(set$rr.simAIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaAIC[[j]][[k]])),6))))
+                                        which(round(matrix(set$rr.simBIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaBIC[[j]][[k]])),6))))
     #of the cells that are not the background, what are they? Are they the true cluster?
     in_cluster <- lapply(1:nsim, 
                          function(j) sapply(1:Time, 
@@ -1213,7 +1213,7 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     ix <- lapply(1:nsim, 
                  function(j) sapply(1:Time, 
                                     function(k) 
-                                        which(round(matrix(set$rr.simAIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaAICc[[j]][[k]])),6))))
+                                        which(round(matrix(set$rr.simAICc[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaAICc[[j]][[k]])),6))))
     #of the cells that are not the background, what are they? Are they the true cluster?
     in_cluster <- lapply(1:nsim, 
                          function(j) sapply(1:Time, 
@@ -1269,7 +1269,7 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     ix <- lapply(1:nsim, 
                  function(j) sapply(1:Time, 
                                     function(k) 
-                                        which(round(matrix(set$rr.simAIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaBIC[[j]][[k]])),6))))
+                                        which(round(matrix(set$rr.simBIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaBIC[[j]][[k]])),6))))
     #of the cells that are not the background, what are they? Are they the true cluster?
     in_cluster <- lapply(1:nsim, 
                          function(j) sapply(1:Time, 

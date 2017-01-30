@@ -93,7 +93,8 @@ pdf(pdfname, height=11, width=10)
 
 ###did it find at least 1 cell in the cluster?
 set <- detect.set(res$lassoresult, res$init.vec, res$rr.mat, Time=5)
-incluster1 <- detect.incluster.ic(res$lassoresult, res$init.vec, res$rr.mat, set, period=c(3:5),Time=5)
+#incluster1 <- detect.incluster.ic(res$lassoresult, res$init.vec, res$rr.mat, set, period=c(3:5),Time=5)
+incluster1 <- detect.incluster.aic(res$lassoresult, res$init.vec, res$rr.mat, set, period=c(3:5),Time=5, nsim,nb)
 
 #Maps of Observed Counts
 par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))
@@ -1724,7 +1725,4 @@ text(355,4120,'Period 5 - QBIC',cex=1.00)
 dev.off()
 
 save(incluster1,incluster2, incluster3, incluster4, incluster5, incluster6, incluster7, incluster8, incluster9, incluster10, incluster11, file = "detect.RData")
-save(incluster1, file = "detect1.RData")
-save(incluster2, file = "detect2.RData")
-save(incluster3, file = "detect3.RData")
-save(incluster4, file = "detect4.RData")
+
