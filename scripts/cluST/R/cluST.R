@@ -951,15 +951,23 @@ detect.incluster.aic <- function(lassoresult, vectors.sim, rr, set, period, Time
                          function(j) sapply(1:Time, 
                                             function(k) setdiff(ix[[j]][[k]],set$indx_truth[[k]])))
     
+    
+    #number of cells detected not in border 
     in_cluster_border <- lapply(1:nsim, 
-                                    function(j) unlist(sapply(minTime:maxTime, 
-                                                       function(k) setdiff(in_cluster_id[[j]][[k]],neighs$nbs))))
+                                    function(j) length(unlist(sapply(minTime:maxTime, 
+                                                       function(k) setdiff(in_cluster_id[[j]][[k]],neighs$nbs)))))
     #clusterback_idx <- lapply(1:nsim,
      #                         function(j) length(which(in_cluster_border[[j]]==TRUE))/length(in_cluster_border[[j]]))
     
-    #avg number of things not incluster nor in border
-    clusterback <- mean(unlist(lapply(1:nsim, function(i) length(in_cluster_border[[i]]))))
+    misdetect <- lapply(1:nsim, 
+                        function(j) length(unlist(sapply(1:Time, 
+                                                         function(k) in_cluster_id[[j]][[k]] %in% neighs$nbs))))
     
+    #avg number of things not incluster nor in border
+    notincluster_notinborder <- mean(unlist(in_cluster_border))
+    
+    #percent of things not in border nor cluster out of all things that are detected
+    neitherpercentdetect <- mean(unlist(lapply(1:nsim, function(i) in_cluster_border[[i]]/length(unlist(ix[[i]])))))
     # clusterback_idx <- lapply(1:nsim,
     #                           function(j) unlist(sapply(minTime:maxTime,
     #                                                     function(k) which(in_cluster_border[[j]][[k]]==TRUE))))
@@ -973,10 +981,7 @@ detect.incluster.aic <- function(lassoresult, vectors.sim, rr, set, period, Time
     allcells <- sort(unique(unlist(neighs)))
     
     ##in_cluster_id is the individual centers that are not in the cluster. So are they in the background?
-    misdetect <- lapply(1:nsim, 
-                        function(j) length(unlist(sapply(1:Time, 
-                                           function(k) in_cluster_id[[j]][[k]] %in% neighs$nbs))))
-    
+        
     in_background_notcluster <- lapply(1:nsim, 
                                        function(j) length(unlist(sapply(minTime:maxTime, 
                                                           function(k) which((in_cluster_id[[j]][[k]] %in% neighs$nbs)==TRUE))))/misdetect[[j]])
@@ -984,12 +989,15 @@ detect.incluster.aic <- function(lassoresult, vectors.sim, rr, set, period, Time
     #what is average TRUE across all sim?
     detectborderclust <- mean(unlist(in_background_notcluster), na.rm=TRUE)
     
+    #percent neither in cluster nor in border of total misdetected
+    
     
     return(list(
-        incluster = in_cluster,
         clusteronly = clusteronly,
-        cluster_bkgrd = clusterback,
-        celldetected = celldetected
+        celldetected = celldetected,
+        detectborderclust = detectborderclust,
+        neithercells = notincluster_notinborder, 
+        neitherpercentdetect = neitherpercentdetect 
     ))
 }
 
