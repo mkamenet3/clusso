@@ -929,9 +929,7 @@ detect.incluster.aic <- function(lassoresult, vectors.sim, rr, set, period, Time
                              function(j) sapply(period[1]:tail(period,n=1),
                                                 function(k) sum(in_cluster[[j]][[k]]*1)>1))
     celldetected <- length(which(unlist(atleastonecell)==TRUE))/length(period)
-    
     #of the things not in the background, did it find all cells in the cluster and nothing else?
-    
     ##of the things that were found, which were incluster?
     clusteronly_idxall <- lapply(1:nsim,
                               function(j) sapply(1:Time,
@@ -942,56 +940,33 @@ detect.incluster.aic <- function(lassoresult, vectors.sim, rr, set, period, Time
                                                  function(k) clusteronly_idxall[[j]][[k]])))
     clusteronly <- (nsim - sum(unlist(lapply(1:nsim,
                    function(j) any(clusteronly_idx[[j]] >0)*1))))/100
-    
     #create neighbors for cluster
     neighs <- findneighbors(nb, x, y, rMax, center, radius)
-    
     #of what was found, how much of it was in the border
     in_cluster_id <- lapply(1:nsim, 
                          function(j) sapply(1:Time, 
                                             function(k) setdiff(ix[[j]][[k]],set$indx_truth[[k]])))
-    
-    
     #number of cells detected not in border 
     in_cluster_border <- lapply(1:nsim, 
                                     function(j) length(unlist(sapply(minTime:maxTime, 
                                                        function(k) setdiff(in_cluster_id[[j]][[k]],neighs$nbs)))))
-    #clusterback_idx <- lapply(1:nsim,
-     #                         function(j) length(which(in_cluster_border[[j]]==TRUE))/length(in_cluster_border[[j]]))
-    
     misdetect <- lapply(1:nsim, 
                         function(j) length(unlist(sapply(1:Time, 
                                                          function(k) in_cluster_id[[j]][[k]] %in% neighs$nbs))))
-    
     #avg number of things not incluster nor in border
     notincluster_notinborder <- mean(unlist(in_cluster_border))
     
     #percent of things not in border nor cluster out of all things that are detected
     neitherpercentdetect <- mean(unlist(lapply(1:nsim, function(i) in_cluster_border[[i]]/length(unlist(ix[[i]])))))
-    # clusterback_idx <- lapply(1:nsim,
-    #                           function(j) unlist(sapply(minTime:maxTime,
-    #                                                     function(k) which(in_cluster_border[[j]][[k]]==TRUE))))
-    
-    #clusterback <- (nsim - sum(unlist(lapply(1:nsim,
-#                                             function(j) any(clusterback_idx[[j]] >0)*1))))/100
-    
     #what percentage of cluster cells + background cells are found?
-    
     ##all potential things
     allcells <- sort(unique(unlist(neighs)))
-    
     ##in_cluster_id is the individual centers that are not in the cluster. So are they in the background?
-        
     in_background_notcluster <- lapply(1:nsim, 
                                        function(j) length(unlist(sapply(minTime:maxTime, 
                                                           function(k) which((in_cluster_id[[j]][[k]] %in% neighs$nbs)==TRUE))))/misdetect[[j]])
-
     #what is average TRUE across all sim?
     detectborderclust <- mean(unlist(in_background_notcluster), na.rm=TRUE)
-    
-    #percent neither in cluster nor in border of total misdetected
-    
-    
     return(list(
         clusteronly = clusteronly,
         celldetected = celldetected,
@@ -1004,37 +979,78 @@ detect.incluster.aic <- function(lassoresult, vectors.sim, rr, set, period, Time
 #'detect.incluster.aicc
 #'
 #'
-detect.incluster.aicc <- function(lassoresult, vectors.sim, rr, set, period,Time){
-    prob.simAICc <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
-    ix <- lapply(1: length(prob.simAICc), 
+detect.incluster.aicc <- function(lassoresult, vectors.sim, rr, set, period, Time, nsim, nb, x, y, rMax, center, radius){
+    if(tail(period, n=1) == Time){
+        maxTime = tail(period, n=1)    
+    }
+    else{
+        maxTime = tail(period, n=1) +1
+    }
+    if(period[1] == 1){
+        minTime = 1
+    }
+    else{
+        minTime = period[1]-1
+    }
+    #extract things that are not the background rate
+    ix <- lapply(1:nsim, 
                  function(j) sapply(1:Time, 
                                     function(k) 
                                         which(round(matrix(set$rr.simAICc[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaAICc[[j]][[k]])),6))))
-    in_cluster <- lapply(1:length(prob.simAICc), 
+    #of the cells that are not the background, what are they? Are they the true cluster?
+    in_cluster <- lapply(1:nsim, 
                          function(j) sapply(1:Time, 
                                             function(k) ix[[j]][[k]] %in% set$indx_truth[[k]]))
     
-    #did it find at least one cell in the cluster?
-    atleastonecell <- lapply(1:length(prob.simAIC),
-                             function(j) sapply(period[1]:tail(period, n=1),
+    #of the things not in the background, did it find at least one cell in the cluster?
+    atleastonecell <- lapply(1:nsim,
+                             function(j) sapply(period[1]:tail(period,n=1),
                                                 function(k) sum(in_cluster[[j]][[k]]*1)>1))
     celldetected <- length(which(unlist(atleastonecell)==TRUE))/length(period)
+    #of the things not in the background, did it find all cells in the cluster and nothing else?
+    ##of the things that were found, which were incluster?
+    clusteronly_idxall <- lapply(1:nsim,
+                                 function(j) sapply(1:Time,
+                                                    function(k) which(in_cluster[[j]][[k]]==FALSE)))
     
-    #did it find all cells in the cluster and nothing else?
-    clusteronly_idx <- lapply(1:length(prob.simAICc),
-                              function(j) unlist(sapply(1:Time,
-                                                        function(k) which(in_cluster[[j]][[k]]==FALSE))))
-    clusteronly <- (nsim - sum(unlist(lapply(1:length(prob.simAICc),
+    clusteronly_idx <- lapply(1:nsim, 
+                              function(j) unlist(sapply(period[1]:tail(period,n=1),
+                                                        function(k) clusteronly_idxall[[j]][[k]])))
+    clusteronly <- (nsim - sum(unlist(lapply(1:nsim,
                                              function(j) any(clusteronly_idx[[j]] >0)*1))))/100
+    #create neighbors for cluster
+    neighs <- findneighbors(nb, x, y, rMax, center, radius)
+    #of what was found, how much of it was in the border
+    in_cluster_id <- lapply(1:nsim, 
+                            function(j) sapply(1:Time, 
+                                               function(k) setdiff(ix[[j]][[k]],set$indx_truth[[k]])))
+    #number of cells detected not in border 
+    in_cluster_border <- lapply(1:nsim, 
+                                function(j) length(unlist(sapply(minTime:maxTime, 
+                                                                 function(k) setdiff(in_cluster_id[[j]][[k]],neighs$nbs)))))
+    misdetect <- lapply(1:nsim, 
+                        function(j) length(unlist(sapply(1:Time, 
+                                                         function(k) in_cluster_id[[j]][[k]] %in% neighs$nbs))))
+    #avg number of things not incluster nor in border
+    notincluster_notinborder <- mean(unlist(in_cluster_border))
     
-    idx_avg <- unlist(lapply(1:length(prob.simAICc), 
-                             function(j) mean(in_cluster[[j]][period])))
+    #percent of things not in border nor cluster out of all things that are detected
+    neitherpercentdetect <- mean(unlist(lapply(1:nsim, function(i) in_cluster_border[[i]]/length(unlist(ix[[i]])))))
+    #what percentage of cluster cells + background cells are found?
+    ##all potential things
+    allcells <- sort(unique(unlist(neighs)))
+    ##in_cluster_id is the individual centers that are not in the cluster. So are they in the background?
+    in_background_notcluster <- lapply(1:nsim, 
+                                       function(j) length(unlist(sapply(minTime:maxTime, 
+                                                                        function(k) which((in_cluster_id[[j]][[k]] %in% neighs$nbs)==TRUE))))/misdetect[[j]])
+    #what is average TRUE across all sim?
+    detectborderclust <- mean(unlist(in_background_notcluster), na.rm=TRUE)
     return(list(
-        incluster = in_cluster,
         clusteronly = clusteronly,
         celldetected = celldetected,
-        mean_detect = mean(idx_avg),
-        min_detect = min(idx_avg)
+        detectborderclust = detectborderclust,
+        neithercells = notincluster_notinborder, 
+        neitherpercentdetect = neitherpercentdetect 
     ))
 }
 
@@ -1042,145 +1058,274 @@ detect.incluster.aicc <- function(lassoresult, vectors.sim, rr, set, period,Time
 #'detect.incluster.bic
 #'
 #'
-detect.incluster.bic <- function(lassoresult, vectors.sim, rr, set, period, Time){
-    prob.simBIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
-    ix <- lapply(1: length(prob.simBIC), 
+detect.incluster.bic <- function(lassoresult, vectors.sim, rr, set, period, Time, nsim, nb, x, y, rMax, center, radius){
+    if(tail(period, n=1) == Time){
+        maxTime = tail(period, n=1)    
+    }
+    else{
+        maxTime = tail(period, n=1) +1
+    }
+    if(period[1] == 1){
+        minTime = 1
+    }
+    else{
+        minTime = period[1]-1
+    }
+    #extract things that are not the background rate
+    ix <- lapply(1:nsim, 
                  function(j) sapply(1:Time, 
                                     function(k) 
-                                        which(round(matrix(set$rr.simBIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaBIC[[j]][[k]])),6))))
-    in_cluster <- lapply(1:length(prob.simBIC), 
+                                        which(round(matrix(set$rr.simAIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaAIC[[j]][[k]])),6))))
+    #of the cells that are not the background, what are they? Are they the true cluster?
+    in_cluster <- lapply(1:nsim, 
                          function(j) sapply(1:Time, 
                                             function(k) ix[[j]][[k]] %in% set$indx_truth[[k]]))
     
-    #did it find at least one cell in the cluster?
-    atleastonecell <- lapply(1:length(prob.simBIC),
-                             function(j) sapply(period[1]:tail(period, n=1),#change this to be specific to the period
+    #of the things not in the background, did it find at least one cell in the cluster?
+    atleastonecell <- lapply(1:nsim,
+                             function(j) sapply(period[1]:tail(period,n=1),
                                                 function(k) sum(in_cluster[[j]][[k]]*1)>1))
     celldetected <- length(which(unlist(atleastonecell)==TRUE))/length(period)
+    #of the things not in the background, did it find all cells in the cluster and nothing else?
+    ##of the things that were found, which were incluster?
+    clusteronly_idxall <- lapply(1:nsim,
+                                 function(j) sapply(1:Time,
+                                                    function(k) which(in_cluster[[j]][[k]]==FALSE)))
     
-    #did it find all cells in the cluster and nothing else?
-    clusteronly_idx <- lapply(1:length(prob.simBIC),
-                              function(j) unlist(sapply(1:Time,
-                                                        function(k) which(in_cluster[[j]][[k]]==FALSE))))
-    clusteronly <- (nsim - sum(unlist(lapply(1:length(prob.simBIC),
+    clusteronly_idx <- lapply(1:nsim, 
+                              function(j) unlist(sapply(period[1]:tail(period,n=1),
+                                                        function(k) clusteronly_idxall[[j]][[k]])))
+    clusteronly <- (nsim - sum(unlist(lapply(1:nsim,
                                              function(j) any(clusteronly_idx[[j]] >0)*1))))/100
+    #create neighbors for cluster
+    neighs <- findneighbors(nb, x, y, rMax, center, radius)
+    #of what was found, how much of it was in the border
+    in_cluster_id <- lapply(1:nsim, 
+                            function(j) sapply(1:Time, 
+                                               function(k) setdiff(ix[[j]][[k]],set$indx_truth[[k]])))
+    #number of cells detected not in border 
+    in_cluster_border <- lapply(1:nsim, 
+                                function(j) length(unlist(sapply(minTime:maxTime, 
+                                                                 function(k) setdiff(in_cluster_id[[j]][[k]],neighs$nbs)))))
+    misdetect <- lapply(1:nsim, 
+                        function(j) length(unlist(sapply(1:Time, 
+                                                         function(k) in_cluster_id[[j]][[k]] %in% neighs$nbs))))
+    #avg number of things not incluster nor in border
+    notincluster_notinborder <- mean(unlist(in_cluster_border))
     
-    idx_avg <- unlist(lapply(1:length(prob.simBIC), 
-                             function(j) mean(in_cluster[[j]][period])))
+    #percent of things not in border nor cluster out of all things that are detected
+    neitherpercentdetect <- mean(unlist(lapply(1:nsim, function(i) in_cluster_border[[i]]/length(unlist(ix[[i]])))))
+    #what percentage of cluster cells + background cells are found?
+    ##all potential things
+    allcells <- sort(unique(unlist(neighs)))
+    ##in_cluster_id is the individual centers that are not in the cluster. So are they in the background?
+    in_background_notcluster <- lapply(1:nsim, 
+                                       function(j) length(unlist(sapply(minTime:maxTime, 
+                                                                        function(k) which((in_cluster_id[[j]][[k]] %in% neighs$nbs)==TRUE))))/misdetect[[j]])
+    #what is average TRUE across all sim?
+    detectborderclust <- mean(unlist(in_background_notcluster), na.rm=TRUE)
     return(list(
-        incluster = in_cluster,
         clusteronly = clusteronly,
         celldetected = celldetected,
-        mean_detect = mean(idx_avg),
-        min_detect = min(idx_avg)
+        detectborderclust = detectborderclust,
+        neithercells = notincluster_notinborder, 
+        neitherpercentdetect = neitherpercentdetect 
     ))
 }
 
 #'detect.incluster.ic
 #'
 #'
-detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time){
+detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time, nsim, nb, x, y, rMax, center, radius){
     prob.simBIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
     prob.simAIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
     prob.simAICc <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
+    if(tail(period, n=1) == Time){
+        maxTime = tail(period, n=1)    
+    }
+    else{
+        maxTime = tail(period, n=1) +1
+    }
+    if(period[1] == 1){
+        minTime = 1
+    }
+    else{
+        minTime = period[1]-1
+    }
     #(Q)AIC
-    ix <- lapply(1: length(prob.simAIC), 
+    #extract things that are not the background rate
+    ix <- lapply(1:nsim, 
                  function(j) sapply(1:Time, 
                                     function(k) 
                                         which(round(matrix(set$rr.simAIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaAIC[[j]][[k]])),6))))
-    in_cluster <- lapply(1:length(prob.simAIC), 
+    #of the cells that are not the background, what are they? Are they the true cluster?
+    in_cluster <- lapply(1:nsim, 
                          function(j) sapply(1:Time, 
                                             function(k) ix[[j]][[k]] %in% set$indx_truth[[k]]))
     
-    #did it find at least one cell in the cluster?
-    atleastonecell <- lapply(1:length(prob.simAIC),
+    #of the things not in the background, did it find at least one cell in the cluster?
+    atleastonecell <- lapply(1:nsim,
                              function(j) sapply(period[1]:tail(period,n=1),
                                                 function(k) sum(in_cluster[[j]][[k]]*1)>1))
-    celldetected <- length(which(unlist(atleastonecell)==TRUE))/length(period)
+    celldetected.aic <- length(which(unlist(atleastonecell)==TRUE))/length(period)
+    #of the things not in the background, did it find all cells in the cluster and nothing else?
+    ##of the things that were found, which were incluster?
+    clusteronly_idxall <- lapply(1:nsim,
+                                 function(j) sapply(1:Time,
+                                                    function(k) which(in_cluster[[j]][[k]]==FALSE)))
     
-    #did it find all cells in the cluster and nothing else?
-    clusteronly_idx <- lapply(1:length(prob.simAIC),
-                              function(j) unlist(sapply(1:Time,
-                                                        function(k) which(in_cluster[[j]][[k]]==FALSE))))
-    clusteronly <- (nsim - sum(unlist(lapply(1:length(prob.simAIC),
+    clusteronly_idx <- lapply(1:nsim, 
+                              function(j) unlist(sapply(period[1]:tail(period,n=1),
+                                                        function(k) clusteronly_idxall[[j]][[k]])))
+    clusteronly.aic <- (nsim - sum(unlist(lapply(1:nsim,
                                              function(j) any(clusteronly_idx[[j]] >0)*1))))/100
+    #create neighbors for cluster
+    neighs <- findneighbors(nb, x, y, rMax, center, radius)
+    #of what was found, how much of it was in the border
+    in_cluster_id <- lapply(1:nsim, 
+                            function(j) sapply(1:Time, 
+                                               function(k) setdiff(ix[[j]][[k]],set$indx_truth[[k]])))
+    #number of cells detected not in border 
+    in_cluster_border <- lapply(1:nsim, 
+                                function(j) length(unlist(sapply(minTime:maxTime, 
+                                                                 function(k) setdiff(in_cluster_id[[j]][[k]],neighs$nbs)))))
+    misdetect <- lapply(1:nsim, 
+                        function(j) length(unlist(sapply(1:Time, 
+                                                         function(k) in_cluster_id[[j]][[k]] %in% neighs$nbs))))
+    #avg number of things not incluster nor in border
+    notincluster_notinborder.aic <- mean(unlist(in_cluster_border))
     
-    idx_avg <- unlist(lapply(1:length(prob.simAIC), 
-                             function(j) mean(in_cluster[[j]][period])))
-    incluster.aic = in_cluster
-    clusteronly.aic = clusteronly
-    celldetected.aic = celldetected
-    mean_detect.aic = mean(idx_avg)
-    min_detect.aic = min(idx_avg)
+    #percent of things not in border nor cluster out of all things that are detected
+    neitherpercentdetect.aic <- mean(unlist(lapply(1:nsim, function(i) in_cluster_border[[i]]/length(unlist(ix[[i]])))))
+    #what percentage of cluster cells + background cells are found?
+    ##all potential things
+    allcells <- sort(unique(unlist(neighs)))
+    ##in_cluster_id is the individual centers that are not in the cluster. So are they in the background?
+    in_background_notcluster <- lapply(1:nsim, 
+                                       function(j) length(unlist(sapply(minTime:maxTime, 
+                                                                        function(k) which((in_cluster_id[[j]][[k]] %in% neighs$nbs)==TRUE))))/misdetect[[j]])
+    #what is average TRUE across all sim?
+    detectborderclust.aic <- mean(unlist(in_background_notcluster), na.rm=TRUE)
     
+    ########################################################################
     #(Q)AICc
-    ix <- lapply(1: length(prob.simAICc), 
+    #extract things that are not the background rate
+    ix <- lapply(1:nsim, 
                  function(j) sapply(1:Time, 
                                     function(k) 
-                                        which(round(matrix(set$rr.simAICc[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaAICc[[j]][[k]])),6))))
-    in_cluster <- lapply(1:length(prob.simAICc), 
+                                        which(round(matrix(set$rr.simAIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaAICc[[j]][[k]])),6))))
+    #of the cells that are not the background, what are they? Are they the true cluster?
+    in_cluster <- lapply(1:nsim, 
                          function(j) sapply(1:Time, 
                                             function(k) ix[[j]][[k]] %in% set$indx_truth[[k]]))
     
-    #did it find at least one cell in the cluster?
-    atleastonecell <- lapply(1:length(prob.simAIC),
-                             function(j) sapply(period[1]:tail(period, n=1),
+    #of the things not in the background, did it find at least one cell in the cluster?
+    atleastonecell <- lapply(1:nsim,
+                             function(j) sapply(period[1]:tail(period,n=1),
                                                 function(k) sum(in_cluster[[j]][[k]]*1)>1))
-    celldetected <- length(which(unlist(atleastonecell)==TRUE))/length(period)
+    celldetected.aicc <- length(which(unlist(atleastonecell)==TRUE))/length(period)
+    #of the things not in the background, did it find all cells in the cluster and nothing else?
+    ##of the things that were found, which were incluster?
+    clusteronly_idxall <- lapply(1:nsim,
+                                 function(j) sapply(1:Time,
+                                                    function(k) which(in_cluster[[j]][[k]]==FALSE)))
     
-    #did it find all cells in the cluster and nothing else?
-    clusteronly_idx <- lapply(1:length(prob.simAICc),
-                              function(j) unlist(sapply(1:Time,
-                                                        function(k) which(in_cluster[[j]][[k]]==FALSE))))
-    clusteronly <- (nsim - sum(unlist(lapply(1:length(prob.simAICc),
-                                             function(j) any(clusteronly_idx[[j]] >0)*1))))/100
+    clusteronly_idx <- lapply(1:nsim, 
+                              function(j) unlist(sapply(period[1]:tail(period,n=1),
+                                                        function(k) clusteronly_idxall[[j]][[k]])))
+    clusteronly.aicc <- (nsim - sum(unlist(lapply(1:nsim,
+                                                 function(j) any(clusteronly_idx[[j]] >0)*1))))/100
+    #create neighbors for cluster
+    neighs <- findneighbors(nb, x, y, rMax, center, radius)
+    #of what was found, how much of it was in the border
+    in_cluster_id <- lapply(1:nsim, 
+                            function(j) sapply(1:Time, 
+                                               function(k) setdiff(ix[[j]][[k]],set$indx_truth[[k]])))
+    #number of cells detected not in border 
+    in_cluster_border <- lapply(1:nsim, 
+                                function(j) length(unlist(sapply(minTime:maxTime, 
+                                                                 function(k) setdiff(in_cluster_id[[j]][[k]],neighs$nbs)))))
+    misdetect <- lapply(1:nsim, 
+                        function(j) length(unlist(sapply(1:Time, 
+                                                         function(k) in_cluster_id[[j]][[k]] %in% neighs$nbs))))
+    #avg number of things not incluster nor in border
+    notincluster_notinborder.aicc <- mean(unlist(in_cluster_border))
     
-    idx_avg <- unlist(lapply(1:length(prob.simAICc), 
-                             function(j) mean(in_cluster[[j]][period])))
+    #percent of things not in border nor cluster out of all things that are detected
+    neitherpercentdetect.aicc <- mean(unlist(lapply(1:nsim, function(i) in_cluster_border[[i]]/length(unlist(ix[[i]])))))
+    #what percentage of cluster cells + background cells are found?
+    ##all potential things
+    allcells <- sort(unique(unlist(neighs)))
+    ##in_cluster_id is the individual centers that are not in the cluster. So are they in the background?
+    in_background_notcluster <- lapply(1:nsim, 
+                                       function(j) length(unlist(sapply(minTime:maxTime, 
+                                                                        function(k) which((in_cluster_id[[j]][[k]] %in% neighs$nbs)==TRUE))))/misdetect[[j]])
+    #what is average TRUE across all sim?
+    detectborderclust.aicc <- mean(unlist(in_background_notcluster), na.rm=TRUE)
     
-    incluster.aicc = in_cluster
-    clusteronly.aicc = clusteronly
-    celldetected.aicc = celldetected
-    mean_detect.aicc = mean(idx_avg)
-    min_detect.aicc = min(idx_avg)
-    
-    
+    ################################################################
     #(Q)BIC
-    ix <- lapply(1: length(prob.simBIC), 
+    #extract things that are not the background rate
+    ix <- lapply(1:nsim, 
                  function(j) sapply(1:Time, 
                                     function(k) 
-                                        which(round(matrix(set$rr.simBIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaBIC[[j]][[k]])),6))))
-    in_cluster <- lapply(1:length(prob.simBIC), 
+                                        which(round(matrix(set$rr.simAIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaBIC[[j]][[k]])),6))))
+    #of the cells that are not the background, what are they? Are they the true cluster?
+    in_cluster <- lapply(1:nsim, 
                          function(j) sapply(1:Time, 
                                             function(k) ix[[j]][[k]] %in% set$indx_truth[[k]]))
     
-    #did it find at least one cell in the cluster?
-    atleastonecell <- lapply(1:length(prob.simBIC),
-                             function(j) sapply(period[1]:tail(period, n=1),#change this to be specific to the period
+    #of the things not in the background, did it find at least one cell in the cluster?
+    atleastonecell <- lapply(1:nsim,
+                             function(j) sapply(period[1]:tail(period,n=1),
                                                 function(k) sum(in_cluster[[j]][[k]]*1)>1))
-    celldetected <- length(which(unlist(atleastonecell)==TRUE))/length(period)
+    celldetected.bic <- length(which(unlist(atleastonecell)==TRUE))/length(period)
+    #of the things not in the background, did it find all cells in the cluster and nothing else?
+    ##of the things that were found, which were incluster?
+    clusteronly_idxall <- lapply(1:nsim,
+                                 function(j) sapply(1:Time,
+                                                    function(k) which(in_cluster[[j]][[k]]==FALSE)))
     
-    #did it find all cells in the cluster and nothing else?
-    clusteronly_idx <- lapply(1:length(prob.simBIC),
-                              function(j) unlist(sapply(1:Time,
-                                                        function(k) which(in_cluster[[j]][[k]]==FALSE))))
-    clusteronly <- (nsim - sum(unlist(lapply(1:length(prob.simBIC),
-                                             function(j) any(clusteronly_idx[[j]] >0)*1))))/100
+    clusteronly_idx <- lapply(1:nsim, 
+                              function(j) unlist(sapply(period[1]:tail(period,n=1),
+                                                        function(k) clusteronly_idxall[[j]][[k]])))
+    clusteronly.bic <- (nsim - sum(unlist(lapply(1:nsim,
+                                                 function(j) any(clusteronly_idx[[j]] >0)*1))))/100
+    #create neighbors for cluster
+    neighs <- findneighbors(nb, x, y, rMax, center, radius)
+    #of what was found, how much of it was in the border
+    in_cluster_id <- lapply(1:nsim, 
+                            function(j) sapply(1:Time, 
+                                               function(k) setdiff(ix[[j]][[k]],set$indx_truth[[k]])))
+    #number of cells detected not in border 
+    in_cluster_border <- lapply(1:nsim, 
+                                function(j) length(unlist(sapply(minTime:maxTime, 
+                                                                 function(k) setdiff(in_cluster_id[[j]][[k]],neighs$nbs)))))
+    misdetect <- lapply(1:nsim, 
+                        function(j) length(unlist(sapply(1:Time, 
+                                                         function(k) in_cluster_id[[j]][[k]] %in% neighs$nbs))))
+    #avg number of things not incluster nor in border
+    notincluster_notinborder.bic <- mean(unlist(in_cluster_border))
     
-    idx_avg <- unlist(lapply(1:length(prob.simBIC), 
-                             function(j) mean(in_cluster[[j]][period])))
+    #percent of things not in border nor cluster out of all things that are detected
+    neitherpercentdetect.bic <- mean(unlist(lapply(1:nsim, function(i) in_cluster_border[[i]]/length(unlist(ix[[i]])))))
+    #what percentage of cluster cells + background cells are found?
+    ##all potential things
+    allcells <- sort(unique(unlist(neighs)))
+    ##in_cluster_id is the individual centers that are not in the cluster. So are they in the background?
+    in_background_notcluster <- lapply(1:nsim, 
+                                       function(j) length(unlist(sapply(minTime:maxTime, 
+                                                                        function(k) which((in_cluster_id[[j]][[k]] %in% neighs$nbs)==TRUE))))/misdetect[[j]])
+    #what is average TRUE across all sim?
+    detectborderclust.bic <- mean(unlist(in_background_notcluster), na.rm=TRUE)
     
-    incluster.bic = in_cluster
-    clusteronly.bic = clusteronly
-    celldetected.bic = celldetected
-    mean_detect.bic = mean(idx_avg)
-    min_detect.bic = min(idx_avg)
     
     
-    
-    return(list(celldetected.aic = celldetected.aic, clusteronly.aic = clusteronly.aic, incluster.aic = incluster.aic, mean_detect.aic = mean_detect.aic, min_detect.aic = min_detect.aic,
-                celldetected.aicc = celldetected.aicc, clusteronly.aicc = clusteronly.aicc, incluster.aicc = incluster.aicc, mean_detect.aicc = mean_detect.aicc, min_detect.aicc = min_detect.aicc,
-                celldetected.bic = celldetected.bic, clusteronly.bic = clusteronly.bic, incluster.bic = incluster.bic, mean_detect.bic = mean_detect.bic, min_detect.bic = min_detect.bic))
+    return(list(
+        clusteronly.aic = clusteronly.aic, celldetected.aic = celldetected.aic, detectborderclust.aic = detectborderclust.aic, neithercells.aic = notincluster_notinborder.aic, neitherpercentdetect.aic = neitherpercentdetect.aic, 
+        clusteronly.aicc = clusteronly.aicc, celldetected.aicc = celldetected.aicc, detectborderclust.aicc = detectborderclust.aicc, neithercells.aicc = notincluster_notinborder.aicc, neitherpercentdetect.aicc = neitherpercentdetect.aicc,
+        clusteronly.bic = clusteronly.bic, celldetected.bic = celldetected.bic, detectborderclust.bic = detectborderclust.bic, neithercells.bic = notincluster_notinborder.bic, neitherpercentdetect.bic = neitherpercentdetect.bic
+    ))
 }
 
 
@@ -1201,7 +1346,7 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time)
 #'(for aic/aicc/bic and qaic/qaicc/qbic, respectively).
 #'TODO add cluster detection in case where risk ratio is less than background rate
 #'@return returns
-detect.incluster <- function(lassoresult, vectors.sim, rr, res, period_start, period_end, multi_period = FALSE, IC = c("aic","aicc","bic","ic"), Time,...){
+detect.incluster <- function(lassoresult, vectors.sim, rr, set,period_start, period_end, multi_period = FALSE, Time, nsim, nb, x, y, rMax, center, radius, IC = c("aic","aicc","bic","ic")){
     if(multi_period==TRUE){
         period = period_start:period_end
     }
@@ -1210,10 +1355,10 @@ detect.incluster <- function(lassoresult, vectors.sim, rr, res, period_start, pe
     }
     IC <- match.arg(IC, several.ok= TRUE)
     switch(IC,
-          aic = detect.incluster.aic(lassoresult, vectors.sim, rr, res, period, Time),
-          aicc = detect.incluster.aicc(lassoresult, vectors.sim, rr, res, period, Time),
-          bic = detect.incluster.bic(lassoresult, vectors.sim, rr, res, period, Time),
-          ic = detect.incluster.ic(lassoresult, vectors.sim, rr, res, period, Time))
+          aic = detect.incluster.aic(lassoresult, vectors.sim, rr, set, period, Time, nsim, nb, x, y, rMax, center, radius),
+          aicc = detect.incluster.aicc(lassoresult, vectors.sim, rr, set, period, Time, nsim, nb, x, y, rMax, center, radius),
+          bic = detect.incluster.bic(lassoresult, vectors.sim, rr, set, period, Time, nsim, nb, x, y, rMax, center, radius),
+          ic = detect.incluster.ic(lassoresult, vectors.sim, rr, set, period, Time, nsim, nb, x, y, rMax, center, radius))
 } 
 
 
