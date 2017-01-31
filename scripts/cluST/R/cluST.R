@@ -1136,14 +1136,15 @@ detect.incluster.bic <- function(lassoresult, vectors.sim, rr, set, period, Time
 #'detect.incluster.ic
 #'
 #'
-detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time, nsim, nb, x, y, rMax, center, radius){
+detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time, nsim, nb, x, y, rMax, center, radius, under=NULL){
     prob.simBIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
     prob.simAIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
     prob.simAICc <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
-    if(tail(period, n=1) == Time){
+    print(period)
+    if(tail(period, n=1) == Time || tail(period, n=1)==1){
         maxTime = tail(period, n=1)    
     }
-    else{
+    else {
         maxTime = tail(period, n=1) +1
     }
     if(period[1] == 1){
@@ -1152,22 +1153,43 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     else{
         minTime = period[1]-1
     }
+    print(c(maxTime, minTime))
     #(Q)AIC
     #extract things that are not the background rate
-    ix <- lapply(1:nsim, 
-                 function(j) sapply(1:Time, 
-                                    function(k) 
-                                        which(round(matrix(set$rr.simAIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaAIC[[j]][[k]])),6))))
-    #of the cells that are not the background, what are they? Are they the true cluster?
-    in_cluster <- lapply(1:nsim, 
-                         function(j) sapply(1:Time, 
-                                            function(k) ix[[j]][[k]] %in% set$indx_truth[[k]]))
+    if(!is.null(under)){
+        ix <- lapply(1:nsim, 
+                     function(j) sapply(1:Time, 
+                                        function(k) 
+                                            which(round(matrix(set$rr.simAIC[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(set$alphaAIC[[j]][[k]])),6))))
+    }
+    else{
+        ix <- lapply(1:nsim, 
+                     function(j) sapply(1:Time, 
+                                        function(k) 
+                                            which(round(matrix(set$rr.simAIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaAIC[[j]][[k]])),6))))
+    }
     
-    #of the things not in the background, did it find at least one cell in the cluster?
-    atleastonecell <- lapply(1:nsim,
-                             function(j) sapply(period[1]:tail(period,n=1),
-                                                function(k) sum(in_cluster[[j]][[k]]*1)>1))
-    celldetected.aic <- length(which(unlist(atleastonecell)==TRUE))/length(period)
+    #of the cells that are not the background, what are they? Are they the true cluster?
+    # if(period==1){
+    #     in_cluster <- lapply(1:nsim, 
+    #                          function(j) ix[[j]] %in% set$indx_truth)
+    #     #of the things not in the background, did it find at least one cell in the cluster?
+    #     atleastonecell <- lapply(1:nsim,
+    #                              function(j) sum(in_cluster[[j]]*1)>1)
+    #     celldetected.aic <- length(which(unlist(atleastonecell)==TRUE))/length(period)
+    #     
+    # }
+    # else{
+        in_cluster <- lapply(1:nsim, 
+                             function(j) sapply(1:Time, 
+                                                function(k) ix[[j]][[k]] %in% set$indx_truth[[k]]))    
+        #of the things not in the background, did it find at least one cell in the cluster?
+        atleastonecell <- lapply(1:nsim,
+                                 function(j) sapply(period[1]:tail(period,n=1),
+                                                    function(k) sum(in_cluster[[j]][[k]]*1)>=1))
+        celldetected.aic <- length(which(unlist(atleastonecell)==TRUE))/length(period)
+  #  }
+    
     #of the things not in the background, did it find all cells in the cluster and nothing else?
     ##of the things that were found, which were incluster?
     clusteronly_idxall <- lapply(1:nsim,
@@ -1196,7 +1218,10 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     notincluster_notinborder.aic <- mean(unlist(in_cluster_border))
     
     #percent of things not in border nor cluster out of all things that are detected
-    neitherpercentdetect.aic <- mean(unlist(lapply(1:nsim, function(i) in_cluster_border[[i]]/length(unlist(ix[[i]])))))
+    neitherpercentdetect.aic <- mean(unlist(lapply(1:nsim, function(i) in_cluster_border[[i]]/length(unlist(ix[[i]])))),na.rm=TRUE)
+    #print(ix)
+    #print(length(unlist(ix)))
+    
     #what percentage of cluster cells + background cells are found?
     ##all potential things
     allcells <- sort(unique(unlist(neighs)))
@@ -1210,11 +1235,18 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     ########################################################################
     #(Q)AICc
     #extract things that are not the background rate
-    ix <- lapply(1:nsim, 
-                 function(j) sapply(1:Time, 
-                                    function(k) 
-                                        which(round(matrix(set$rr.simAICc[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaAICc[[j]][[k]])),6))))
-    #of the cells that are not the background, what are they? Are they the true cluster?
+    if(!is.null(under)){
+        ix <- lapply(1:nsim, 
+                     function(j) sapply(1:Time, 
+                                        function(k) 
+                                            which(round(matrix(set$rr.simAICc[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(set$alphaAICc[[j]][[k]])),6))))
+    }
+    else{
+        ix <- lapply(1:nsim, 
+                     function(j) sapply(1:Time, 
+                                        function(k) 
+                                            which(round(matrix(set$rr.simAICc[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaAICc[[j]][[k]])),6))))
+    }    #of the cells that are not the background, what are they? Are they the true cluster?
     in_cluster <- lapply(1:nsim, 
                          function(j) sapply(1:Time, 
                                             function(k) ix[[j]][[k]] %in% set$indx_truth[[k]]))
@@ -1222,7 +1254,7 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     #of the things not in the background, did it find at least one cell in the cluster?
     atleastonecell <- lapply(1:nsim,
                              function(j) sapply(period[1]:tail(period,n=1),
-                                                function(k) sum(in_cluster[[j]][[k]]*1)>1))
+                                                function(k) sum(in_cluster[[j]][[k]]*1)>=1))
     celldetected.aicc <- length(which(unlist(atleastonecell)==TRUE))/length(period)
     #of the things not in the background, did it find all cells in the cluster and nothing else?
     ##of the things that were found, which were incluster?
@@ -1252,7 +1284,7 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     notincluster_notinborder.aicc <- mean(unlist(in_cluster_border))
     
     #percent of things not in border nor cluster out of all things that are detected
-    neitherpercentdetect.aicc <- mean(unlist(lapply(1:nsim, function(i) in_cluster_border[[i]]/length(unlist(ix[[i]])))))
+    neitherpercentdetect.aicc <- mean(unlist(lapply(1:nsim, function(i) in_cluster_border[[i]]/length(unlist(ix[[i]])))),na.rm=TRUE)
     #what percentage of cluster cells + background cells are found?
     ##all potential things
     allcells <- sort(unique(unlist(neighs)))
@@ -1266,11 +1298,18 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     ################################################################
     #(Q)BIC
     #extract things that are not the background rate
-    ix <- lapply(1:nsim, 
-                 function(j) sapply(1:Time, 
-                                    function(k) 
-                                        which(round(matrix(set$rr.simBIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaBIC[[j]][[k]])),6))))
-    #of the cells that are not the background, what are they? Are they the true cluster?
+    if(!is.null(under)){
+        ix <- lapply(1:nsim, 
+                     function(j) sapply(1:Time, 
+                                        function(k) 
+                                            which(round(matrix(set$rr.simBIC[[j]], ncol=Time)[,k],6) < round(as.numeric(attributes(set$alphaBIC[[j]][[k]])),6))))
+    }
+    else{
+        ix <- lapply(1:nsim, 
+                     function(j) sapply(1:Time, 
+                                        function(k) 
+                                            which(round(matrix(set$rr.simBIC[[j]], ncol=Time)[,k],6) > round(as.numeric(attributes(set$alphaBIC[[j]][[k]])),6))))
+    }    #of the cells that are not the background, what are they? Are they the true cluster?
     in_cluster <- lapply(1:nsim, 
                          function(j) sapply(1:Time, 
                                             function(k) ix[[j]][[k]] %in% set$indx_truth[[k]]))
@@ -1278,7 +1317,7 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     #of the things not in the background, did it find at least one cell in the cluster?
     atleastonecell <- lapply(1:nsim,
                              function(j) sapply(period[1]:tail(period,n=1),
-                                                function(k) sum(in_cluster[[j]][[k]]*1)>1))
+                                                function(k) sum(in_cluster[[j]][[k]]*1)>=1))
     celldetected.bic <- length(which(unlist(atleastonecell)==TRUE))/length(period)
     #of the things not in the background, did it find all cells in the cluster and nothing else?
     ##of the things that were found, which were incluster?
@@ -1308,7 +1347,7 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     notincluster_notinborder.bic <- mean(unlist(in_cluster_border))
     
     #percent of things not in border nor cluster out of all things that are detected
-    neitherpercentdetect.bic <- mean(unlist(lapply(1:nsim, function(i) in_cluster_border[[i]]/length(unlist(ix[[i]])))))
+    neitherpercentdetect.bic <- mean(unlist(lapply(1:nsim, function(i) in_cluster_border[[i]]/length(unlist(ix[[i]])))), na.rm=TRUE)
     #what percentage of cluster cells + background cells are found?
     ##all potential things
     allcells <- sort(unique(unlist(neighs)))
@@ -1322,11 +1361,17 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     
     
     return(list(
-        clusteronly.aic = clusteronly.aic, celldetected.aic = celldetected.aic, detectborderclust.aic = detectborderclust.aic, neithercells.aic = notincluster_notinborder.aic, neitherpercentdetect.aic = neitherpercentdetect.aic, 
-        clusteronly.aicc = clusteronly.aicc, celldetected.aicc = celldetected.aicc, detectborderclust.aicc = detectborderclust.aicc, neithercells.aicc = notincluster_notinborder.aicc, neitherpercentdetect.aicc = neitherpercentdetect.aicc,
-        clusteronly.bic = clusteronly.bic, celldetected.bic = celldetected.bic, detectborderclust.bic = detectborderclust.bic, neithercells.bic = notincluster_notinborder.bic, neitherpercentdetect.bic = neitherpercentdetect.bic
+        clusteronly.aic = clusteronly.aic, clusteronly.aicc = clusteronly.aicc, clusteronly.bic = clusteronly.bic, 
+        celldetected.aic = celldetected.aic, celldetected.aicc = celldetected.aicc, celldetected.bic = celldetected.bic, 
+        detectborderclust.aic = detectborderclust.aic, detectborderclust.aicc = detectborderclust.aicc, detectborderclust.bic = detectborderclust.bic,
+        neithercells.aic = notincluster_notinborder.aic,neithercells.aicc = notincluster_notinborder.aicc, neithercells.bic = notincluster_notinborder.bic, 
+        neitherpercentdetect.aic = neitherpercentdetect.aic, neitherpercentdetect.aicc = neitherpercentdetect.aicc,neitherpercentdetect.bic = neitherpercentdetect.bic
     ))
 }
+
+  
+ 
+ 
 
 
 #'detect.incluster
@@ -1346,10 +1391,13 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
 #'(for aic/aicc/bic and qaic/qaicc/qbic, respectively).
 #'TODO add cluster detection in case where risk ratio is less than background rate
 #'@return returns
-detect.incluster <- function(lassoresult, vectors.sim, rr, set,period_start, period_end, multi_period = FALSE, Time, nsim, nb, x, y, rMax, center, radius, IC = c("aic","aicc","bic","ic")){
+detect.incluster <- function(lassoresult, vectors.sim, rr, set,period_start, period_end, multi_period = FALSE, Time, nsim, nb, x, y, rMax, center, radius, IC = c("aic","aicc","bic","ic"),...){
     if(multi_period==TRUE){
         period = period_start:period_end
     }
+    # else if(period_end - period_start == 0 ){
+    #    period = 1
+    # }
     else{
         period = c(period_start, period_end)
     }
@@ -1858,7 +1906,7 @@ clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, 
 #'- 1) utm - default is FALSE. If you have utm coordinates, you want to change this to TRUE.
 #'@export
 #'TODO allow user to change theta parameter in simulation
-clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, nsim, center, radius, risk.ratio, period_start,colors=NULL,utm=TRUE, byrow=TRUE,...){
+clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, pois=FALSE, nsim, center, radius, risk.ratio, period_start,colors=NULL,utm=TRUE, byrow=TRUE,...){
     #initial user setting
     if(utm==FALSE){
         message("Coordinates are assumed to be in lat/long coordinates. For utm coordinates, please specify 'utm=TRUE'")
@@ -1903,6 +1951,27 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
     cluster <- tmp[(tmp$r <= radius),]
     rr = matrix(1, nrow=n, ncol=Time)
     #TODO change this to be a function and not hard-coded
+    if(length(period_start) == 3){
+        rr[cluster$last, period_start[1]] = risk.ratio
+        rr[cluster$last, period_start[2]] = risk.ratio
+        rr[cluster$last, period_start[3]] = risk.ratio
+        message(paste("Running model for periods",period_start[1],"through", period_start[3]))
+    }
+    if(length(period_start) == 4){
+        rr[cluster$last, period_start[1]] = risk.ratio
+        rr[cluster$last, period_start[2]] = risk.ratio
+        rr[cluster$last, period_start[3]] = risk.ratio
+        rr[cluster$last, period_start[4]] = risk.ratio
+        message(paste("Running model for periods",period_start[1],"through", period_start[4]))
+    }
+    if(length(period_start) == 5){
+        rr[cluster$last, period_start[1]] = risk.ratio
+        rr[cluster$last, period_start[2]] = risk.ratio
+        rr[cluster$last, period_start[3]] = risk.ratio
+        rr[cluster$last, period_start[4]] = risk.ratio
+        rr[cluster$last, period_start[5]] = risk.ratio
+        message(paste("Running model for periods",period_start[1],"through", period_start[5]))
+    }
     if(length(period_start) == 2){
         rr[cluster$last, period_start[1]] = risk.ratio
         rr[cluster$last, period_start[2]] = risk.ratio
@@ -1911,9 +1980,6 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
     else if(length(period_start)==1){
         rr[cluster$last, period_start:Time] = risk.ratio    
     }
-   else{
-       message("TODO")
-   }
     expect_fake <- as.vector(rr)*E0_0
     #set vectors
     Y.vec <- init$Y.vec
@@ -1921,13 +1987,17 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
     #simulate response
     YSIM <- simulate(out, nsim=nsim)
     #refit E0 for each simlation and scale
-    if(spacetime==FALSE){
-        spacetime=FALSE
+    if(spacetime==FALSE & pois==FALSE){
         out.sim <- lapply(1:nsim, function(i) glm(YSIM[,i] ~ 1  + offset(log(expect_fake)),family="quasipoisson"))
     }
-    else{
-        spacetime=TRUE
+    if(spacetime==FALSE & pois==TRUE){
+        out.sim <- lapply(1:nsim, function(i) glm(YSIM[,i] ~ 1  + offset(log(expect_fake)),family="poisson"))
+    }
+    if(spacetime==TRUE & pois==FALSE){
         out.sim <- lapply(1:nsim, function(i) glm(YSIM[,i] ~ 1  +  as.factor(init$Year)  + offset(log(expect_fake)),family="quasipoisson"))
+    }
+    if(spacetime==TRUE & pois==TRUE){
+        out.sim <- lapply(1:nsim, function(i) glm(YSIM[,i] ~ 1  +  as.factor(init$Year)  + offset(log(expect_fake)),family="poisson"))
     }
     #Set initial expected to the fitted values and standardize
     E0 <- scale(Y.vec, out.sim, nsim, Time)
@@ -1939,12 +2009,12 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
                                          vectors.sim, Time, spacetime=spacetime, nsim, YSIM)
     riskratios <- get.rr(lassoresult, vectors.sim, Time, sim=TRUE)
     rrcolors <- colormapping(riskratios,Time)
-    if(!is.null(colors)){
-        probcolors <- probmap(lassoresult, vectors.sim, rr, nsim,Time, colormap=TRUE)    
-    }
-    else{
-        probcolors <- probmap(lassoresult, vectors.sim, rr, nsim,Time, colormap=FALSE)    
-    }
+    # if(!is.null(colors)){
+    #     probcolors <- probmap(lassoresult, vectors.sim, rr, nsim,Time, colormap=TRUE)    
+    # }
+    # else{
+    #     probcolors <- probmap(lassoresult, vectors.sim, rr, nsim,Time, colormap=FALSE)    
+    # }
     return(list(lassoresult = lassoresult,
                 riskratios = riskratios,
                 rrcolors = rrcolors,
