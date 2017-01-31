@@ -64,8 +64,10 @@ period<- as.vector(df$year)
 
 #Adjust for observed given expected counts as coming from negative binomial distribution
 outinit <- glm.nb(Y.vec ~1)
-out <- glm.nb(Y.vec ~ 1 + as.factor(period)  + offset(log(pop)), init.theta = outinit$theta, 
-              link=log,control=glm.control(maxit=10000))
+# out <- glm.nb(Y.vec ~ 1 + as.factor(period)  + offset(log(pop)), init.theta = outinit$theta, 
+#               link=log,control=glm.control(maxit=10000))
+
+out <- glm(Y.vec ~ 1 + as.factor(period)  + offset(log(pop)),family="quasipoisson")
 
 
 #Set initial expected to the fitted values

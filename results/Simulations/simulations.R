@@ -1037,7 +1037,7 @@ set <- detect.set(res$lassoresult, res$init.vec, res$rr.mat, Time=5)
                                period_end = 5, multi_period = TRUE,Time=5, nsim,nb, x, y, rMax, center, radius, IC = "ic"))
 
 #make maps
-pdfname <- paste0("figures/simulations/japan","_","rMax","_",rMax,"nsim","_",nsim, "center","_",center,"radius","_",radius, "start","_",period_start, "rr","_","risk.ratio","1_5",".pdf")
+pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius","_",radius, "start","_","rr","_","1_1",".pdf")
 pdf(pdfname, height=11, width=10)
 
 #Maps of Observed Counts
