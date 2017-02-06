@@ -263,8 +263,10 @@ filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius","_",r
 save(res, file = filename)
 
 ###did it find at least 1 cell in the cluster?
-set <- detect.set(res$lassoresult, res$init.vec, res$rr.mat, Time=5)
-(incluster <- detect.incluster(res$lassoresult, res$init.vec, res$rr.mat, set, period_start = 2, 
+set <- detect.set(res$lassoresult, res$init.vec, res$rr.mat, Time=5, nb, x, y, rMax, center, radius)
+#(test <- detect.incluster.aic(res$lassoresult, res$init.vec, res$rr.mat, set, period=c(3:5),Time=5, nsim))
+
+(incluster <- detect.incluster(res$lassoresult, res$init.vec, res$rr.mat, set, period_start = 3, 
                                period_end = 3, multi_period = TRUE,Time=5, nsim,nb, x, y, rMax, center, radius, IC = "ic"))
 #make maps
 pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius","_",radius, "start","_","rr","_","1_5",".pdf")
