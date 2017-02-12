@@ -335,7 +335,7 @@ spacetime.lasso <- function(potClus, clusters, numCenters, vectors, Time, spacet
 #' If getRR is FALSE, then relative risk will come from averaging the expected counts from each of the Lasso results by the number of simulations. This should then
 #' by used in conjunction with the set.rrfunction to get the relative risk. TODO integrate this into one flow.
 #' @export
-spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spacetime=TRUE,nsim,YSIM, getRR=TRUE,...){
+spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spacetime=TRUE,pois=FALSE, nsim,YSIM, getRR=TRUE,...){
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
@@ -365,14 +365,71 @@ spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, sp
     }
     loglike <- lapply(1:nsim, function(k) sapply(1:length(lasso[[k]]$lambda), 
                                                  function(i) sum(dpoisson(Yx[,k], mu[[k]][,i],log=TRUE))))
-    K <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), function(i) length(unique(xbetaPath[[j]][,i]))))
+    K <- lapply(1:nsim, function(i) lasso[[i]]$df)
     message("Selecting best paths")
-    if(spacetime==TRUE){
-        message("returning results for space-time model")
-        offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ 1 + as.factor(vectors$Period) +offset(log(Ex[[i]])),family=poisson))
+    if(spacetime==TRUE & pois == FALSE){
+        message("returning results for space-time Quasi-Poisson model")
+        offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ 1 + as.factor(Period) +offset(log(Ex[[i]])),family=poisson))
         overdisp <- lapply(1:nsim, function(i) overdisp(offset_reg[[i]]))
         #QBIC
         PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]])-log(n*Time)/2*K[[i]])
+        select.qbic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qbic[[i]])))
+        if(getRR==FALSE){
+            select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))    
+            E.qbic <- Reduce("+", select_mu.qbic)/nsim
+        }
+        else{
+            #select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]*Ex[[i]]))    
+            select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))    
+            #select_muRR.qbic <- lapply(1:nsim, function(i) select_mu.qbic[[i]]/vectors[[3]])
+            select_muRR.qbic <- Reduce("+", select_mu.qbic)/nsim
+            E.qbic <- (select_muRR.qbic*Ex[[1]])/vectors[[3]]
+        }
+               
+        #QAIC
+        PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]]) - K[[i]])
+        select.qaic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaic[[i]])))
+        if(getRR==FALSE){
+            select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
+            E.qaic <- Reduce("+", select_mu.qaic)/nsim    
+        }
+        else{
+            # select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]*Ex[[i]]))
+            # select_muRR.qaic <- lapply(1:nsim, function(i) select_mu.qaic[[i]]/vectors[[3]])
+            # E.qaic <- Reduce("+", select_muRR.qaic)/nsim 
+            select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))    
+            select_muRR.qaic <- Reduce("+", select_mu.qaic)/nsim
+            E.qaic <- (select_muRR.qaic*Ex[[1]])/vectors[[3]]
+        }
+        
+        #QAICc
+        PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]])- ((K[[i]]*n*Time)/(n*Time-K[[i]]-1)))
+        select.qaicc <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaicc[[i]])))
+        if(getRR==FALSE){
+            select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
+            E.qaicc <- Reduce("+", select_mu.qaicc)/nsim    
+        }
+        else{
+            # select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]*Ex[[i]]))
+            # select_muRR.qaicc <- lapply(1:nsim, function(i) select_mu.qaicc[[i]]/vectors[[3]])
+            # E.qaicc <- Reduce("+", select_muRR.qaicc)/nsim  
+            select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))    
+            select_muRR.qaicc <- Reduce("+", select_mu.qaicc)/nsim
+            E.qaicc <- (select_muRR.qaicc*Ex[[1]])/vectors[[3]]
+        }
+        
+        
+    }
+    
+    #########################################################
+    #Space-Time, Poisson only
+    #########################################################
+    else if(spacetime==TRUE & pois == TRUE){
+        message("returning results for space-time Poisson model")
+        offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ 1 + as.factor(vectors.sim$Period) +offset(log(Ex[[i]])),family=poisson))
+        overdisp <- lapply(1:nsim, function(i) overdisp(offset_reg[[i]]))
+        #QBIC
+        PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]])-log(n*Time)/2*K[[i]])
         select.qbic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qbic[[i]])))
         if(getRR==FALSE){
             select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))    
@@ -383,9 +440,9 @@ spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, sp
             select_muRR.qbic <- lapply(1:nsim, function(i) select_mu.qbic[[i]]/vectors[[3]])
             E.qbic <- Reduce("+", select_muRR.qbic)/nsim   
         }
-               
+        
         #QAIC
-        PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]]) - K[[i]])
+        PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]) - K[[i]])
         select.qaic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaic[[i]])))
         if(getRR==FALSE){
             select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
@@ -398,7 +455,7 @@ spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, sp
         }
         
         #QAICc
-        PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]])- ((K[[i]]*n*Time)/(n*Time-K[[i]]-1)))
+        PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]])- ((K[[i]]*n*Time)/(n*Time-K[[i]]-1)))
         select.qaicc <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaicc[[i]])))
         if(getRR==FALSE){
             select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
@@ -411,8 +468,61 @@ spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, sp
         }
         
     }
+    
+    #########################################################
+    #Space-Only, Quasi-Poisson
+    #########################################################
+    else if(spacetime==FALSE & pois == TRUE){
+        message("Returning results for space-only  Quasi-Poisson model")
+        offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ 1 +offset(log(Ex[[i]])),family=poisson))
+        overdisp <- lapply(1:nsim, function(i) overdisp(offset_reg[[i]]))
+        #BIC
+        PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]])-log(n*Time)/2*K[[i]])
+        select.qbic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qbic[[i]])))
+        if(getRR==FALSE){
+            select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))    
+            E.qbic <- Reduce("+", select_mu.qbic)/nsim   
+        }
+        else{
+            select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]*Ex[[i]]))    
+            select_muRR.qbic <- lapply(1:nsim, function(i) select_mu.qbic[[i]]/vectors[[3]])
+            E.qbic <- Reduce("+", select_muRR.qbic)/nsim    
+        }
+        
+        #AIC
+        PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]]) - K[[i]])
+        select.qaic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaic[[i]])))
+        if(getRR==FALSE){
+            select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
+            E.qaic <- Reduce("+", select_mu.qaic)/nsim
+        }
+        else{
+            select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]*Ex[[i]]))
+            select_muRR.qaic <- lapply(1:nsim, function(i) select_mu.qaic[[i]]/vectors[[3]])
+            E.qaic <- Reduce("+", select_muRR.qaic)/nsim    
+        }        
+        
+        #AICc
+        PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]])- ((K[[i]]*n*Time)/(n*Time-K[[i]]-1)))
+        select.qaicc <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaicc[[i]])))
+        if(getRR==FALSE){
+            select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
+            E.qaicc <- Reduce("+", select_mu.qaicc)/nsim
+        }
+        else{
+            select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]*Ex[[i]]))
+            select_muRR.qaicc <- lapply(1:nsim, function(i) select_mu.qaicc[[i]]/vectors[[3]])
+            E.qaicc <- Reduce("+", select_muRR.qaicc)/nsim
+        }        
+    }
+    
+    
+    
+    #########################################################
+    #Space-only, Poisson only
+    #########################################################
     else{
-        message("Returning results for space-only model")
+        message("Returning results for space-only  Poisson model")
         offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ 1 +offset(log(Ex[[i]])),family=poisson))
         overdisp <- lapply(1:nsim, function(i) overdisp(offset_reg[[i]]))
         #BIC
@@ -883,9 +993,12 @@ detect.set <- function(lassoresult, vectors.sim, rr, Time, nb, x, y, rMax, cente
     indx.clust.truth <- which(as.vector(rr) !=1, arr.ind=TRUE)
     
     #indx <- which(rr !=1)
-    rr.simAIC <- lapply(1:nsim, function(i) lassoresult$select_mu.qaic[[i]]/vectors.sim$E0_fit)
-    rr.simAICc <- lapply(1:nsim, function(i) lassoresult$select_mu.qaicc[[i]]/vectors.sim$E0_fit)
-    rr.simBIC <- lapply(1:nsim, function(i) lassoresult$select_mu.qbic[[i]]/vectors.sim$E0_fit)
+    # rr.simAIC <- lapply(1:nsim, function(i) lassoresult$select_mu.qaic[[i]]/vectors.sim$E0_fit)
+    # rr.simAICc <- lapply(1:nsim, function(i) lassoresult$select_mu.qaicc[[i]]/vectors.sim$E0_fit)
+    # rr.simBIC <- lapply(1:nsim, function(i) lassoresult$select_mu.qbic[[i]]/vectors.sim$E0_fit)
+    rr.simAIC <- lapply(1:nsim, function(i) lassoresult$select_mu.qaic[[i]])
+    rr.simAICc <- lapply(1:nsim, function(i) lassoresult$select_mu.qaicc[[i]])
+    rr.simBIC <- lapply(1:nsim, function(i) lassoresult$select_mu.qbic[[i]])
     #Extract background rates as lists
     alpha.list.AIC <- lapply(1:nsim, function(i) lapply(1:Time, function(k)
         sort(table(matrix(rr.simAIC[[i]], ncol=Time)[,k]),decreasing=TRUE)[1]))
@@ -1099,7 +1212,7 @@ detect.incluster.bic <- function(lassoresult, vectors.sim, rr, set, period, Time
 #'detect.incluster.ic
 #'
 #'
-detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=NULL,...){
+detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=NULL,nullmod = NULL,...){
     prob.simBIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
     prob.simAIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
     prob.simAICc <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
@@ -1125,14 +1238,22 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
         ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAIC[[i]],ncol=Time),6) > round(set$alphaAIC[[i]],6), arr.ind=TRUE))    
     }
         #1)a) Did it find anything in the cluster?
-    clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
-    in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
-    incluster.any.aic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")
+    ##NULL MODEL
+    if(!is.null(nullmod)){
+        clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
+        in.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(clust[[i]])==0)) in.clust.any=1 else in.clust.any = 0)
+        incluster.any.aic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")
+    }
+    else{
+        clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
+        in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==0)) in.clust.any=1 else in.clust.any = 0)
+        incluster.any.aic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
+    }
+    
     
     
     #1)b) Did it find the cluster and nothing else?
     ##Subset to correct time period
-    
     clust.only <- lapply(1:nsim, function(i) setequal(ix[[i]][,1],set$neighs$cluster))
     in.clust <- lapply(1:nsim, function(i) if(any(clust.only[[i]]==FALSE)) in.clust=0 else in.clust = 1)
     ##Check that nothing was found outside of period
@@ -1147,6 +1268,9 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
         }
     }
     inclusteronly.aic <- paste0((sum(unlist(in.clust))/nsim)*100,"%")
+    
+    #####
+    print(inclusteronly.aic)
 
     #1)c) Did it find at least half of the cluster and nothing else?
     target <- length(set$neighs$cluster)/2
@@ -1190,9 +1314,17 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     
     
     #1)a) Did it find anything in the cluster?
-    clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
-    in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
-    incluster.any.aicc <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")
+    ##NULL MODEL
+    if(!is.null(nullmod)){
+        clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
+        in.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(clust[[i]])==0)) in.clust.any=1 else in.clust.any = 0)
+        incluster.any.aicc <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")
+    }
+    else{
+        clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
+        in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==0)) in.clust.any=1 else in.clust.any = 0)
+        incluster.any.aicc <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
+    }
     
     
     #1)b) Did it find the cluster and nothing else?
@@ -1252,9 +1384,17 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     }
     
     #1)a) Did it find anything in the cluster?
-    clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
-    in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
-    incluster.any.bic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")
+    ##NULL MODEL
+    if(!is.null(nullmod)){
+        clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
+        in.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(clust[[i]])==0)) in.clust.any=1 else in.clust.any = 0)
+        incluster.any.bic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")
+    }
+    else{
+        clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
+        in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==0)) in.clust.any=1 else in.clust.any = 0)
+        incluster.any.bic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
+    }
     
     
     #1)b) Did it find the cluster and nothing else?
@@ -1348,7 +1488,7 @@ detect.incluster <- function(lassoresult, vectors.sim, rr, set,period_start, per
           aic = detect.incluster.aic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=NULL),
           aicc = detect.incluster.aicc(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=NULL),
           bic = detect.incluster.bic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=NULL),
-          ic = detect.incluster.ic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=NULL))
+          ic = detect.incluster.ic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=NULL, nullmod=NULL))
 } 
 
 
@@ -1848,7 +1988,7 @@ clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, 
 #'- 1) utm - default is FALSE. If you have utm coordinates, you want to change this to TRUE.
 #'@export
 #'TODO allow user to change theta parameter in simulation
-clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, pois=FALSE, nsim, center, radius, risk.ratio, period_start,colors=NULL,utm=TRUE, byrow=TRUE,...){
+clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, pois = FALSE, nsim, center, radius, risk.ratio, period_start,colors=NULL,utm=TRUE, byrow=TRUE,...){
     #initial user setting
     if(utm==FALSE){
         message("Coordinates are assumed to be in lat/long coordinates. For utm coordinates, please specify 'utm=TRUE'")
@@ -1929,26 +2069,20 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
     #simulate response
     YSIM <- simulate(out, nsim=nsim)
     #refit E0 for each simlation and scale
-    if(spacetime==FALSE & pois==FALSE){
+    message("Begin fitting")
+    if(spacetime==FALSE){
         out.sim <- lapply(1:nsim, function(i) glm(YSIM[,i] ~ 1  + offset(log(expect_fake)),family="quasipoisson"))
     }
-    if(spacetime==FALSE & pois==TRUE){
-        out.sim <- lapply(1:nsim, function(i) glm(YSIM[,i] ~ 1  + offset(log(expect_fake)),family="poisson"))
-    }
-    if(spacetime==TRUE & pois==FALSE){
+    if(spacetime==TRUE){
         out.sim <- lapply(1:nsim, function(i) glm(YSIM[,i] ~ 1  +  as.factor(init$Year)  + offset(log(expect_fake)),family="quasipoisson"))
     }
-    if(spacetime==TRUE & pois==TRUE){
-        out.sim <- lapply(1:nsim, function(i) glm(YSIM[,i] ~ 1  +  as.factor(init$Year)  + offset(log(expect_fake)),family="poisson"))
-    }
-    #Set initial expected to the fitted values and standardize
     E0 <- scale(Y.vec, out.sim, nsim, Time)
     vectors.sim <- list(Period = Period, E0=E0, E0_fit=E0_fit, Y.vec=Y.vec)
     #set up and run simulation model
     potentialClusters <- max(clusters$center)
     numCenters <- max(clusters$center)
     lassoresult <- spacetime.lasso.sim(potentialClusters, clusters, numCenters,
-                                         vectors.sim, Time, spacetime=spacetime, nsim, YSIM)
+                                         vectors.sim, Time, spacetime=spacetime, pois=pois, nsim, YSIM)
     riskratios <- get.rr(lassoresult, vectors.sim, Time, sim=TRUE)
     rrcolors <- colormapping(riskratios,Time)
     # if(!is.null(colors)){
