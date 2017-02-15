@@ -365,11 +365,12 @@ spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, sp
     }
     loglike <- lapply(1:nsim, function(k) sapply(1:length(lasso[[k]]$lambda), 
                                                  function(i) sum(dpoisson(Yx[,k], mu[[k]][,i],log=TRUE))))
-    K <- lapply(1:nsim, function(i) lasso[[i]]$df)
+    K <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), function(i) length(unique(xbetaPath[[j]][,i]))))
+    #K <- lapply(1:nsim, function(i) lasso[[i]]$df + 1)
     message("Selecting best paths")
     if(spacetime==TRUE & pois == FALSE){
         message("returning results for space-time Quasi-Poisson model")
-        offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ 1 + as.factor(Period) +offset(log(Ex[[i]])),family=poisson))
+        offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ 1 + as.factor(vectors$Period) +offset(log(Ex[[i]])),family=poisson))
         overdisp <- lapply(1:nsim, function(i) overdisp(offset_reg[[i]]))
         #QBIC
         PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]])-log(n*Time)/2*K[[i]])
@@ -379,15 +380,17 @@ spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, sp
             E.qbic <- Reduce("+", select_mu.qbic)/nsim
         }
         else{
-            #select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]*Ex[[i]]))    
-            select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))    
-            #select_muRR.qbic <- lapply(1:nsim, function(i) select_mu.qbic[[i]]/vectors[[3]])
+            # select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]*Ex[[i]]))
+            # select_muRR.qbic <- lapply(1:nsim, function(i) select_mu.qbic[[i]]/vectors[[3]])
+            # E.qbic <- Reduce("+", select_muRR.qbic)/nsim
+            select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))
             select_muRR.qbic <- Reduce("+", select_mu.qbic)/nsim
-            E.qbic <- (select_muRR.qbic*Ex[[1]])/vectors[[3]]
+            E.qbic <- select_muRR.qbic
+            E.qbic_mu <- (select_muRR.qbic*Ex[[1]])/vectors[[3]]
         }
                
         #QAIC
-        PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]]) - K[[i]])
+        PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]]) - K[[i]]-1)
         select.qaic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaic[[i]])))
         if(getRR==FALSE){
             select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
@@ -396,10 +399,11 @@ spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, sp
         else{
             # select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]*Ex[[i]]))
             # select_muRR.qaic <- lapply(1:nsim, function(i) select_mu.qaic[[i]]/vectors[[3]])
-            # E.qaic <- Reduce("+", select_muRR.qaic)/nsim 
-            select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))    
+            # E.qaic <- Reduce("+", select_muRR.qaic)/nsim
+            select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
             select_muRR.qaic <- Reduce("+", select_mu.qaic)/nsim
-            E.qaic <- (select_muRR.qaic*Ex[[1]])/vectors[[3]]
+            E.qaic <- select_muRR.qaic
+            E.qaic_mu <- (select_muRR.qaic*Ex[[1]])/vectors[[3]]
         }
         
         #QAICc
@@ -412,10 +416,12 @@ spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, sp
         else{
             # select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]*Ex[[i]]))
             # select_muRR.qaicc <- lapply(1:nsim, function(i) select_mu.qaicc[[i]]/vectors[[3]])
-            # E.qaicc <- Reduce("+", select_muRR.qaicc)/nsim  
-            select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))    
+            # E.qaicc <- Reduce("+", select_muRR.qaicc)/nsim
+            select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
             select_muRR.qaicc <- Reduce("+", select_mu.qaicc)/nsim
-            E.qaicc <- (select_muRR.qaicc*Ex[[1]])/vectors[[3]]
+            E.qaicc <- select_muRR.qaicc
+            E.qaicc_mu <- (select_muRR.qaicc*Ex[[1]])/vectors[[3]]
+            
         }
         
         
@@ -567,7 +573,9 @@ spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, sp
     return(list(nsim = nsim, E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc,Ex = Ex,mu = mu, Yx = Yx, PLL.qbic = PLL.qbic, 
                 PLL.qaic = PLL.qaic, PLL.qaicc = PLL.qaicc, select.qbic = select.qbic, select.qaic = select.qaic, 
                 select.qaicc = select.qaicc, select_mu.qbic = select_mu.qbic, select_mu.qaic = select_mu.qaic, 
-                select_mu.qaicc = select_mu.qaicc, xbetaPath = xbetaPath, coefs.lasso.all = coefs.lasso.all))    
+                select_mu.qaicc = select_mu.qaicc, xbetaPath = xbetaPath, coefs.lasso.all = coefs.lasso.all,
+                
+                E.qbic_mu = E.qbic_mu, E.qaic_mu = E.qaic_mu, E.qaicc_mu = E.qaicc_mu))    
 }
 
 
@@ -1246,7 +1254,7 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     }
     else{
         clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
-        in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==0)) in.clust.any=1 else in.clust.any = 0)
+        in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
         incluster.any.aic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
     }
     
@@ -1322,7 +1330,7 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     }
     else{
         clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
-        in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==0)) in.clust.any=1 else in.clust.any = 0)
+        in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
         incluster.any.aicc <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
     }
     
@@ -1392,7 +1400,7 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     }
     else{
         clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
-        in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==0)) in.clust.any=1 else in.clust.any = 0)
+        in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
         incluster.any.bic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
     }
     
