@@ -252,7 +252,7 @@ overdisp <- function(object) {
 #' @return This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
 #' a list of observed counts (Yx), the lasso object, a list of K values (number of unique values in each decision path), and n (length of unique centers in the clusters dataframe)
 #' @export
-spacetime.lasso <- function(potClus, clusters, numCenters, vectors, Time, spacetime=TRUE, ...){
+spacetime.lasso<- function(vectors, Time, spacetime=TRUE,pois=FALSE, getRR=TRUE,...){
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
@@ -266,56 +266,105 @@ spacetime.lasso <- function(potClus, clusters, numCenters, vectors, Time, spacet
     message("Space-time matrix created")
     Ex <- vectors$E0
     Yx <- vectors$Y.vec
+    Period <- vectors$Period
     message("Running Lasso - stay tuned")
-    
-    lasso <- glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex))
+    lasso <- glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex), nlambda = 2000, standardize = FALSE, dfmax = 10)
     message("Lasso complete - extracting estimates and paths")
     coefs.lasso.all <- coef(lasso)
     intercept <- rep(1, dim(sparseMAT)[1])
     sparseMAT <- cBind(intercept, sparseMAT)
     xbetaPath<- sparseMAT%*%coefs.lasso.all
-    mu <- sapply(1:length(lasso$lambda), function(i) Ex * exp(xbetaPath[,i]))    
+    mu <- sapply(1:length(lasso$lambda), function(i) exp(xbetaPath[,i]))    
     loglike <- sapply(1:length(lasso$lambda), function(i) sum(dpoisson(Yx, mu[,i],log=TRUE)))
-    K <- sapply(1:length(lasso$lambda), function(i) length(unique(xbetaPath[,i])))
-    
-    offset_reg <- glm(Yx ~ offset(log(Ex)),family=poisson)
-    overdisp <- overdisp(offset_reg)
-    message("Selecting best paths")
-    if(spacetime==TRUE){
+    K <- lasso$df + 1
+    if(spacetime==TRUE & pois == FALSE){
+        message("returning results for space-time Quasi-Poisson model")
+        offset_reg <- glm(Yx ~ 1 + as.factor(vectors$Period) + offset(log(Ex)),family=poisson)
+        overdisp.est <- overdisp(offset_reg)
+        message("Selecting best paths")
+        
         #QBIC
-        PLL.qbic  <- (loglike/overdisp)-log(n*Time)/2*K
-        qbicMax <- which.max(PLL.qbic)
-        E.qbic <- mu[,qbicMax]
+        PLL.qbic  <- (loglike/overdisp.est)-log(n*Time)/2*K
+        select.qbic <- which.max(PLL.qbic)
+        E.qbic <- mu[,select.qbic]
         
         #QAIC
-        PLL.qaic = (loglike/overdisp) - K
-        qaicMax <- which.max(PLL.qaic)
-        E.qaic <- mu[,qaicMax]
+        PLL.qaic = (loglike/overdisp.est) - K
+        select.qaic <- which.max(PLL.qaic)
+        E.qaic <- mu[,select.qaic]
         
         #QAICc
-        PLL.qaicc=(loglike/overdisp)- ((K*n*Time)/(n*Time-K-1))
-        qaiccMax <- which.max(PLL.qaicc)
-        E.qaicc <- mu[,qaiccMax]
+        PLL.qaicc=(loglike/overdisp.est)- ((K*n*Time)/(n*Time-K-1))
+        select.qaicc <- which.max(PLL.qaicc)
+        E.qaicc <- mu[,select.qaic]
+        message("Returning results")
+        return(list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, Ex = Ex, Yx = Yx, lasso = lasso, K = K, n = n))  
     }
-    else{
-        #BIC
-        PLL.qbic  <- (loglike)-log(n*Time)/2*K
-        qbicMax <- which.max(PLL.qbic)
-        E.qbic <- mu[,qbicMax]
-        
-        #AIC
-        PLL.qaic = (loglike) - K
-        qaicMax <- which.max(PLL.qaic)
-        E.qaic <- mu[,qaicMax]
-        
-        #AICc
-        PLL.qaicc=(loglike)- ((K*n*Time)/(n*Time-K-1))
-        qaiccMax <- which.max(PLL.qaicc)
-        E.qaicc <- mu[,qaiccMax]
-    }
-    message("Returning results")
-    return(list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, Ex = Ex, Yx = Yx, lasso = lasso, K = K, n = n))    
 }
+# spacetime.lasso <- function(potClus, clusters, numCenters, vectors, Time, spacetime=TRUE, ...){
+#     n <- length(unique(clusters$center))
+#     potClus <- n
+#     numCenters <- n
+#     message("Creating space-time matrix")
+#     if(spacetime==TRUE){
+#         sparseMAT <- spacetime.mat(clusters, numCenters, Time)
+#     }
+#     else{
+#         sparseMAT <- space.mat(clusters, numCenters)
+#     }
+#     message("Space-time matrix created")
+#     Ex <- vectors$E0
+#     Yx <- vectors$Y.vec
+#     message("Running Lasso - stay tuned")
+#     
+#     lasso <- glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex))
+#     message("Lasso complete - extracting estimates and paths")
+#     coefs.lasso.all <- coef(lasso)
+#     intercept <- rep(1, dim(sparseMAT)[1])
+#     sparseMAT <- cBind(intercept, sparseMAT)
+#     xbetaPath<- sparseMAT%*%coefs.lasso.all
+#     mu <- sapply(1:length(lasso$lambda), function(i) Ex * exp(xbetaPath[,i]))    
+#     loglike <- sapply(1:length(lasso$lambda), function(i) sum(dpoisson(Yx, mu[,i],log=TRUE)))
+#     K <- sapply(1:length(lasso$lambda), function(i) length(unique(xbetaPath[,i])))
+#     
+#     offset_reg <- glm(Yx ~ offset(log(Ex)),family=poisson)
+#     overdisp <- overdisp(offset_reg)
+#     message("Selecting best paths")
+#     if(spacetime==TRUE){
+#         #QBIC
+#         PLL.qbic  <- (loglike/overdisp)-log(n*Time)/2*K
+#         qbicMax <- which.max(PLL.qbic)
+#         E.qbic <- mu[,qbicMax]
+#         
+#         #QAIC
+#         PLL.qaic = (loglike/overdisp) - K
+#         qaicMax <- which.max(PLL.qaic)
+#         E.qaic <- mu[,qaicMax]
+#         
+#         #QAICc
+#         PLL.qaicc=(loglike/overdisp)- ((K*n*Time)/(n*Time-K-1))
+#         qaiccMax <- which.max(PLL.qaicc)
+#         E.qaicc <- mu[,qaiccMax]
+#     }
+#     else{
+#         #BIC
+#         PLL.qbic  <- (loglike)-log(n*Time)/2*K
+#         qbicMax <- which.max(PLL.qbic)
+#         E.qbic <- mu[,qbicMax]
+#         
+#         #AIC
+#         PLL.qaic = (loglike) - K
+#         qaicMax <- which.max(PLL.qaic)
+#         E.qaic <- mu[,qaicMax]
+#         
+#         #AICc
+#         PLL.qaicc=(loglike)- ((K*n*Time)/(n*Time-K-1))
+#         qaiccMax <- which.max(PLL.qaicc)
+#         E.qaicc <- mu[,qaiccMax]
+#     }
+#     message("Returning results")
+#     return(list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, Ex = Ex, Yx = Yx, lasso = lasso, K = K, n = n))    
+# }
 
 
 #' spacetime.lasso.sim
@@ -351,7 +400,8 @@ spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, sp
     Yx <- YSIM
     Period <- vectors[[1]]
     message("Running Lasso - stay tuned")
-    lasso <- lapply(1:nsim, function(i) glmnet(sparseMAT, Yx[,i], family=("poisson"), alpha=1, offset=log(Ex[[i]])))
+    lasso <- lapply(1:nsim, function(i) glmnet(sparseMAT, Yx[,i], family=("poisson"), alpha=1, offset=log(Ex[[i]]), 
+                                               nlambda = 2000, standardize = FALSE, dfmax = 10))
     message("Lasso complete - extracting estimates and paths")
     coefs.lasso.all <- lapply(1:nsim, function(i) coef(lasso[[i]]))
     intercept <- rep(1, dim(sparseMAT)[1])
@@ -366,14 +416,15 @@ spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, sp
     loglike <- lapply(1:nsim, function(k) sapply(1:length(lasso[[k]]$lambda), 
                                                  function(i) sum(dpoisson(Yx[,k], mu[[k]][,i],log=TRUE))))
     K <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), function(i) length(unique(xbetaPath[[j]][,i]))))
+    
     #K <- lapply(1:nsim, function(i) lasso[[i]]$df + 1)
     message("Selecting best paths")
     if(spacetime==TRUE & pois == FALSE){
         message("returning results for space-time Quasi-Poisson model")
         offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ 1 + as.factor(vectors$Period) +offset(log(Ex[[i]])),family=poisson))
-        overdisp <- lapply(1:nsim, function(i) overdisp(offset_reg[[i]]))
+        overdisp.est <- lapply(1:nsim, function(i) overdisp(offset_reg[[i]]))
         #QBIC
-        PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]])-log(n*Time)/2*K[[i]])
+        PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]]/overdisp.est[[i]])-log(n*Time)/2*K[[i]])
         select.qbic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qbic[[i]])))
         if(getRR==FALSE){
             select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))    
@@ -386,11 +437,11 @@ spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, sp
             select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))
             select_muRR.qbic <- Reduce("+", select_mu.qbic)/nsim
             E.qbic <- select_muRR.qbic
-            E.qbic_mu <- (select_muRR.qbic*Ex[[1]])/vectors[[3]]
+            #E.qbic_mu <- (select_muRR.qbic*Ex[[1]])/vectors[[3]]
         }
                
         #QAIC
-        PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]]) - K[[i]]-1)
+        PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]/overdisp.est[[i]]) - K[[i]])
         select.qaic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaic[[i]])))
         if(getRR==FALSE){
             select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
@@ -403,11 +454,11 @@ spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, sp
             select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
             select_muRR.qaic <- Reduce("+", select_mu.qaic)/nsim
             E.qaic <- select_muRR.qaic
-            E.qaic_mu <- (select_muRR.qaic*Ex[[1]])/vectors[[3]]
+            #E.qaic_mu <- (select_muRR.qaic*Ex[[1]])/vectors[[3]]
         }
         
         #QAICc
-        PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]])- ((K[[i]]*n*Time)/(n*Time-K[[i]]-1)))
+        PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]]/overdisp.est[[i]])- ((K[[i]]*n*Time)/(n*Time-K[[i]]-1)))
         select.qaicc <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaicc[[i]])))
         if(getRR==FALSE){
             select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
@@ -420,7 +471,7 @@ spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, sp
             select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
             select_muRR.qaicc <- Reduce("+", select_mu.qaicc)/nsim
             E.qaicc <- select_muRR.qaicc
-            E.qaicc_mu <- (select_muRR.qaicc*Ex[[1]])/vectors[[3]]
+            #E.qaicc_mu <- (select_muRR.qaicc*Ex[[1]])/vectors[[3]]
             
         }
         
@@ -846,9 +897,14 @@ set.rr<- function(lassoresult, vectors, Time, sim=FALSE,...){
 #' 2) observed based on QBIC path/expected; 3) observed based on QAIC path/expected; 4) observed based on QAICc path/expected.
 #' @export
 get.rr <- function(lassoresult,vectors, Time, sim=TRUE,...){
-    E0_avg <- Reduce("+", vectors$E0)/length(vectors$E0)
-    RRobs <- matrix(as.vector(E0_avg)/as.vector(vectors$E0_fit),ncol=Time)
-    message("Relative risk ratios from simulated data - average RR over nsim")
+    if(sim==TRUE){
+        E0_avg <- Reduce("+", vectors$E0)/length(vectors$E0)
+        RRobs <- matrix(as.vector(E0_avg)/as.vector(vectors$E0_fit),ncol=Time)
+        message("Relative risk ratios from simulated data - average RR over nsim")   
+    }
+    if(sim==FALSE){
+        RRobs <- matrix(as.vector(vectors$Y.vec)/as.vector(vectors$E0),ncol=Time)
+    }
     return(list(RRbic=matrix(lassoresult$E.qbic,ncol=Time),
                 RRaic=matrix(lassoresult$E.qaic,ncol=Time),
                 RRaicc=matrix(lassoresult$E.qaicc,ncol=Time),
@@ -1929,8 +1985,7 @@ detect <- function(lassoresult, vectors.sim, rr, period_start, period_end, multi
 #'@details Optional functions include:
 #'- 1) utm - default is FALSE. If you have utm coordinates, you want to change this to TRUE.
 #'@export
-#'
-clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, ...){
+clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, pois = FALSE,colors=NULL,utm=TRUE, byrow=TRUE,...){
     if(utm==FALSE){
         message("Coordinates are assumed to be in lat/long coordinates. For utm coordinates, please specify 'utm=TRUE'")
         utm=FALSE
@@ -1939,36 +1994,77 @@ clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, 
         utm=TRUE
     }
     if(byrow==FALSE){
-        byrow=FALSE
+        row=FALSE
     }
     else{
-        byrow=TRUE
+        row=TRUE
         message("Data assumed to be in panel data. To use vector data instead, please specify 'byrow=FALSE'")
-       
     }
-    clusters <- cluster.df(x, y, rMax, utm=utm, length(x))
-    init <- set.vectors(period, expected, observed, Time, byrow=byrow)
-    outinit <- glm.nb(init$Y.vec ~ 1)
-    if(spacetime==FALSE){
-        spacetime=FALSE
-        out <- glm.nb(init$Y.vec ~ 1 + offset(log(init$E0)), init.theta = outinit$theta, 
-                      link=log,control=glm.control(maxit=10000))
+    if(pois==TRUE){
+        pois=TRUE
     }
     else{
-        spacetime=TRUE
-        out <- glm.nb(init$Y.vec ~ 1 + as.factor(init$Year)  + offset(log(init$E0)), init.theta = outinit$theta, 
-                      link=log,control=glm.control(maxit=10000))
+        pois=FALSE
+        message("Running quasi-Poisson model. For Poisson model, please specify 'pois=TRUE'")
     }
-    E0 <- out$fitted
-    potentialClus <- max(clusters$center)
-    numberCenters <- max(clusters$center)
-    lassoresult <- spacetime.lasso(potentialClus, clusters, numberCenters, JBCinit, Time, spacetime=spacetime)
-    rr <- setRR(lassoresult, init, Time=Time)
-    rrcolors <- colormapping(rr, Time=Time)
+    #set up clusters and fitted values
+    clusters <- clusters.df(x,y,rMax, utm=TRUE, length(x))
+    n <- length(x)
+    init <- set.vectors(dframe$period, dframe$expdeath, dframe$death, Time=Time, byrow=row)
+    out <- with(init, glm(Y.vec ~ 1  +  as.factor(Year)  + offset(log(E0)),family="quasipoisson"))
+    E0 <- out$fitted.values
+    potentialClusters <- max(clusters$center)
+    numCenters <- max(clusters$center)
+    vectors <- list(Period = init$Year, E0=E0, E0_fit=init$E0, Y.vec=init$Y.vec)
+    lassoresult <- spacetime.lasso(vectors, Time, spacetime=spacetime,pois=pois, getRR=TRUE)
+    riskratios <- get.rr(lassoresult, vectors, Time, sim=FALSE)
+    rrcolors <- colormapping(riskratios,Time)
     return(list(lassoresult = lassoresult,
-                rr = rr,
-                rrcolors = rrcolors))
+                riskratios = riskratios,
+                rrcolors = rrcolors,
+                rr.mat = rr,
+                init.vec = init))
 }
+
+# clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, ...){
+#     if(utm==FALSE){
+#         message("Coordinates are assumed to be in lat/long coordinates. For utm coordinates, please specify 'utm=TRUE'")
+#         utm=FALSE
+#     }
+#     else{
+#         utm=TRUE
+#     }
+#     if(byrow==FALSE){
+#         byrow=FALSE
+#     }
+#     else{
+#         byrow=TRUE
+#         message("Data assumed to be in panel data. To use vector data instead, please specify 'byrow=FALSE'")
+#        
+#     }
+#     clusters <- cluster.df(x, y, rMax, utm=utm, length(x))
+#     init <- set.vectors(period, expected, observed, Time, byrow=byrow)
+#     outinit <- glm.nb(init$Y.vec ~ 1)
+#     if(spacetime==FALSE){
+#         spacetime=FALSE
+#         out <- glm.nb(init$Y.vec ~ 1 + offset(log(init$E0)), init.theta = outinit$theta, 
+#                       link=log,control=glm.control(maxit=10000))
+#     }
+#     else{
+#         spacetime=TRUE
+#         out <- glm.nb(init$Y.vec ~ 1 + as.factor(init$Year)  + offset(log(init$E0)), init.theta = outinit$theta, 
+#                       link=log,control=glm.control(maxit=10000))
+#     }
+#     E0 <- out$fitted
+#     potentialClus <- max(clusters$center)
+#     numberCenters <- max(clusters$center)
+#     lassoresult <- spacetime.lasso(potentialClus, clusters, numberCenters, JBCinit, Time, spacetime=spacetime)
+#     rr <- setRR(lassoresult, init, Time=Time)
+#     rrcolors <- colormapping(rr, Time=Time)
+#     return(list(lassoresult = lassoresult,
+#                 rr = rr,
+#                 rrcolors = rrcolors))
+# }
 
 
 
@@ -2084,7 +2180,9 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
     if(spacetime==TRUE){
         out.sim <- lapply(1:nsim, function(i) glm(YSIM[,i] ~ 1  +  as.factor(init$Year)  + offset(log(expect_fake)),family="quasipoisson"))
     }
-    E0 <- scale(Y.vec, out.sim, nsim, Time)
+    #E0 <- scale(Y.vec, out.sim, nsim, Time)
+    #E0 <- scale2(YSIM, out.sim, nsim, Time)
+    E0 <- lapply(1:nsim, function(i) out.sim[[i]]$fitted.values)
     vectors.sim <- list(Period = Period, E0=E0, E0_fit=E0_fit, Y.vec=Y.vec)
     #set up and run simulation model
     potentialClusters <- max(clusters$center)
@@ -2123,7 +2221,3 @@ findneighbors <- function(nb, x1, y1, rMax,center, radius){
     nbs <- setdiff(unique(myneigh),last)
     return(list(cluster = last, nbs = nbs))
 }
-
-
-    
-
