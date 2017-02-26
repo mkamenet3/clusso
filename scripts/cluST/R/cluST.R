@@ -252,7 +252,7 @@ overdisp <- function(object) {
 #' @return This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
 #' a list of observed counts (Yx), the lasso object, a list of K values (number of unique values in each decision path), and n (length of unique centers in the clusters dataframe)
 #' @export
-spacetime.lasso<- function(vectors, Time, spacetime=TRUE,pois=FALSE, getRR=TRUE,...){
+spacetime.lasso<- function(vectors, Time, spacetime=TRUE,pois=FALSE,...){
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
@@ -301,70 +301,11 @@ spacetime.lasso<- function(vectors, Time, spacetime=TRUE,pois=FALSE, getRR=TRUE,
         return(list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, Ex = Ex, Yx = Yx, lasso = lasso, K = K, n = n))  
     }
 }
-# spacetime.lasso <- function(potClus, clusters, numCenters, vectors, Time, spacetime=TRUE, ...){
-#     n <- length(unique(clusters$center))
-#     potClus <- n
-#     numCenters <- n
-#     message("Creating space-time matrix")
-#     if(spacetime==TRUE){
-#         sparseMAT <- spacetime.mat(clusters, numCenters, Time)
-#     }
-#     else{
-#         sparseMAT <- space.mat(clusters, numCenters)
-#     }
-#     message("Space-time matrix created")
-#     Ex <- vectors$E0
-#     Yx <- vectors$Y.vec
-#     message("Running Lasso - stay tuned")
-#     
-#     lasso <- glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex))
-#     message("Lasso complete - extracting estimates and paths")
-#     coefs.lasso.all <- coef(lasso)
-#     intercept <- rep(1, dim(sparseMAT)[1])
-#     sparseMAT <- cBind(intercept, sparseMAT)
-#     xbetaPath<- sparseMAT%*%coefs.lasso.all
-#     mu <- sapply(1:length(lasso$lambda), function(i) Ex * exp(xbetaPath[,i]))    
-#     loglike <- sapply(1:length(lasso$lambda), function(i) sum(dpoisson(Yx, mu[,i],log=TRUE)))
-#     K <- sapply(1:length(lasso$lambda), function(i) length(unique(xbetaPath[,i])))
-#     
-#     offset_reg <- glm(Yx ~ offset(log(Ex)),family=poisson)
-#     overdisp <- overdisp(offset_reg)
-#     message("Selecting best paths")
-#     if(spacetime==TRUE){
-#         #QBIC
-#         PLL.qbic  <- (loglike/overdisp)-log(n*Time)/2*K
-#         qbicMax <- which.max(PLL.qbic)
-#         E.qbic <- mu[,qbicMax]
-#         
-#         #QAIC
-#         PLL.qaic = (loglike/overdisp) - K
-#         qaicMax <- which.max(PLL.qaic)
-#         E.qaic <- mu[,qaicMax]
-#         
-#         #QAICc
-#         PLL.qaicc=(loglike/overdisp)- ((K*n*Time)/(n*Time-K-1))
-#         qaiccMax <- which.max(PLL.qaicc)
-#         E.qaicc <- mu[,qaiccMax]
-#     }
-#     else{
-#         #BIC
-#         PLL.qbic  <- (loglike)-log(n*Time)/2*K
-#         qbicMax <- which.max(PLL.qbic)
-#         E.qbic <- mu[,qbicMax]
-#         
-#         #AIC
-#         PLL.qaic = (loglike) - K
-#         qaicMax <- which.max(PLL.qaic)
-#         E.qaic <- mu[,qaicMax]
-#         
-#         #AICc
-#         PLL.qaicc=(loglike)- ((K*n*Time)/(n*Time-K-1))
-#         qaiccMax <- which.max(PLL.qaicc)
-#         E.qaicc <- mu[,qaiccMax]
-#     }
-#     message("Returning results")
-#     return(list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, Ex = Ex, Yx = Yx, lasso = lasso, K = K, n = n))    
-# }
+list(lassoresult = lassoresult,
+     riskratios = riskratios,
+     rrcolors = rrcolors,
+     rr.mat = rr,
+     init.vec = init)
 
 
 #' spacetime.lasso.sim
@@ -384,7 +325,7 @@ spacetime.lasso<- function(vectors, Time, spacetime=TRUE,pois=FALSE, getRR=TRUE,
 #' If getRR is FALSE, then relative risk will come from averaging the expected counts from each of the Lasso results by the number of simulations. This should then
 #' by used in conjunction with the set.rrfunction to get the relative risk. TODO integrate this into one flow.
 #' @export
-spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, spacetime=TRUE,pois=FALSE, nsim,YSIM, getRR=TRUE,...){
+spacetime.lasso.sim <- function(vectors.sim, Time, spacetime=TRUE,pois=FALSE, nsim,YSIM,...){
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
@@ -396,11 +337,11 @@ spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, sp
         sparseMAT <- space.mat(clusters, numCenters)
     }
     message("Space-time matrix created")
-    Ex <- vectors[[2]]
+    Ex <- vectors.sim$Ex
     Yx <- YSIM
-    Period <- vectors[[1]]
+    Period <- vectors.sim$Period
     message("Running Lasso - stay tuned")
-    lasso <- lapply(1:nsim, function(i) glmnet(sparseMAT, Yx[,i], family=("poisson"), alpha=1, offset=log(Ex[[i]]), 
+    lasso <- lapply(1:nsim, function(i) glmnet(sparseMAT, Yx[[i]], family=("poisson"), alpha=1, offset=log(Ex[[i]]), 
                                                nlambda = 2000, standardize = FALSE, dfmax = 10))
     message("Lasso complete - extracting estimates and paths")
     coefs.lasso.all <- lapply(1:nsim, function(i) coef(lasso[[i]]))
@@ -409,71 +350,39 @@ spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, sp
     xbetaPath<- lapply(1:nsim, function(i) sparseMAT%*%coefs.lasso.all[[i]])
     mu <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), 
                                             function(i) exp(xbetaPath[[j]][,i])))    
-    if(getRR==FALSE){
-        mu <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), 
-                                                function(i) Ex[[i]]*exp(xbetaPath[[j]][,i])))    
-    }
     loglike <- lapply(1:nsim, function(k) sapply(1:length(lasso[[k]]$lambda), 
-                                                 function(i) sum(dpoisson(Yx[,k], mu[[k]][,i],log=TRUE))))
-    K <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), function(i) length(unique(xbetaPath[[j]][,i]))))
+                                                 function(i) sum(dpoisson(Yx[[k]], mu[[k]][,i],log=TRUE))))
+    #K <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), function(i) length(unique(xbetaPath[[j]][,i]))))
     
-    #K <- lapply(1:nsim, function(i) lasso[[i]]$df + 1)
+    K <- lapply(1:nsim, function(i) lasso[[i]]$df + 1)
     message("Selecting best paths")
     if(spacetime==TRUE & pois == FALSE){
         message("returning results for space-time Quasi-Poisson model")
-        offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ 1 + as.factor(vectors$Period) +offset(log(Ex[[i]])),family=poisson))
+        offset_reg <- lapply(1:nsim, function(i) glm(Yx[[i]] ~ 1 + as.factor(vectors$Period) +offset(log(Ex[[i]])),family=poisson))
         overdisp.est <- lapply(1:nsim, function(i) overdisp(offset_reg[[i]]))
+        
         #QBIC
         PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]]/overdisp.est[[i]])-log(n*Time)/2*K[[i]])
         select.qbic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qbic[[i]])))
-        if(getRR==FALSE){
-            select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))    
-            E.qbic <- Reduce("+", select_mu.qbic)/nsim
-        }
-        else{
-            # select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]*Ex[[i]]))
-            # select_muRR.qbic <- lapply(1:nsim, function(i) select_mu.qbic[[i]]/vectors[[3]])
-            # E.qbic <- Reduce("+", select_muRR.qbic)/nsim
-            select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))
-            select_muRR.qbic <- Reduce("+", select_mu.qbic)/nsim
-            E.qbic <- select_muRR.qbic
-            #E.qbic_mu <- (select_muRR.qbic*Ex[[1]])/vectors[[3]]
-        }
-               
+        select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))
+        select_muRR.qbic <- Reduce("+", select_mu.qbic)/nsim
+        E.qbic <- select_muRR.qbic
+            
         #QAIC
         PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]/overdisp.est[[i]]) - K[[i]])
         select.qaic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaic[[i]])))
-        if(getRR==FALSE){
-            select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
-            E.qaic <- Reduce("+", select_mu.qaic)/nsim    
-        }
-        else{
-            # select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]*Ex[[i]]))
-            # select_muRR.qaic <- lapply(1:nsim, function(i) select_mu.qaic[[i]]/vectors[[3]])
-            # E.qaic <- Reduce("+", select_muRR.qaic)/nsim
             select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
             select_muRR.qaic <- Reduce("+", select_mu.qaic)/nsim
             E.qaic <- select_muRR.qaic
-            #E.qaic_mu <- (select_muRR.qaic*Ex[[1]])/vectors[[3]]
-        }
+            
         
         #QAICc
         PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]]/overdisp.est[[i]])- ((K[[i]]*n*Time)/(n*Time-K[[i]]-1)))
         select.qaicc <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaicc[[i]])))
-        if(getRR==FALSE){
-            select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
-            E.qaicc <- Reduce("+", select_mu.qaicc)/nsim    
-        }
-        else{
-            # select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]*Ex[[i]]))
-            # select_muRR.qaicc <- lapply(1:nsim, function(i) select_mu.qaicc[[i]]/vectors[[3]])
-            # E.qaicc <- Reduce("+", select_muRR.qaicc)/nsim
+        
             select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
             select_muRR.qaicc <- Reduce("+", select_mu.qaicc)/nsim
             E.qaicc <- select_muRR.qaicc
-            #E.qaicc_mu <- (select_muRR.qaicc*Ex[[1]])/vectors[[3]]
-            
-        }
         
         
     }
@@ -483,94 +392,60 @@ spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, sp
     #########################################################
     else if(spacetime==TRUE & pois == TRUE){
         message("returning results for space-time Poisson model")
-        offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ 1 + as.factor(vectors.sim$Period) +offset(log(Ex[[i]])),family=poisson))
-        overdisp <- lapply(1:nsim, function(i) overdisp(offset_reg[[i]]))
         #QBIC
-        PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]])-log(n*Time)/2*K[[i]])
+        PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]]-log(n*Time)/2*K[[i]]))
         select.qbic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qbic[[i]])))
-        if(getRR==FALSE){
-            select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))    
-            E.qbic <- Reduce("+", select_mu.qbic)/nsim
-        }
-        else{
-            select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]*Ex[[i]]))    
-            select_muRR.qbic <- lapply(1:nsim, function(i) select_mu.qbic[[i]]/vectors[[3]])
-            E.qbic <- Reduce("+", select_muRR.qbic)/nsim   
-        }
+        select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))
+        select_muRR.qbic <- Reduce("+", select_mu.qbic)/nsim
+        E.qbic <- select_muRR.qbic
         
         #QAIC
-        PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]) - K[[i]])
+        PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]] - K[[i]]))
         select.qaic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaic[[i]])))
-        if(getRR==FALSE){
-            select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
-            E.qaic <- Reduce("+", select_mu.qaic)/nsim    
-        }
-        else{
-            select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]*Ex[[i]]))
-            select_muRR.qaic <- lapply(1:nsim, function(i) select_mu.qaic[[i]]/vectors[[3]])
-            E.qaic <- Reduce("+", select_muRR.qaic)/nsim  
-        }
+        select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
+        select_muRR.qaic <- Reduce("+", select_mu.qaic)/nsim
+        E.qaic <- select_muRR.qaic
+        
         
         #QAICc
-        PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]])- ((K[[i]]*n*Time)/(n*Time-K[[i]]-1)))
+        PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]] - ((K[[i]]*n*Time)/(n*Time-K[[i]]-1))))
         select.qaicc <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaicc[[i]])))
-        if(getRR==FALSE){
-            select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
-            E.qaicc <- Reduce("+", select_mu.qaicc)/nsim    
-        }
-        else{
-            select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]*Ex[[i]]))
-            select_muRR.qaicc <- lapply(1:nsim, function(i) select_mu.qaicc[[i]]/vectors[[3]])
-            E.qaicc <- Reduce("+", select_muRR.qaicc)/nsim  
-        }
         
+        select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
+        select_muRR.qaicc <- Reduce("+", select_mu.qaicc)/nsim
+        E.qaicc <- select_muRR.qaicc
     }
+        
     
     #########################################################
     #Space-Only, Quasi-Poisson
     #########################################################
-    else if(spacetime==FALSE & pois == TRUE){
+    else if(spacetime==FALSE & pois == FALSE){
         message("Returning results for space-only  Quasi-Poisson model")
-        offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ 1 +offset(log(Ex[[i]])),family=poisson))
-        overdisp <- lapply(1:nsim, function(i) overdisp(offset_reg[[i]]))
-        #BIC
-        PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]])-log(n*Time)/2*K[[i]])
+        offset_reg <- lapply(1:nsim, function(i) glm(Yx[[i]] ~ 1  +offset(log(Ex[[i]])),family=poisson))
+        overdisp.est <- lapply(1:nsim, function(i) overdisp(offset_reg[[i]]))
+        
+        #QBIC
+        PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]]/overdisp.est[[i]])-log(n*Time)/2*K[[i]])
         select.qbic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qbic[[i]])))
-        if(getRR==FALSE){
-            select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))    
-            E.qbic <- Reduce("+", select_mu.qbic)/nsim   
-        }
-        else{
-            select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]*Ex[[i]]))    
-            select_muRR.qbic <- lapply(1:nsim, function(i) select_mu.qbic[[i]]/vectors[[3]])
-            E.qbic <- Reduce("+", select_muRR.qbic)/nsim    
-        }
+        select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))
+        select_muRR.qbic <- Reduce("+", select_mu.qbic)/nsim
+        E.qbic <- select_muRR.qbic
         
-        #AIC
-        PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]]) - K[[i]])
+        #QAIC
+        PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]/overdisp.est[[i]]) - K[[i]])
         select.qaic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaic[[i]])))
-        if(getRR==FALSE){
-            select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
-            E.qaic <- Reduce("+", select_mu.qaic)/nsim
-        }
-        else{
-            select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]*Ex[[i]]))
-            select_muRR.qaic <- lapply(1:nsim, function(i) select_mu.qaic[[i]]/vectors[[3]])
-            E.qaic <- Reduce("+", select_muRR.qaic)/nsim    
-        }        
+        select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
+        select_muRR.qaic <- Reduce("+", select_mu.qaic)/nsim
+        E.qaic <- select_muRR.qaic
         
-        #AICc
-        PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]]/overdisp[[i]])- ((K[[i]]*n*Time)/(n*Time-K[[i]]-1)))
+        
+        #QAICc
+        PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]]/overdisp.est[[i]])- ((K[[i]]*n*Time)/(n*Time-K[[i]]-1)))
         select.qaicc <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaicc[[i]])))
-        if(getRR==FALSE){
-            select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
-            E.qaicc <- Reduce("+", select_mu.qaicc)/nsim
-        }
-        else{
-            select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]*Ex[[i]]))
-            select_muRR.qaicc <- lapply(1:nsim, function(i) select_mu.qaicc[[i]]/vectors[[3]])
-            E.qaicc <- Reduce("+", select_muRR.qaicc)/nsim
-        }        
+        select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
+        select_muRR.qaicc <- Reduce("+", select_mu.qaicc)/nsim
+        E.qaicc <- select_muRR.qaicc
     }
     
     
@@ -578,55 +453,36 @@ spacetime.lasso.sim <- function(potClus, clusters, numCenters, vectors, Time, sp
     #########################################################
     #Space-only, Poisson only
     #########################################################
-    else{
+    else if(spacetime==FALSE & pois == TRUE){
         message("Returning results for space-only  Poisson model")
-        offset_reg <- lapply(1:nsim, function(i) glm(Yx[,i] ~ 1 +offset(log(Ex[[i]])),family=poisson))
-        overdisp <- lapply(1:nsim, function(i) overdisp(offset_reg[[i]]))
-        #BIC
-        PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]])-log(n*Time)/2*K[[i]])
+        #QBIC
+        PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]]-log(n*Time)/2*K[[i]]))
         select.qbic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qbic[[i]])))
-        if(getRR==FALSE){
-            select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))    
-            E.qbic <- Reduce("+", select_mu.qbic)/nsim    
-        }
-        else{
-            select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]*Ex[[i]]))    
-            select_muRR.qbic <- lapply(1:nsim, function(i) select_mu.qbic[[i]]/vectors[[3]])
-            E.qbic <- Reduce("+", select_muRR.qbic)/nsim    
-        }
+        select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))
+        select_muRR.qbic <- Reduce("+", select_mu.qbic)/nsim
+        E.qbic <- select_muRR.qbic
         
-        #AIC
-        PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]) - K[[i]])
+        #QAIC
+        PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]] - K[[i]]))
         select.qaic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaic[[i]])))
-        if(getRR==FALSE){
-            select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
-            E.qaic <- Reduce("+", select_mu.qaic)/nsim
-        }
-        else{
-            select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]*Ex[[i]]))
-            select_muRR.qaic <- lapply(1:nsim, function(i) select_mu.qaic[[i]]/vectors[[3]])
-            E.qaic <- Reduce("+", select_muRR.qaic)/nsim    
-        }        
+        select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
+        select_muRR.qaic <- Reduce("+", select_mu.qaic)/nsim
+        E.qaic <- select_muRR.qaic
         
-        #AICc
-        PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]])- ((K[[i]]*n*Time)/(n*Time-K[[i]]-1)))
+        
+        #QAICc
+        PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]] - ((K[[i]]*n*Time)/(n*Time-K[[i]]-1))))
         select.qaicc <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaicc[[i]])))
-        if(getRR==FALSE){
-            select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
-            E.qaicc <- Reduce("+", select_mu.qaicc)/nsim
-        }
-        else{
-            select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]*Ex[[i]]))
-            select_muRR.qaicc <- lapply(1:nsim, function(i) select_mu.qaicc[[i]]/vectors[[3]])
-            E.qaicc <- Reduce("+", select_muRR.qaicc)/nsim
-        }        
+        
+        select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
+        select_muRR.qaicc <- Reduce("+", select_mu.qaicc)/nsim
+        E.qaicc <- select_muRR.qaicc
     }
+    
     return(list(nsim = nsim, E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc,Ex = Ex,mu = mu, Yx = Yx, PLL.qbic = PLL.qbic, 
                 PLL.qaic = PLL.qaic, PLL.qaicc = PLL.qaicc, select.qbic = select.qbic, select.qaic = select.qaic, 
                 select.qaicc = select.qaicc, select_mu.qbic = select_mu.qbic, select_mu.qaic = select_mu.qaic, 
-                select_mu.qaicc = select_mu.qaicc, xbetaPath = xbetaPath, coefs.lasso.all = coefs.lasso.all,
-                
-                E.qbic_mu = E.qbic_mu, E.qaic_mu = E.qaic_mu, E.qaicc_mu = E.qaicc_mu))    
+                select_mu.qaicc = select_mu.qaicc, xbetaPath = xbetaPath, coefs.lasso.all = coefs.lasso.all))    
 }
 
 
@@ -2010,61 +1866,19 @@ clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, 
     #set up clusters and fitted values
     clusters <- clusters.df(x,y,rMax, utm=TRUE, length(x))
     n <- length(x)
-    init <- set.vectors(dframe$period, dframe$expdeath, dframe$death, Time=Time, byrow=row)
-    out <- with(init, glm(Y.vec ~ 1  +  as.factor(Year)  + offset(log(E0)),family="quasipoisson"))
-    E0 <- out$fitted.values
-    potentialClusters <- max(clusters$center)
-    numCenters <- max(clusters$center)
-    vectors <- list(Period = init$Year, E0=E0, E0_fit=init$E0, Y.vec=init$Y.vec)
-    lassoresult <- spacetime.lasso(vectors, Time, spacetime=spacetime,pois=pois, getRR=TRUE)
+    #init <- set.vectors(dframe$period, dframe$expdeath, dframe$death, Time=Time, byrow=row)
+    init <- set.vectors(period, expected, observed, Time, row)
+    E0 <- scale(init, Time)
+    vectors <- list(Period = init$Year, E0=E0, E0_0=init$E0, Y.vec=init$Y.vec)
+    lassoresult <- spacetime.lasso(vectors, Time, spacetime=spacetime,pois=pois)
     riskratios <- get.rr(lassoresult, vectors, Time, sim=FALSE)
     rrcolors <- colormapping(riskratios,Time)
     return(list(lassoresult = lassoresult,
                 riskratios = riskratios,
                 rrcolors = rrcolors,
-                rr.mat = rr,
                 init.vec = init))
 }
 
-# clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, ...){
-#     if(utm==FALSE){
-#         message("Coordinates are assumed to be in lat/long coordinates. For utm coordinates, please specify 'utm=TRUE'")
-#         utm=FALSE
-#     }
-#     else{
-#         utm=TRUE
-#     }
-#     if(byrow==FALSE){
-#         byrow=FALSE
-#     }
-#     else{
-#         byrow=TRUE
-#         message("Data assumed to be in panel data. To use vector data instead, please specify 'byrow=FALSE'")
-#        
-#     }
-#     clusters <- cluster.df(x, y, rMax, utm=utm, length(x))
-#     init <- set.vectors(period, expected, observed, Time, byrow=byrow)
-#     outinit <- glm.nb(init$Y.vec ~ 1)
-#     if(spacetime==FALSE){
-#         spacetime=FALSE
-#         out <- glm.nb(init$Y.vec ~ 1 + offset(log(init$E0)), init.theta = outinit$theta, 
-#                       link=log,control=glm.control(maxit=10000))
-#     }
-#     else{
-#         spacetime=TRUE
-#         out <- glm.nb(init$Y.vec ~ 1 + as.factor(init$Year)  + offset(log(init$E0)), init.theta = outinit$theta, 
-#                       link=log,control=glm.control(maxit=10000))
-#     }
-#     E0 <- out$fitted
-#     potentialClus <- max(clusters$center)
-#     numberCenters <- max(clusters$center)
-#     lassoresult <- spacetime.lasso(potentialClus, clusters, numberCenters, JBCinit, Time, spacetime=spacetime)
-#     rr <- setRR(lassoresult, init, Time=Time)
-#     rrcolors <- colormapping(rr, Time=Time)
-#     return(list(lassoresult = lassoresult,
-#                 rr = rr,
-#                 rrcolors = rrcolors))
-# }
 
 
 
@@ -2082,17 +1896,16 @@ clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, 
 #'@param nsim Number of simulations you would like to run
 #'@param center can be a single center or for multiple clusters, concatenate them. Max three TODO extend this
 #'@param radius radius for the cluster you want in the simulation
-#'@parm risk.ratio setting for what the risk ratio should be in the cluster to be detected by the simulation
-#'@param period_start time period where the cluster  starts in the simulation
-#'@param period_end time period where cluster ends in the simulation TODO
-#'we will only be looking at periods 2 and 5. If multi_period is TRUE, then we will instead consider period_start through period_end (period_start:period_end). Following the same example,
+#'@param risk.ratio setting for what the risk ratio should be in the cluster to be detected by the simulation
+#'@param timeperiod time period where the cluster  starts in the simulation
+#'we will only be looking at periods 2 and 5. If multi_period is TRUE, then we will instead consider timeperiod through period_end (timeperiod:period_end). Following the same example,
 #'this would mean we look at periods 2, 3, 4, and 5.
 #'@return
 #'@details Optional functions include:
 #'- 1) utm - default is FALSE. If you have utm coordinates, you want to change this to TRUE.
 #'@export
 #'TODO allow user to change theta parameter in simulation
-clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, pois = FALSE, nsim, center, radius, risk.ratio, period_start,colors=NULL,utm=TRUE, byrow=TRUE,...){
+clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, pois = FALSE, nsim, center, radius, risk.ratio, timeperiod,colors=NULL,utm=TRUE, byrow=TRUE,...){
     #initial user setting
     if(utm==FALSE){
         message("Coordinates are assumed to be in lat/long coordinates. For utm coordinates, please specify 'utm=TRUE'")
@@ -2112,18 +1925,7 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
     clusters <- clusters.df(x,y,rMax, utm=TRUE, length(x))
     n <- length(x)
     init <- set.vectors(period, expected, observed, Time=Time, byrow=row)
-    #hardcoded thetainit
-    thetainit = 1000
-    if(spacetime==TRUE){
-        out <- glm.nb(init$Y.vec ~ 1 + as.factor(init$Year)  + offset(log(init$E0)), init.theta = thetainit, 
-                      link=log,control=glm.control(maxit=10000))    
-    }
-    else{
-        out <- glm.nb(init$Y.vec ~ 1 + offset(log(init$E0)), init.theta = thetainit, 
-                      link=log,control=glm.control(maxit=10000)) 
-    }
-    E0_fit <- out$fitted.values
-    E0_0 <- init$E0
+    
     #TODO change this to be a function and not hard-coded
     if(length(center) == 2){
         tmp <- clusters[clusters$center==center[1] | clusters$center==center[2],]
@@ -2137,59 +1939,51 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
     cluster <- tmp[(tmp$r <= radius),]
     rr = matrix(1, nrow=n, ncol=Time)
     #TODO change this to be a function and not hard-coded
-    if(length(period_start) == 3){
-        rr[cluster$last, period_start[1]] = risk.ratio
-        rr[cluster$last, period_start[2]] = risk.ratio
-        rr[cluster$last, period_start[3]] = risk.ratio
-        message(paste("Running model for periods",period_start[1],"through", period_start[3]))
+    if(length(timeperiod) == 3){
+        rr[cluster$last, timeperiod[1]] = risk.ratio
+        rr[cluster$last, timeperiod[2]] = risk.ratio
+        rr[cluster$last, timeperiod[3]] = risk.ratio
+        message(paste("Running model for periods",timeperiod[1],"through", timeperiod[3]))
     }
-    if(length(period_start) == 4){
-        rr[cluster$last, period_start[1]] = risk.ratio
-        rr[cluster$last, period_start[2]] = risk.ratio
-        rr[cluster$last, period_start[3]] = risk.ratio
-        rr[cluster$last, period_start[4]] = risk.ratio
-        message(paste("Running model for periods",period_start[1],"through", period_start[4]))
+    if(length(timeperiod) == 4){
+        rr[cluster$last, timeperiod[1]] = risk.ratio
+        rr[cluster$last, timeperiod[2]] = risk.ratio
+        rr[cluster$last, timeperiod[3]] = risk.ratio
+        rr[cluster$last, timeperiod[4]] = risk.ratio
+        message(paste("Running model for periods",timeperiod[1],"through", timeperiod[4]))
     }
-    if(length(period_start) == 5){
-        rr[cluster$last, period_start[1]] = risk.ratio
-        rr[cluster$last, period_start[2]] = risk.ratio
-        rr[cluster$last, period_start[3]] = risk.ratio
-        rr[cluster$last, period_start[4]] = risk.ratio
-        rr[cluster$last, period_start[5]] = risk.ratio
-        message(paste("Running model for periods",period_start[1],"through", period_start[5]))
+    if(length(timeperiod) == 5){
+        rr[cluster$last, timeperiod[1]] = risk.ratio
+        rr[cluster$last, timeperiod[2]] = risk.ratio
+        rr[cluster$last, timeperiod[3]] = risk.ratio
+        rr[cluster$last, timeperiod[4]] = risk.ratio
+        rr[cluster$last, timeperiod[5]] = risk.ratio
+        message(paste("Running model for periods",timeperiod[1],"through", timeperiod[5]))
     }
-    if(length(period_start) == 2){
-        rr[cluster$last, period_start[1]] = risk.ratio
-        rr[cluster$last, period_start[2]] = risk.ratio
-        message(paste("Running model for periods",period_start[1],"and", period_start[2]))
+    if(length(timeperiod) == 2){
+        rr[cluster$last, timeperiod[1]] = risk.ratio
+        rr[cluster$last, timeperiod[2]] = risk.ratio
+        message(paste("Running model for periods",timeperiod[1],"and", timeperiod[2]))
     }
-    else if(length(period_start)==1){
-        rr[cluster$last, period_start:Time] = risk.ratio    
+    else if(length(timeperiod)==1){
+        rr[cluster$last, timeperiod:Time] = risk.ratio    
     }
-    expect_fake <- as.vector(rr)*E0_0
-    #set vectors
-    Y.vec <- init$Y.vec
-    Period <- init$Year
-    #simulate response
-    YSIM <- simulate(out, nsim=nsim)
-    #refit E0 for each simlation and scale
-    message("Begin fitting")
-    if(spacetime==FALSE){
-        out.sim <- lapply(1:nsim, function(i) glm(YSIM[,i] ~ 1  + offset(log(expect_fake)),family="quasipoisson"))
-    }
-    if(spacetime==TRUE){
-        out.sim <- lapply(1:nsim, function(i) glm(YSIM[,i] ~ 1  +  as.factor(init$Year)  + offset(log(expect_fake)),family="quasipoisson"))
-    }
-    #E0 <- scale(Y.vec, out.sim, nsim, Time)
-    #E0 <- scale2(YSIM, out.sim, nsim, Time)
-    E0 <- lapply(1:nsim, function(i) out.sim[[i]]$fitted.values)
-    vectors.sim <- list(Period = Period, E0=E0, E0_fit=E0_fit, Y.vec=Y.vec)
+    #Let E_it = R_it*E_it
+    E0_0 <- scale(init, Time)
+    #E1 = as.vector(rr)*init$E0
+    E1 = as.vector(rr)*E0_0
+    
+    #Simulate observed as NB(Eit, theta)
+    theta = 1000
+    YSIM <- lapply(1:nsim, function(i) rnegbin(E1, theta = theta))
+    
+    #Scale YSIM[i] to init$E0
+    Ex <- scale.sim(YSIM, init, nsim, Time)
+    vectors.sim <- list(Period = Period, Ex = Ex , E0_0 = init$E0, Y.vec=init$Y.vec)
     #set up and run simulation model
-    potentialClusters <- max(clusters$center)
-    numCenters <- max(clusters$center)
-    lassoresult <- spacetime.lasso.sim(potentialClusters, clusters, numCenters,
-                                         vectors.sim, Time, spacetime=spacetime, pois=pois, nsim, YSIM)
-    riskratios <- get.rr(lassoresult, vectors.sim, Time, sim=TRUE)
+    lassoresult <- spacetime.lasso.sim(vectors.sim, Time, spacetime=spacetime, pois=pois, nsim, YSIM)
+    #riskratios <- get.rr(lassoresult, vectors.sim, Time, sim=TRUE)
+    riskratios <- get.rr2(lassoresult, vectors.sim,init, Time, sim=TRUE)
     rrcolors <- colormapping(riskratios,Time)
     # if(!is.null(colors)){
     #     probcolors <- probmap(lassoresult, vectors.sim, rr, nsim,Time, colormap=TRUE)    
@@ -2208,8 +2002,8 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
 #'findneighbors
 #'uses global parameters. An object of class 'nb' must be passed here. Consider creating a neighborhood class via poly2nb.
 #'
-findneighbors <- function(nb, x1, y1, rMax,center, radius){
-    clusters <- clusters.df(x1,y1,rMax, utm=TRUE, length(x1))
+findneighbors <- function(nb, x, y, rMax,center, radius){
+    clusters <- clusters.df(x,y,rMax, utm=TRUE, length(x))
     tmp <- clusters[clusters$center==center,]
     cluster <- tmp[(tmp$r <= radius),]
     
@@ -2221,3 +2015,220 @@ findneighbors <- function(nb, x1, y1, rMax,center, radius){
     nbs <- setdiff(unique(myneigh),last)
     return(list(cluster = last, nbs = nbs))
 }
+
+scale <- function(init,Time,...){
+    std <- sapply(1:Time, function(i) (matrix(init$E0, ncol=Time)[,i]*(sum(matrix(init$Y.vec, ncol=Time)[,i]))/sum(matrix(init$E0, ncol=Time)[,i])))
+    E0 <- as.vector(std)
+    return(E0)
+}
+
+scale.sim <- function(YSIM, init, nsim,Time,...){
+    std <- lapply(1:nsim, function(i) sapply(1:Time, function(j) 
+        (matrix(init$E0,ncol=Time)[,j])*(sum(matrix(YSIM[[i]],ncol=Time)[,j])/sum(matrix(init$E0,ncol=Time)[,j]))))
+    E0 <- lapply(1:nsim, function(i) as.vector(std[[i]])) 
+    return(E0)
+}
+
+get.rr2 <- function(lassoresult,vectors.sim,init, Time, sim=TRUE,...){
+    if(sim==TRUE){
+        RRobs <- matrix(as.vector(E1)/as.vector(init$E0),ncol=Time)
+    }
+    if(sim==FALSE){
+        RRobs <- matrix(as.vector(vectors$Y.vec)/as.vector(vectors$E0),ncol=Time)
+    }
+    return(list(RRbic=matrix(lassoresult$E.qbic,ncol=Time),
+                RRaic=matrix(lassoresult$E.qaic,ncol=Time),
+                RRaicc=matrix(lassoresult$E.qaicc,ncol=Time),
+                RRobs= RRobs))
+}
+
+#PLOTTING
+plotmap.st <- function(pdfname,res, obs = NULL){
+    if(!is.null(obs)){
+        firstrow = "Obs"
+    }
+    else{
+        firstrow="Oracle"
+    }
+    pdf(pdfname, height=11, width=10)
+    #Maps of Observed Counts
+    par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$colors.obs[,1],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,paste0("Period 1 - ", firstrow),cex=1.00)
+    
+    par(fig=c(0.2,.4,.6,1), mar=c(.5,0.5,0.5,0), new=T)
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$colors.obs[,2],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,paste0("Period 2 - ", firstrow),cex=1.00)
+    
+    par(fig=c(0.4,.6,.6,1), mar=c(.5,0.5,0.5,0), new=T)
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$colors.obs[,3],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,paste0("Period 3 - ", firstrow),cex=1.00)
+    
+    par(fig=c(0.6,.8,.6,1), mar=c(.5,0.5,0.5,0), new=T)
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$colors.obs[,4],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,paste0("Period 4 - ", firstrow),cex=1.00)
+    
+    par(fig=c(0.8,1,.6,1), mar=c(.5,0.5,0.5,0), new=T)
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$colors.obs[,5],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,paste0("Period 5 - ", firstrow),cex=1.00)
+    
+    
+    #Maps of AIC Path
+    
+    par(fig=c(0,.2,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$color.qaic[,1],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,'Period 1 - QAIC',cex=1.00)
+    
+    par(fig=c(0.2,.4,.4,.8), mar=c(.5,0.5,0.5,0), new=T)   
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$color.qaic[,2],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,'Period 2 - QAIC',cex=1.00)
+    
+    par(fig=c(0.4,.6,.4,.8), mar=c(.5,0.5,0.5,0), new=T) 
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$color.qaic[,3],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,'Period 3 - QAIC',cex=1.00)
+    
+    par(fig=c(0.6,.8,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$color.qaic[,4],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,'Period 4 - QAIC',cex=1.00)
+    
+    par(fig=c(0.8,1,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$color.qaic[,5],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,'Period 5 - QAIC',cex=1.00)
+    
+    
+    #Maps of AICc Path
+    
+    par(fig=c(0,.2,.2,.6), mar=c(.5,0.5,0.5,0), new=T)
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$color.qaicc[,1],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,'Period 1 - QAICc',cex=1.00)
+    
+    par(fig=c(0.2,.4,.2,.6), mar=c(.5,0.5,0.5,0), new=T) 
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$color.qaicc[,2],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,'Period 2 - QAICc',cex=1.00)
+    
+    par(fig=c(0.4,.6,.2,.6), mar=c(.5,0.5,0.5,0), new=T) 
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$color.qaicc[,3],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,'Period 3 - QAICc',cex=1.00)
+    
+    par(fig=c(0.6,.8,.2,.6), mar=c(.5,0.5,0.5,0), new=T)
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$color.qaicc[,4],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,'Period 4 - QAICc',cex=1.00)
+    
+    par(fig=c(0.8,1,.2,.6), mar=c(.5,0.5,0.5,0), new=T)
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$color.qaicc[,5],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,'Period 5 - QAICc',cex=1.00)
+    
+    
+    #Maps of BIC Path
+    
+    par(fig=c(0,.2,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$color.qbic[,1],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,'Period 1 - QBIC',cex=1.00)
+    
+    par(fig=c(0.2,.4,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$color.qbic[,2],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,'Period 2 - QBIC',cex=1.00)
+    
+    par(fig=c(0.4,.6,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$color.qbic[,3],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,'Period 3 - QBIC',cex=1.00)
+    
+    
+    par(fig=c(0.6,.8,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$color.qbic[,4],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,'Period 4 - QBIC',cex=1.00)
+    
+    
+    par(fig=c(0.8,1,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$color.qbic[,5],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,'Period 5 - QBIC',cex=1.00)
+    
+    #Turn off pdf development
+    dev.off()
+}
+
+plotmap.s <- function(pdfname,res, obs = NULL){
+    if(!is.null(obs)){
+        firstrow = "Obs"
+    }
+    else{
+        firstrow="Oracle"
+    }
+    pdf(pdfname, height=11, width=10)
+    #Maps of Observed Counts
+    par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$colors.obs[,1],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,paste0(firstrow),cex=1.00)
+    
+    #Maps of AIC Path
+    
+    par(fig=c(0,.2,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$color.qaic[,1],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,'QAIC',cex=1.00)
+    
+    #Maps of AICc Path
+    
+    par(fig=c(0,.2,.2,.6), mar=c(.5,0.5,0.5,0), new=T)
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$color.qaicc[,1],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,'QAICc',cex=1.00)
+    
+    
+    #Maps of BIC Path
+    
+    par(fig=c(0,.2,0,.4), mar=c(.5,0.5,0.5,0), new=T)
+    plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(japan.poly2,col=res$rrcolors$color.qbic[,1],border=F)
+    segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
+    text(355,4120,'QBIC',cex=1.00)
+    
+    
+    #Turn off pdf development
+    dev.off()
+}
+    
