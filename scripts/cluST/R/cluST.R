@@ -252,7 +252,7 @@ overdisp <- function(object) {
 #' @return This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
 #' a list of observed counts (Yx), the lasso object, a list of K values (number of unique values in each decision path), and n (length of unique centers in the clusters dataframe)
 #' @export
-spacetime.lasso<- function(vectors, Time, spacetime=TRUE,pois=FALSE,...){
+spacetime.lasso<- function(clusters, vectors, Time, spacetime=TRUE,pois=FALSE,...){
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
@@ -301,11 +301,7 @@ spacetime.lasso<- function(vectors, Time, spacetime=TRUE,pois=FALSE,...){
         return(list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, Ex = Ex, Yx = Yx, lasso = lasso, K = K, n = n))  
     }
 }
-list(lassoresult = lassoresult,
-     riskratios = riskratios,
-     rrcolors = rrcolors,
-     rr.mat = rr,
-     init.vec = init)
+
 
 
 #' spacetime.lasso.sim
@@ -325,7 +321,7 @@ list(lassoresult = lassoresult,
 #' If getRR is FALSE, then relative risk will come from averaging the expected counts from each of the Lasso results by the number of simulations. This should then
 #' by used in conjunction with the set.rrfunction to get the relative risk. TODO integrate this into one flow.
 #' @export
-spacetime.lasso.sim <- function(vectors.sim, Time, spacetime=TRUE,pois=FALSE, nsim,YSIM,...){
+spacetime.lasso.sim <- function(clusters, vectors.sim, Time, spacetime=TRUE,pois=FALSE, nsim,YSIM,...){
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
@@ -358,7 +354,7 @@ spacetime.lasso.sim <- function(vectors.sim, Time, spacetime=TRUE,pois=FALSE, ns
     message("Selecting best paths")
     if(spacetime==TRUE & pois == FALSE){
         message("returning results for space-time Quasi-Poisson model")
-        offset_reg <- lapply(1:nsim, function(i) glm(Yx[[i]] ~ 1 + as.factor(vectors$Period) +offset(log(Ex[[i]])),family=poisson))
+        offset_reg <- lapply(1:nsim, function(i) glm(Yx[[i]] ~ 1 + as.factor(vectors.sim$Period) +offset(log(Ex[[i]])),family=poisson))
         overdisp.est <- lapply(1:nsim, function(i) overdisp(offset_reg[[i]]))
         
         #QBIC
@@ -1870,7 +1866,7 @@ clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, 
     init <- set.vectors(period, expected, observed, Time, row)
     E0 <- scale(init, Time)
     vectors <- list(Period = init$Year, E0=E0, E0_0=init$E0, Y.vec=init$Y.vec)
-    lassoresult <- spacetime.lasso(vectors, Time, spacetime=spacetime,pois=pois)
+    lassoresult <- spacetime.lasso(clusters, vectors, Time, spacetime=spacetime,pois=pois)
     riskratios <- get.rr(lassoresult, vectors, Time, sim=FALSE)
     rrcolors <- colormapping(riskratios,Time)
     return(list(lassoresult = lassoresult,
@@ -1969,10 +1965,10 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
         rr[cluster$last, timeperiod:Time] = risk.ratio    
     }
     #Let E_it = R_it*E_it
-    E0_0 <- scale(init, Time)
-    #E1 = as.vector(rr)*init$E0
-    E1 = as.vector(rr)*E0_0
-    
+    #E0_0 <- scale(init, Time)
+    E1 = as.vector(rr)*init$E0
+    #E1 = as.vector(rr)*E0_0
+    Period <- init$Year
     #Simulate observed as NB(Eit, theta)
     theta = 1000
     YSIM <- lapply(1:nsim, function(i) rnegbin(E1, theta = theta))
@@ -1981,9 +1977,9 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
     Ex <- scale.sim(YSIM, init, nsim, Time)
     vectors.sim <- list(Period = Period, Ex = Ex , E0_0 = init$E0, Y.vec=init$Y.vec)
     #set up and run simulation model
-    lassoresult <- spacetime.lasso.sim(vectors.sim, Time, spacetime=spacetime, pois=pois, nsim, YSIM)
+    lassoresult <- spacetime.lasso.sim(clusters, vectors.sim, Time, spacetime=spacetime, pois=pois, nsim, YSIM)
     #riskratios <- get.rr(lassoresult, vectors.sim, Time, sim=TRUE)
-    riskratios <- get.rr2(lassoresult, vectors.sim,init, Time, sim=TRUE)
+    riskratios <- get.rr2(lassoresult, vectors.sim,init, E1,Time, sim=TRUE)
     rrcolors <- colormapping(riskratios,Time)
     # if(!is.null(colors)){
     #     probcolors <- probmap(lassoresult, vectors.sim, rr, nsim,Time, colormap=TRUE)    
@@ -2029,7 +2025,7 @@ scale.sim <- function(YSIM, init, nsim,Time,...){
     return(E0)
 }
 
-get.rr2 <- function(lassoresult,vectors.sim,init, Time, sim=TRUE,...){
+get.rr2 <- function(lassoresult,vectors.sim,init,E1, Time, sim=TRUE,...){
     if(sim==TRUE){
         RRobs <- matrix(as.vector(E1)/as.vector(init$E0),ncol=Time)
     }

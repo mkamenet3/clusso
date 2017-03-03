@@ -61,6 +61,7 @@ japan.prefect2 <- dframe.prefect2[,2:5]
 ####################################################
 #Create Spatial Polygons and Create Matrix of Neighborhoods
 ####################################################
+n <- 208
 ind <- which(is.na(dframe.poly2[,2]))
 names <- as.factor(seq(1,n,1))
 coord.system <- '+proj=utm'
@@ -107,6 +108,7 @@ y=dframe2$utmy/1000
 rMax=30 
 Time=5  
 nsim=100
+#nsim=2
 center=200
 radius=18
 timeperiod = c(1:5)
@@ -114,16 +116,21 @@ risk.ratio=1
 
 res <- clust.sim(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time, spacetime=TRUE, pois=FALSE,
                  nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE)
+
 #save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius","_",radius, "start","_",period_start, "rr","_",risk.ratio,"NULL",".RData")
+filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
+                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),"NULL",".RData")
 save(res, file = filename)
 
 #Detection
 set <- detect.set(res$lassoresult, res$init.vec, res$rr.mat, Time=5, nb, x, y, rMax, 0, radius)
 (incluster <- detect.incluster(res$lassoresult, res$init.vec, res$rr.mat, set, period_start = timeperiod[1], 
                                period_end = tail(timeperiod, n=1), multi_period = TRUE,Time=5, nsim,nb, x, y, rMax, 0, radius, IC = "ic"))
+
+
 #make maps
-pdfname <- paste0("figures/simulations/japan","_","rMax","_",rMax,"nsim","_",nsim, "center","_",center,"radius","_",radius, "start","_", "rr","_",risk.ratio,"NULL",".pdf")
+pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start", "_",as.numeric(paste(timeperiod, collapse = "")),
+                  "_","rr","_",gsub("[.]","",risk.ratio),"NULL",".pdf")
 plotmap.st(pdfname, res)
 
 
@@ -142,18 +149,21 @@ timeperiod = c(1:5)
 risk.ratio=1
 
 res <- clust.sim(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time, spacetime=TRUE, pois=TRUE,
-                 nsim,center, radius, risk.ratio, period_start, colors=TRUE, utm=TRUE, byrow=TRUE)
+                 nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE)
 
 #save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius","_",radius, "start","_",period_start, "rr","_",risk.ratio,"NULLPOISSON",".RData")
+filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
+                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),"NULLPOISSON",".RData")
 save(res, file = filename)
 
 #Detection
 set <- detect.set(res$lassoresult, res$init.vec, res$rr.mat, Time=5, nb, x, y, rMax, 0, radius)
 (incluster <- detect.incluster(res$lassoresult, res$init.vec, res$rr.mat, set, period_start = timeperiod[1], 
-                               period_end = tail(timeperiod, n=1), multi_period = TRUE,Time=5, nsim,nb, x, y, rMax, 0, radius, IC = "ic"))
+                               period_end = tail(timeperiod, n=1), multi_period = TRUE,Time=5, 
+                               nsim,nb, x, y, rMax, 0, radius, IC = "ic", nullmod=TRUE))
 #make maps
-pdfname <- paste0("figures/simulations/japan","_","rMax","_",rMax,"nsim","_",nsim, "center","_",center,"radius","_",radius, "start","_", "rr","_",risk.ratio,"NULLPOISSON",".pdf")
+pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start", "_",as.numeric(paste(timeperiod, collapse = "")),
+                  "_","rr","_",gsub("[.]","",risk.ratio),"NULLPOISSON",".pdf")
 plotmap.st(pdfname, res)
 
 
@@ -172,7 +182,7 @@ Time=1
 nsim=100
 center=200
 radius=18
-period_start=1
+timeperiod=1
 risk.ratio=1
 
 
@@ -185,16 +195,18 @@ df <- cbind.data.frame(id = unique(dframe$id), period = rep("1", length(unique(d
 res <- clust.sim(x,y,rMax,df$period, df$expdeath, df$death, Time, spacetime=FALSE, pois=FALSE, 
                  nsim,center, radius, risk.ratio, period_start, colors=TRUE, utm=TRUE, byrow=TRUE)
 #save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius","_",radius, "start","_","rr","_",risk.ratio,"spaceonlyQPOIS",".RData")
+filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
+                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),"spaceonlyQPOIS",".RData")
 save(res, file = filename)
 
 #Detection
 set <- detect.set(res$lassoresult, res$init.vec, res$rr.mat, Time=1, nb, x, y, rMax, 0, radius)
 (incluster <- detect.incluster(res$lassoresult, res$init.vec, res$rr.mat, set, period_start = 1, 
-                               period_end = 1, multi_period = FALSE,Time=1, nsim,nb, x, y, rMax, 0, radius, IC = "ic", space=FALSE))
+                               period_end = 1, multi_period = FALSE,Time=1, nsim,nb, x, y, rMax, 0, radius, IC = "ic", space=FALSE, nullmod=TRUE))
 
 #make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius","_",radius, "start","_","rr","_",risk.ratio,"spaceonlyQPOIS",".pdf")
+pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start", "_",as.numeric(paste(timeperiod, collapse = "")),
+                  "_","rr","_",gsub("[.]","",risk.ratio),"spaceonlyQPOIS",".pdf")
 plotmap.s(pdfname, res)
 
 ####################################################
@@ -208,7 +220,7 @@ Time=1
 nsim=100
 center=200
 radius=18
-period_start=1
+timeperiod=1
 risk.ratio=1
 
 
@@ -221,16 +233,19 @@ df <- cbind.data.frame(id = unique(dframe$id), period = rep("1", length(unique(d
 res <- clust.sim(x,y,rMax,df$period, df$expdeath, df$death, Time, spacetime=FALSE, pois=TRUE, 
                  nsim,center, radius, risk.ratio, period_start, colors=TRUE, utm=TRUE, byrow=TRUE)
 #save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius","_",radius, "start","_","rr","_",risk.ratio,"spaceonlyPOISSONONLY",".RData")
+filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
+                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),"spaceonlyPOISSONONLY",".RData")
 save(res, file = filename)
 
 #Detection
 set <- detect.set(res$lassoresult, res$init.vec, res$rr.mat, Time=1, nb, x, y, rMax, 0, radius)
 (incluster <- detect.incluster(res$lassoresult, res$init.vec, res$rr.mat, set, period_start = 1, 
-                               period_end = 1, multi_period = FALSE,Time=1, nsim,nb, x, y, rMax, 0, radius, IC = "ic", space=FALSE, nullmod=TRUE))
+                               period_end = 1, multi_period = FALSE,Time=1, nsim,nb, x, y, rMax, 
+                               0, radius, IC = "ic", space=FALSE, nullmod=TRUE))
 
 #make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius","_",radius, "start","_","rr","_",risk.ratio,"spaceonlyPOISSONONLY",".pdf")
+pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start", "_",as.numeric(paste(timeperiod, collapse = "")),
+                   "_","rr","_",gsub("[.]","",risk.ratio),"spaceonlyPOISSONONLY",".pdf")
 plotmap.s(pdfname, res)
 
 
