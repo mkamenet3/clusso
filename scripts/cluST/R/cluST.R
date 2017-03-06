@@ -899,19 +899,21 @@ probmap <- function(lassoresult, vectors.sim, rr, nsim, Time, colormap=FALSE,...
 #'should be, 2) indx, which contains the index of cluster as determined where the risk ratio in the rr matrix is not 1,
 #'3) rr.simBIC, rr.simAIC, rr.simAICc - the risk ratios as determined by BIC, AIC, and AICc (respectively), and 4) alphaBIC, alphaAIC, alphaAICc - the calculated
 #'background risk rates as determined by BIC, AIC, and AICc or QBIC, QAIC, QAICc. 
-detect.set <- function(lassoresult, vectors.sim, rr, Time, nb, x, y, rMax, center, radius,...){
+detect.set <- function(lassoresult, vectors.sim, rr, Time, nb, x, y, rMax, center, radius,nullmod=NULL,...){
     #indx_truth <- sapply(1:Time, function(i) which(rr[,i] !=1))
     #create neighbors for cluster
     ##Indices of neighbors only in list nbs - space only
     neighs <- findneighbors(nb, x, y, rMax, center, radius)
     
     #Indices of True cluster only
-    indx.clust.truth <- which(as.vector(rr) !=1, arr.ind=TRUE)
+    if(!is.null(nullmod)){
+        indx.clust.truth <- NULL
+        message("Returning results for NULL model - no")
+    }
+    else{
+        indx.clust.truth <- which(as.vector(rr) !=1, arr.ind=TRUE)    
+    }
     
-    #indx <- which(rr !=1)
-    # rr.simAIC <- lapply(1:nsim, function(i) lassoresult$select_mu.qaic[[i]]/vectors.sim$E0_fit)
-    # rr.simAICc <- lapply(1:nsim, function(i) lassoresult$select_mu.qaicc[[i]]/vectors.sim$E0_fit)
-    # rr.simBIC <- lapply(1:nsim, function(i) lassoresult$select_mu.qbic[[i]]/vectors.sim$E0_fit)
     rr.simAIC <- lapply(1:nsim, function(i) lassoresult$select_mu.qaic[[i]])
     rr.simAICc <- lapply(1:nsim, function(i) lassoresult$select_mu.qaicc[[i]])
     rr.simBIC <- lapply(1:nsim, function(i) lassoresult$select_mu.qbic[[i]])
@@ -932,7 +934,6 @@ detect.set <- function(lassoresult, vectors.sim, rr, Time, nb, x, y, rMax, cente
                                                    ncol=Time, byrow=TRUE, nrow=length(x)))
     return(list(
         indx.clust.truth = indx.clust.truth,
-        #indx = indx,
         neighs = neighs,
         rr.simBIC = rr.simBIC,
         rr.simAIC = rr.simAIC,
@@ -943,196 +944,26 @@ detect.set <- function(lassoresult, vectors.sim, rr, Time, nb, x, y, rMax, cente
 }
 
 
-#'detect.incluster.aic
-#'
-#'
-detect.incluster.aic <- function(lassoresult, vectors.sim, rr, set, period, Time, nsim){
-    if(tail(period, n=1) == Time){
-        maxTime = tail(period, n=1)    
-    }
-    else{
-        maxTime = tail(period, n=1) +1
-    }
-    if(period[1] == 1){
-        minTime = 1
-    }
-    else{
-        minTime = period[1]-1
-    }
-    #extract things that are not the background rate
-    ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAIC[[i]],ncol=Time),6) > round(set$alphaAIC[[i]],6), arr.ind=TRUE))
-
-    #1)a) Did it find anything in the cluster?
-    clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
-    in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
-    incluster.any <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")
-    
-    
-    #1)b) Did it find the cluster and nothing else?
-    ##Subset to correct time period
-    in.clust <- lapply(1:nsim, function(i) if(any(clust[[i]]==FALSE)) in.clust=0 else in.clust = 1)
-    ##Check that nothing was found outside of period
-    in.clust.timeout <- lapply(1:nsim, function(i) is.element(ix[[i]][ix[[i]][,2] < period[1] | ix[[i]][,2] > tail(period, n=1),], set$neighs$cluster))
-    ix.in.clust.timeout <-unlist(which(lapply(1:nsim, 
-                                              function(i) if(any(in.clust.timeout[[i]]==TRUE)) 
-                                                  ix.in.clust.timeout=i else ix.in.clust.timeout=0)!=0))
-    inter <- intersect(ix.in.clust.timeout,unlist(which(in.clust!=0)))
-    if(length(inter)!=0){
-        for(i in inter){
-            in.clust[[i]] = 0    
-        }
-    }
-    inclusteronly <- paste0((sum(unlist(in.clust))/nsim)*100,"%")
-    
-    #1)c) Did it find at least half of the cluster and nothing else?
-    target <- length(set$neighs$cluster)/2
-    in.clust.half <- lapply(1:nsim, 
-                            function(i) if(isTRUE(length(which(is.element(ix[[100]][,1],set$neighs$cluster)==TRUE))>=target) & all(clust[[i]]!=FALSE)) in.clust.half = 1 else in.clust.half = 0)
-    inclusteronly.half <- paste0((sum(unlist(in.clust.half))/nsim)*100,"%")    
-    
-    #3) Did it find anything outside of the buffer zone?
-    ##Did it find anything in space outside of the time buffer
-    clust.buff <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],sort(unique(unlist(set$neighs)))))
-    in.clust.buff <- lapply(1:nsim, function(i) if(any(clust.buff[[i]]==FALSE)) in.clust.buff=1 else in.clust.buff = 0)
-    inclusteronly.buffer <- paste0((sum(unlist(in.clust.buff))/nsim)*100,"%")
-
-    return(list(
-        incluster.any = incluster.any,
-        inclusteronly = inclusteronly,
-        inclusteronly.half = inclusteronly.half,
-        outofbuffer = inclusteronly.buffer
-    ))
-}
-
-#'detect.incluster.aicc
-#'
-#'
-detect.incluster.aicc <- function(lassoresult, vectors.sim, rr, set, period, Time, nsim){
-    if(tail(period, n=1) == Time){
-        maxTime = tail(period, n=1)    
-    }
-    else{
-        maxTime = tail(period, n=1) +1
-    }
-    if(period[1] == 1){
-        minTime = 1
-    }
-    else{
-        minTime = period[1]-1
-    }
-    #extract things that are not the background rate
-    ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAICc[[i]],ncol=Time),6) > round(set$alphaAICc[[i]],6), arr.ind=TRUE))
-    
-    #1)a) Did it find anything in the cluster?
-    clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
-    in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
-    incluster.any <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")
-    
-    
-    #1)b) Did it find the cluster and nothing else?
-    ##Subset to correct time period
-    in.clust <- lapply(1:nsim, function(i) if(any(clust[[i]]==FALSE)) in.clust=0 else in.clust = 1)
-    ##Check that nothing was found outside of period
-    in.clust.timeout <- lapply(1:nsim, function(i) is.element(ix[[i]][ix[[i]][,2] < period[1] | ix[[i]][,2] > tail(period, n=1),], set$neighs$cluster))
-    ix.in.clust.timeout <-unlist(which(lapply(1:nsim, 
-                                              function(i) if(any(in.clust.timeout[[i]]==TRUE)) 
-                                                  ix.in.clust.timeout=i else ix.in.clust.timeout=0)!=0))
-    inter <- intersect(ix.in.clust.timeout,unlist(which(in.clust!=0)))
-    if(length(inter)!=0){
-        for(i in inter){
-            in.clust[[i]] = 0    
-        }
-    }
-    inclusteronly <- paste0((sum(unlist(in.clust))/nsim)*100,"%")
-    
-    #1)c) Did it find at least half of the cluster and nothing else?
-    target <- length(set$neighs$cluster)/2
-    in.clust.half <- lapply(1:nsim, 
-                            function(i) if(isTRUE(length(which(is.element(ix[[100]][,1],set$neighs$cluster)==TRUE))>=target) & all(clust[[i]]!=FALSE)) in.clust.half = 1 else in.clust.half = 0)
-    inclusteronly.half <- paste0((sum(unlist(in.clust.half))/nsim)*100,"%")    
-    
-    #3) Did it find anything outside of the buffer zone?
-    ##Did it find anything in space outside of the time buffer
-    clust.buff <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],sort(unique(unlist(set$neighs)))))
-    in.clust.buff <- lapply(1:nsim, function(i) if(any(clust.buff[[i]]==FALSE)) in.clust.buff=1 else in.clust.buff = 0)
-    inclusteronly.buffer <- paste0((sum(unlist(in.clust.buff))/nsim)*100,"%")
-    
-    return(list(
-        incluster.any = incluster.any,
-        inclusteronly = inclusteronly,
-        inclusteronly.half = inclusteronly.half,
-        outofbuffer = inclusteronly.buffer
-    ))
-}
-
-#'detect.incluster.bic
-#'
-#'
-detect.incluster.bic <- function(lassoresult, vectors.sim, rr, set, period, Time, nsim){
-    if(tail(period, n=1) == Time){
-        maxTime = tail(period, n=1)    
-    }
-    else{
-        maxTime = tail(period, n=1) +1
-    }
-    if(period[1] == 1){
-        minTime = 1
-    }
-    else{
-        minTime = period[1]-1
-    }
-    #extract things that are not the background rate
-    ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simBIC[[i]],ncol=Time),6) > round(set$alphaBIC[[i]],6), arr.ind=TRUE))
-    
-    #1)a) Did it find anything in the cluster?
-    clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
-    in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
-    incluster.any <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")
-    
-    
-    #1)b) Did it find the cluster and nothing else?
-    ##Subset to correct time period
-    in.clust <- lapply(1:nsim, function(i) if(any(clust[[i]]==FALSE)) in.clust=0 else in.clust = 1)
-    ##Check that nothing was found outside of period
-    in.clust.timeout <- lapply(1:nsim, function(i) is.element(ix[[i]][ix[[i]][,2] < period[1] | ix[[i]][,2] > tail(period, n=1),], set$neighs$cluster))
-    ix.in.clust.timeout <-unlist(which(lapply(1:nsim, 
-                                              function(i) if(any(in.clust.timeout[[i]]==TRUE)) 
-                                                  ix.in.clust.timeout=i else ix.in.clust.timeout=0)!=0))
-    inter <- intersect(ix.in.clust.timeout,unlist(which(in.clust!=0)))
-    if(length(inter)!=0){
-        for(i in inter){
-            in.clust[[i]] = 0    
-        }
-    }
-    inclusteronly <- paste0((sum(unlist(in.clust))/nsim)*100,"%")
-    
-    #1)c) Did it find at least half of the cluster and nothing else?
-    target <- length(set$neighs$cluster)/2
-    in.clust.half <- lapply(1:nsim, 
-                            function(i) if(isTRUE(length(which(is.element(ix[[100]][,1],set$neighs$cluster)==TRUE))>=target) & all(clust[[i]]!=FALSE)) in.clust.half = 1 else in.clust.half = 0)
-    inclusteronly.half <- paste0((sum(unlist(in.clust.half))/nsim)*100,"%")    
-    
-    #3) Did it find anything outside of the buffer zone?
-    ##Did it find anything in space outside of the time buffer
-    clust.buff <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],sort(unique(unlist(set$neighs)))))
-    in.clust.buff <- lapply(1:nsim, function(i) if(any(clust.buff[[i]]==FALSE)) in.clust.buff=1 else in.clust.buff = 0)
-    inclusteronly.buffer <- paste0((sum(unlist(in.clust.buff))/nsim)*100,"%")
-    
-    return(list(
-        incluster.any = incluster.any,
-        inclusteronly = inclusteronly,
-        inclusteronly.half = inclusteronly.half,
-        outofbuffer = inclusteronly.buffer
-    ))
-}
 #'detect.incluster.ic
-#'
-#'
+#'This function will calculate detection based on the three information criterion. You can run detection on a null model (no cluster),
+#'a model with an under-estimated cluster (artificial cluster <1), and on an elevated relative risk cluster. This is called by the more general
+#'function *detect.incluster* which will switch to this function (TODO - Allow for detection options for AIC, AICc, and BIC only). 
+#'@param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso.sim function
+#'@param vectors.sim  dataframe of initial vectors of the observed and expected counts that went into simulation function
+#'@param rr risk ratio matrix that was used in the simulation
+#'@param res result of detect.set function
+#'@param timeperiod Time period span of the cluster
+#'@param Time number of time periods total in the model
+#'@param nsim number of simulations run
+#'@param under Default is NULL. If not null, then it will estimate detection based on a relative risk which is < 1. In other words, it will consider 
+#'clusters to be identified where the estimated values are less than the background rate, not more than the background rate as is the case in the 
+#'elevated relative risk models.
+#'@param nullmod Default is NULL. If not null, then it will estimate detection based on the null model where there is no cluster. 
 detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=NULL,nullmod = NULL,...){
     prob.simBIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
     prob.simAIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
     prob.simAICc <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
-    print(period)
+    #print(period)
     if(tail(period, n=1) == Time | tail(period, n=1)==1){
         maxTime = tail(period, n=1)    
     }
@@ -1153,69 +984,47 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     else{
         ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAIC[[i]],ncol=Time),6) > round(set$alphaAIC[[i]],6), arr.ind=TRUE))    
     }
-        #1)a) Did it find anything in the cluster?
+    
+    #1) Did it find anything in the cluster?
     ##NULL MODEL
     if(!is.null(nullmod)){
         clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
-        in.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(clust[[i]])==0)) in.clust.any=1 else in.clust.any = 0)
+        in.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(clust[[i]])==0)) in.clust.any=0 else in.clust.any = 1)
         incluster.any.aic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")
     }
+    ##CLUSTER MODEL
     else{
         clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
         in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
         incluster.any.aic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
     }
-    
-    
-    
-    #1)b) Did it find the cluster and nothing else?
-    ##Subset to correct time period
-    clust.only <- lapply(1:nsim, function(i) setequal(ix[[i]][,1],set$neighs$cluster))
-    in.clust <- lapply(1:nsim, function(i) if(any(clust.only[[i]]==FALSE)) in.clust=0 else in.clust = 1)
-    ##Check that nothing was found outside of period
-    in.clust.timeout <- lapply(1:nsim, function(i) is.element(ix[[i]][ix[[i]][,2] < period[1] | ix[[i]][,2] > tail(period, n=1),], set$neighs$cluster))
-    ix.in.clust.timeout <-unlist(which(lapply(1:nsim, 
-                                              function(i) if(any(in.clust.timeout[[i]]==TRUE)) 
-                                                  ix.in.clust.timeout=i else ix.in.clust.timeout=0)!=0))
-    inter <- intersect(ix.in.clust.timeout,unlist(which(in.clust!=0)))
-    if(length(inter)!=0){
-        for(i in inter){
-            in.clust[[i]] = 0    
-        }
-    }
-    inclusteronly.aic <- paste0((sum(unlist(in.clust))/nsim)*100,"%")
-    
-    #####
-    print(inclusteronly.aic)
 
-    #1)c) Did it find at least half of the cluster and nothing else?
-    target <- length(set$neighs$cluster)/2
-    in.clust.half <- lapply(1:nsim, 
-                            function(i) if(isTRUE(length(which(is.element(ix[[i]][,1],set$neighs$cluster)==TRUE))>=target) & all(clust[[i]]!=FALSE)) in.clust.half = 1 else in.clust.half = 0)
-    ##Check that nothing was found outside of period
-    in.clust.half.timeout <- lapply(1:nsim, function(i) is.element(ix[[i]][ix[[i]][,2] < period[1] | ix[[i]][,2] > tail(period, n=1),], set$neighs$cluster))
-    ix.in.clust.half.timeout <-unlist(which(lapply(1:nsim, 
-                                              function(i) if(any(in.clust.half.timeout[[i]]==TRUE)) 
-                                                  ix.in.clust.timeout=i else ix.in.clust.timeout=0)!=0))
-    inter <- intersect(ix.in.clust.half.timeout,unlist(which(in.clust.half!=0)))
-    if(length(inter)!=0){
-        for(i in inter){
-            in.clust.half[[i]] = 0    
-        }
+    #2) |(A and B)|/|A U B|?
+    ##Calculate
+    wasDetected <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAIC[[i]],ncol=Time),6) > round(set$alphaAIC[[i]],6), arr.ind=FALSE))    
+    shouldDetected <- which(rr!=1, arr.ind=FALSE)
+    ##Numerator
+    AandB <- lapply(1:nsim, function(i) length(intersect(wasDetected[[i]], shouldDetected)))
+    ##Denominator
+    AuB <- lapply(1:nsim, function(i) length(union(wasDetected[[i]], shouldDetected)))
+    ##Divide
+    prop.alldetect.aic <- lapply(1:nsim, function(i) AandB[[i]]/AuB[[i]])
+    
+    
+    #3) |(A and B)|/|A|? Proportion of what was detected was in overlap?
+    ##Calculate length of what was detected
+    A <- lapply(1:nsim, function(i) length(wasDetected[[i]]))
+    ##Divide
+    prop.wasdetect.aic <- lapply(1:nsim, function(i) AandB[[i]]/A[[i]])
+    
+    #4) |(A and B)|/|B|? Proportion of what should be detected was in overlap?
+    B <- length(shouldDetected)
+    prop.shoulddetect.aic <- lapply(1:nsim, function(i) AandB[[i]]/B)
+    
+    #5) ONLY FOR NULL MODEL - DID IT FIND ANYTHING?
+    if(!is.null(nullmod)){
+        null.any.aic <- length(unlist(ix))    
     }
-    inclusteronly.half.aic <- paste0((sum(unlist(in.clust.half))/nsim)*100,"%")    
-    
-    #1)d) Did it find the cluster (amongst other things?)?
-    clust.other <- lapply(1:nsim, function(i) is.element(unique(ix[[i]][,1]),set$neighs$cluster))
-    in.clust.other <- lapply(1:nsim, function(i) if(any(clust.other[[i]]==FALSE)) in.clust.other=0 else in.clust.other = 1)
-    incluster.other.aic <- paste0((sum(unlist(in.clust.other))/nsim)*100,"%")
-    
-    
-    #3) Did it find anything outside of the buffer zone?
-    ##Did it find anything in space outside of the time buffer
-    clust.buff <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],sort(unique(unlist(set$neighs)))))
-    in.clust.buff <- lapply(1:nsim, function(i) if(any(clust.buff[[i]]==FALSE)) in.clust.buff=1 else in.clust.buff = 0)
-    inclusteronly.buffer.aic <- paste0((sum(unlist(in.clust.buff))/nsim)*100,"%")
     
     
     ########################################################################
@@ -1229,11 +1038,11 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     }
     
     
-    #1)a) Did it find anything in the cluster?
+    #1) Did it find anything in the cluster?
     ##NULL MODEL
     if(!is.null(nullmod)){
         clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
-        in.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(clust[[i]])==0)) in.clust.any=1 else in.clust.any = 0)
+        in.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(clust[[i]])==0)) in.clust.any=0 else in.clust.any = 1)
         incluster.any.aicc <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")
     }
     else{
@@ -1241,54 +1050,33 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
         in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
         incluster.any.aicc <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
     }
+    #2) |(A and B)|/|A U B|?
+    ##Calculate
+    wasDetected <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAICc[[i]],ncol=Time),6) > round(set$alphaAICc[[i]],6), arr.ind=FALSE))    
+    shouldDetected <- which(rr!=1, arr.ind=FALSE)
+    ##Numerator
+    AandB <- lapply(1:nsim, function(i) length(intersect(wasDetected[[i]], shouldDetected)))
+    ##Denominator
+    AuB <- lapply(1:nsim, function(i) length(union(wasDetected[[i]], shouldDetected)))
+    ##Divide
+    prop.alldetect.aicc <- lapply(1:nsim, function(i) AandB[[i]]/AuB[[i]])
     
     
-    #1)b) Did it find the cluster and nothing else?
-    ##Subset to correct time period
-    clust.only <- lapply(1:nsim, function(i) setequal(ix[[i]][,1],set$neighs$cluster))
-    in.clust <- lapply(1:nsim, function(i) if(any(clust.only[[i]]==FALSE)) in.clust=0 else in.clust = 1)
-    ##Check that nothing was found outside of period
-    in.clust.timeout <- lapply(1:nsim, function(i) is.element(ix[[i]][ix[[i]][,2] < period[1] | ix[[i]][,2] > tail(period, n=1),], set$neighs$cluster))
-    ix.in.clust.timeout <-unlist(which(lapply(1:nsim, 
-                                              function(i) if(any(in.clust.timeout[[i]]==TRUE)) 
-                                                  ix.in.clust.timeout=i else ix.in.clust.timeout=0)!=0))
-    inter <- intersect(ix.in.clust.timeout,unlist(which(in.clust!=0)))
-    if(length(inter)!=0){
-        for(i in inter){
-            in.clust[[i]] = 0    
-        }
+    #3) |(A and B)|/|A|? Proportion of what was detected was in overlap?
+    ##Calculate length of what was detected
+    A <- lapply(1:nsim, function(i) length(wasDetected[[i]]))
+    ##Divide
+    prop.wasdetect.aicc <- lapply(1:nsim, function(i) AandB[[i]]/A[[i]])
+    
+    #4) |(A and B)|/|B|? Proportion of what should be detected was in overlap?
+    B <- length(shouldDetected)
+    prop.shoulddetect.aicc <- lapply(1:nsim, function(i) AandB[[i]]/B)
+    
+    #5) ONLY FOR NULL MODEL - DID IT FIND ANYTHING?
+    if(!is.null(nullmod)){
+        null.any.aicc <- length(unlist(ix))    
     }
-    inclusteronly.aicc <- paste0((sum(unlist(in.clust))/nsim)*100,"%")
-    
-    #1)c) Did it find at least half of the cluster and nothing else?
-    target <- length(set$neighs$cluster)/2
-    in.clust.half <- lapply(1:nsim, 
-                            function(i) if(isTRUE(length(which(is.element(ix[[i]][,1],set$neighs$cluster)==TRUE))>=target) & all(clust[[i]]!=FALSE)) in.clust.half = 1 else in.clust.half = 0)
-    
-    ##Check that nothing was found outside of period
-    in.clust.half.timeout <- lapply(1:nsim, function(i) is.element(ix[[i]][ix[[i]][,2] < period[1] | ix[[i]][,2] > tail(period, n=1),], set$neighs$cluster))
-    ix.in.clust.half.timeout <-unlist(which(lapply(1:nsim, 
-                                                   function(i) if(any(in.clust.half.timeout[[i]]==TRUE)) 
-                                                       ix.in.clust.timeout=i else ix.in.clust.timeout=0)!=0))
-    inter <- intersect(ix.in.clust.half.timeout,unlist(which(in.clust.half!=0)))
-    if(length(inter)!=0){
-        for(i in inter){
-            in.clust.half[[i]] = 0    
-        }
-    }
-    inclusteronly.half.aicc <- paste0((sum(unlist(in.clust.half))/nsim)*100,"%")    
-    
-    #1)d) Did it find the cluster (amongst other things?)?
-    clust.other <- lapply(1:nsim, function(i) is.element(unique(ix[[i]][,1]),set$neighs$cluster))
-    in.clust.other <- lapply(1:nsim, function(i) if(any(clust.other[[i]]==FALSE)) in.clust.other=0 else in.clust.other = 1)
-    incluster.other.aicc <- paste0((sum(unlist(in.clust.other))/nsim)*100,"%")
-    
-    #3) Did it find anything outside of the buffer zone?
-    ##Did it find anything in space outside of the time buffer
-    clust.buff <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],sort(unique(unlist(set$neighs)))))
-    in.clust.buff <- lapply(1:nsim, function(i) if(any(clust.buff[[i]]==FALSE)) in.clust.buff=1 else in.clust.buff = 0)
-    inclusteronly.buffer.aicc <- paste0((sum(unlist(in.clust.buff))/nsim)*100,"%")
-    
+
     ################################################################
     #(Q)BIC
     #extract things that are not the background rate
@@ -1299,11 +1087,11 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
         ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simBIC[[i]],ncol=Time),6) > round(set$alphaBIC[[i]],6), arr.ind=TRUE))    
     }
     
-    #1)a) Did it find anything in the cluster?
+    #1) Did it find anything in the cluster?
     ##NULL MODEL
     if(!is.null(nullmod)){
         clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
-        in.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(clust[[i]])==0)) in.clust.any=1 else in.clust.any = 0)
+        in.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(clust[[i]])==0)) in.clust.any=0 else in.clust.any = 1)
         incluster.any.bic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")
     }
     else{
@@ -1311,59 +1099,48 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
         in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
         incluster.any.bic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
     }
+    #2) |(A and B)|/|A U B|?
+    ##Calculate
+    wasDetected <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simBIC[[i]],ncol=Time),6) > round(set$alphaBIC[[i]],6), arr.ind=FALSE))    
+    shouldDetected <- which(rr!=1, arr.ind=FALSE)
+    ##Numerator
+    AandB <- lapply(1:nsim, function(i) length(intersect(wasDetected[[i]], shouldDetected)))
+    ##Denominator
+    AuB <- lapply(1:nsim, function(i) length(union(wasDetected[[i]], shouldDetected)))
+    ##Divide
+    prop.alldetect.bic <- lapply(1:nsim, function(i) AandB[[i]]/AuB[[i]])
     
     
-    #1)b) Did it find the cluster and nothing else?
-    ##Subset to correct time period
-    clust.only <- lapply(1:nsim, function(i) setequal(ix[[i]][,1],set$neighs$cluster))
-    in.clust <- lapply(1:nsim, function(i) if(any(clust.only[[i]]==FALSE)) in.clust=0 else in.clust = 1)
-    ##Check that nothing was found outside of period
-    in.clust.timeout <- lapply(1:nsim, function(i) is.element(ix[[i]][ix[[i]][,2] < period[1] | ix[[i]][,2] > tail(period, n=1),], set$neighs$cluster))
-    ix.in.clust.timeout <-unlist(which(lapply(1:nsim, 
-                                              function(i) if(any(in.clust.timeout[[i]]==TRUE)) 
-                                                  ix.in.clust.timeout=i else ix.in.clust.timeout=0)!=0))
-    inter <- intersect(ix.in.clust.timeout,unlist(which(in.clust!=0)))
-    if(length(inter)!=0){
-        for(i in inter){
-            in.clust[[i]] = 0    
-        }
+    #3) |(A and B)|/|A|? Proportion of what was detected was in overlap?
+    ##Calculate length of what was detected
+    A <- lapply(1:nsim, function(i) length(wasDetected[[i]]))
+    ##Divide
+    prop.wasdetect.bic <- lapply(1:nsim, function(i) AandB[[i]]/A[[i]])
+    
+    #4) |(A and B)|/|B|? Proportion of what should be detected was in overlap?
+    B <- length(shouldDetected)
+    prop.shoulddetect.bic <- lapply(1:nsim, function(i) AandB[[i]]/B)
+    
+    #5) ONLY FOR NULL MODEL - DID IT FIND ANYTHING?
+    if(!is.null(nullmod)){
+        null.any.bic <- length(unlist(ix))    
     }
-    inclusteronly.bic <- paste0((sum(unlist(in.clust))/nsim)*100,"%")
-    
-    #1)c) Did it find at least half of the cluster and nothing else?
-    target <- length(set$neighs$cluster)/2
-    in.clust.half <- lapply(1:nsim, 
-                            function(i) if(isTRUE(length(which(is.element(ix[[i]][,1],set$neighs$cluster)==TRUE))>=target) & all(clust[[i]]!=FALSE)) in.clust.half = 1 else in.clust.half = 0)
-    ##Check that nothing was found outside of period
-    in.clust.half.timeout <- lapply(1:nsim, function(i) is.element(ix[[i]][ix[[i]][,2] < period[1] | ix[[i]][,2] > tail(period, n=1),], set$neighs$cluster))
-    ix.in.clust.half.timeout <-unlist(which(lapply(1:nsim, 
-                                                   function(i) if(any(in.clust.half.timeout[[i]]==TRUE)) 
-                                                       ix.in.clust.timeout=i else ix.in.clust.timeout=0)!=0))
-    inter <- intersect(ix.in.clust.half.timeout,unlist(which(in.clust.half!=0)))
-    if(length(inter)!=0){
-        for(i in inter){
-            in.clust.half[[i]] = 0    
-        }
+    if(exists("null.any.aic") & exists("null.any.bic") & exists("null.any.aicc")){
+        return(list(
+            incluster.any.aic = incluster.any.aic, incluster.any.aicc = incluster.any.aicc,incluster.any.bic = incluster.any.bic,
+            prop.alldetect.aic = prop.alldetect.aic, prop.alldetect.aicc = prop.alldetect.aicc, prop.alldetect.bic = prop.alldetect.bic,
+            prop.wasdetect.aic = prop.wasdetect.aic, prop.wasdetect.aicc = prop.wasdetect.aicc, prop.wasdetect.bic = prop.wasdetect.bic,
+            prop.shoulddetect.aic = prop.shoulddetect.aic, prop.shoulddetect.aicc = prop.shoulddetect.aicc, prop.shoulddetect.bic = prop.shoulddetect.bic,
+            null.any.aic = null.any.aic, null.any.aicc = null.any.aicc, null.any.bic = null.any.bic ))
     }
-    inclusteronly.half.bic <- paste0((sum(unlist(in.clust.half))/nsim)*100,"%")  
+    else{
+        return(list(
+            incluster.any.aic = incluster.any.aic, incluster.any.aicc = incluster.any.aicc,incluster.any.bic = incluster.any.bic,
+            prop.alldetect.aic = prop.alldetect.aic, prop.alldetect.aicc = prop.alldetect.aicc, prop.alldetect.bic = prop.alldetect.bic,
+            prop.wasdetect.aic = prop.wasdetect.aic, prop.wasdetect.aicc = prop.wasdetect.aicc, prop.wasdetect.bic = prop.wasdetect.bic,
+            prop.shoulddetect.aic = prop.shoulddetect.aic, prop.shoulddetect.aicc = prop.shoulddetect.aicc, prop.shoulddetect.bic = prop.shoulddetect.bic))
+    }
     
-    #1)d) Did it find the cluster (amongst other things?)?
-    clust.other <- lapply(1:nsim, function(i) is.element(unique(ix[[i]][,1]),set$neighs$cluster))
-    in.clust.other <- lapply(1:nsim, function(i) if(any(clust.other[[i]]==FALSE)) in.clust.other=0 else in.clust.other = 1)
-    incluster.other.bic <- paste0((sum(unlist(in.clust.other))/nsim)*100,"%")
-    
-    #3) Did it find anything outside of the buffer zone?
-    ##Did it find anything in space outside of the time buffer
-    clust.buff <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],sort(unique(unlist(set$neighs)))))
-    in.clust.buff <- lapply(1:nsim, function(i) if(any(clust.buff[[i]]==FALSE)) in.clust.buff=1 else in.clust.buff = 0)
-    inclusteronly.buffer.bic <- paste0((sum(unlist(in.clust.buff))/nsim)*100,"%")
-    
-    return(list(
-        incluster.any.aic = incluster.any.aic, incluster.any.aicc = incluster.any.aicc,incluster.any.bic = incluster.any.bic,
-        inclusteronly.aic = inclusteronly.aic, inclusteronly.aicc = inclusteronly.aicc,inclusteronly.bic = inclusteronly.bic,
-        inclusteronly.half.aic = inclusteronly.half.aic, inclusteronly.half.aicc = inclusteronly.half.aicc,inclusteronly.half.bic = inclusteronly.half.bic,
-        outofbuffer.aic = inclusteronly.buffer.aic,outofbuffer.aicc = inclusteronly.buffer.aicc,outofbuffer.bic = inclusteronly.buffer.bic,
-        incluster.other.aic = incluster.other.aic, incluster.other.aicc = incluster.other.aicc, incluster.other.bic = incluster.other.bic))
 }
 
   
@@ -1388,17 +1165,23 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
 #'(for aic/aicc/bic and qaic/qaicc/qbic, respectively).
 #'TODO add cluster detection in case where risk ratio is less than background rate
 #'@return returns
-detect.incluster <- function(lassoresult, vectors.sim, rr, set,period_start, period_end, multi_period = FALSE, Time, nsim, nb, x, y, rMax, center, radius, IC = c("aic","aicc","bic","ic"),...){
-    if(multi_period==TRUE){
-        period = c(period_start:period_end)
-    }
-    # else if(period_end - period_start == 0 ){
-    #    period = 1
+detect.incluster <- function(lassoresult, vectors.sim, rr, set,timeperiod, Time, nsim, nb, x, y, rMax, center, radius, IC = c("aic","aicc","bic","ic"),nullmod=NULL,...){
+    # if(multi_period==TRUE){
+    #     period = c(period_start:period_end)
     # }
-    else{
-        period = c(period_start, period_end)
-    }
-    print(period)
+    # # else if(period_end - period_start == 0 ){
+    # #    period = 1
+    # # }
+    # else{
+    #     period = c(period_start, period_end)
+    # }
+    period = timeperiod
+    message("Detection Results for:\n"
+            , "\t Time Period: ", period,
+            "\n \t Num. simulations: ", nsim,
+            "\n \t Cluster center: ", center,
+            "\n \t Cluster radius: ", radius,
+            "\n \t Cluster rel.risk: ",unique(as.vector(rr))[2])
     IC <- match.arg(IC, several.ok= TRUE)
     switch(IC,
           aic = detect.incluster.aic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=NULL),
@@ -1964,21 +1747,16 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
     else if(length(timeperiod)==1){
         rr[cluster$last, timeperiod:Time] = risk.ratio    
     }
-    #Let E_it = R_it*E_it
-    #E0_0 <- scale(init, Time)
     E1 = as.vector(rr)*init$E0
-    #E1 = as.vector(rr)*E0_0
     Period <- init$Year
     #Simulate observed as NB(Eit, theta)
     theta = 1000
     YSIM <- lapply(1:nsim, function(i) rnegbin(E1, theta = theta))
-    
     #Scale YSIM[i] to init$E0
     Ex <- scale.sim(YSIM, init, nsim, Time)
     vectors.sim <- list(Period = Period, Ex = Ex , E0_0 = init$E0, Y.vec=init$Y.vec)
     #set up and run simulation model
     lassoresult <- spacetime.lasso.sim(clusters, vectors.sim, Time, spacetime=spacetime, pois=pois, nsim, YSIM)
-    #riskratios <- get.rr(lassoresult, vectors.sim, Time, sim=TRUE)
     riskratios <- get.rr2(lassoresult, vectors.sim,init, E1,Time, sim=TRUE)
     rrcolors <- colormapping(riskratios,Time)
     # if(!is.null(colors)){
