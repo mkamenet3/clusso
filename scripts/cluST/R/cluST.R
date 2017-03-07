@@ -298,9 +298,78 @@ spacetime.lasso<- function(clusters, vectors, Time, spacetime=TRUE,pois=FALSE,..
         select.qaicc <- which.max(PLL.qaicc)
         E.qaicc <- mu[,select.qaic]
         message("Returning results")
-        return(list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, Ex = Ex, Yx = Yx, lasso = lasso, K = K, n = n))  
     }
+    #########################################################
+    #Space-Time, Poisson only
+    #########################################################                
+    else if(spacetime==TRUE & pois==TRUE){
+        message("returning results for space-time Poisson model")
+        #QBIC
+        PLL.qbic  <- (loglike)-log(n*Time)/2*K
+        select.qbic <- which.max(PLL.qbic)
+        E.qbic <- mu[,select.qbic]
+        
+        #QAIC
+        PLL.qaic = (loglike) - K
+        select.qaic <- which.max(PLL.qaic)
+        E.qaic <- mu[,select.qaic]
+        
+        #QAICc
+        PLL.qaicc=(loglike)- ((K*n*Time)/(n*Time-K-1))
+        select.qaicc <- which.max(PLL.qaicc)
+        E.qaicc <- mu[,select.qaic]
+        message("Returning results")
+    }
+    #########################################################
+    #Space-Only, Quasi-Poisson
+    #########################################################
+    else if(spacetime==FALSE & pois==FALSE){
+        message("Returning results for space-only  Quasi-Poisson model")
+        offset_reg <- glm(Yx ~ 1 + offset(log(Ex)),family=poisson)
+        overdisp.est <- overdisp(offset_reg)
+        message("Selecting best paths")
+        
+        #QBIC
+        PLL.qbic  <- (loglike/overdisp.est)-log(n*Time)/2*K
+        select.qbic <- which.max(PLL.qbic)
+        E.qbic <- mu[,select.qbic]
+        
+        #QAIC
+        PLL.qaic = (loglike/overdisp.est) - K
+        select.qaic <- which.max(PLL.qaic)
+        E.qaic <- mu[,select.qaic]
+        
+        #QAICc
+        PLL.qaicc=(loglike/overdisp.est)- ((K*n*Time)/(n*Time-K-1))
+        select.qaicc <- which.max(PLL.qaicc)
+        E.qaicc <- mu[,select.qaic]
+        message("Returning results")
+    }
+    #########################################################
+    #Space-only, Poisson only
+    #########################################################
+    else if(spacetime==FALSE & pois == TRUE){
+        message("Returning results for space-only  Poisson model")
+        #QBIC
+        PLL.qbic  <- (loglike)-log(n*Time)/2*K
+        select.qbic <- which.max(PLL.qbic)
+        E.qbic <- mu[,select.qbic]
+        
+        #QAIC
+        PLL.qaic = (loglike) - K
+        select.qaic <- which.max(PLL.qaic)
+        E.qaic <- mu[,select.qaic]
+        
+        #QAICc
+        PLL.qaicc=(loglike)- ((K*n*Time)/(n*Time-K-1))
+        select.qaicc <- which.max(PLL.qaicc)
+        E.qaicc <- mu[,select.qaic]
+        message("Returning results")
+    }
+    
+    return(list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, Ex = Ex, Yx = Yx, lasso = lasso, K = K, n = n))  
 }
+
 
 
 
@@ -908,7 +977,7 @@ detect.set <- function(lassoresult, vectors.sim, rr, Time, nb, x, y, rMax, cente
     #Indices of True cluster only
     if(!is.null(nullmod)){
         indx.clust.truth <- NULL
-        message("Returning results for NULL model - no")
+        message("Returning results for NULL model")
     }
     else{
         indx.clust.truth <- which(as.vector(rr) !=1, arr.ind=TRUE)    
@@ -1643,11 +1712,11 @@ clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, 
         message("Running quasi-Poisson model. For Poisson model, please specify 'pois=TRUE'")
     }
     #set up clusters and fitted values
-    clusters <- clusters.df(x,y,rMax, utm=TRUE, length(x))
+    clusters <- clusters.df(x,y,rMax, utm=utm, length(x))
     n <- length(x)
     #init <- set.vectors(dframe$period, dframe$expdeath, dframe$death, Time=Time, byrow=row)
     init <- set.vectors(period, expected, observed, Time, row)
-    E0 <- scale(init, Time)
+    E0 <- scale(init, Time, scaler = 1)
     vectors <- list(Period = init$Year, E0=E0, E0_0=init$E0, Y.vec=init$Y.vec)
     lassoresult <- spacetime.lasso(clusters, vectors, Time, spacetime=spacetime,pois=pois)
     riskratios <- get.rr(lassoresult, vectors, Time, sim=FALSE)
@@ -1790,9 +1859,20 @@ findneighbors <- function(nb, x, y, rMax,center, radius){
     return(list(cluster = last, nbs = nbs))
 }
 
-scale <- function(init,Time,...){
-    std <- sapply(1:Time, function(i) (matrix(init$E0, ncol=Time)[,i]*(sum(matrix(init$Y.vec, ncol=Time)[,i]))/sum(matrix(init$E0, ncol=Time)[,i])))
-    E0 <- as.vector(std)
+scale <- function(init,Time,scaler=NULL,...){
+    if(!is.null(scaler)){
+        print(scaler)
+        #scalenum == as.integer(scaler)
+        #print(scalenum)
+        std <- sapply(1:Time, function(i) 
+            (((matrix(init$E0, ncol=Time)[,i])/scaler)*(sum(matrix(init$Y.vec, ncol=Time)[,i])/scaler))/(sum(matrix(init$E0, ncol=Time)[,i])/scaler))
+        E0 <- as.vector(std)
+    }
+    else{
+        std <- sapply(1:Time, function(i) 
+            ((((matrix(init$E0, ncol=Time)[,i]))*(sum(matrix(init$Y.vec, ncol=Time)[,i])))/(sum(matrix(init$E0, ncol=Time)[,i]))))
+        E0 <- as.vector(std)
+    }
     return(E0)
 }
 
@@ -2005,4 +2085,33 @@ plotmap.s <- function(pdfname,res, obs = NULL){
     #Turn off pdf development
     dev.off()
 }
+
+
+
+clust.diagnostics <- function(incluster, threshold){
+    #thresholding of prop.alldetect
+    alldetect.aic <- paste0((length(which(unlist(incluster$prop.alldetect.aic)> threshold))/nsim)*100, "%")
+    alldetect.aicc <- paste0((length(which(unlist(incluster$prop.alldetect.aicc)> threshold))/nsim)*100, "%")
+    alldetect.bic <- paste0((length(which(unlist(incluster$prop.alldetect.bic)> threshold))/nsim)*100, "%")
+    
+    #thresholding of prop.wasdetect
+    potentialclusterdetect.aic <- paste0((length(which(unlist(incluster$prop.wasdetect.aic)> threshold))/nsim)*100, "%")
+    potentialclusterdetect.aicc <- paste0((length(which(unlist(incluster$prop.wasdetect.aicc)> threshold))/nsim)*100, "%")
+    potentialclusterdetect.bic <- paste0((length(which(unlist(incluster$prop.wasdetect.bic)> threshold))/nsim)*100, "%")
+    
+    #thresholding of prop.shoulddetect
+    trueclusterdetect.aic <- paste0((length(which(unlist(incluster$prop.shoulddetect.aic)> threshold))/nsim)*100, "%")
+    trueclusterdetect.aicc <- paste0((length(which(unlist(incluster$prop.shoulddetect.aicc)> threshold))/nsim)*100, "%")
+    trueclusterdetect.bic <- paste0((length(which(unlist(incluster$prop.shoulddetect.bic)> threshold))/nsim)*100, "%")
+    
+    return(list(incluster.any.aic = incluster$incluster.any.aic, incluster.any.aicc = incluster$incluster.any.aicc,
+           incluster.any.bic = incluster$incluster.any.bic,
+           alldetect.aic = alldetect.aic, alldetect.aicc = alldetect.aicc, alldetect.bic = alldetect.bic,
+           potentialclusterdetect.aic = potentialclusterdetect.aic, potentialclusterdetect.aicc = potentialclusterdetect.aicc,
+           potentialclusterdetect.bic = potentialclusterdetect.bic,
+           trueclusterdetect.aic = trueclusterdetect.aic, trueclusterdetect.aicc = trueclusterdetect.aicc,
+           trueclusterdetect.bic = trueclusterdetect.bic
+    ))
+}
+
     
