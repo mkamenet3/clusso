@@ -19,7 +19,7 @@ library("geosphere")
 library(Matrix)
 library(glmnet)
 library(maps)
-library(truncnorm)
+
 
 #Source .cpp files
 sourceCpp("scripts/cluST/src/maxcol.cpp")
@@ -49,50 +49,58 @@ df <- df[df$year=="1990",]
 #Set Coordinates Dataframe
 coords <- pov[c("x","y","county","state")]
 
+####################################################
 #Set Some Initial Conditions
+####################################################
 x=coords$x
 y=coords$y
 rMax <- round((max(distm(cbind(x, y), fun=distHaversine))/10)/1000)
 Time=1  
 
-#Create Potential Clusters Dataframe
-clusters <- clustersDF(x,y,rMax, utm=FALSE, length(x))
-
 #Set initial expected and observed
-pop <- as.vector(df$denom_poor)
-Y.vec <- as.vector(df$poor)
-period<- as.vector(df$year)
+expected <- as.vector(df$denom_poor)
+observed <- as.vector(df$poor)
+period <- as.vector(df$year)
 
-#Adjust for observed given expected counts as coming from negative binomial distribution
-outinit <- glm.nb(Y.vec ~1)
-out <- glm.nb(Y.vec ~ 1 + offset(log(pop)), init.theta = outinit$theta, 
-              link=log,control=glm.control(maxit=10000))
+#run spatial model
+res <- clust(x,y,rMax, period, expected, observed, Time, spacetime=FALSE, pois=FALSE, utm = FALSE, byrow = FALSE)
 
-
-#Set initial expected to the fitted values
-E0 <- out$fitted
-MPDinit <- cbind.data.frame(period,E0, Y.vec)
-
-####################################################
-#RUN Model
-####################################################
-
-#set initial conditions for function (all centers can be potential origin of the cluster)
-potentialClus <- max(clusters$center)
-numberCenters <- max(clusters$center)
-
-MPDresults <- spacetimeLasso(potentialClus, clusters, numberCenters, MPDinit, Time, spacetime=FALSE)
+#save results
+filename <- paste0("results/MidwestPov/midwestpov_QPois_Spaceonly",".RData")
+save(res, file = filename)
 
 
-####################################################
-#Set Risk Ratio Vectors Based on QIC
-####################################################
-rr <- setRR(MPDresults, MPDinit, Time)
 
-####################################################
-#Map RR to Colors
-####################################################
-rrcolors <- colormapping(rr, Time)
+# #Adjust for observed given expected counts as coming from negative binomial distribution
+# outinit <- glm.nb(Y.vec ~1)
+# out <- glm.nb(Y.vec ~ 1 + offset(log(pop)), init.theta = outinit$theta, 
+#               link=log,control=glm.control(maxit=10000))
+# 
+# 
+# #Set initial expected to the fitted values
+# E0 <- out$fitted
+# MPDinit <- cbind.data.frame(period,E0, Y.vec)
+# 
+# ####################################################
+# #RUN Model
+# ####################################################
+# 
+# #set initial conditions for function (all centers can be potential origin of the cluster)
+# potentialClus <- max(clusters$center)
+# numberCenters <- max(clusters$center)
+# 
+# MPDresults <- spacetimeLasso(potentialClus, clusters, numberCenters, MPDinit, Time, spacetime=FALSE)
+# 
+# 
+# ####################################################
+# #Set Risk Ratio Vectors Based on QIC
+# ####################################################
+# rr <- setRR(MPDresults, MPDinit, Time)
+# 
+# ####################################################
+# #Map RR to Colors
+# ####################################################
+# rrcolors <- colormapping(rr, Time)
 
 
 ####################################################
@@ -116,14 +124,14 @@ m$names[not];tmp[not]
 
 
 #Create Empty PDF to Map Onto
-pdf("figures/MidwestPov/MidwestPov_map_space.pdf", height=11, width=10)
+pdf("figures/MidwestPov/MidwestPov_map_spaceNEW.pdf", height=11, width=10)
 
 #Set Plots
 par(mfrow = c(4,5))
 
 #Maps of Observed Counts
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    col=rrcolors$colors.obs[,1][colSeq], fill=TRUE, lty=0)
+    col=res$rrcolors$colors.obs[,1][colSeq], fill=TRUE, lty=0)
 map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
     fill=FALSE, add=TRUE)
 title(main="Obs - 1990")
@@ -131,7 +139,7 @@ title(main="Obs - 1990")
 #Maps of AIC Path
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),
-    col=rrcolors$color.qaic[,1][colSeq], fill=TRUE, lty=0)
+    col=res$rrcolors$color.qaic[,1][colSeq], fill=TRUE, lty=0)
 map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
     fill=FALSE, add=TRUE)
 title(main="AIC - 1990")
@@ -139,7 +147,7 @@ title(main="AIC - 1990")
 #Maps of AICc Path
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    col=rrcolors$color.qaicc[,1][colSeq], fill=TRUE, lty=0)
+    col=res$rrcolors$color.qaicc[,1][colSeq], fill=TRUE, lty=0)
 map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
     fill=FALSE, add=TRUE)
 title(main="AICc - 1990")
@@ -147,7 +155,7 @@ title(main="AICc - 1990")
 #Maps of BIC Path
 
 map('county', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"), 
-    col=rrcolors$color.qbic[,1][colSeq], fill=TRUE, lty=0)
+    col=res$rrcolors$color.qbic[,1][colSeq], fill=TRUE, lty=0)
 map('state', region = c("Illinois","Indiana","Iowa","Michigan","Minnesota","Wisconsin"),col="black",
     fill=FALSE, add=TRUE)
 title(main="BIC - 1990")
