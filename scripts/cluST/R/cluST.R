@@ -968,11 +968,11 @@ probmap <- function(lassoresult, vectors.sim, rr, nsim, Time, colormap=FALSE,...
 #'should be, 2) indx, which contains the index of cluster as determined where the risk ratio in the rr matrix is not 1,
 #'3) rr.simBIC, rr.simAIC, rr.simAICc - the risk ratios as determined by BIC, AIC, and AICc (respectively), and 4) alphaBIC, alphaAIC, alphaAICc - the calculated
 #'background risk rates as determined by BIC, AIC, and AICc or QBIC, QAIC, QAICc. 
-detect.set <- function(lassoresult, vectors.sim, rr, Time, nb, x, y, rMax, center, radius,nullmod=NULL,...){
+detect.set <- function(lassoresult, vectors.sim, rr, Time, x, y, rMax, center, radius,nullmod=NULL,...){
     #indx_truth <- sapply(1:Time, function(i) which(rr[,i] !=1))
     #create neighbors for cluster
     ##Indices of neighbors only in list nbs - space only
-    neighs <- findneighbors(nb, x, y, rMax, center, radius)
+    #neighs <- findneighbors(nb, x, y, rMax, center, radius)
     
     #Indices of True cluster only
     if(!is.null(nullmod)){
@@ -1003,7 +1003,7 @@ detect.set <- function(lassoresult, vectors.sim, rr, Time, nb, x, y, rMax, cente
                                                    ncol=Time, byrow=TRUE, nrow=length(x)))
     return(list(
         indx.clust.truth = indx.clust.truth,
-        neighs = neighs,
+        #neighs = neighs,
         rr.simBIC = rr.simBIC,
         rr.simAIC = rr.simAIC,
         rr.simAICc = rr.simAICc,
@@ -1234,7 +1234,7 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
 #'(for aic/aicc/bic and qaic/qaicc/qbic, respectively).
 #'TODO add cluster detection in case where risk ratio is less than background rate
 #'@return returns
-detect.incluster <- function(lassoresult, vectors.sim, rr, set,timeperiod, Time, nsim, nb, x, y, rMax, center, radius, IC = c("aic","aicc","bic","ic"),nullmod=NULL,...){
+detect.incluster <- function(lassoresult, vectors.sim, rr, set,timeperiod, Time, nsim, x, y, rMax, center, radius, IC = c("aic","aicc","bic","ic"),nullmod=NULL,...){
     # if(multi_period==TRUE){
     #     period = c(period_start:period_end)
     # }
@@ -1842,6 +1842,182 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
 }
     
 
+
+#'clust.sim.all
+#'
+#'This function runs both the space and space-time Lasso model simulations for all 4 models simulataneously: Quasi-Poisson vs. Poisson in both space and space-time.
+#' This function is to be run on simulated data and all four models are run on the same simulated set. 
+#'A separate function (clust.sim) can be used for running simulations on individual models and (clust) can be used for observed data.
+#'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
+#'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
+#'@param rMax set max radius (in km)
+#'@param period vector of periods or years in dataset. Should be imported as a factor.
+#'@param expected vector of expected counts. Expected counts must match up with the year and observed vectors.
+#'@param observed vector of observed counts. Observed counts must match up with the year and expected vectors.
+#'@param Time Number of time periods or years in your dataset. Must be declared as numeric.
+#'@param nsim Number of simulations you would like to run
+#'@param center can be a single center or for multiple clusters, concatenate them. Max three TODO extend this
+#'@param radius radius for the cluster you want in the simulation
+#'@param risk.ratio setting for what the risk ratio should be in the cluster to be detected by the simulation
+#'@param timeperiod time period where the cluster  starts in the simulation
+#'we will only be looking at periods 2 and 5. If multi_period is TRUE, then we will instead consider timeperiod through period_end (timeperiod:period_end). Following the same example,
+#'this would mean we look at periods 2, 3, 4, and 5.
+#'@return
+#'@details Optional functions include:
+#'- 1) utm - default is FALSE. If you have utm coordinates, you want to change this to TRUE.
+#'@export
+#'TODO allow user to change theta parameter in simulation
+clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
+                          timeperiod,colors=NULL,utm=TRUE, byrow=TRUE,threshold, space=FALSE,...){
+    #initial user setting
+    if(utm==FALSE){
+        message("Coordinates are assumed to be in lat/long coordinates. For utm coordinates, please specify 'utm=TRUE'")
+        utm=FALSE
+    }
+    else{
+        utm=TRUE
+    }
+    if(byrow==FALSE){
+        row=FALSE
+    }
+    else{
+        row=TRUE
+        message("Data assumed to be in panel data. To use vector data instead, please specify 'byrow=FALSE'")
+    }
+    if(space==TRUE){
+        timeperiod = 1
+        Time = 1
+        message("Running Space-Only Model")
+    }
+    #set up clusters and fitted values
+    clusters <- clusters.df(x,y,rMax, utm=TRUE, length(x))
+    n <- length(x)
+    init <- set.vectors(period, expected, observed, Time=Time, byrow=row)
+    
+    #TODO change this to be a function and not hard-coded
+    if(length(center) == 2){
+        tmp <- clusters[clusters$center==center[1] | clusters$center==center[2],]
+    }
+    else if(length(center) == 3){
+        tmp <- clusters[clusters$center==center[1] | clusters$center==center[2] | clusters$center==center[3],]
+    }
+    else{
+        tmp <- clusters[clusters$center==center,]
+    }
+    cluster <- tmp[(tmp$r <= radius),]
+    rr = matrix(1, nrow=n, ncol=Time)
+    #TODO change this to be a function and not hard-coded
+    if(length(timeperiod) == 3){
+        rr[cluster$last, timeperiod[1]] = risk.ratio
+        rr[cluster$last, timeperiod[2]] = risk.ratio
+        rr[cluster$last, timeperiod[3]] = risk.ratio
+        message(paste("Running model for periods",timeperiod[1],"through", timeperiod[3]))
+    }
+    if(length(timeperiod) == 4){
+        rr[cluster$last, timeperiod[1]] = risk.ratio
+        rr[cluster$last, timeperiod[2]] = risk.ratio
+        rr[cluster$last, timeperiod[3]] = risk.ratio
+        rr[cluster$last, timeperiod[4]] = risk.ratio
+        message(paste("Running model for periods",timeperiod[1],"through", timeperiod[4]))
+    }
+    if(length(timeperiod) == 5){
+        rr[cluster$last, timeperiod[1]] = risk.ratio
+        rr[cluster$last, timeperiod[2]] = risk.ratio
+        rr[cluster$last, timeperiod[3]] = risk.ratio
+        rr[cluster$last, timeperiod[4]] = risk.ratio
+        rr[cluster$last, timeperiod[5]] = risk.ratio
+        message(paste("Running model for periods",timeperiod[1],"through", timeperiod[5]))
+    }
+    if(length(timeperiod) == 2){
+        rr[cluster$last, timeperiod[1]] = risk.ratio
+        rr[cluster$last, timeperiod[2]] = risk.ratio
+        message(paste("Running model for periods",timeperiod[1],"and", timeperiod[2]))
+    }
+    else if(length(timeperiod)==1){
+        rr[cluster$last, timeperiod:Time] = risk.ratio    
+    }
+    E1 = as.vector(rr)*init$E0
+    Period <- init$Year
+    #Simulate observed as NB(Eit, theta)
+    theta = 1000
+    YSIM <- lapply(1:nsim, function(i) rnegbin(E1, theta = theta))
+    #Scale YSIM[i] to init$E0
+    Ex <- scale.sim(YSIM, init, nsim, Time)
+    vectors.sim <- list(Period = Period, Ex = Ex , E0_0 = init$E0, Y.vec=init$Y.vec)
+    
+    #SPACE-ONLY MODELS
+    if(space==TRUE){
+        #set up and run simulation models
+        lassoresult.qp.st <- spacetime.lasso.sim(clusters, vectors.sim, Time, spacetime=FALSE, pois=FALSE, nsim, YSIM)
+        lassoresult.p.st <- spacetime.lasso.sim(clusters, vectors.sim, Time, spacetime=FALSE, pois=TRUE, nsim, YSIM)
+        
+    }
+    #SPACE-TIME MODELS = DEFAULT
+    else{
+        #set up and run simulation models
+        lassoresult.qp.st <- spacetime.lasso.sim(clusters, vectors.sim, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM)
+        lassoresult.p.st <- spacetime.lasso.sim(clusters, vectors.sim, Time, spacetime=TRUE, pois=TRUE, nsim, YSIM)
+        
+    }
+    
+    #RR and Colors for Plotting
+    riskratios.qp.st <- get.rr2(lassoresult.qp.st, vectors.sim,init, E1,Time, sim=TRUE)
+    rrcolors.qp.st <- colormapping(riskratios.qp.st,Time)
+    
+    riskratios.p.st <- get.rr2(lassoresult.qp.st, vectors.sim,init, E1,Time, sim=TRUE)
+    rrcolors.p.st <- colormapping(riskratios.p.st,Time)
+    
+    riskratios <- list(riskratios.qp.st = riskratios.qp.st, riskratios.p.st = riskratios.p.st)
+    rrcolors <- list(rrcolors.qp.st = rrcolors.qp.st, rrcolors.p.st = rrcolors.p.st)
+    
+    #Detection
+    ##QP - ST
+    set <- detect.set(lassoresult.qp.st, vectors.sim, rr, Time, x, y, rMax, center, radius)
+    incluster.qp.st <- detect.incluster(lassoresult.qp.st, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
+                                  radius, IC = "ic")
+    detect.qp.st <- list(clust.diagnostics(incluster.qp.st , threshold[1]), clust.diagnostics(incluster.qp.st , threshold[2]))
+    detect.out.qp.st <- (matrix(unlist(detect.qp.st),ncol=3, byrow=TRUE, 
+            dimnames = list(c(paste0("incluster.any.", threshold[1]),
+                              paste0("alldetect.",threshold[1]), 
+                              paste0("potentialclusterdetect.",threshold[1]), 
+                              paste0("trueclusterdetect.",threshold[1]),
+                              paste0("incluster.any.",threshold[2]), paste0("alldetect.",threshold[2]),
+                              paste0("potentialclusterdetect.",threshold[2]), 
+                              paste0("trueclusterdetect.",threshold[2])),c("aic","aicc","bic"))))
+    
+    ##P - ST
+    set <- detect.set(lassoresult.p.st, vectors.sim, rr, Time, x, y, rMax, center, radius)
+    incluster.p.st <- detect.incluster(lassoresult.p.st, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
+                                  radius, IC = "ic")
+    detect.p.st <- list(clust.diagnostics(incluster.p.st, threshold[1]), clust.diagnostics(incluster.p.st, threshold[2]))
+    detect.out.p.st <- (matrix(unlist(detect.p.st),ncol=3, byrow=TRUE, 
+                                dimnames = list(c(paste0("incluster.any.", threshold[1]),
+                                                  paste0("alldetect.",threshold[1]), 
+                                                  paste0("potentialclusterdetect.",threshold[1]), 
+                                                  paste0("trueclusterdetect.",threshold[1]),
+                                                  paste0("incluster.any.",threshold[2]), paste0("alldetect.",threshold[2]),
+                                                  paste0("potentialclusterdetect.",threshold[2]), 
+                                                  paste0("trueclusterdetect.",threshold[2])),c("aic","aicc","bic"))))
+   
+    return(list(lassoresult.qp.st = lassoresult.qp.st,
+                lassoresult.p.st = lassoresult.p.st,
+                riskratios = riskratios,
+                rrcolors = rrcolors,
+                rr.mat = rr,
+                init.vec = vectors.sim,
+                incluster.qp.st = incluster.qp.st,
+                incluster.p.st = incluster.p.st,
+                detect.qp.st = detect.qp.st,
+                detect.p.st = detect.p.st,
+                detect.out.p.st = detect.out.p.st,
+                detect.out.qp.st = detect.out.qp.st))
+}
+
+
+
+
+
+
 #'findneighbors
 #'uses global parameters. An object of class 'nb' must be passed here. Consider creating a neighborhood class via poly2nb.
 #'
@@ -1897,42 +2073,75 @@ get.rr2 <- function(lassoresult,vectors.sim,init,E1, Time, sim=TRUE,...){
 }
 
 #PLOTTING
-plotmap.st <- function(pdfname,res, obs = NULL){
+easyplot.st <- function(pdfname, res, mods, space=FALSE){
+    if(space==TRUE){
+        #QPois
+        pdf_qp <- paste0(gsub(".pdf","", pdfname),mods[1], ".pdf")
+        plotmap.s(pdf_qp, res, sub = res$rrcolors$rrcolors.qp.st)
+        
+        #Pois
+        pdf_p <- paste0(gsub(".pdf","", pdfname),mods[2], ".pdf")
+        plotmap.s(pdf_p, res, sub = res$rrcolors$rrcolors.p.st)
+    }
+    else{
+        #QPois
+        pdf_qp <- paste0(gsub(".pdf","", pdfname),mods[1], ".pdf")
+        plotmap.st(pdf_qp, res, sub = res$rrcolors$rrcolors.qp.st)
+        
+        #Pois
+        pdf_p <- paste0(gsub(".pdf","", pdfname),mods[2], ".pdf")
+        plotmap.st(pdf_p, res, sub = res$rrcolors$rrcolors.p.st)
+
+    }
+    
+}
+
+
+
+plotmap.st <- function(pdfname,res, obs = NULL, sub=NULL){
     if(!is.null(obs)){
         firstrow = "Obs"
     }
     else{
         firstrow="Oracle"
     }
+    if(!is.null(sub)){
+        rrcolors <- sub
+        print("ok")
+    }
+    else {
+        rrcolors <- res$rrcolors
+    }
     pdf(pdfname, height=11, width=10)
     #Maps of Observed Counts
     par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$colors.obs[,1],border=F)
+    #polygon(japan.poly2,col=res$rrcolors$colors.obs[,1],border=F)
+    polygon(japan.poly2,col=rrcolors$colors.obs[,1],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,paste0("Period 1 - ", firstrow),cex=1.00)
     
     par(fig=c(0.2,.4,.6,1), mar=c(.5,0.5,0.5,0), new=T)
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$colors.obs[,2],border=F)
+    polygon(japan.poly2,col=rrcolors$colors.obs[,2],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,paste0("Period 2 - ", firstrow),cex=1.00)
     
     par(fig=c(0.4,.6,.6,1), mar=c(.5,0.5,0.5,0), new=T)
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$colors.obs[,3],border=F)
+    polygon(japan.poly2,col=rrcolors$colors.obs[,3],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,paste0("Period 3 - ", firstrow),cex=1.00)
     
     par(fig=c(0.6,.8,.6,1), mar=c(.5,0.5,0.5,0), new=T)
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$colors.obs[,4],border=F)
+    polygon(japan.poly2,col=rrcolors$colors.obs[,4],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,paste0("Period 4 - ", firstrow),cex=1.00)
     
     par(fig=c(0.8,1,.6,1), mar=c(.5,0.5,0.5,0), new=T)
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$colors.obs[,5],border=F)
+    polygon(japan.poly2,col=rrcolors$colors.obs[,5],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,paste0("Period 5 - ", firstrow),cex=1.00)
     
@@ -1941,31 +2150,31 @@ plotmap.st <- function(pdfname,res, obs = NULL){
     
     par(fig=c(0,.2,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$color.qaic[,1],border=F)
+    polygon(japan.poly2,col=rrcolors$color.qaic[,1],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,'Period 1 - QAIC',cex=1.00)
     
     par(fig=c(0.2,.4,.4,.8), mar=c(.5,0.5,0.5,0), new=T)   
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$color.qaic[,2],border=F)
+    polygon(japan.poly2,col=rrcolors$color.qaic[,2],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,'Period 2 - QAIC',cex=1.00)
     
     par(fig=c(0.4,.6,.4,.8), mar=c(.5,0.5,0.5,0), new=T) 
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$color.qaic[,3],border=F)
+    polygon(japan.poly2,col=rrcolors$color.qaic[,3],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,'Period 3 - QAIC',cex=1.00)
     
     par(fig=c(0.6,.8,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$color.qaic[,4],border=F)
+    polygon(japan.poly2,col=rrcolors$color.qaic[,4],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,'Period 4 - QAIC',cex=1.00)
     
     par(fig=c(0.8,1,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$color.qaic[,5],border=F)
+    polygon(japan.poly2,col=rrcolors$color.qaic[,5],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,'Period 5 - QAIC',cex=1.00)
     
@@ -1974,31 +2183,31 @@ plotmap.st <- function(pdfname,res, obs = NULL){
     
     par(fig=c(0,.2,.2,.6), mar=c(.5,0.5,0.5,0), new=T)
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$color.qaicc[,1],border=F)
+    polygon(japan.poly2,col=rrcolors$color.qaicc[,1],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,'Period 1 - QAICc',cex=1.00)
     
     par(fig=c(0.2,.4,.2,.6), mar=c(.5,0.5,0.5,0), new=T) 
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$color.qaicc[,2],border=F)
+    polygon(japan.poly2,col=rrcolors$color.qaicc[,2],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,'Period 2 - QAICc',cex=1.00)
     
     par(fig=c(0.4,.6,.2,.6), mar=c(.5,0.5,0.5,0), new=T) 
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$color.qaicc[,3],border=F)
+    polygon(japan.poly2,col=rrcolors$color.qaicc[,3],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,'Period 3 - QAICc',cex=1.00)
     
     par(fig=c(0.6,.8,.2,.6), mar=c(.5,0.5,0.5,0), new=T)
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$color.qaicc[,4],border=F)
+    polygon(japan.poly2,col=rrcolors$color.qaicc[,4],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,'Period 4 - QAICc',cex=1.00)
     
     par(fig=c(0.8,1,.2,.6), mar=c(.5,0.5,0.5,0), new=T)
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$color.qaicc[,5],border=F)
+    polygon(japan.poly2,col=rrcolors$color.qaicc[,5],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,'Period 5 - QAICc',cex=1.00)
     
@@ -2007,33 +2216,33 @@ plotmap.st <- function(pdfname,res, obs = NULL){
     
     par(fig=c(0,.2,0,.4), mar=c(.5,0.5,0.5,0), new=T)
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$color.qbic[,1],border=F)
+    polygon(japan.poly2,col=rrcolors$color.qbic[,1],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,'Period 1 - QBIC',cex=1.00)
     
     par(fig=c(0.2,.4,0,.4), mar=c(.5,0.5,0.5,0), new=T)
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$color.qbic[,2],border=F)
+    polygon(japan.poly2,col=rrcolors$color.qbic[,2],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,'Period 2 - QBIC',cex=1.00)
     
     par(fig=c(0.4,.6,0,.4), mar=c(.5,0.5,0.5,0), new=T)
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$color.qbic[,3],border=F)
+    polygon(japan.poly2,col=rrcolors$color.qbic[,3],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,'Period 3 - QBIC',cex=1.00)
     
     
     par(fig=c(0.6,.8,0,.4), mar=c(.5,0.5,0.5,0), new=T)
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$color.qbic[,4],border=F)
+    polygon(japan.poly2,col=rrcolors$color.qbic[,4],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,'Period 4 - QBIC',cex=1.00)
     
     
     par(fig=c(0.8,1,0,.4), mar=c(.5,0.5,0.5,0), new=T)
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$color.qbic[,5],border=F)
+    polygon(japan.poly2,col=rrcolors$color.qbic[,5],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,'Period 5 - QBIC',cex=1.00)
     
@@ -2041,18 +2250,25 @@ plotmap.st <- function(pdfname,res, obs = NULL){
     dev.off()
 }
 
-plotmap.s <- function(pdfname,res, obs = NULL){
+plotmap.s <- function(pdfname,res, obs = NULL, sub=NULL){
     if(!is.null(obs)){
         firstrow = "Obs"
     }
     else{
         firstrow="Oracle"
     }
+    if(!is.null(sub)){
+        rrcolors <-  sub
+        print("ok -spaceonly")
+    }
+    else{
+        rrcolors <- res$rrcolors
+    }
     pdf(pdfname, height=11, width=10)
     #Maps of Observed Counts
     par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$colors.obs[,1],border=F)
+    polygon(japan.poly2,col=rrcolors$colors.obs[,1],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,paste0(firstrow),cex=1.00)
     
@@ -2060,7 +2276,7 @@ plotmap.s <- function(pdfname,res, obs = NULL){
     
     par(fig=c(0,.2,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$color.qaic[,1],border=F)
+    polygon(japan.poly2,col=rrcolors$color.qaic[,1],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,'QAIC',cex=1.00)
     
@@ -2068,7 +2284,7 @@ plotmap.s <- function(pdfname,res, obs = NULL){
     
     par(fig=c(0,.2,.2,.6), mar=c(.5,0.5,0.5,0), new=T)
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$color.qaicc[,1],border=F)
+    polygon(japan.poly2,col=rrcolors$color.qaicc[,1],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,'QAICc',cex=1.00)
     
@@ -2077,7 +2293,7 @@ plotmap.s <- function(pdfname,res, obs = NULL){
     
     par(fig=c(0,.2,0,.4), mar=c(.5,0.5,0.5,0), new=T)
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(japan.poly2,col=res$rrcolors$color.qbic[,1],border=F)
+    polygon(japan.poly2,col=rrcolors$color.qbic[,1],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,'QBIC',cex=1.00)
     
@@ -2085,6 +2301,11 @@ plotmap.s <- function(pdfname,res, obs = NULL){
     #Turn off pdf development
     dev.off()
 }
+
+
+#Wrapper for plot.st
+
+
 
 
 
@@ -2114,4 +2335,3 @@ clust.diagnostics <- function(incluster, threshold){
     ))
 }
 
-    
