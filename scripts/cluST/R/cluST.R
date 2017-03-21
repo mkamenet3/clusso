@@ -1862,13 +1862,15 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
 #'@param timeperiod time period where the cluster  starts in the simulation
 #'we will only be looking at periods 2 and 5. If multi_period is TRUE, then we will instead consider timeperiod through period_end (timeperiod:period_end). Following the same example,
 #'this would mean we look at periods 2, 3, 4, and 5.
+#'@param space space and space-time. Default is to run all four models: quasi-poisson and poisson for both space and space-time. User can specify, space = space,
+#'space = spacetime, or space = both.
 #'@return
 #'@details Optional functions include:
 #'- 1) utm - default is FALSE. If you have utm coordinates, you want to change this to TRUE.
 #'@export
 #'TODO allow user to change theta parameter in simulation
 clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
-                          timeperiod,colors=NULL,utm=TRUE, byrow=TRUE,threshold, space=FALSE,...){
+                          timeperiod,colors=NULL,utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"),...){
     #initial user setting
     if(utm==FALSE){
         message("Coordinates are assumed to be in lat/long coordinates. For utm coordinates, please specify 'utm=TRUE'")
@@ -1878,21 +1880,177 @@ clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, ce
         utm=TRUE
     }
     if(byrow==FALSE){
-        row=FALSE
+        byrow=FALSE
     }
     else{
-        row=TRUE
+        byrow=TRUE
         message("Data assumed to be in panel data. To use vector data instead, please specify 'byrow=FALSE'")
     }
-    if(space==TRUE){
-        timeperiod = 1
-        Time = 1
-        message("Running Space-Only Model")
-    }
+    space <- match.arg(space, several.ok = FALSE)
+    if(length(space) > 1) stop("You must select either `space`, `spacetime`, or `both`")
+    print(byrow, utm)
+    switch(space, 
+           space = clust.sim.all.space(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio, 
+                                       timeperiod,colors=NULL,utm, byrow, threshold, space=TRUE),
+           spacetime = clust.sim.all.spacetime(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio, 
+                                               timeperiod,colors=NULL,utm, byrow, threshold, space=FALSE),
+           both = clust.sim.all.both())
+}
+
+#'clust.sim.all.space
+#'
+#'This function runs both the space and space-time Lasso model simulations for all 4 models simulataneously: Quasi-Poisson vs. Poisson in both space and space-time.
+#' This function is to be run on simulated data and all four models are run on the same simulated set. 
+#'A separate function (clust.sim) can be used for running simulations on individual models and (clust) can be used for observed data.
+#'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
+#'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
+#'@param rMax set max radius (in km)
+#'@param period vector of periods or years in dataset. Should be imported as a factor.
+#'@param expected vector of expected counts. Expected counts must match up with the year and observed vectors.
+#'@param observed vector of observed counts. Observed counts must match up with the year and expected vectors.
+#'@param Time Number of time periods or years in your dataset. Must be declared as numeric.
+#'@param nsim Number of simulations you would like to run
+#'@param center can be a single center or for multiple clusters, concatenate them. Max three TODO extend this
+#'@param radius radius for the cluster you want in the simulation
+#'@param risk.ratio setting for what the risk ratio should be in the cluster to be detected by the simulation
+#'@param timeperiod time period where the cluster  starts in the simulation
+#'we will only be looking at periods 2 and 5. If multi_period is TRUE, then we will instead consider timeperiod through period_end (timeperiod:period_end). Following the same example,
+#'this would mean we look at periods 2, 3, 4, and 5.
+#'@param space space and space-time. Default is to run all four models: quasi-poisson and poisson for both space and space-time. User can specify, space = space,
+#'space = spacetime, or space = both.
+#'@return
+#'@details Optional functions include:
+#'- 1) utm - default is FALSE. If you have utm coordinates, you want to change this to TRUE.
+#'@export
+#'TODO allow user to change theta parameter in simulation
+clust.sim.all.space <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
+                          timeperiod,colors=NULL,utm, byrow, threshold, space = TRUE,...){
+    #set up for space only
+    timeperiod = 1
+    Time = 1
+    #Averaging over time for observed and expected and creating universal period "1"
+    observed  <- with(dframe, tapply(observed, id, function(x) round(mean(x))))
+    expected <- with(dframe, tapply(expected, id, function(x) mean(x)))
+    period <- rep("1", length(unique(dframe$id)))
+    message("Running Space-Only Model")
+    
     #set up clusters and fitted values
-    clusters <- clusters.df(x,y,rMax, utm=TRUE, length(x))
+    clusters <- clusters.df(x,y,rMax, utm, length(x))
     n <- length(x)
-    init <- set.vectors(period, expected, observed, Time=Time, byrow=row)
+    init <- set.vectors(period, expected, observed, Time=Time, byrow=byrow)
+    
+    #TODO change this to be a function and not hard-coded
+    if(length(center) == 2){
+        tmp <- clusters[clusters$center==center[1] | clusters$center==center[2],]
+    }
+    else if(length(center) == 3){
+        tmp <- clusters[clusters$center==center[1] | clusters$center==center[2] | clusters$center==center[3],]
+    }
+    else{
+        tmp <- clusters[clusters$center==center,]
+    }
+    cluster <- tmp[(tmp$r <= radius),]
+    rr = matrix(1, nrow=n, ncol=Time)
+    rr[cluster$last, timeperiod:Time] = risk.ratio    
+    E1 = as.vector(rr)*init$E0
+    Period <- init$Year
+    #Simulate observed as NB(Eit, theta)
+    theta = 1000
+    YSIM <- lapply(1:nsim, function(i) rnegbin(E1, theta = theta))
+    Ex <- scale.sim(YSIM, init, nsim, Time)
+    vectors.sim <- list(Period = Period, Ex = Ex , E0_0 = init$E0, Y.vec=init$Y.vec)
+    
+    # #SPACE-ONLY MODELS
+    #set up and run simulation models
+    lassoresult.qp.s <- spacetime.lasso.sim(clusters, vectors.sim, Time, spacetime=FALSE, pois=FALSE, nsim, YSIM)
+    lassoresult.p.s <- spacetime.lasso.sim(clusters, vectors.sim, Time, spacetime=FALSE, pois=TRUE, nsim, YSIM)
+
+    #RR and Colors for Plotting
+    riskratios.qp.s <- get.rr2(lassoresult.qp.s, vectors.sim,init, E1,Time, sim=TRUE)
+    rrcolors.qp.s <- colormapping(riskratios.qp.s,Time)
+    riskratios.p.s <- get.rr2(lassoresult.qp.s, vectors.sim,init, E1,Time, sim=TRUE)
+    rrcolors.p.s <- colormapping(riskratios.p.s,Time)
+    ##Combine these into a single list
+    riskratios <- list(riskratios.qp.s = riskratios.qp.s, riskratios.p.s = riskratios.p.s)
+    rrcolors <- list(rrcolors.qp.s = rrcolors.qp.s, rrcolors.p.s = rrcolors.p.s)
+    
+    #Detection
+    ##QP - Space
+    set <- detect.set(lassoresult.qp.s, vectors.sim, rr, Time, x, y, rMax, center, radius)
+    incluster.qp.s <- detect.incluster(lassoresult.qp.s, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
+                                  radius, IC = "ic")
+    detect.qp.s <- list(clust.diagnostics(incluster.qp.s, threshold[1]), clust.diagnostics(incluster.qp.s , threshold[2]))
+    detect.out.qp.s <- (matrix(unlist(detect.qp.s),ncol=3, byrow=TRUE, 
+            dimnames = list(c(paste0("incluster.any.", threshold[1]),
+                              paste0("alldetect.",threshold[1]), 
+                              paste0("potentialclusterdetect.",threshold[1]), 
+                              paste0("trueclusterdetect.",threshold[1]),
+                              paste0("incluster.any.",threshold[2]), paste0("alldetect.",threshold[2]),
+                              paste0("potentialclusterdetect.",threshold[2]), 
+                              paste0("trueclusterdetect.",threshold[2])),c("aic","aicc","bic"))))
+    
+    ##P - Space
+    set <- detect.set(lassoresult.p.s, vectors.sim, rr, Time, x, y, rMax, center, radius)
+    incluster.p.s <- detect.incluster(lassoresult.p.s, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
+                                  radius, IC = "ic")
+    detect.p.s <- list(clust.diagnostics(incluster.p.s, threshold[1]), clust.diagnostics(incluster.p.s, threshold[2]))
+    detect.out.p.s <- (matrix(unlist(detect.p.s),ncol=3, byrow=TRUE, 
+                                dimnames = list(c(paste0("incluster.any.", threshold[1]),
+                                                  paste0("alldetect.",threshold[1]), 
+                                                  paste0("potentialclusterdetect.",threshold[1]), 
+                                                  paste0("trueclusterdetect.",threshold[1]),
+                                                  paste0("incluster.any.",threshold[2]), paste0("alldetect.",threshold[2]),
+                                                  paste0("potentialclusterdetect.",threshold[2]), 
+                                                  paste0("trueclusterdetect.",threshold[2])),c("aic","aicc","bic"))))
+   
+    return(list(lassoresult.qp.s = lassoresult.qp.s,
+                lassoresult.p.s = lassoresult.p.s,
+                riskratios = riskratios,
+                rrcolors = rrcolors,
+                rr.mat = rr,
+                init.vec = vectors.sim,
+                incluster.qp.s = incluster.qp.s,
+                incluster.p.s = incluster.p.s,
+                detect.qp.s = detect.qp.s,
+                detect.p.s = detect.p.s,
+                detect.out.p.s = detect.out.p.s,
+                detect.out.qp.s = detect.out.qp.s))
+}
+
+#'clust.sim.all.spacetime
+#'
+#'This function runs both the space and space-time Lasso model simulations for all 4 models simulataneously: Quasi-Poisson vs. Poisson in both space and space-time.
+#' This function is to be run on simulated data and all four models are run on the same simulated set. 
+#'A separate function (clust.sim) can be used for running simulations on individual models and (clust) can be used for observed data.
+#'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
+#'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
+#'@param rMax set max radius (in km)
+#'@param period vector of periods or years in dataset. Should be imported as a factor.
+#'@param expected vector of expected counts. Expected counts must match up with the year and observed vectors.
+#'@param observed vector of observed counts. Observed counts must match up with the year and expected vectors.
+#'@param Time Number of time periods or years in your dataset. Must be declared as numeric.
+#'@param nsim Number of simulations you would like to run
+#'@param center can be a single center or for multiple clusters, concatenate them. Max three TODO extend this
+#'@param radius radius for the cluster you want in the simulation
+#'@param risk.ratio setting for what the risk ratio should be in the cluster to be detected by the simulation
+#'@param timeperiod time period where the cluster  starts in the simulation
+#'we will only be looking at periods 2 and 5. If multi_period is TRUE, then we will instead consider timeperiod through period_end (timeperiod:period_end). Following the same example,
+#'this would mean we look at periods 2, 3, 4, and 5.
+#'@param space space and space-time. Default is to run all four models: quasi-poisson and poisson for both space and space-time. User can specify, space = space,
+#'space = spacetime, or space = both.
+#'@return
+#'@details Optional functions include:
+#'- 1) utm - default is FALSE. If you have utm coordinates, you want to change this to TRUE.
+#'@export
+#'TODO allow user to change theta parameter in simulation
+clust.sim.all.spacetime <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
+                                timeperiod,colors=NULL,utm, byrow, threshold, space = FALSE,...){
+    
+    message("Running Space-Time Model")
+    #set up clusters and fitted values
+    clusters <- clusters.df(x,y,rMax, utm=utm, length(x))
+    n <- length(x)
+    init <- set.vectors(period, expected, observed, Time=Time, byrow=byrow)
     
     #TODO change this to be a function and not hard-coded
     if(length(center) == 2){
@@ -1941,25 +2099,14 @@ clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, ce
     #Simulate observed as NB(Eit, theta)
     theta = 1000
     YSIM <- lapply(1:nsim, function(i) rnegbin(E1, theta = theta))
-    #Scale YSIM[i] to init$E0
     Ex <- scale.sim(YSIM, init, nsim, Time)
     vectors.sim <- list(Period = Period, Ex = Ex , E0_0 = init$E0, Y.vec=init$Y.vec)
-    
-    #SPACE-ONLY MODELS
-    if(space==TRUE){
-        #set up and run simulation models
-        lassoresult.qp.st <- spacetime.lasso.sim(clusters, vectors.sim, Time, spacetime=FALSE, pois=FALSE, nsim, YSIM)
-        lassoresult.p.st <- spacetime.lasso.sim(clusters, vectors.sim, Time, spacetime=FALSE, pois=TRUE, nsim, YSIM)
-        
-    }
-    #SPACE-TIME MODELS = DEFAULT
-    else{
-        #set up and run simulation models
-        lassoresult.qp.st <- spacetime.lasso.sim(clusters, vectors.sim, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM)
-        lassoresult.p.st <- spacetime.lasso.sim(clusters, vectors.sim, Time, spacetime=TRUE, pois=TRUE, nsim, YSIM)
-        
-    }
-    
+    print(str(vectors.sim))
+    #SPACE-TIME MODELS 
+    #set up and run simulation models
+    lassoresult.qp.st <- spacetime.lasso.sim(clusters, vectors.sim, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM)
+    lassoresult.p.st <- spacetime.lasso.sim(clusters, vectors.sim, Time, spacetime=TRUE, pois=TRUE, nsim, YSIM)
+
     #RR and Colors for Plotting
     riskratios.qp.st <- get.rr2(lassoresult.qp.st, vectors.sim,init, E1,Time, sim=TRUE)
     rrcolors.qp.st <- colormapping(riskratios.qp.st,Time)
@@ -1974,23 +2121,9 @@ clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, ce
     ##QP - ST
     set <- detect.set(lassoresult.qp.st, vectors.sim, rr, Time, x, y, rMax, center, radius)
     incluster.qp.st <- detect.incluster(lassoresult.qp.st, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
-                                  radius, IC = "ic")
+                                        radius, IC = "ic")
     detect.qp.st <- list(clust.diagnostics(incluster.qp.st , threshold[1]), clust.diagnostics(incluster.qp.st , threshold[2]))
     detect.out.qp.st <- (matrix(unlist(detect.qp.st),ncol=3, byrow=TRUE, 
-            dimnames = list(c(paste0("incluster.any.", threshold[1]),
-                              paste0("alldetect.",threshold[1]), 
-                              paste0("potentialclusterdetect.",threshold[1]), 
-                              paste0("trueclusterdetect.",threshold[1]),
-                              paste0("incluster.any.",threshold[2]), paste0("alldetect.",threshold[2]),
-                              paste0("potentialclusterdetect.",threshold[2]), 
-                              paste0("trueclusterdetect.",threshold[2])),c("aic","aicc","bic"))))
-    
-    ##P - ST
-    set <- detect.set(lassoresult.p.st, vectors.sim, rr, Time, x, y, rMax, center, radius)
-    incluster.p.st <- detect.incluster(lassoresult.p.st, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
-                                  radius, IC = "ic")
-    detect.p.st <- list(clust.diagnostics(incluster.p.st, threshold[1]), clust.diagnostics(incluster.p.st, threshold[2]))
-    detect.out.p.st <- (matrix(unlist(detect.p.st),ncol=3, byrow=TRUE, 
                                 dimnames = list(c(paste0("incluster.any.", threshold[1]),
                                                   paste0("alldetect.",threshold[1]), 
                                                   paste0("potentialclusterdetect.",threshold[1]), 
@@ -1998,7 +2131,21 @@ clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, ce
                                                   paste0("incluster.any.",threshold[2]), paste0("alldetect.",threshold[2]),
                                                   paste0("potentialclusterdetect.",threshold[2]), 
                                                   paste0("trueclusterdetect.",threshold[2])),c("aic","aicc","bic"))))
-   
+    
+    ##P - ST
+    set <- detect.set(lassoresult.p.st, vectors.sim, rr, Time, x, y, rMax, center, radius)
+    incluster.p.st <- detect.incluster(lassoresult.p.st, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
+                                       radius, IC = "ic")
+    detect.p.st <- list(clust.diagnostics(incluster.p.st, threshold[1]), clust.diagnostics(incluster.p.st, threshold[2]))
+    detect.out.p.st <- (matrix(unlist(detect.p.st),ncol=3, byrow=TRUE, 
+                               dimnames = list(c(paste0("incluster.any.", threshold[1]),
+                                                 paste0("alldetect.",threshold[1]), 
+                                                 paste0("potentialclusterdetect.",threshold[1]), 
+                                                 paste0("trueclusterdetect.",threshold[1]),
+                                                 paste0("incluster.any.",threshold[2]), paste0("alldetect.",threshold[2]),
+                                                 paste0("potentialclusterdetect.",threshold[2]), 
+                                                 paste0("trueclusterdetect.",threshold[2])),c("aic","aicc","bic"))))
+    
     return(list(lassoresult.qp.st = lassoresult.qp.st,
                 lassoresult.p.st = lassoresult.p.st,
                 riskratios = riskratios,
@@ -2011,9 +2158,8 @@ clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, ce
                 detect.p.st = detect.p.st,
                 detect.out.p.st = detect.out.p.st,
                 detect.out.qp.st = detect.out.qp.st))
+    
 }
-
-
 
 
 
