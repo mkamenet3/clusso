@@ -58,42 +58,6 @@ japan.poly2 <- dframe.poly2[,2:3]
 dframe.prefect2 <- read.csv("data/JBC/japan_prefect2.csv")
 japan.prefect2 <- dframe.prefect2[,2:5]
 
-####################################################
-#Create Spatial Polygons and Create Matrix of Neighborhoods
-####################################################
-n <- 208
-ind <- which(is.na(dframe.poly2[,2]))
-names <- as.factor(seq(1,n,1))
-coord.system <- '+proj=utm'
-nrepeats <- rep(1, sum(is.na(dframe.poly2[, 2])))
-poly <- as.matrix(dframe.poly2[, 2:3])
-area.names <- as.character(1:length(nrepeats))
-na.index <- which(is.na(poly[, 1]))
-n <- length(nrepeats)
-list.polygon <- NULL
-list.polygon <- list(Polygon(poly[1:(na.index[1] - 1), ], 
-                             hole = FALSE))
-for (i in 1:(length(na.index) - 1)) {
-    list.polygon <- c(list.polygon, list(Polygon(poly[(na.index[i] + 
-                                                           1):(na.index[i + 1] - 1), ], hole = FALSE)))
-}
-list.polygons <- NULL
-start <- 1
-for (i in 1:length(nrepeats)) {
-    end <- start + nrepeats[i] - 1
-    temp.polygon <- NULL
-    for (j in start:end) {
-        print(c(i,j))
-        temp.polygon <- c(temp.polygon, list(list.polygon[[j]]))
-    }
-    list.polygons <- c(list.polygons, list(Polygons(temp.polygon, 
-                                                    ID = area.names[i])))
-    start <- end + 1
-}
-mypoly <- SpatialPolygons(list.polygons)
-plot(mypoly)
-nb <- poly2nb(mypoly)
-
 
 ########################################################################################################
 ########################################################################################################
@@ -825,24 +789,27 @@ x=dframe2$utmx/1000
 y=dframe2$utmy/1000
 rMax=30
 Time=5
-nsim=100
+#nsim=100
+nsim=1
 center=150
 radius= 9
 timeperiod=c(3:5)
-risk.ratio=1.1
+#risk.ratio=1.1
+risk.ratio=2
 
 
 res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
+                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold, space= "space")
 
 #save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
+sim.i <- paste0("sim","_","center","_",center,"radius",radius,"_", "start",
+                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio))
+filename <- paste0("SimulationOutput/",sim.i,".RData")
 save(res, file = filename)
+
+#Print Detection for the Simulation
+cbind(radius,risk.ratio,center,time=as.numeric(paste(timeperiod, collapse = "")), mod = "ST",
+      rbind("QuasiPois",res$detect.out.qp.st), rbind("Pois",res$detect.out.qp.st))
 
 
 #make maps
