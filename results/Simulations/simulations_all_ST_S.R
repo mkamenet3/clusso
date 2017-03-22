@@ -63,11 +63,8 @@ japan.prefect2 <- dframe.prefect2[,2:5]
 ########################################################################################################
 ########################################################################################################
 #Global conditions
-
 threshold <- c(0.9, 0.5)
 mods <- c("QuasiPoisson", "Poisson")
-
-
 
 #
 #########################################################################################################
@@ -77,8 +74,6 @@ mods <- c("QuasiPoisson", "Poisson")
 #########################################################################################################
 #########################################################################################################
 #########################################################################################################
-##Center = 50
-#
 #####################################################
 #TESTER - 1 SIM TO MAKE SURE IT WORKS
 ####################################################
@@ -96,734 +91,91 @@ risk.ratio=2
 
 
 res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                 nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
-
-#save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
-save(res, file = filename)
-
-
-#make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot.st(pdfname, res, mods)
-
-
-#
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax=30
-Time=5
-nsim=100
-center=50
-radius= 18
-timeperiod=c(1:5)
-risk.ratio=2
-
-
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
-
-#save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
-save(res, file = filename)
-
-
-#make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot.st(pdfname, res, mods)
-
-#
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax=30
-Time=5
-nsim=100
-center=50
-radius= 18
-timeperiod=c(3:5)
-risk.ratio=2
-
-
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
-
-#save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
-save(res, file = filename)
-
-
-#make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot.st(pdfname, res, mods)
-
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax=30
-Time=5
-nsim=100
-center=50
-radius= 18
-timeperiod=c(3:5)
-risk.ratio=1.5
-
-
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
-
-#save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
-save(res, file = filename)
-
-
-#make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot.st(pdfname, res, mods)
-
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax=30
-Time=5
-nsim=100
-center=50
-radius= 18
-timeperiod=c(3:5)
-risk.ratio=1.1
-
-
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
-
-#save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
-save(res, file = filename)
-
-
-#make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot.st(pdfname, res, mods)
-
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax=30
-Time=5
-nsim=100
-center=50
-radius= 11
-timeperiod=c(3:5)
-risk.ratio=2
-
-
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
-
-#save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
-save(res, file = filename)
-
-
-#make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot.st(pdfname, res, mods)
-
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax=30
-Time=5
-nsim=100
-center=50
-radius= 11
-timeperiod=c(3:5)
-risk.ratio=1.5
-
-
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
-
-#save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
-save(res, file = filename)
-
-
-#make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot.st(pdfname, res, mods)
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax=30
-Time=5
-nsim=100
-center=50
-radius= 11
-timeperiod=c(3:5)
-risk.ratio=1.1
-
-
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
-
-#save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
-save(res, file = filename)
-
-
-#make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot.st(pdfname, res, mods)
-
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax=30
-Time=5
-nsim=100
-center=50
-radius= 9
-timeperiod=c(3:5)
-risk.ratio=2
-
-
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
-
-#save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
-save(res, file = filename)
-
-
-#make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot.st(pdfname, res, mods)
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax=30
-Time=5
-nsim=100
-center=50
-radius= 9
-timeperiod=c(3:5)
-risk.ratio=1.5
-
-
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
-
-#save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
-save(res, file = filename)
-
-
-#make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot.st(pdfname, res, mods)
-
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax=30
-Time=5
-nsim=100
-center=50
-radius= 9
-timeperiod=c(3:5)
-risk.ratio=1.1
-
-
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
-
-#save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
-save(res, file = filename)
-
-
-#make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot.st(pdfname, res, mods)
-
-###########################################################################################
-#VARY THE CENTER
-###########################################################################################
-
-#
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax=30
-Time=5
-nsim=100
-center=150
-radius= 18
-timeperiod=c(1:5)
-risk.ratio=2
-
-
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
-
-#save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
-save(res, file = filename)
-
-
-#make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot.st(pdfname, res, mods)
-
-#
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax=30
-Time=5
-nsim=100
-center=150
-radius= 18
-timeperiod=c(3:5)
-risk.ratio=2
-
-
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
-
-#save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
-save(res, file = filename)
-
-
-#make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot.st(pdfname, res, mods)
-
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax=30
-Time=5
-nsim=100
-center=150
-radius= 18
-timeperiod=c(3:5)
-risk.ratio=1.5
-
-
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
-
-#save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
-save(res, file = filename)
-
-
-#make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot.st(pdfname, res, mods)
-
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax=30
-Time=5
-nsim=100
-center=150
-radius= 18
-timeperiod=c(3:5)
-risk.ratio=1.1
-
-
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
-
-#save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
-save(res, file = filename)
-
-
-#make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot.st(pdfname, res, mods)
-
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax=30
-Time=5
-nsim=100
-center=150
-radius= 11
-timeperiod=c(3:5)
-risk.ratio=2
-
-
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
-
-#save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
-save(res, file = filename)
-
-
-#make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot.st(pdfname, res, mods)
-
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax=30
-Time=5
-nsim=100
-center=150
-radius= 11
-timeperiod=c(3:5)
-risk.ratio=1.5
-
-
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
-
-#save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
-save(res, file = filename)
-
-
-#make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot.st(pdfname, res, mods)
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax=30
-Time=5
-nsim=100
-center=150
-radius= 11
-timeperiod=c(3:5)
-risk.ratio=1.1
-
-
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
-
-#save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
-save(res, file = filename)
-
-
-#make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot.st(pdfname, res, mods)
-
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax=30
-Time=5
-nsim=100
-center=150
-radius= 9
-timeperiod=c(3:5)
-risk.ratio=2
-
-
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
-
-#save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
-save(res, file = filename)
-
-
-#make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot.st(pdfname, res, mods)
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax=30
-Time=5
-nsim=100
-center=150
-radius= 9
-timeperiod=c(3:5)
-risk.ratio=1.5
-
-
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-
-print(res$detect.out.qp.st)
-print(res$detect.out.p.st)
-
-
-#save results
-filename <- paste0("SimulationOutput/sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".RData")
-save(res, file = filename)
-
-
-#make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot.st(pdfname, res, mods)
-
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax=30
-Time=5
-#nsim=100
-nsim=1
-center=150
-radius= 9
-timeperiod=c(3:5)
-#risk.ratio=1.1
-risk.ratio=2
-
-
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                     nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold, space= "both")
+                    nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold, space= "both")
 
 #save results
 (sim.i <- paste0("sim","_","center","_",center,"radius",radius,"_", "start",
-                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio)))
+                 "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio)))
 filename <- paste0("SimulationOutput/",sim.i,".RData")
 save(res, file = filename)
 
 #Print Detection for the Simulation
 (tabn <- rbind("******",cbind(radius,risk.ratio,center,time=as.numeric(paste(timeperiod, collapse = "")), mod = "ST",
-      rbind("QuasiPois",res$detect.out.qp.st), rbind("Pois",res$detect.out.qp.st)), 
-      cbind(radius,risk.ratio,center,time=as.numeric(paste(timeperiod, collapse = "")), mod = "Space",
-            rbind("QuasiPois",res$detect.out.qp.s), rbind("Pois",res$detect.out.qp.s))))
+                              rbind("QuasiPois",res$detect.out.qp.st), rbind("Pois",res$detect.out.qp.st)), 
+               cbind(radius,risk.ratio,center,time=as.numeric(paste(timeperiod, collapse = "")), mod = "Space",
+                     rbind("QuasiPois",res$detect.out.qp.s), rbind("Pois",res$detect.out.qp.s))))
 
 #make maps
 pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
                   "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
 easyplot(pdfname, res, mods, space="both")
 
+#
+#########################################################################################################
+#########################################################################################################
+#########################################################################################################
+#
 
 #########################################################################################################
 #########################################################################################################
 #########################################################################################################
-#COMBINE INTO MASTER DETECTION TABLE
-rbind(tabn, tabn)
+#
+#Set Some Initial Conditions
+x=dframe2$utmx/1000
+y=dframe2$utmy/1000
+rMax=30
+Time=5
+nsim=100
+
+centers <- c(150, 35)
+radii <- c(9, 11, 18)
+timeperiods <- list(c(3:5), c(1:2), c(2:4))
+risk.ratios <- c(1.1, 1.5, 2)
+
+table.detection <- NULL
+
+
+for(cent in centers){
+    for(rad in radii){
+        for(tim in timeperiods){
+            for(risk in risk.ratios){
+                print(c(cent, rad, tim, risk))
+                res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
+                                     nsim,cent, rad, risk, tim, colors=TRUE, 
+                                     utm=TRUE, byrow=TRUE, threshold, space= "both")
+                #save results
+                (sim.i <- paste0("sim","_","center","_",cent,"radius",rad,"_", "start",
+                                 "_",as.numeric(paste(tim, collapse = "")),"_","rr","_",gsub("[.]","",risk)))
+                filename <- paste0("SimulationOutput/",sim.i,".RData")
+                save(res, file = filename)
+                
+                #Print Detection for the Simulation
+                (tabn <- rbind("******",cbind(radius,risk.ratio,center,time=as.numeric(paste(timeperiod, collapse = "")), mod = "ST",
+                                               rbind("QuasiPois",res$detect.out.qp.st), rbind("Pois",res$detect.out.qp.st)), 
+                                cbind(radius,risk.ratio,center,time=as.numeric(paste(timeperiod, collapse = "")), mod = "Space",
+                                      rbind("QuasiPois",res$detect.out.qp.s), rbind("Pois",res$detect.out.qp.s))))
+                table.detection <- rbind(table.detection, tabn)
+                
+                #make maps
+                pdfname <- paste0("figures/simulations/sim","_","center","_",cent,"radius",rad,"_", "start",
+                                  "_",as.numeric(paste(tim, collapse = "")),"_","rr","_",gsub("[.]","",risk),".pdf")
+                easyplot(pdfname, res, mods, space="both")
+                
+            }
+        }
+    }
+}
+
+#########################################################################################################
+#########################################################################################################
+#########################################################################################################
+#Print Table Detection
+print(table.detection)
+#########################################################################################################
+#########################################################################################################
+#########################################################################################################
+
+table.detection
 
 
 
