@@ -49,7 +49,11 @@ clust <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, 
     E0 <- scale(init, Time, scaler = 1)
     vectors <- list(Period = init$Year, E0=E0, E0_0=init$E0, Y.vec=init$Y.vec)
     lassoresult <- spacetimeLasso(clusters, vectors, Time, spacetime=spacetime,pois=pois)
-    riskratios <- get.rr(lassoresult, vectors, Time, sim=FALSE)
+    print("ok1")
+    print(vectors)
+    print(as.vector(vectors))
+    riskratios <- get.rr2(lassoresult, vectors,0,0,Time, sim=FALSE)
+    print("ok2")
     rrcolors <- colormapping(riskratios,Time)
     return(list(lassoresult = lassoresult,
                 riskratios = riskratios,

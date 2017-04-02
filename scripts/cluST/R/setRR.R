@@ -46,7 +46,7 @@ set.rr<- function(lassoresult, vectors, Time, sim=FALSE,...){
 #' 2) observed based on QBIC path/expected; 3) observed based on QAIC path/expected; 4) observed based on QAICc path/expected.
 #' @export
 #' 
-get.rr2 <- function(lassoresult,vectors.sim,init,E1, Time, sim=TRUE,...){
+get.rr2 <- function(lassoresult,vectors,init,E1, Time, sim=TRUE,...){
     if(sim==TRUE){
         RRobs <- matrix(as.vector(E1)/as.vector(init$E0),ncol=Time)
     }

@@ -35,9 +35,9 @@
 #'#detect_set for null model
 #'set <- detect_set(res$lassoresult, res$init.vec, res$rr.mat, Time=5,x, y, rMax, 0, radius, nullmod=TRUE)
 
-detect_set <- function(lassoresult, vectors.sim, rr, Time, x, y, rMax, center, radius,nullmod=NULL,...){
+detect_set <- function(lassoresult, vectors.sim, rr, Time, x, y, rMax, center, radius,nullmod=FALSE,...){
     #Indices of True cluster only
-    if(!is.null(nullmod)){
+    if(nullmod ==TRUE){
         indx.clust.truth <- NULL
         message("Returning results for NULL model")
     }
@@ -65,7 +65,6 @@ detect_set <- function(lassoresult, vectors.sim, rr, Time, x, y, rMax, center, r
                                                   ncol=Time, byrow=TRUE, nrow=length(x)))
     return(list(
         indx.clust.truth = indx.clust.truth,
-        #neighs = neighs,
         rr.simBIC = rr.simBIC,
         rr.simAIC = rr.simAIC,
         rr.simAICc = rr.simAICc,

@@ -11,30 +11,80 @@
 #'@export
 #'
 #'
-clust.diagnostics <- function(incluster, threshold){
-    #thresholding of prop.alldetect
-    alldetect.aic <- paste0((length(which(unlist(incluster$prop.alldetect.aic)> threshold))/nsim)*100, "%")
-    alldetect.aicc <- paste0((length(which(unlist(incluster$prop.alldetect.aicc)> threshold))/nsim)*100, "%")
-    alldetect.bic <- paste0((length(which(unlist(incluster$prop.alldetect.bic)> threshold))/nsim)*100, "%")
+clust.diagnostics <- function(incluster, threshold, nullmod=FALSE,..){
+    if(nullmod==FALSE){
+        #thresholding of prop.alldetect
+        alldetect.aic <- paste0((length(which(unlist(incluster$prop.alldetect.aic)> threshold))/nsim)*100, "%")
+        alldetect.aicc <- paste0((length(which(unlist(incluster$prop.alldetect.aicc)> threshold))/nsim)*100, "%")
+        alldetect.bic <- paste0((length(which(unlist(incluster$prop.alldetect.bic)> threshold))/nsim)*100, "%")
+        
+        #thresholding of prop.wasdetect
+        potentialclusterdetect.aic <- paste0((length(which(unlist(incluster$prop.wasdetect.aic)> threshold))/nsim)*100, "%")
+        potentialclusterdetect.aicc <- paste0((length(which(unlist(incluster$prop.wasdetect.aicc)> threshold))/nsim)*100, "%")
+        potentialclusterdetect.bic <- paste0((length(which(unlist(incluster$prop.wasdetect.bic)> threshold))/nsim)*100, "%")
+        
+        #thresholding of prop.shoulddetect
+        trueclusterdetect.aic <- paste0((length(which(unlist(incluster$prop.shoulddetect.aic)> threshold))/nsim)*100, "%")
+        trueclusterdetect.aicc <- paste0((length(which(unlist(incluster$prop.shoulddetect.aicc)> threshold))/nsim)*100, "%")
+        trueclusterdetect.bic <- paste0((length(which(unlist(incluster$prop.shoulddetect.bic)> threshold))/nsim)*100, "%")
+        
+        #summary stats by IC
+        ##alldetect
+        alldetect.summary.aic <- cbind(mean = mean(unlist(incluster$prop.alldetect.aic)), 
+                                       median = median(unlist(incluster$prop.alldetect.aic)),
+                                       st.dev = sd(unlist(incluster$prop.all.detect.aic)))
+        alldetect.summary.aicc <- cbind(mean = mean(unlist(incluster$prop.alldetect.aicc)), 
+                                        median = median(unlist(incluster$prop.alldetect.aicc)),
+                                        st.dev = sd(unlist(incluster$prop.all.detect.aicc)))
+        alldetect.summary.bic <- cbind(mean = mean(unlist(incluster$prop.alldetect.bic)), 
+                                       median = median(unlist(incluster$prop.alldetect.bic)),
+                                       st.dev = sd(unlist(incluster$prop.all.detect.bic)))
+        ##potentialclusterdetect
+        potentialclusterdetect.summary.aic <- cbind(mean = mean(unlist(incluster$prop.wasdetect.aic)),
+                                                    median = median(unlist(incluster$prop.wasdetect.aic)),
+                                                    st.dev = sd(unlist(incluster$prop.wasdetect.aic)))
+        potentialclusterdetect.summary.aicc <- cbind(mean = mean(unlist(incluster$prop.wasdetect.aicc)),
+                                                     median = median(unlist(incluster$prop.wasdetect.aicc)),
+                                                     st.dev = sd(unlist(incluster$prop.wasdetect.aicc)))
+        potentialclusterdetect.summary.bic <- cbind(mean = mean(unlist(incluster$prop.wasdetect.bic)),
+                                                    median = median(unlist(incluster$prop.wasdetect.bic)),
+                                                    st.dev = sd(unlist(incluster$prop.wasdetect.bic)))
+        ##truclusterdetect
+        trueclusterdetect.summary.aic <- cbind(mean = mean(unlist(incluster$shoulddetect.aic)),
+                                               median = median(unlist(incluster$shoulddetect.aic)),
+                                               st.dev = sd(unlist(incluster$shoulddetect.aic)))
+        trueclusterdetect.summary.aicc <- cbind(mean = mean(unlist(incluster$shoulddetect.aicc)),
+                                                median = median(unlist(incluster$shoulddetect.aicc)),
+                                                st.dev = sd(unlist(incluster$shoulddetect.aicc)))
+        trueclusterdetect.summary.bic <- cbind(mean = mean(unlist(incluster$shoulddetect.bic)),
+                                               median = median(unlist(incluster$shoulddetect.bic)),
+                                               st.dev = sd(unlist(incluster$shoulddetect.bic)))
+
+        return(list(incluster.any.aic = incluster$incluster.any.aic, incluster.any.aicc = incluster$incluster.any.aicc,
+                    incluster.any.bic = incluster$incluster.any.bic,
+                    alldetect.aic = alldetect.aic, alldetect.aicc = alldetect.aicc, alldetect.bic = alldetect.bic,
+                    potentialclusterdetect.aic = potentialclusterdetect.aic, potentialclusterdetect.aicc = potentialclusterdetect.aicc,
+                    potentialclusterdetect.bic = potentialclusterdetect.bic,
+                    trueclusterdetect.aic = trueclusterdetect.aic, trueclusterdetect.aicc = trueclusterdetect.aicc,
+                    trueclusterdetect.bic = trueclusterdetect.bic))
+    }
+    else{
+        null.summary.aic <- cbind(mean = mean(unlist(incluster$null.aic)),
+                                  median = median(unlist(incluster$null.aic)),
+                                  st.dev = sd(unlist(incluster$null.aic)))
+        null.summary.aicc <- cbind(mean = mean(unlist(incluster$null.aicc)),
+                                  median = median(unlist(incluster$null.aicc)),
+                                  st.dev = sd(unlist(incluster$null.aicc)))
+        null.summary.bic <- cbind(mean = mean(unlist(incluster$null.bic)),
+                                  median = median(unlist(incluster$null.bic)),
+                                  st.dev = sd(unlist(incluster$null.bic)))
+        
+        
+        return(list(null.any.aic = incluster$null.any.aic, null.any.aicc = incluster$null.any.aicc, null.any.bic = incluster$null.any.bic,
+                    null.summary.aic = null.summary.aic, null.summary.aicc = null.summary.aicc, null.summary.bic = null.summary.bic
+                    ))
+    }
     
-    #thresholding of prop.wasdetect
-    potentialclusterdetect.aic <- paste0((length(which(unlist(incluster$prop.wasdetect.aic)> threshold))/nsim)*100, "%")
-    potentialclusterdetect.aicc <- paste0((length(which(unlist(incluster$prop.wasdetect.aicc)> threshold))/nsim)*100, "%")
-    potentialclusterdetect.bic <- paste0((length(which(unlist(incluster$prop.wasdetect.bic)> threshold))/nsim)*100, "%")
-    
-    #thresholding of prop.shoulddetect
-    trueclusterdetect.aic <- paste0((length(which(unlist(incluster$prop.shoulddetect.aic)> threshold))/nsim)*100, "%")
-    trueclusterdetect.aicc <- paste0((length(which(unlist(incluster$prop.shoulddetect.aicc)> threshold))/nsim)*100, "%")
-    trueclusterdetect.bic <- paste0((length(which(unlist(incluster$prop.shoulddetect.bic)> threshold))/nsim)*100, "%")
-    
-    return(list(incluster.any.aic = incluster$incluster.any.aic, incluster.any.aicc = incluster$incluster.any.aicc,
-                incluster.any.bic = incluster$incluster.any.bic,
-                alldetect.aic = alldetect.aic, alldetect.aicc = alldetect.aicc, alldetect.bic = alldetect.bic,
-                potentialclusterdetect.aic = potentialclusterdetect.aic, potentialclusterdetect.aicc = potentialclusterdetect.aicc,
-                potentialclusterdetect.bic = potentialclusterdetect.bic,
-                trueclusterdetect.aic = trueclusterdetect.aic, trueclusterdetect.aicc = trueclusterdetect.aicc,
-                trueclusterdetect.bic = trueclusterdetect.bic
-    ))
 }
 
 
@@ -51,11 +101,11 @@ clust.diagnostics <- function(incluster, threshold){
 #'@param timeperiod Time period span of the cluster
 #'@param Time number of time periods total in the model
 #'@param nsim number of simulations run
-#'@param under Default is NULL. If not null, then it will estimate detection based on a relative risk which is < 1. In other words, it will consider 
+#'@param under Default is FALSE. If TRUE, then it will estimate detection based on a relative risk which is < 1. In other words, it will consider 
 #'clusters to be identified where the estimated values are less than the background rate, not more than the background rate as is the case in the 
 #'elevated relative risk models.
-#'@param nullmod Default is NULL. If not null, then it will estimate detection based on the null model where there is no cluster. 
-detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=NULL,nullmod = NULL,...){
+#'@param nullmod Default is FALSE. If TRUE, then it will estimate detection based on the null model where there is no cluster. 
+detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE,nullmod = FALSE,...){
     prob.simBIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
     prob.simAIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
     prob.simAICc <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
@@ -74,26 +124,25 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     }
     #(Q)AIC
     #extract things that are not the background rate
-    if(!is.null(under)){
-        ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAIC[[i]],ncol=Time),6) < round(set$alphaAIC[[i]],6), arr.ind=TRUE))
+    if(under==TRUE){
+        ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAIC[[i]],ncol=Time),6) < round(set$alphaAIC[[i]],6)))
     }
     else{
-        ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAIC[[i]],ncol=Time),6) > round(set$alphaAIC[[i]],6), arr.ind=TRUE))    
+        ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAIC[[i]],ncol=Time),6) > round(set$alphaAIC[[i]],6)))    
     }
     
-    #1) Did it find anything in the cluster?
-    ##NULL MODEL
-    if(!is.null(nullmod)){
-        clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
-        in.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(clust[[i]])==0)) in.clust.any=0 else in.clust.any = 1)
-        incluster.any.aic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")
-    }
-    ##CLUSTER MODEL
-    else{
-        clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
-        in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
-        incluster.any.aic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
-    }
+    #1)a) Did it find anything in the cluster?
+    
+    clust <- lapply(1:nsim, function(i) is.element(ix[[i]],set$indx.clust.truth))
+    in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
+    incluster.any.aic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
+    
+    
+    #1)b) Did it find something OUTSIDE of the cluster?
+    outclust <- lapply(1:nsim, function(i) setdiff(ix[[i]],set$indx.clust.truth))
+    out.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(setdiff(ix[[i]],set$indx.clust.truth))==0) == FALSE) out.clust.any=1 else out.clust.any = 0)
+    outcluster.any.aic <- paste0((sum(unlist(out.clust.any))/nsim)*100,"%")    
+    
     
     #2) |(A and B)|/|A U B|?
     ##Calculate
@@ -118,34 +167,36 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     prop.shoulddetect.aic <- lapply(1:nsim, function(i) AandB[[i]]/B)
     
     #5) ONLY FOR NULL MODEL - DID IT FIND ANYTHING?
-    if(!is.null(nullmod)){
-        null.any.aic <- length(unlist(ix))    
+    if(nullmod == TRUE){
+        null.aic <- lapply(1:nsim, function(i) length(unlist(ix[[i]])))    
+        null.any <- lapply(1:nsim, function(i) if(isTRUE(length(null.aic[[i]]) == 0)) null.any = 0 else null.any = 1)
+        null.any.aic <- paste0((sum(unlist(null.any))/nsim)*100,"%")   
     }
     
     
     ########################################################################
     #(Q)AICc
     #extract things that are not the background rate
-    if(!is.null(under)){
-        ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAICc[[i]],ncol=Time),6) < round(set$alphaAICc[[i]],6), arr.ind=TRUE))
+    if(under==TRUE){
+        ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAICc[[i]],ncol=Time),6) < round(set$alphaAICc[[i]],6)))
     }
     else{
-        ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAICc[[i]],ncol=Time),6) > round(set$alphaAICc[[i]],6), arr.ind=TRUE))    
+        ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAICc[[i]],ncol=Time),6) > round(set$alphaAICc[[i]],6)))    
     }
     
+    #1)a) Did it find anything in the cluster?
     
-    #1) Did it find anything in the cluster?
-    ##NULL MODEL
-    if(!is.null(nullmod)){
-        clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
-        in.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(clust[[i]])==0)) in.clust.any=0 else in.clust.any = 1)
-        incluster.any.aicc <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")
-    }
-    else{
-        clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
-        in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
-        incluster.any.aicc <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
-    }
+    clust <- lapply(1:nsim, function(i) is.element(ix[[i]],set$indx.clust.truth))
+    in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
+    incluster.any.aicc <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
+    
+    
+    #1)b) Did it find something OUTSIDE of the cluster?
+    outclust <- lapply(1:nsim, function(i) setdiff(ix[[i]],set$indx.clust.truth))
+    out.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(setdiff(ix[[i]],set$indx.clust.truth))==0) == FALSE) out.clust.any=1 else out.clust.any = 0)
+    outcluster.any.aicc <- paste0((sum(unlist(out.clust.any))/nsim)*100,"%")    
+    
+    
     #2) |(A and B)|/|A U B|?
     ##Calculate
     wasDetected <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAICc[[i]],ncol=Time),6) > round(set$alphaAICc[[i]],6), arr.ind=FALSE))    
@@ -169,32 +220,35 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     prop.shoulddetect.aicc <- lapply(1:nsim, function(i) AandB[[i]]/B)
     
     #5) ONLY FOR NULL MODEL - DID IT FIND ANYTHING?
-    if(!is.null(nullmod)){
-        null.any.aicc <- length(unlist(ix))    
+    if(nullmod == TRUE){
+        null.aicc <- lapply(1:nsim, function(i) length(unlist(ix[[i]])))    
+        null.any <- lapply(1:nsim, function(i) if(isTRUE(length(null.aicc[[i]]) == 0)) null.any = 0 else null.any = 1)
+        null.any.aicc <- paste0((sum(unlist(null.any))/nsim)*100,"%")   
     }
     
     ################################################################
     #(Q)BIC
     #extract things that are not the background rate
-    if(!is.null(under)){
-        ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simBIC[[i]],ncol=Time),6) < round(set$alphaBIC[[i]],6), arr.ind=TRUE))
+    if(under==TRUE){
+        ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simBIC[[i]],ncol=Time),6) < round(set$alphaBIC[[i]],6)))
     }
     else{
-        ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simBIC[[i]],ncol=Time),6) > round(set$alphaBIC[[i]],6), arr.ind=TRUE))    
+        ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simBIC[[i]],ncol=Time),6) > round(set$alphaBIC[[i]],6)))    
     }
     
-    #1) Did it find anything in the cluster?
-    ##NULL MODEL
-    if(!is.null(nullmod)){
-        clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
-        in.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(clust[[i]])==0)) in.clust.any=0 else in.clust.any = 1)
-        incluster.any.bic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")
-    }
-    else{
-        clust <- lapply(1:nsim, function(i) is.element(ix[[i]][,1],set$neighs$cluster))
-        in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
-        incluster.any.bic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
-    }
+    #1)a) Did it find anything in the cluster?
+    
+    clust <- lapply(1:nsim, function(i) is.element(ix[[i]],set$indx.clust.truth))
+    in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
+    incluster.any.bic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
+    
+    
+    #1)b) Did it find something OUTSIDE of the cluster?
+    outclust <- lapply(1:nsim, function(i) setdiff(ix[[i]],set$indx.clust.truth))
+    out.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(setdiff(ix[[i]],set$indx.clust.truth))==0) == FALSE) out.clust.any=1 else out.clust.any = 0)
+    outcluster.any.bic <- paste0((sum(unlist(out.clust.any))/nsim)*100,"%")    
+    
+    
     #2) |(A and B)|/|A U B|?
     ##Calculate
     wasDetected <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simBIC[[i]],ncol=Time),6) > round(set$alphaBIC[[i]],6), arr.ind=FALSE))    
@@ -218,20 +272,23 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     prop.shoulddetect.bic <- lapply(1:nsim, function(i) AandB[[i]]/B)
     
     #5) ONLY FOR NULL MODEL - DID IT FIND ANYTHING?
-    if(!is.null(nullmod)){
-        null.any.bic <- length(unlist(ix))    
+    if(nullmod == TRUE){
+        null.bic <- lapply(1:nsim, function(i) length(unlist(ix[[i]])))    
+        null.any <- lapply(1:nsim, function(i) if(isTRUE(length(null.bic[[i]]) == 0)) null.any = 0 else null.any = 1)
+        null.any.bic <- paste0((sum(unlist(null.any))/nsim)*100,"%")
     }
+    
+    
+    #Returns
     if(exists("null.any.aic") & exists("null.any.bic") & exists("null.any.aicc")){
         return(list(
-            incluster.any.aic = incluster.any.aic, incluster.any.aicc = incluster.any.aicc,incluster.any.bic = incluster.any.bic,
-            prop.alldetect.aic = prop.alldetect.aic, prop.alldetect.aicc = prop.alldetect.aicc, prop.alldetect.bic = prop.alldetect.bic,
-            prop.wasdetect.aic = prop.wasdetect.aic, prop.wasdetect.aicc = prop.wasdetect.aicc, prop.wasdetect.bic = prop.wasdetect.bic,
-            prop.shoulddetect.aic = prop.shoulddetect.aic, prop.shoulddetect.aicc = prop.shoulddetect.aicc, prop.shoulddetect.bic = prop.shoulddetect.bic,
+            null.aic = null.aic, null.aicc = null.aicc, null.bic = null.bic,
             null.any.aic = null.any.aic, null.any.aicc = null.any.aicc, null.any.bic = null.any.bic ))
     }
     else{
         return(list(
             incluster.any.aic = incluster.any.aic, incluster.any.aicc = incluster.any.aicc,incluster.any.bic = incluster.any.bic,
+            outcluster.any.aic = outcluster.any.aic, outcluster.any.aicc = outcluster.any.aicc, outcluster.any.bic = outcluster.any.bic,
             prop.alldetect.aic = prop.alldetect.aic, prop.alldetect.aicc = prop.alldetect.aicc, prop.alldetect.bic = prop.alldetect.bic,
             prop.wasdetect.aic = prop.wasdetect.aic, prop.wasdetect.aicc = prop.wasdetect.aicc, prop.wasdetect.bic = prop.wasdetect.bic,
             prop.shoulddetect.aic = prop.shoulddetect.aic, prop.shoulddetect.aicc = prop.shoulddetect.aicc, prop.shoulddetect.bic = prop.shoulddetect.bic))
@@ -260,7 +317,7 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
 #'TODO add cluster detection in case where risk ratio is less than background rate
 #'@return returns
 detect.incluster <- function(lassoresult, vectors.sim, rr, set,timeperiod, Time, nsim, x, y, rMax, center, 
-                             radius, IC = c("aic","aicc","bic","ic"),nullmod=NULL,...){
+                             radius, IC = c("aic","aicc","bic","ic"),under=FALSE, nullmod=FALSE,...){
     period = timeperiod
     message("Detection Results for:\n"
             , "\t Time Period: ", period,
@@ -270,10 +327,10 @@ detect.incluster <- function(lassoresult, vectors.sim, rr, set,timeperiod, Time,
             "\n \t Cluster rel.risk: ",unique(as.vector(rr))[2])
     IC <- match.arg(IC, several.ok= TRUE)
     switch(IC,
-           aic = detect.incluster.aic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=NULL),
-           aicc = detect.incluster.aicc(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=NULL),
-           bic = detect.incluster.bic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=NULL),
-           ic = detect.incluster.ic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=NULL, nullmod=NULL))
+           aic = detect.incluster.aic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE),
+           aicc = detect.incluster.aicc(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE),
+           bic = detect.incluster.bic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE),
+           ic = detect.incluster.ic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE, nullmod=FALSE))
 } 
 
 

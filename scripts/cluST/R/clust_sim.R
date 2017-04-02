@@ -171,7 +171,7 @@ clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, ce
            spacetime = clust.sim.all.spacetime(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio, 
                                                timeperiod,colors=NULL,utm, byrow, threshold, space=FALSE),
            both = clust.sim.all.both(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio, 
-                                     timeperiod,colors=NULL,utm, byrow, threshold))
+                                     timeperiod,colors=NULL,utm, byrow, threshold,...))
 }
 
 #'clust.sim.all.space

@@ -24,7 +24,8 @@ clusters2df <- function(xP,yP, r.max, utm=FALSE,n){
     lastR = unlist(lastR)
     # ncR = unlist2(lapply(lastR, length))
     # lastR = unlist2(lastR)
-    rR=unlist2(apply(tmpR,1, function(x,r) { sort(x[x<=r]) },r=r.max))
+    #rR=unlist2(apply(tmpR,1, function(x,r) { sort(x[x<=r]) },r=r.max))
+    rR=unlist(apply(tmpR,1, function(x,r) { sort(x[x<=r]) },r=r.max))
     
     clustersR=data.frame(center=rep(indR,ncR),
                          x=xP[rep(indR,ncR)],y=yP[rep(indR,ncR)],
