@@ -27,7 +27,8 @@
 #'- 1) utm - default is FALSE. If you have utm coordinates, you want to change this to TRUE.
 #'@export
 #'TODO allow user to change theta parameter in simulation
-clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, pois = FALSE, nsim, center, radius, risk.ratio, timeperiod,colors=NULL,utm=TRUE, byrow=TRUE,...){
+clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TRUE, pois = FALSE, nsim, center, radius, risk.ratio, timeperiod,colors=NULL,utm=TRUE,
+                      byrow=TRUE,nullmod=NULL){
     #initial user setting
     if(utm==FALSE){
         message("Coordinates are assumed to be in lat/long coordinates. For utm coordinates, please specify 'utm=TRUE'")
@@ -146,7 +147,7 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
 #'@export
 #'TODO allow user to change theta parameter in simulation
 clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
-                          timeperiod,colors=NULL,utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"),...){
+                          timeperiod,colors=NULL,utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"), nullmod=NULL){
     #initial user setting
     if(utm==FALSE){
         message("Coordinates are assumed to be in lat/long coordinates. For utm coordinates, please specify 'utm=TRUE'")
@@ -162,6 +163,13 @@ clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, ce
         byrow=TRUE
         message("Data assumed to be in panel data. To use vector data instead, please specify 'byrow=FALSE'")
     }
+    if(!is.null(nullmod)){
+        nullmod=TRUE
+        message("Running null models. For simulation models, leave $nullmod$ null")
+    }
+    else{
+        nullmod=NULL
+    }
     space <- match.arg(space, several.ok = FALSE)
     if(length(space) > 1) stop("You must select either `space`, `spacetime`, or `both`")
     print(byrow, utm)
@@ -171,7 +179,7 @@ clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, ce
            spacetime = clust.sim.all.spacetime(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio, 
                                                timeperiod,colors=NULL,utm, byrow, threshold, space=FALSE),
            both = clust.sim.all.both(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio, 
-                                     timeperiod,colors=NULL,utm, byrow, threshold,...))
+                                     timeperiod,colors=NULL,utm, byrow, threshold, nullmod))
 }
 
 #'clust.sim.all.space
@@ -201,7 +209,7 @@ clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, ce
 #'@export
 #'TODO allow user to change theta parameter in simulation
 clust.sim.all.space <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
-                                timeperiod,colors=NULL,utm, byrow, threshold, space = TRUE,...){
+                                timeperiod,colors=NULL,utm, byrow, threshold, space = TRUE){
     #set up for space only
     timeperiod = 1
     Time = 1
@@ -322,7 +330,7 @@ clust.sim.all.space <- function(x, y, rMax, period, expected, observed, Time, ns
 #'@export
 #'TODO allow user to change theta parameter in simulation
 clust.sim.all.spacetime <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
-                                    timeperiod,colors=NULL,utm, byrow, threshold, space = FALSE,...){
+                                    timeperiod,colors=NULL,utm, byrow, threshold, space = FALSE){
     
     message("Running Space-Time Model")
     #set up clusters and fitted values
@@ -466,7 +474,7 @@ clust.sim.all.spacetime <- function(x, y, rMax, period, expected, observed, Time
 #'@export
 #'TODO allow user to change theta parameter in simulation
 clust.sim.all.both <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
-                               timeperiod,colors=NULL,utm, byrow, threshold, ...){
+                               timeperiod,colors=NULL,utm, byrow, threshold, nullmod=nullmod){
     message("Running both Space and Space-Time Models")
     
     #set up clusters and fitted values
@@ -576,18 +584,59 @@ clust.sim.all.both <- function(x, y, rMax, period, expected, observed, Time, nsi
     
     #DETECTION
     ##QP - Space
-    set <- detect_set(lassoresult.qp.s, vectors.sim.s, as.matrix(rr[,timeperiod[1]]), 1, x, y, rMax, center, radius)
+    set <- detect_set(lassoresult.qp.s, vectors.sim.s, as.matrix(rr[,timeperiod[1]]), 1, x, y, rMax, center, radius, nullmod)
     incluster.qp.s <- detect.incluster(lassoresult.qp.s, vectors.sim.s, as.matrix(rr[,timeperiod[1]]), set, 1, 1, nsim, x, y, rMax, center, 
-                                       radius, IC = "ic")
-    detect.qp.s <- list(clust.diagnostics(incluster.qp.s, threshold[1]), clust.diagnostics(incluster.qp.s , threshold[2]))
-    detect.out.qp.s <- (matrix(unlist(detect.qp.s),ncol=3, byrow=TRUE, 
-                               dimnames = list(c(paste0("incluster.any.", threshold[1]),
-                                                 paste0("alldetect.",threshold[1]), 
-                                                 paste0("potentialclusterdetect.",threshold[1]), 
-                                                 paste0("trueclusterdetect.",threshold[1]),
-                                                 paste0("incluster.any.",threshold[2]), paste0("alldetect.",threshold[2]),
-                                                 paste0("potentialclusterdetect.",threshold[2]), 
-                                                 paste0("trueclusterdetect.",threshold[2])),c("aic","aicc","bic"))))
+                                       radius, IC = "ic", under=FALSE, nullmod)
+    detect.qp.s <- list(clust.diagnostics(incluster.qp.s, threshold[1], nullmod), clust.diagnostics(incluster.qp.s , threshold[2], nullmod))
+    if(!is.null(nullmod)){
+        detect.out.qp.s <- (matrix(unlist(detect.qp.s), ncol=3, byrow=TRUE,
+                                   dimnames = list(c(
+                                       paste0("null.any.", threshold[1]),
+                                       paste0("null.summary.mean.", threshold[1]),
+                                       paste0("null.summary.median.", threshold[1]),
+                                       paste0("null.summary.sd.", threshold[1]),
+                                       paste0("null.any.", threshold[2]),
+                                       paste0("null.summary.mean.", threshold[2]),
+                                       paste0("null.summary.median.", threshold[2]),
+                                       paste0("null.summary.sd.", threshold[2])),
+                                       c("aic", "aicc", "bic")
+                                   )))
+    }
+    else{
+        detect.out.qp.s <- (matrix(unlist(detect.qp.s),ncol=3, byrow=TRUE,
+                                                       dimnames = list(c(
+                                                           paste0("incluster.any.", threshold[1]),
+                                                           paste0("outcluster.", threshold[1]),
+                                                           paste0("alldetect.",threshold[1]),
+                                                           paste0("potentialclusterdetect.",threshold[1]),
+                                                           paste0("trueclusterdetect.",threshold[1]),
+                                                           paste0("alldetect.summary.mean.", threshold[1]),
+                                                           paste0("alldetect.summary.median.", threshold[1]),
+                                                           paste0("alldetect.summary.sd", threshold[1]),
+                                                           paste0("potentialdetect.summary.mean.", threshold[1]),
+                                                           paste0("potentialdetect.summary.median.", threshold[1]),
+                                                           paste0("potentialdetect.summary.sd.", threshold[1]),
+                                                           paste0("truedetect.summary.mean.", threshold[1]),
+                                                           paste0("truedetect.summary.median.", threshold[1]),
+                                                           paste0("truedetect.summary.sd.", threshold[1]),
+                                                           
+                                                           paste0("incluster.any.", threshold[2]),
+                                                           paste0("outcluster.", threshold[2]),
+                                                           paste0("alldetect.",threshold[2]),
+                                                           paste0("potentialclusterdetect.",threshold[2]),
+                                                           paste0("trueclusterdetect.",threshold[2]),
+                                                           paste0("alldetect.summary.mean.", threshold[2]),
+                                                           paste0("alldetect.summary.median.", threshold[2]),
+                                                           paste0("alldetect.summary.sd", threshold[2]),
+                                                           paste0("potentialdetect.summary.mean.", threshold[2]),
+                                                           paste0("potentialdetect.summary.median.", threshold[2]),
+                                                           paste0("potentialdetect.summary.sd.", threshold[2]),
+                                                           paste0("truedetect.summary.mean.", threshold[2]),
+                                                           paste0("truedetect.summary.median.", threshold[2]),
+                                                           paste0("truedetect.summary.sd.", threshold[2])),
+                                                           c("aic","aicc","bic"))))
+    }
+    
     ##P - Space
     set <- detect_set(lassoresult.p.s, vectors.sim.s, as.matrix(rr[,timeperiod[1]]), 1, x, y, rMax, center, radius)
     incluster.p.s <- detect.incluster(lassoresult.p.s, vectors.sim.s, as.matrix(rr[,timeperiod[1]]), set, 1, 1, nsim, x, y, rMax, center, 
