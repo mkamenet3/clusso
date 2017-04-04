@@ -16,7 +16,9 @@
 #Set-Up
 ##############################################
 ##############################################
-sink("simulations_compareALL.txt")
+#sink("simulations_compareALL.txt")
+
+
 ####################################################
 #Source Files, Scripts, and Packages
 ####################################################
@@ -37,8 +39,9 @@ sourceCpp("scripts/cluST/src/st_matCpp.cpp")
 sourceCpp("scripts/cluST/src/prod_yx.cpp")
 
 
-#temporarily source my cluST.R file
-source("scripts/cluST//R//cluST.R")
+#temporarily source my clustR files
+file.sources = list.files(path="scripts/cluST/R/.",pattern="*.R", full.names = TRUE)
+sapply(file.sources, source, .GlobalEnv)
 
 ########################################################################################################
 
@@ -119,6 +122,7 @@ easyplot(pdfname, res, mods, space="both")
 #########################################################################################################
 #########################################################################################################
 
+sink("nullmodonly.txt")
 #Set Some Initial Conditions
 x=dframe2$utmx/1000
 y=dframe2$utmy/1000
@@ -154,7 +158,7 @@ for(cent in centers){
                                               rbind("QuasiPois",res$detect.out.qp.st), rbind("Pois",res$detect.out.p.st)), 
                                cbind(rad,risk,cent,time=as.numeric(paste(tim, collapse = "")), mod = "Space",
                                      rbind("QuasiPois",res$detect.out.qp.s), rbind("Pois",res$detect.out.p.s))))
-                table.detection <- rbind(table.detection, tabn)
+                table.detection.null <- rbind(table.detection, tabn)
                 
                 #make maps
                 pdfname <- paste0("figures/simulations/sim","_","center","_",cent,"radius",rad,"_", "start",
@@ -166,7 +170,7 @@ for(cent in centers){
     }
 }
 
-
+sink()
 
 #########################################################################################################
 #########################################################################################################

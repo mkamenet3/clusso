@@ -602,7 +602,7 @@ clust.sim.all.both <- function(x, y, rMax, period, expected, observed, Time, nsi
                                        c("aic", "aicc", "bic")
                                    )))
     }
-    else{
+    else {
         detect.out.qp.s <- (matrix(unlist(detect.qp.s),ncol=3, byrow=TRUE,
                                                        dimnames = list(c(
                                                            paste0("incluster.any.", threshold[1]),
@@ -638,47 +638,168 @@ clust.sim.all.both <- function(x, y, rMax, period, expected, observed, Time, nsi
     }
     
     ##P - Space
-    set <- detect_set(lassoresult.p.s, vectors.sim.s, as.matrix(rr[,timeperiod[1]]), 1, x, y, rMax, center, radius)
+    set <- detect_set(lassoresult.p.s, vectors.sim.s, as.matrix(rr[,timeperiod[1]]), 1, x, y, rMax, center, radius, nullmod)
     incluster.p.s <- detect.incluster(lassoresult.p.s, vectors.sim.s, as.matrix(rr[,timeperiod[1]]), set, 1, 1, nsim, x, y, rMax, center, 
-                                      radius, IC = "ic")
-    detect.p.s <- list(clust.diagnostics(incluster.p.s, threshold[1]), clust.diagnostics(incluster.p.s, threshold[2]))
-    detect.out.p.s <- (matrix(unlist(detect.p.s),ncol=3, byrow=TRUE, 
-                              dimnames = list(c(paste0("incluster.any.", threshold[1]),
-                                                paste0("alldetect.",threshold[1]), 
-                                                paste0("potentialclusterdetect.",threshold[1]), 
-                                                paste0("trueclusterdetect.",threshold[1]),
-                                                paste0("incluster.any.",threshold[2]), paste0("alldetect.",threshold[2]),
-                                                paste0("potentialclusterdetect.",threshold[2]), 
-                                                paste0("trueclusterdetect.",threshold[2])),c("aic","aicc","bic"))))
-    
-    
+                                      radius, IC = "ic", under=FALSE,nullmod)
+    detect.p.s <- list(clust.diagnostics(incluster.p.s, threshold[1], nullmod), clust.diagnostics(incluster.p.s, threshold[2], nullmod))
+    if(!is.null(nullmod)){
+        detect.out.p.s <- (matrix(unlist(detect.p.s), ncol=3, byrow=TRUE,
+                                  dimnames = list(c(
+                                      paste0("null.any.", threshold[1]),
+                                      paste0("null.summary.mean.", threshold[1]),
+                                      paste0("null.summary.median.", threshold[1]),
+                                      paste0("null.summary.sd.", threshold[1]),
+                                      paste0("null.any.", threshold[2]),
+                                      paste0("null.summary.mean.", threshold[2]),
+                                      paste0("null.summary.median.", threshold[2]),
+                                      paste0("null.summary.sd.", threshold[2])),
+                                      c("aic", "aicc", "bic")
+                                  )))
+    }
+    else {
+        detect.out.p.s <- (matrix(unlist(detect.p.s),ncol=3, byrow=TRUE,
+                                  dimnames = list(c(
+                                      paste0("incluster.any.", threshold[1]),
+                                      paste0("outcluster.", threshold[1]),
+                                      paste0("alldetect.",threshold[1]),
+                                      paste0("potentialclusterdetect.",threshold[1]),
+                                      paste0("trueclusterdetect.",threshold[1]),
+                                      paste0("alldetect.summary.mean.", threshold[1]),
+                                      paste0("alldetect.summary.median.", threshold[1]),
+                                      paste0("alldetect.summary.sd", threshold[1]),
+                                      paste0("potentialdetect.summary.mean.", threshold[1]),
+                                      paste0("potentialdetect.summary.median.", threshold[1]),
+                                      paste0("potentialdetect.summary.sd.", threshold[1]),
+                                      paste0("truedetect.summary.mean.", threshold[1]),
+                                      paste0("truedetect.summary.median.", threshold[1]),
+                                      paste0("truedetect.summary.sd.", threshold[1]),
+                                      
+                                      paste0("incluster.any.", threshold[2]),
+                                      paste0("outcluster.", threshold[2]),
+                                      paste0("alldetect.",threshold[2]),
+                                      paste0("potentialclusterdetect.",threshold[2]),
+                                      paste0("trueclusterdetect.",threshold[2]),
+                                      paste0("alldetect.summary.mean.", threshold[2]),
+                                      paste0("alldetect.summary.median.", threshold[2]),
+                                      paste0("alldetect.summary.sd", threshold[2]),
+                                      paste0("potentialdetect.summary.mean.", threshold[2]),
+                                      paste0("potentialdetect.summary.median.", threshold[2]),
+                                      paste0("potentialdetect.summary.sd.", threshold[2]),
+                                      paste0("truedetect.summary.mean.", threshold[2]),
+                                      paste0("truedetect.summary.median.", threshold[2]),
+                                      paste0("truedetect.summary.sd.", threshold[2])),
+                                      c("aic","aicc","bic"))))
+    }
+
     ##QP - SPACETIME
-    set <- detect_set(lassoresult.qp.st, vectors.sim, rr, Time, x, y, rMax, center, radius)
+    set <- detect_set(lassoresult.qp.st, vectors.sim, rr, Time, x, y, rMax, center, radius, nullmod)
     incluster.qp.st <- detect.incluster(lassoresult.qp.st, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
-                                        radius, IC = "ic")
-    detect.qp.st <- list(clust.diagnostics(incluster.qp.st , threshold[1]), clust.diagnostics(incluster.qp.st , threshold[2]))
-    detect.out.qp.st <- (matrix(unlist(detect.qp.st),ncol=3, byrow=TRUE, 
-                                dimnames = list(c(paste0("incluster.any.", threshold[1]),
-                                                  paste0("alldetect.",threshold[1]), 
-                                                  paste0("potentialclusterdetect.",threshold[1]), 
-                                                  paste0("trueclusterdetect.",threshold[1]),
-                                                  paste0("incluster.any.",threshold[2]), paste0("alldetect.",threshold[2]),
-                                                  paste0("potentialclusterdetect.",threshold[2]), 
-                                                  paste0("trueclusterdetect.",threshold[2])),c("aic","aicc","bic"))))
+                                        radius, IC = "ic", under=FALSE, nullmod)
+    detect.qp.st <- list(clust.diagnostics(incluster.qp.st , threshold[1], nullmod), clust.diagnostics(incluster.qp.st , threshold[2], nullmod))
+    
+    if(!is.null(nullmod)){
+        detect.out.qp.st <- (matrix(unlist(detect.qp.st), ncol=3, byrow=TRUE,
+                                   dimnames = list(c(
+                                       paste0("null.any.", threshold[1]),
+                                       paste0("null.summary.mean.", threshold[1]),
+                                       paste0("null.summary.median.", threshold[1]),
+                                       paste0("null.summary.sd.", threshold[1]),
+                                       paste0("null.any.", threshold[2]),
+                                       paste0("null.summary.mean.", threshold[2]),
+                                       paste0("null.summary.median.", threshold[2]),
+                                       paste0("null.summary.sd.", threshold[2])),
+                                       c("aic", "aicc", "bic")
+                                   )))
+    }
+    else{
+        detect.out.qp.st <- (matrix(unlist(detect.qp.st),ncol=3, byrow=TRUE,
+                                   dimnames = list(c(
+                                       paste0("incluster.any.", threshold[1]),
+                                       paste0("outcluster.", threshold[1]),
+                                       paste0("alldetect.",threshold[1]),
+                                       paste0("potentialclusterdetect.",threshold[1]),
+                                       paste0("trueclusterdetect.",threshold[1]),
+                                       paste0("alldetect.summary.mean.", threshold[1]),
+                                       paste0("alldetect.summary.median.", threshold[1]),
+                                       paste0("alldetect.summary.sd", threshold[1]),
+                                       paste0("potentialdetect.summary.mean.", threshold[1]),
+                                       paste0("potentialdetect.summary.median.", threshold[1]),
+                                       paste0("potentialdetect.summary.sd.", threshold[1]),
+                                       paste0("truedetect.summary.mean.", threshold[1]),
+                                       paste0("truedetect.summary.median.", threshold[1]),
+                                       paste0("truedetect.summary.sd.", threshold[1]),
+                                       
+                                       paste0("incluster.any.", threshold[2]),
+                                       paste0("outcluster.", threshold[2]),
+                                       paste0("alldetect.",threshold[2]),
+                                       paste0("potentialclusterdetect.",threshold[2]),
+                                       paste0("trueclusterdetect.",threshold[2]),
+                                       paste0("alldetect.summary.mean.", threshold[2]),
+                                       paste0("alldetect.summary.median.", threshold[2]),
+                                       paste0("alldetect.summary.sd", threshold[2]),
+                                       paste0("potentialdetect.summary.mean.", threshold[2]),
+                                       paste0("potentialdetect.summary.median.", threshold[2]),
+                                       paste0("potentialdetect.summary.sd.", threshold[2]),
+                                       paste0("truedetect.summary.mean.", threshold[2]),
+                                       paste0("truedetect.summary.median.", threshold[2]),
+                                       paste0("truedetect.summary.sd.", threshold[2])),
+                                       c("aic","aicc","bic"))))
+    }
     
     ##P - SPACETIME
-    set <- detect_set(lassoresult.p.st, vectors.sim, rr, Time, x, y, rMax, center, radius)
+    set <- detect_set(lassoresult.p.st, vectors.sim, rr, Time, x, y, rMax, center, radius, nullmod)
     incluster.p.st <- detect.incluster(lassoresult.p.st, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
-                                       radius, IC = "ic")
-    detect.p.st <- list(clust.diagnostics(incluster.p.st, threshold[1]), clust.diagnostics(incluster.p.st, threshold[2]))
-    detect.out.p.st <- (matrix(unlist(detect.p.st),ncol=3, byrow=TRUE, 
-                               dimnames = list(c(paste0("incluster.any.", threshold[1]),
-                                                 paste0("alldetect.",threshold[1]), 
-                                                 paste0("potentialclusterdetect.",threshold[1]), 
-                                                 paste0("trueclusterdetect.",threshold[1]),
-                                                 paste0("incluster.any.",threshold[2]), paste0("alldetect.",threshold[2]),
-                                                 paste0("potentialclusterdetect.",threshold[2]), 
-                                                 paste0("trueclusterdetect.",threshold[2])),c("aic","aicc","bic"))))
+                                       radius, IC = "ic", under=FALSE, nullmod)
+    detect.p.st <- list(clust.diagnostics(incluster.p.st, threshold[1], nullmod), clust.diagnostics(incluster.p.st, threshold[2], nullmod))
+    
+    if(!is.null(nullmod)){
+        detect.out.p.st <- (matrix(unlist(detect.p.st), ncol=3, byrow=TRUE,
+                                   dimnames = list(c(
+                                       paste0("null.any.", threshold[1]),
+                                       paste0("null.summary.mean.", threshold[1]),
+                                       paste0("null.summary.median.", threshold[1]),
+                                       paste0("null.summary.sd.", threshold[1]),
+                                       paste0("null.any.", threshold[2]),
+                                       paste0("null.summary.mean.", threshold[2]),
+                                       paste0("null.summary.median.", threshold[2]),
+                                       paste0("null.summary.sd.", threshold[2])),
+                                       c("aic", "aicc", "bic")
+                                   )))
+    }
+    else {
+        detect.out.p.st <- (matrix(unlist(detect.out.p.st),ncol=3, byrow=TRUE,
+                                   dimnames = list(c(
+                                       paste0("incluster.any.", threshold[1]),
+                                       paste0("outcluster.", threshold[1]),
+                                       paste0("alldetect.",threshold[1]),
+                                       paste0("potentialclusterdetect.",threshold[1]),
+                                       paste0("trueclusterdetect.",threshold[1]),
+                                       paste0("alldetect.summary.mean.", threshold[1]),
+                                       paste0("alldetect.summary.median.", threshold[1]),
+                                       paste0("alldetect.summary.sd", threshold[1]),
+                                       paste0("potentialdetect.summary.mean.", threshold[1]),
+                                       paste0("potentialdetect.summary.median.", threshold[1]),
+                                       paste0("potentialdetect.summary.sd.", threshold[1]),
+                                       paste0("truedetect.summary.mean.", threshold[1]),
+                                       paste0("truedetect.summary.median.", threshold[1]),
+                                       paste0("truedetect.summary.sd.", threshold[1]),
+                                       
+                                       paste0("incluster.any.", threshold[2]),
+                                       paste0("outcluster.", threshold[2]),
+                                       paste0("alldetect.",threshold[2]),
+                                       paste0("potentialclusterdetect.",threshold[2]),
+                                       paste0("trueclusterdetect.",threshold[2]),
+                                       paste0("alldetect.summary.mean.", threshold[2]),
+                                       paste0("alldetect.summary.median.", threshold[2]),
+                                       paste0("alldetect.summary.sd", threshold[2]),
+                                       paste0("potentialdetect.summary.mean.", threshold[2]),
+                                       paste0("potentialdetect.summary.median.", threshold[2]),
+                                       paste0("potentialdetect.summary.sd.", threshold[2]),
+                                       paste0("truedetect.summary.mean.", threshold[2]),
+                                       paste0("truedetect.summary.median.", threshold[2]),
+                                       paste0("truedetect.summary.sd.", threshold[2])),
+                                       c("aic","aicc","bic"))))
+    }
     
     
     #RETURN
