@@ -595,10 +595,13 @@ clust.sim.all.both <- function(x, y, rMax, period, expected, observed, Time, nsi
                                        paste0("null.summary.mean.", threshold[1]),
                                        paste0("null.summary.median.", threshold[1]),
                                        paste0("null.summary.sd.", threshold[1]),
+                                       paste0("prop.null.", threshold[1]),
+                                              
                                        paste0("null.any.", threshold[2]),
                                        paste0("null.summary.mean.", threshold[2]),
                                        paste0("null.summary.median.", threshold[2]),
-                                       paste0("null.summary.sd.", threshold[2])),
+                                       paste0("null.summary.sd.", threshold[2]),
+                                       paste0("prop.null.", threshold[2])),
                                        c("aic", "aicc", "bic")
                                    )))
     }
@@ -649,10 +652,13 @@ clust.sim.all.both <- function(x, y, rMax, period, expected, observed, Time, nsi
                                       paste0("null.summary.mean.", threshold[1]),
                                       paste0("null.summary.median.", threshold[1]),
                                       paste0("null.summary.sd.", threshold[1]),
+                                      paste0("prop.null.", threshold[1]),
+                                      
                                       paste0("null.any.", threshold[2]),
                                       paste0("null.summary.mean.", threshold[2]),
                                       paste0("null.summary.median.", threshold[2]),
-                                      paste0("null.summary.sd.", threshold[2])),
+                                      paste0("null.summary.sd.", threshold[2]),
+                                      paste0("prop.null.", threshold[2])),
                                       c("aic", "aicc", "bic")
                                   )))
     }
@@ -704,10 +710,13 @@ clust.sim.all.both <- function(x, y, rMax, period, expected, observed, Time, nsi
                                        paste0("null.summary.mean.", threshold[1]),
                                        paste0("null.summary.median.", threshold[1]),
                                        paste0("null.summary.sd.", threshold[1]),
+                                       paste0("prop.null.", threshold[1]),
+                                       
                                        paste0("null.any.", threshold[2]),
                                        paste0("null.summary.mean.", threshold[2]),
                                        paste0("null.summary.median.", threshold[2]),
-                                       paste0("null.summary.sd.", threshold[2])),
+                                       paste0("null.summary.sd.", threshold[2]),
+                                       paste0("prop.null.", threshold[2])),
                                        c("aic", "aicc", "bic")
                                    )))
     }
@@ -759,10 +768,13 @@ clust.sim.all.both <- function(x, y, rMax, period, expected, observed, Time, nsi
                                        paste0("null.summary.mean.", threshold[1]),
                                        paste0("null.summary.median.", threshold[1]),
                                        paste0("null.summary.sd.", threshold[1]),
+                                       paste0("prop.null.", threshold[1]),
+                                       
                                        paste0("null.any.", threshold[2]),
                                        paste0("null.summary.mean.", threshold[2]),
                                        paste0("null.summary.median.", threshold[2]),
-                                       paste0("null.summary.sd.", threshold[2])),
+                                       paste0("null.summary.sd.", threshold[2]),
+                                       paste0("prop.null.", threshold[2])),
                                        c("aic", "aicc", "bic")
                                    )))
     }

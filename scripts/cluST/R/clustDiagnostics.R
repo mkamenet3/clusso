@@ -30,35 +30,52 @@ clust.diagnostics <- function(incluster, threshold, nullmod,...){
         
         #summary stats by IC
         ##alldetect
-        alldetect.summary.aic <- cbind(mean = mean(unlist(incluster$prop.alldetect.aic)), 
-                                       median = median(unlist(incluster$prop.alldetect.aic)),
-                                       st.dev = sd(unlist(incluster$prop.alldetect.aic)))
-        alldetect.summary.aicc <- cbind(mean = mean(unlist(incluster$prop.alldetect.aicc)), 
-                                        median = median(unlist(incluster$prop.alldetect.aicc)),
-                                        st.dev = sd(unlist(incluster$prop.alldetect.aicc)))
-        alldetect.summary.bic <- cbind(mean = mean(unlist(incluster$prop.alldetect.bic)), 
-                                       median = median(unlist(incluster$prop.alldetect.bic)),
-                                       st.dev = sd(unlist(incluster$prop.alldetect.bic)))
+        ###AIC
+        alldetect.summary.mean.aic <- mean(unlist(incluster$prop.alldetect.aic))
+        alldetect.summary.median.aic <- median(unlist(incluster$prop.alldetect.aic))
+        alldetect.summary.sd.aic <- sd(unlist(incluster$prop.alldetect.aic))
+        
+        ###AICC
+        alldetect.summary.mean.aicc <- mean(unlist(incluster$prop.alldetect.aicc))
+        alldetect.summary.median.aicc <- median(unlist(incluster$prop.alldetect.aicc))
+        alldetect.summary.sd.aicc <- sd(unlist(incluster$prop.alldetect.aicc))
+        
+        ###BIC
+        alldetect.summary.mean.bic <- mean(unlist(incluster$prop.alldetect.bic))
+        alldetect.summary.median.bic <- median(unlist(incluster$prop.alldetect.bic))
+        alldetect.summary.sd.bic <- sd(unlist(incluster$prop.alldetect.bic))
+        
         ##potentialclusterdetect
-        potentialclusterdetect.summary.aic <- cbind(mean = mean(unlist(incluster$prop.wasdetect.aic)),
-                                                    median = median(unlist(incluster$prop.wasdetect.aic)),
-                                                    st.dev = sd(unlist(incluster$prop.wasdetect.aic)))
-        potentialclusterdetect.summary.aicc <- cbind(mean = mean(unlist(incluster$prop.wasdetect.aicc)),
-                                                     median = median(unlist(incluster$prop.wasdetect.aicc)),
-                                                     st.dev = sd(unlist(incluster$prop.wasdetect.aicc)))
-        potentialclusterdetect.summary.bic <- cbind(mean = mean(unlist(incluster$prop.wasdetect.bic)),
-                                                    median = median(unlist(incluster$prop.wasdetect.bic)),
-                                                    st.dev = sd(unlist(incluster$prop.wasdetect.bic)))
+        ###AIC
+        potentialclusterdetect.summary.mean.aic <- mean(unlist(incluster$prop.wasdetect.aic))
+        potentialclusterdetect.summary.median.aic <- median(unlist(incluster$prop.wasdetect.aic))
+        potentialclusterdetect.summary.sd.aic <- sd(unlist(incluster$prop.wasdetect.aic))
+        
+        ###AICC
+        potentialclusterdetect.summary.mean.aicc <- mean(unlist(incluster$prop.wasdetect.aicc))
+        potentialclusterdetect.summary.median.aicc <- median(unlist(incluster$prop.wasdetect.aicc))
+        potentialclusterdetect.summary.sd.aicc <- sd(unlist(incluster$prop.wasdetect.aicc))
+        
+        ###BIC
+        potentialclusterdetect.summary.mean.bic <- mean(unlist(incluster$prop.wasdetect.bic))
+        potentialclusterdetect.summary.median.bic <- median(unlist(incluster$prop.wasdetect.bic))
+        potentialclusterdetect.summary.sd.bic <- sd(unlist(incluster$prop.wasdetect.bic))
+        
         ##truclusterdetect
-        trueclusterdetect.summary.aic <- cbind(mean = mean(unlist(incluster$prop.shoulddetect.aic)),
-                                               median = median(unlist(incluster$prop.shoulddetect.aic)),
-                                               st.dev = sd(unlist(incluster$prop.shoulddetect.aic)))
-        trueclusterdetect.summary.aicc <- cbind(mean = mean(unlist(incluster$prop.shoulddetect.aicc)),
-                                                median = median(unlist(incluster$prop.shoulddetect.aicc)),
-                                                st.dev = sd(unlist(incluster$prop.shoulddetect.aicc)))
-        trueclusterdetect.summary.bic <- cbind(mean = mean(unlist(incluster$prop.shoulddetect.bic)),
-                                               median = median(unlist(incluster$prop.shoulddetect.bic)),
-                                               st.dev = sd(unlist(incluster$prop.shoulddetect.bic)))
+        ###AIC
+        trueclusterdetect.summary.mean.aic <- mean(unlist(incluster$prop.shoulddetect.aic))
+        trueclusterdetect.summary.median.aic <- median(unlist(incluster$prop.shoulddetect.aic))
+        trueclusterdetect.summary.sd.aic <- sd(unlist(incluster$prop.shoulddetect.aic))
+        
+        ###AICC
+        trueclusterdetect.summary.mean.aicc <- mean(unlist(incluster$prop.shoulddetect.aicc))
+        trueclusterdetect.summary.median.aicc <- median(unlist(incluster$prop.shoulddetect.aicc))
+        trueclusterdetect.summary.sd.aicc <- sd(unlist(incluster$prop.shoulddetect.aicc))
+        
+        ###BIC
+        trueclusterdetect.summary.mean.bic <- mean(unlist(incluster$prop.shoulddetect.bic))
+        trueclusterdetect.summary.median.bic <- median(unlist(incluster$prop.shoulddetect.bic))
+        trueclusterdetect.summary.sd.bic <- sd(unlist(incluster$prop.shoulddetect.bic))
 
         return(list(incluster.any.aic = incluster$incluster.any.aic, incluster.any.aicc = incluster$incluster.any.aicc,
                         incluster.any.bic = incluster$incluster.any.bic,
@@ -69,28 +86,62 @@ clust.diagnostics <- function(incluster, threshold, nullmod,...){
                      potentialclusterdetect.bic = potentialclusterdetect.bic,
                     trueclusterdetect.aic = trueclusterdetect.aic, trueclusterdetect.aicc = trueclusterdetect.aicc,
                         trueclusterdetect.bic = trueclusterdetect.bic,
-                    alldetect.summary.aic = alldetect.summary.aic, alldetect.summary.aicc = alldetect.summary.aicc, alldetect.summary.bic = alldetect.summary.bic,
-                    potentialclusterdetect.summary.aic = potentialclusterdetect.summary.aic, potentialclusterdetect.summary.aicc = potentialclusterdetect.summary.aicc,
-                        potentialclusterdetect.summary.bic = potentialclusterdetect.summary.bic,
-                    trueclusterdetect.summary.aic = trueclusterdetect.summary.aic, trueclusterdetect.summary.aicc = trueclusterdetect.summary.aicc, 
-                        trueclusterdetect.summary.bic = trueclusterdetect.summary.bic))
+                    alldetect.summary.mean.aic = alldetect.summary.mean.aic, alldetect.summary.mean.aicc = alldetect.summary.mean.aicc, 
+                        alldetect.summary.mean.bic = alldetect.summary.mean.bic,
+                    alldetect.summary.median.aic = alldetect.summary.median.aic, alldetect.summary.median.aicc = alldetect.summary.median.aicc,
+                        alldetect.summary.median.bic = alldetect.summary.median.bic,
+                    alldetect.summary.sd.aic = alldetect.summary.sd.aic, alldetect.summary.sd.aicc = alldetect.summary.sd.aicc, alldetect.summary.sd.bic = alldetect.summary.sd.bic,
+                    
+                    potentialclusterdetect.summary.mean.aic = potentialclusterdetect.summary.mean.aic, potentialclusterdetect.summary.mean.aicc = potentialclusterdetect.summary.mean.aicc,
+                        potentialclusterdetect.summary.mean.bic = potentialclusterdetect.summary.mean.bic,
+                    potentialclusterdetect.summary.median.aic = potentialclusterdetect.summary.median.aic, potentialclusterdetect.summary.median.aicc = potentialclusterdetect.summary.median.aicc,
+                        potentialclusterdetect.summary.median.bic = potentialclusterdetect.summary.median.bic,
+                    potentialclusterdetect.summary.sd.aic = potentialclusterdetect.summary.sd.aic, potentialclusterdetect.summary.sd.aicc = potentialclusterdetect.summary.sd.aicc,
+                        potentialclusterdetect.summary.sd.bic = potentialclusterdetect.summary.sd.bic,
+                    
+                    trueclusterdetect.summary.mean.aic = trueclusterdetect.summary.mean.aic, trueclusterdetect.summary.mean.aicc = trueclusterdetect.summary.mean.aicc, 
+                        trueclusterdetect.summary.mean.bic = trueclusterdetect.summary.mean.bic,
+                    trueclusterdetect.summary.median.aic = trueclusterdetect.summary.median.aic, trueclusterdetect.summary.median.aicc = trueclusterdetect.summary.median.aicc, 
+                        trueclusterdetect.summary.median.bic = trueclusterdetect.summary.median.bic,
+                    trueclusterdetect.summary.sd.aic = trueclusterdetect.summary.sd.aic, trueclusterdetect.summary.sd.aicc = trueclusterdetect.summary.sd.aicc,
+                    trueclusterdetect.summary.sd.bic = trueclusterdetect.summary.sd.bic))
     }
     else{
         message("Returning Diagnostics for Null Model")
-        null.summary.aic <- cbind(mean = mean(unlist(incluster$null.aic)),
-                                  median = median(unlist(incluster$null.aic)),
-                                  st.dev = sd(unlist(incluster$null.aic)))
-        null.summary.aicc <- cbind(mean = mean(unlist(incluster$null.aicc)),
-                                  median = median(unlist(incluster$null.aicc)),
-                                  st.dev = sd(unlist(incluster$null.aicc)))
-        null.summary.bic <- cbind(mean = mean(unlist(incluster$null.bic)),
-                                  median = median(unlist(incluster$null.bic)),
-                                  st.dev = sd(unlist(incluster$null.bic)))
+        #prop.null.aic
+        null.prop.aic <- lapply(1:nsim, function(i) if(any(incluster$null.aic[[i]] != 0)) null.prop.aic=1 else null.prop.aic = 0)
+        prop.null.aic <- paste0((sum(unlist(null.prop.aic))/nsim)*100 , "%")
+        
+        #prop.null.aicc
+        null.prop.aicc <- lapply(1:nsim, function(i) if(any(incluster$null.aicc[[i]] != 0)) null.prop.aicc=1 else null.prop.aicc = 0)
+        prop.null.aicc <- paste0((sum(unlist(null.prop.aicc))/nsim)*100 , "%")
+        
+        #prop.null.bic
+        null.prop.bic <- lapply(1:nsim, function(i) if(any(incluster$null.bic[[i]] != 0)) null.prop.bic=1 else null.prop.bic = 0)
+        prop.null.bic <- paste0((sum(unlist(null.prop.bic))/nsim)*100 , "%")
+        
+        #summary on numbser of cells detected
+        ##null.summary.aic
+        null.summary.mean.aic <- mean(unlist(incluster$null.aic))
+        null.summary.median.aic <- median(unlist(incluster$null.aic))
+        null.summary.sd.aic <- sd(unlist(incluster$null.aic))
+        
+        #null.summary.aicc
+        null.summary.mean.aicc <- mean(unlist(incluster$null.aicc))
+        null.summary.median.aicc <- median(unlist(incluster$null.aicc))
+        null.summary.sd.aicc <- sd(unlist(incluster$null.aicc))
+        
+        #null.summary.bic
+        null.summary.mean.bic <- mean(unlist(incluster$null.bic))
+        null.summary.median.bic <- median(unlist(incluster$null.bic))
+        null.summary.sd.bic <- sd(unlist(incluster$null.bic))
         
         
         return(list(null.any.aic = incluster$null.any.aic, null.any.aicc = incluster$null.any.aicc, null.any.bic = incluster$null.any.bic,
-                    null.summary.aic = null.summary.aic, null.summary.aicc = null.summary.aicc, null.summary.bic = null.summary.bic
-                    ))
+                    null.summary.mean.aic = null.summary.mean.aic, null.summary.mean.aicc = null.summary.mean.aicc, null.summary.mean.bic = null.summary.mean.bic,
+                    null.summary.median.aic = null.summary.median.aic, null.summary.median.aicc = null.summary.median.aicc, null.summary.median.bic = null.summary.median.bic,
+                    null.summary.sd.aic = null.summary.sd.aic, null.summary.sd.aicc = null.summary.sd.aicc, null.summary.sd.bic = null.summary.sd.bic,
+                    prop.null.aic = prop.null.aic, prop.null.aicc = prop.null.aicc, prop.null.bic = prop.null.bic))
     }
     
 }
@@ -183,7 +234,7 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     #5) ONLY FOR NULL MODEL - DID IT FIND ANYTHING?
     if(!is.null(nullmod)){
         null.aic <- lapply(1:nsim, function(i) length(unlist(ix[[i]])))    
-        null.any <- lapply(1:nsim, function(i) if(isTRUE(length(null.aic[[i]]) == 0)) null.any = 0 else null.any = 1)
+        null.any <- lapply(1:nsim, function(i) if(isTRUE(null.aic[[i]] == 0)) null.any = 0 else null.any = 1)
         null.any.aic <- paste0((sum(unlist(null.any))/nsim)*100,"%")   
     }
     
@@ -239,7 +290,7 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     #5) ONLY FOR NULL MODEL - DID IT FIND ANYTHING?
     if(!is.null(nullmod)){
         null.aicc <- lapply(1:nsim, function(i) length(unlist(ix[[i]])))    
-        null.any <- lapply(1:nsim, function(i) if(isTRUE(length(null.aicc[[i]]) == 0)) null.any = 0 else null.any = 1)
+        null.any <- lapply(1:nsim, function(i) if(isTRUE(null.aicc[[i]]) == 0) null.any = 0 else null.any = 1)
         null.any.aicc <- paste0((sum(unlist(null.any))/nsim)*100,"%")   
     }
     
@@ -294,7 +345,7 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     #5) ONLY FOR NULL MODEL - DID IT FIND ANYTHING?
     if(!is.null(nullmod)){
         null.bic <- lapply(1:nsim, function(i) length(unlist(ix[[i]])))    
-        null.any <- lapply(1:nsim, function(i) if(isTRUE(length(null.bic[[i]]) == 0)) null.any = 0 else null.any = 1)
+        null.any <- lapply(1:nsim, function(i) if(isTRUE(null.bic[[i]]== 0)) null.any = 0 else null.any = 1)
         null.any.bic <- paste0((sum(unlist(null.any))/nsim)*100,"%")
     }
     
