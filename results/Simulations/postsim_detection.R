@@ -4,7 +4,7 @@
 #3-26-17
 ####################################################
 
-
+sink("postsimDetection.txt")
 ####################################################
 #Source Files, Scripts, and Packages
 ####################################################
@@ -60,11 +60,11 @@ mods <- c("QuasiPoisson", "Poisson")
 threshold <- c(0.9, 0.5)
 
 tabn <- NULL
-
+nullmod <- NULL
 #Load each of the .RData files and recalculate
 
-#files <- list.files(path="SimulationOutput/simoutputALL", pattern="*.RData", full.names=T, recursive=FALSE)
-files <- list.files(path="SimulationOutput/", pattern="*.RData", full.names=T, recursive=FALSE)
+files <- list.files(path="SimulationOutput/simoutputALL", pattern="*.RData", full.names=T, recursive=FALSE)
+#files <- list.files(path="SimulationOutput/", pattern="*.RData", full.names=T, recursive=FALSE)
 
 table.detection <- lapply(1:length(files), function(x){
     load(files[[x]])
@@ -89,13 +89,13 @@ table.detection <- lapply(1:length(files), function(x){
     
     #DETECTION
     # ##QP - Space
-    set <- detect_set(res$lassoresult.qp.s, res$init.vec.s, as.matrix(res$rr.mat[,tim[1]]), Time=1, x, y, rMax, cent, rad)
+    set <- detect_set(res$lassoresult.qp.s, res$init.vec.s, as.matrix(res$rr.mat[,tim[1]]), Time=1, x, y, rMax, cent, rad, nullmod)
     incluster.qp.s <- detect.incluster(res$lassoresult.qp.s, res$init.vec.s, as.matrix(res$rr.mat[,tim[1]]), set, 1, 1, nsim,
                                        x, y, rMax, cent,
-                                       rad, IC = "ic")
+                                       rad, IC = "ic", under=FALSE, nullmod)
 
     print("OKOKOK")
-    detect.qp.s <- list(clust.diagnostics(incluster.qp.s, threshold[1]), clust.diagnostics(incluster.qp.s , threshold[2]))
+    detect.qp.s <- list(clust.diagnostics(incluster.qp.s, threshold[1], nullmod), clust.diagnostics(incluster.qp.s , threshold[2], nullmod))
     detect.out.qp.s <- (matrix(unlist(detect.qp.s),ncol=3, byrow=TRUE,
                                dimnames = list(c(
                                    paste0("incluster.any.", threshold[1]),
@@ -129,10 +129,10 @@ table.detection <- lapply(1:length(files), function(x){
                                    paste0("truedetect.summary.sd.", threshold[2])),
                                    c("aic","aicc","bic"))))
     ##P - Space
-    set <- detect_set(res$lassoresult.p.s, res$init.vec.s, as.matrix(res$rr.mat[,tim[[1]]]), Time=1, x, y, rMax, cent, rad)
+    set <- detect_set(res$lassoresult.p.s, res$init.vec.s, as.matrix(res$rr.mat[,tim[[1]]]), Time=1, x, y, rMax, cent, rad, nullmod)
     incluster.p.s <- detect.incluster(res$lassoresult.p.s, res$init.vec.s, as.matrix(res$rr.mat[,tim[[1]]]), set, 1, 1, nsim, x, y, rMax, cent,
-                                      rad, IC = "ic")
-    detect.p.s <- list(clust.diagnostics(incluster.p.s, threshold[1]), clust.diagnostics(incluster.p.s, threshold[2]))
+                                      rad, IC = "ic", under=FALSE, nullmod)
+    detect.p.s <- list(clust.diagnostics(incluster.p.s, threshold[1], nullmod), clust.diagnostics(incluster.p.s, threshold[2], nullmod))
     detect.out.p.s <- (matrix(unlist(detect.p.s),ncol=3, byrow=TRUE,
                               dimnames = list(c(
                                   paste0("incluster.any.", threshold[1]),
@@ -167,10 +167,10 @@ table.detection <- lapply(1:length(files), function(x){
                                   c("aic","aicc","bic"))))
     
     ##QP - SPACETIME
-    set <- detect_set(res$lassoresult.qp.st, res$init.vec, res$rr.mat, Time, x, y, rMax, cent, rad)
+    set <- detect_set(res$lassoresult.qp.st, res$init.vec, res$rr.mat, Time, x, y, rMax, cent, rad, nullmod)
     incluster.qp.st <- detect.incluster(res$lassoresult.qp.st, res$init.vec, res$rr.mat, set, tim, Time, nsim, x, y, rMax, cent, 
-                                        rad, IC = "ic")
-    detect.qp.st <- list(clust.diagnostics(incluster.qp.st , threshold[1]), clust.diagnostics(incluster.qp.st , threshold[2]))
+                                        rad, IC = "ic", under=FALSE, nullmod)
+    detect.qp.st <- list(clust.diagnostics(incluster.qp.st , threshold[1], nullmod), clust.diagnostics(incluster.qp.st , threshold[2], nullmod))
     detect.out.qp.st <- (matrix(unlist(detect.qp.st),ncol=3, byrow=TRUE, 
                                 dimnames = list(c(
                                     paste0("incluster.any.", threshold[1]),
@@ -205,10 +205,10 @@ table.detection <- lapply(1:length(files), function(x){
                                     c("aic","aicc","bic"))))
     
     ##P - SPACETIME
-    set <- detect_set(res$lassoresult.p.st, res$vectors.sim, res$rr.mat, Time, x, y, rMax, cent, rad)
+    set <- detect_set(res$lassoresult.p.st, res$vectors.sim, res$rr.mat, Time, x, y, rMax, cent, rad, nullmod)
     incluster.p.st <- detect.incluster(res$lassoresult.p.st, res$vectors.sim, res$rr.mat, set, tim, Time, nsim, x, y, rMax, cent, 
-                                       rad, IC = "ic")
-    detect.p.st <- list(clust.diagnostics(incluster.p.st, threshold[1]), clust.diagnostics(incluster.p.st, threshold[2]))
+                                       rad, IC = "ic",under=FALSE, nullmod)
+    detect.p.st <- list(clust.diagnostics(incluster.p.st, threshold[1],nullmod), clust.diagnostics(incluster.p.st, threshold[2],nullmod))
     detect.out.p.st <- (matrix(unlist(detect.p.st),ncol=3, byrow=TRUE, 
                                dimnames = list(c(
                                    paste0("incluster.any.", threshold[1]),
@@ -263,6 +263,8 @@ save(table.detection, file="tabledetection.RData")
 mytable.df <- do.call("rbind", lapply(table.detection, as.data.frame))
 write.csv(mytable.df, file="tabledetectiondf.csv", row.names=TRUE)
 
+
+sink()
 
 
 
