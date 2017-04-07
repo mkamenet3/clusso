@@ -591,13 +591,13 @@ clust.sim.all.both <- function(x, y, rMax, period, expected, observed, Time, nsi
     if(!is.null(nullmod)){
         detect.out.qp.s <- (matrix(unlist(detect.qp.s), ncol=3, byrow=TRUE,
                                    dimnames = list(c(
-                                       paste0("null.any.", threshold[1]),
+                                      # paste0("null.any.", threshold[1]),
                                        paste0("null.summary.mean.", threshold[1]),
                                        paste0("null.summary.median.", threshold[1]),
                                        paste0("null.summary.sd.", threshold[1]),
                                        paste0("prop.null.", threshold[1]),
                                               
-                                       paste0("null.any.", threshold[2]),
+                                     #  paste0("null.any.", threshold[2]),
                                        paste0("null.summary.mean.", threshold[2]),
                                        paste0("null.summary.median.", threshold[2]),
                                        paste0("null.summary.sd.", threshold[2]),
@@ -648,13 +648,13 @@ clust.sim.all.both <- function(x, y, rMax, period, expected, observed, Time, nsi
     if(!is.null(nullmod)){
         detect.out.p.s <- (matrix(unlist(detect.p.s), ncol=3, byrow=TRUE,
                                   dimnames = list(c(
-                                      paste0("null.any.", threshold[1]),
+                                #      paste0("null.any.", threshold[1]),
                                       paste0("null.summary.mean.", threshold[1]),
                                       paste0("null.summary.median.", threshold[1]),
                                       paste0("null.summary.sd.", threshold[1]),
                                       paste0("prop.null.", threshold[1]),
                                       
-                                      paste0("null.any.", threshold[2]),
+                                   #   paste0("null.any.", threshold[2]),
                                       paste0("null.summary.mean.", threshold[2]),
                                       paste0("null.summary.median.", threshold[2]),
                                       paste0("null.summary.sd.", threshold[2]),
@@ -706,13 +706,13 @@ clust.sim.all.both <- function(x, y, rMax, period, expected, observed, Time, nsi
     if(!is.null(nullmod)){
         detect.out.qp.st <- (matrix(unlist(detect.qp.st), ncol=3, byrow=TRUE,
                                    dimnames = list(c(
-                                       paste0("null.any.", threshold[1]),
+                                   #    paste0("null.any.", threshold[1]),
                                        paste0("null.summary.mean.", threshold[1]),
                                        paste0("null.summary.median.", threshold[1]),
                                        paste0("null.summary.sd.", threshold[1]),
                                        paste0("prop.null.", threshold[1]),
                                        
-                                       paste0("null.any.", threshold[2]),
+                                   #    paste0("null.any.", threshold[2]),
                                        paste0("null.summary.mean.", threshold[2]),
                                        paste0("null.summary.median.", threshold[2]),
                                        paste0("null.summary.sd.", threshold[2]),
@@ -764,13 +764,13 @@ clust.sim.all.both <- function(x, y, rMax, period, expected, observed, Time, nsi
     if(!is.null(nullmod)){
         detect.out.p.st <- (matrix(unlist(detect.p.st), ncol=3, byrow=TRUE,
                                    dimnames = list(c(
-                                       paste0("null.any.", threshold[1]),
+                                     #  paste0("null.any.", threshold[1]),
                                        paste0("null.summary.mean.", threshold[1]),
                                        paste0("null.summary.median.", threshold[1]),
                                        paste0("null.summary.sd.", threshold[1]),
                                        paste0("prop.null.", threshold[1]),
                                        
-                                       paste0("null.any.", threshold[2]),
+                                      # paste0("null.any.", threshold[2]),
                                        paste0("null.summary.mean.", threshold[2]),
                                        paste0("null.summary.median.", threshold[2]),
                                        paste0("null.summary.sd.", threshold[2]),

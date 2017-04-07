@@ -120,27 +120,27 @@ clust.diagnostics <- function(incluster, threshold, nullmod,...){
         null.prop.bic <- lapply(1:nsim, function(i) if(any(incluster$null.bic[[i]] != 0)) null.prop.bic=1 else null.prop.bic = 0)
         prop.null.bic <- paste0((sum(unlist(null.prop.bic))/nsim)*100 , "%")
         
-        #summary on numbser of cells detected
-        ##null.summary.aic
-        null.summary.mean.aic <- mean(unlist(incluster$null.aic))
-        null.summary.median.aic <- median(unlist(incluster$null.aic))
-        null.summary.sd.aic <- sd(unlist(incluster$null.aic))
+        # #summary on numbser of cells detected
+        # ##null.summary.aic
+        # null.summary.mean.aic <- mean(unlist(incluster$null.aic))
+        # null.summary.median.aic <- median(unlist(incluster$null.aic))
+        # null.summary.sd.aic <- sd(unlist(incluster$null.aic))
+        # 
+        # #null.summary.aicc
+        # null.summary.mean.aicc <- mean(unlist(incluster$null.aicc))
+        # null.summary.median.aicc <- median(unlist(incluster$null.aicc))
+        # null.summary.sd.aicc <- sd(unlist(incluster$null.aicc))
+        # 
+        # #null.summary.bic
+        # null.summary.mean.bic <- mean(unlist(incluster$null.bic))
+        # null.summary.median.bic <- median(unlist(incluster$null.bic))
+        # null.summary.sd.bic <- sd(unlist(incluster$null.bic))
         
-        #null.summary.aicc
-        null.summary.mean.aicc <- mean(unlist(incluster$null.aicc))
-        null.summary.median.aicc <- median(unlist(incluster$null.aicc))
-        null.summary.sd.aicc <- sd(unlist(incluster$null.aicc))
         
-        #null.summary.bic
-        null.summary.mean.bic <- mean(unlist(incluster$null.bic))
-        null.summary.median.bic <- median(unlist(incluster$null.bic))
-        null.summary.sd.bic <- sd(unlist(incluster$null.bic))
-        
-        
-        return(list(null.any.aic = incluster$null.any.aic, null.any.aicc = incluster$null.any.aicc, null.any.bic = incluster$null.any.bic,
-                    null.summary.mean.aic = null.summary.mean.aic, null.summary.mean.aicc = null.summary.mean.aicc, null.summary.mean.bic = null.summary.mean.bic,
-                    null.summary.median.aic = null.summary.median.aic, null.summary.median.aicc = null.summary.median.aicc, null.summary.median.bic = null.summary.median.bic,
-                    null.summary.sd.aic = null.summary.sd.aic, null.summary.sd.aicc = null.summary.sd.aicc, null.summary.sd.bic = null.summary.sd.bic,
+        return(list(#null.any.aic = incluster$null.any.aic, null.any.aicc = incluster$null.any.aicc, null.any.bic = incluster$null.any.bic,
+                    null.summary.mean.aic = incluster$null.summary.mean.aic, null.summary.mean.aicc = incluster$null.summary.mean.aicc, null.summary.mean.bic = incluster$null.summary.mean.bic,
+                    null.summary.median.aic = incluster$null.summary.median.aic, null.summary.median.aicc = incluster$null.summary.median.aicc, null.summary.median.bic = incluster$null.summary.median.bic,
+                    null.summary.sd.aic = incluster$null.summary.sd.aic, null.summary.sd.aicc = incluster$null.summary.sd.aicc, null.summary.sd.bic = incluster$null.summary.sd.bic,
                     prop.null.aic = prop.null.aic, prop.null.aicc = prop.null.aicc, prop.null.bic = prop.null.bic))
     }
     
@@ -233,9 +233,20 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     
     #5) ONLY FOR NULL MODEL - DID IT FIND ANYTHING?
     if(!is.null(nullmod)){
+        #of sims that find something, how many cells on average are being detected
+        index.nonzero <- unlist(lapply(1:nsim, function(i) if(isTRUE(length(ix[[i]])!=0)) index.nonzero = i))
+        nonzero <- NULL
+        for(i in index.nonzero){
+            nonzero <- append(nonzero, length(ix[[i]]))
+        }
+        null.summary.mean.aic <- mean(nonzero)
+        null.summary.median.aic <- median(nonzero)
+        null.summary.sd.aic <- sd(nonzero)
+        
+        #propr detected
         null.aic <- lapply(1:nsim, function(i) length(unlist(ix[[i]])))    
-        null.any <- lapply(1:nsim, function(i) if(isTRUE(null.aic[[i]] == 0)) null.any = 0 else null.any = 1)
-        null.any.aic <- paste0((sum(unlist(null.any))/nsim)*100,"%")   
+        #null.any <- lapply(1:nsim, function(i) if(isTRUE(null.aic[[i]] == 0)) null.any = 0 else null.any = 1)
+        #null.any.aic <- paste0((sum(unlist(null.any))/nsim)*100,"%")   
     }
     
     
@@ -289,11 +300,20 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     
     #5) ONLY FOR NULL MODEL - DID IT FIND ANYTHING?
     if(!is.null(nullmod)){
+        #of sims that find something, how many cells on average are being detected
+        index.nonzero <- unlist(lapply(1:nsim, function(i) if(isTRUE(length(ix[[i]])!=0)) index.nonzero = i))
+        nonzero <- NULL
+        for(i in index.nonzero){
+            nonzero <- append(nonzero, length(ix[[i]]))
+        }
+        null.summary.mean.aicc <- mean(nonzero)
+        null.summary.median.aicc <- median(nonzero)
+        null.summary.sd.aicc <- sd(nonzero)
+        
+        #propr detected
         null.aicc <- lapply(1:nsim, function(i) length(unlist(ix[[i]])))    
-        null.any <- lapply(1:nsim, function(i) if(isTRUE(null.aicc[[i]]) == 0) null.any = 0 else null.any = 1)
-        null.any.aicc <- paste0((sum(unlist(null.any))/nsim)*100,"%")   
+        #null.any <- lapply(1:nsim, function(i) if(isTRUE(null.aic[[i]] == 0)) null.any = 0 else null.any = 1)
     }
-    
     ################################################################
     #(Q)BIC
     #extract things that are not the background rate
@@ -344,9 +364,20 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     
     #5) ONLY FOR NULL MODEL - DID IT FIND ANYTHING?
     if(!is.null(nullmod)){
-        null.bic <- lapply(1:nsim, function(i) length(unlist(ix[[i]])))    
-        null.any <- lapply(1:nsim, function(i) if(isTRUE(null.bic[[i]]== 0)) null.any = 0 else null.any = 1)
-        null.any.bic <- paste0((sum(unlist(null.any))/nsim)*100,"%")
+        #of sims that find something, how many cells on average are being detected
+        index.nonzero <- unlist(lapply(1:nsim, function(i) if(isTRUE(length(ix[[i]])!=0)) index.nonzero = i))
+        nonzero <- NULL
+        for(i in index.nonzero){
+            nonzero <- append(nonzero, length(ix[[i]]))
+        }
+        null.summary.mean.bic <- mean(nonzero)
+        null.summary.median.bic <- median(nonzero)
+        null.summary.sd.bic <- sd(nonzero)
+        
+        #propr detected
+        null.aic <- lapply(1:nsim, function(i) length(unlist(ix[[i]])))    
+        #null.any <- lapply(1:nsim, function(i) if(isTRUE(null.aic[[i]] == 0)) null.any = 0 else null.any = 1)
+        #null.any.aic <- paste0((sum(unlist(null.any))/nsim)*100,"%")   
     }
     
     
@@ -354,7 +385,9 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     if(exists("null.any.aic") & exists("null.any.bic") & exists("null.any.aicc")){
         return(list(
             null.aic = null.aic, null.aicc = null.aicc, null.bic = null.bic,
-            null.any.aic = null.any.aic, null.any.aicc = null.any.aicc, null.any.bic = null.any.bic ))
+            null.summary.mean.aic = null.summary.mean.aic, null.summary.mean.aicc = null.summary.mean.aicc, null.summary.mean.bic = null.summary.mean.bic,
+            null.summary.median.aic = null.summary.median.aic, null.summary.median.aicc = null.summary.median.aicc, null.summary.median.bic = null.summary.median.bic,
+            null.summary.sd.aic = null.summary.sd.aic, null.summary.sd.aicc = null.summary.sd.aicc, null.summary.sd.bic = null.summary.sd.bic))
     }
     else{
         return(list(
