@@ -371,7 +371,7 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
             nonzero <- append(nonzero, length(ix[[i]]))
         }
         null.summary.mean.bic <- mean(nonzero)
-        null.summary.median.bic <- median(nonzero)
+        null.summary.median.bic <- median(as.numeric(nonzero))
         null.summary.sd.bic <- sd(nonzero)
         
         #propr detected
