@@ -185,12 +185,12 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     #extract things that are not the background rate
     if(under==TRUE){
         #ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAIC[[i]],ncol=Time),6) < round(set$alphaAIC[[i]],6)))
-        ix <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) < round(as.vector(set$alphaAIC[[i]]))))
+        ix <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) < round(as.vector(set$alphaAIC[[i]]),6)))
     }
     else{
         print("ok1")
-        print(str(set))
-        ix <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) > round(as.vector(set$alphaAIC[[i]]))))
+        #print(str(set))
+        ix <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) > round(as.vector(set$alphaAIC[[i]]),6)))
         #ix <- lapply(1:nsim, function(i) which(round(as.vector(set$rr.simAIC[[i]]),6) > round(as.vector(set$alphaAIC[[i]]),6)))    
         print("ok2")
     }
@@ -255,11 +255,11 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     #extract things that are not the background rate
     if(under==TRUE){
         #ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAICc[[i]],ncol=Time),6) < round(set$alphaAICc[[i]],6)))
-        ix <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) < round(as.vector(set$alphaAIC[[i]]))))
+        ix <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) < round(as.vector(set$alphaAIC[[i]]),6)))
     }
     else{
         #ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAICc[[i]],ncol=Time),6) > round(set$alphaAICc[[i]],6)))    
-        ix <- lapply(1:nsim, function(i) which(round(set$rr.simAICc[[i]],6) > round(as.vector(set$alphaAICc[[i]]))))
+        ix <- lapply(1:nsim, function(i) which(round(set$rr.simAICc[[i]],6) > round(as.vector(set$alphaAICc[[i]]),6)))
     }
     
     #1)a) Did it find anything in the cluster?
@@ -319,11 +319,11 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
     #extract things that are not the background rate
     if(under==TRUE){
         #ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simBIC[[i]],ncol=Time),6) < round(set$alphaBIC[[i]],6)))
-        ix <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) < round(as.vector(set$alphaAIC[[i]]))))
+        ix <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) < round(as.vector(set$alphaAIC[[i]]),6)))
     }
     else{
         #ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simBIC[[i]],ncol=Time),6) > round(set$alphaBIC[[i]],6)))    
-        ix <- lapply(1:nsim, function(i) which(round(set$rr.simBIC[[i]],6) > round(as.vector(set$alphaBIC[[i]]))))
+        ix <- lapply(1:nsim, function(i) which(round(set$rr.simBIC[[i]],6) > round(as.vector(set$alphaBIC[[i]]),6)))
     }
     
     #1)a) Did it find anything in the cluster?
@@ -375,14 +375,14 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
         null.summary.sd.bic <- sd(nonzero)
         
         #propr detected
-        null.aic <- lapply(1:nsim, function(i) length(unlist(ix[[i]])))    
+        null.bic <- lapply(1:nsim, function(i) length(unlist(ix[[i]])))    
         #null.any <- lapply(1:nsim, function(i) if(isTRUE(null.aic[[i]] == 0)) null.any = 0 else null.any = 1)
         #null.any.aic <- paste0((sum(unlist(null.any))/nsim)*100,"%")   
     }
     
     
     #Returns
-    if(exists("null.any.aic") & exists("null.any.bic") & exists("null.any.aicc")){
+    if(exists("null.aic") & exists("null.bic") & exists("null.aicc")){
         return(list(
             null.aic = null.aic, null.aicc = null.aicc, null.bic = null.bic,
             null.summary.mean.aic = null.summary.mean.aic, null.summary.mean.aicc = null.summary.mean.aicc, null.summary.mean.bic = null.summary.mean.bic,
