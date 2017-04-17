@@ -131,17 +131,17 @@ Time=5
 nsim=100
 
 #need inputs for model to run 
-centers=1
-radii=18
-timeperiods = c(1:5)
-risk.ratios=1
+center=1
+radius=18
+timeperiod = c(1:5)
+risk=1
 
 table.detection.null <- NULL
 
 
 
 system.time(res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                                 nsim,cent, rad, risk, tim, colors=TRUE, 
+                                 nsim,center, radius, risk, timeperiods, colors=TRUE, 
                                  utm=TRUE, byrow=TRUE, threshold, space= "both", nullmod = TRUE))
 #save results
 (sim.i <- paste0("sim","_","center","_",cent,"radius",rad,"_", "start",
@@ -169,9 +169,6 @@ save(table.detection.null, file="tabledetectionNULL.RData")
 
 mytable.df <- do.call("rbind", lapply(table.detection.null, as.data.frame))
 write.csv(mytable.df, file="tabledetectiondfNULL.csv", row.names=TRUE)
-
-
-
 
 sink()
 
