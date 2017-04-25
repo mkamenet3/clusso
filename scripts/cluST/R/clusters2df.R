@@ -12,6 +12,7 @@
 #' cluster2df(lat, long, utm=FALSE, length(lat))
 
 clusters2df <- function(xP,yP, r.max, utm=FALSE,n){
+    message("Creating radius-based potential clusters")
     indR = (1:n)[!duplicated(cbind(xP,yP))] 
     if(utm==FALSE){
         tmpR <- (as.matrix(distm(cbind(xP, yP), fun=distHaversine))[indR,])/1000    
@@ -26,6 +27,33 @@ clusters2df <- function(xP,yP, r.max, utm=FALSE,n){
     # lastR = unlist2(lastR)
     #rR=unlist2(apply(tmpR,1, function(x,r) { sort(x[x<=r]) },r=r.max))
     rR=unlist(apply(tmpR,1, function(x,r) { sort(x[x<=r]) },r=r.max))
+    
+    clustersR=data.frame(center=rep(indR,ncR),
+                         x=xP[rep(indR,ncR)],y=yP[rep(indR,ncR)],
+                         r=rR, 
+                         n=unlist(lapply(ncR,seq)),
+                         last=lastR)    
+    return(clustersR)
+}
+
+
+#' Create the clusters dataframe 
+#' 
+#' @param pop vector of population counts for each polygon
+#' @param pop.max set max population size. The scale should be the same as the population vector. 
+#' @param n Number of coordinate pairs/number of centers
+#' @return This function returns a dataframe that contains 
+#' @export
+#' @examples
+#' cluster2df.pop(pop, pop.max, length(x1))
+clusters2df.pop <- function(pop, pop.max,n){
+    message("Creating population-based potential clusters")
+    indR = 1:(n*Time)
+    tmpR = as.matrix(dist(pop))[indR,]
+    lastR = apply(tmpR, 1, function(x,r) order(x)[1:sum(x<=r)],r=pop.max)
+    ncR = unlist(lapply(lastR, length))
+    lastR = unlist(lastR)
+    rR=unlist(apply(tmpR,1, function(x,r) { sort(x[x<=r]) },r=pop.max))
     
     clustersR=data.frame(center=rep(indR,ncR),
                          x=xP[rep(indR,ncR)],y=yP[rep(indR,ncR)],
