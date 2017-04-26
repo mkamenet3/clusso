@@ -249,13 +249,15 @@ y=dframe2$utmy/1000
 rMax=30
 Time=5
 nsim=100
+nullmod = NULL
 
-centers <- list(c(150, 35), c(50, 100))
+centers <- c(list(c(150, 35)), list(c(50, 100)))
 radii <- c(9, 18)
 timeperiods <- list(c(2:4))
 risk.ratios <- c(1.1, 1.5, 2)
 
 table.detection <- NULL
+
 
 
 for(cent in centers){
@@ -267,21 +269,21 @@ for(cent in centers){
                                      nsim,cent, rad, risk, tim, colors=TRUE,
                                      utm=TRUE, byrow=TRUE, threshold, space= "both", nullmod=NULL))
                 #save results
-                (sim.i <- paste0("sim","_","center","_",cent,"radius",rad,"_", "start",
-                                 "_",as.numeric(paste(tim, collapse = "")),"_","rr","_",gsub("[.]","",risk)))
+                (sim.i <- paste0("sim","_","center","_",as.numeric(paste(unlist(cent),collapse="")),"radius",rad,"_", "start",
+                                 "_",as.numeric(paste(tim, collapse = "")),"_","rr","_",gsub("[.]","",risk), "multclust"))
                 filename <- paste0("SimulationOutput/",sim.i,".RData")
                 save(res, file = filename)
 
                 #Print Detection for the Simulation
-                (tabn <- rbind("******",cbind(rad,risk,cent,time=as.numeric(paste(tim, collapse = "")), mod = "ST",
+                (tabn <- rbind("******",cbind(rad,risk,cent=paste(cent, collapse=""),time=as.numeric(paste(tim, collapse = "")), mod = "ST",
                                                rbind("QuasiPois",res$detect.out.qp.st), rbind("Pois",res$detect.out.p.st)),
-                                cbind(rad,risk,cent,time=as.numeric(paste(tim, collapse = "")), mod = "Space",
+                                cbind(rad,risk,paste(unlist(cent), collapse=""),time=as.numeric(paste(tim, collapse = "")), mod = "Space",
                                       rbind("QuasiPois",res$detect.out.qp.s), rbind("Pois",res$detect.out.p.s))))
                 table.detection <- rbind(table.detection, tabn)
 
                 #make maps
-                pdfname <- paste0("figures/simulations/sim","_","center","_",cent,"radius",rad,"_", "start",
-                                  "_",as.numeric(paste(tim, collapse = "")),"_","rr","_",gsub("[.]","",risk),".pdf")
+                pdfname <- paste0("figures/simulations/sim","_","center","_",as.numeric(paste(unlist(cent),collapse="")),"radius",rad,"_", "start",
+                                  "_",as.numeric(paste(tim, collapse = "")),"_","rr","_",gsub("[.]","",risk),"multclust",".pdf")
                 easyplot(pdfname, res, mods, space="both")
 
             }
