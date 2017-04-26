@@ -139,8 +139,13 @@ clust.sim <- function(x, y, rMax, period, expected, observed, Time, spacetime=TR
 #'@param timeperiod time period where the cluster  starts in the simulation
 #'we will only be looking at periods 2 and 5. If multi_period is TRUE, then we will instead consider timeperiod through period_end (timeperiod:period_end). Following the same example,
 #'this would mean we look at periods 2, 3, 4, and 5.
+#'@param colors TODO
+#'@param utm default is true
+#'@param byrow TRUE
+#'@param thershold vector or value as threshold for cluster detection
 #'@param space space and space-time. Default is to run all four models: quasi-poisson and poisson for both space and space-time. User can specify, space = space,
 #'space = spacetime, or space = both.
+#'@param nullmod default is NULL; otherwise will run null model
 #'@return
 #'@details Optional functions include:
 #'- 1) utm - default is FALSE. If you have utm coordinates, you want to change this to TRUE.
@@ -172,7 +177,6 @@ clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, ce
     }
     space <- match.arg(space, several.ok = FALSE)
     if(length(space) > 1) stop("You must select either `space`, `spacetime`, or `both`")
-    print(byrow, utm)
     switch(space, 
            space = clust.sim.all.space(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio, 
                                        timeperiod,colors=NULL,utm, byrow, threshold, space=TRUE),
@@ -779,7 +783,7 @@ clust.sim.all.both <- function(x, y, rMax, period, expected, observed, Time, nsi
                                    )))
     }
     else {
-        detect.out.p.st <- (matrix(unlist(detect.out.p.st),ncol=3, byrow=TRUE,
+        detect.out.p.st <- (matrix(unlist(detect.p.st),ncol=3, byrow=TRUE,
                                    dimnames = list(c(
                                        paste0("incluster.any.", threshold[1]),
                                        paste0("outcluster.", threshold[1]),
