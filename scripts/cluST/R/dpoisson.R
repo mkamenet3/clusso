@@ -6,9 +6,18 @@
 #' @param log whether or not the log-likelihood should be returned or the likelihood. Default is to be TRUE
 #' @return returns a matrix 
 
-dpoisson <- function(y, lambda, log = FALSE) {
+# dpoisson <- function(y, lambda, log = FALSE) {
+#     if(log == FALSE) 
+#         return(lambda^y * exp(-lambda)/factorial(y))
+#     else
+#         return(y*ifelse(lambda==0,1,log(lambda))-lambda)
+# }
+
+
+
+dpoisson <- function(x, lambda, log = FALSE) {
     if(log == FALSE) 
-        return(lambda^y * exp(-lambda)/factorial(y))
+        return(lambda^x * exp(-lambda)/factorial(x))
     else
-        return(y*ifelse(lambda==0,1,log(lambda))-lambda)
+        return(x*ifelse(lambda==0,1,log(lambda))-lambda-log(factorial(x)))
 }

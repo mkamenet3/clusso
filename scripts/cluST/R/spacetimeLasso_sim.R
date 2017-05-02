@@ -59,6 +59,7 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime=TRUE,pois=
         #PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]]/overdisp.est[[i]])-log(n*Time)/2*K[[i]]) #original
         #PLL.qbic <- lapply(1:nsim, function(i) 2*(loglike[[i]]/overdisp.est) - ((K[[i]] + 1)*log(n*Time))) #tester
         PLL.qbic <- lapply(1:nsim, function(i) -2*(loglike[[i]]/overdisp.est) + ((K[[i]]+1)*log(n*Time)))
+        #PLL.qbic <- lapply(1:nsim, function(i) loglike[[i]]-log(n*Time)/2*K[[i]])
         select.qbic <- lapply(1:nsim, function(i) which.min(unlist(PLL.qbic[[i]]))) #changed this to min
         select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))
         select_muRR.qbic <- Reduce("+", select_mu.qbic)/nsim
@@ -68,6 +69,8 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime=TRUE,pois=
         #QAIC
         #PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]]/overdisp.est[[i]]) - K[[i]]) #original
         PLL.qaic <- lapply(1:nsim, function(i) -2*(loglike[[i]]/overdisp.est) + 2*(K[[i]]+1))
+        #PLL.qaic <- lapply(1:nsim, function(i) loglike[[i]]-K[[i]])
+        
         select.qaic <- lapply(1:nsim, function(i) which.min(unlist(PLL.qaic[[i]])))
         select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
         select_muRR.qaic <- Reduce("+", select_mu.qaic)/nsim
@@ -80,6 +83,8 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime=TRUE,pois=
         #PLL.qaicc <- lapply(1:nsim, function(i) 2*(K[[i]] + 1) - 2*(loglike[[i]]/overdisp.est[[i]]) + 
          #                       (((K[[i]] +1)*(K[[i]]+2))/(n*Time - K[[i]] - 2))) #test1
         PLL.qaicc <- lapply(1:nsim, function(i) -2*(loglike[[i]]/overdisp.est) + 2*(K[[i]]+1) + ((K[[i]]^2 + 3*K[[i]] + 2)/(n*Time - K[[i]] - 2)))
+        #PLL.qaicc <- lapply(1:nsim, function(i) loglike[[i]]-K[[i]]*n*Time/(n*Time-K[[i]]-1))
+        
         select.qaicc <- lapply(1:nsim, function(i) which.min(unlist(PLL.qaicc[[i]])))
         
         select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
@@ -172,8 +177,10 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime=TRUE,pois=
     else if(spacetime==FALSE & pois == TRUE){
         message("Returning results for space-only  Poisson model")
         #QBIC
-        #PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]]-log(n*Time)/2*K[[i]]))
-        PLL.qbic <- lapply(1:nsim, function(i) ((K[[i]] + 1)*log(n*Time)) - 2*(loglike[[i]]))
+        #PLL.qbic  <- lapply(1:nsim, function(i) (loglike[[i]]-log(n*Time)/2*K[[i]])) #original
+        #PLL.qbic <- lapply(1:nsim, function(i) ((K[[i]] + 1)*log(n*Time)) - 2*(loglike[[i]])) #new
+        PLL.qbic <- lapply(1:nsim, function(i)  2*(loglike[[i]]) + ((K[[i]] + 1)*log(n*Time))) #new
+        
         select.qbic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qbic[[i]])))
         select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))
         select_muRR.qbic <- Reduce("+", select_mu.qbic)/nsim
@@ -182,8 +189,8 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime=TRUE,pois=
         
         #QAIC
         #PLL.qaic = lapply(1:nsim, function(i) (loglike[[i]] - K[[i]]))
-        PLL.qaic <- lapply(1:nsim, function(i) 2*(K[[i]] + 1) - 2*(loglike[[i]]))
-        select.qaic <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaic[[i]])))
+        PLL.qaic <- lapply(1:nsim, function(i) 2*(K[[i]] + 1) + 2*(loglike[[i]]))
+        select.qaic <- lapply(1:nsim, function(i) which.min(unlist(PLL.qaic[[i]])))
         select_mu.qaic <- lapply(1:nsim, function(i) sapply(select.qaic[[i]], function(j) mu[[i]][,j]))
         select_muRR.qaic <- Reduce("+", select_mu.qaic)/nsim
         E.qaic <- select_muRR.qaic
@@ -192,9 +199,9 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime=TRUE,pois=
         
         #QAICc
         #PLL.qaicc=lapply(1:nsim, function(i) (loglike[[i]] - ((K[[i]]*n*Time)/(n*Time-K[[i]]-1))))
-        PLL.qaicc <- lapply(1:nsim, function(i) 2*(K[[i]] + 1) - 2*(loglike[[i]]) + 
+        PLL.qaicc <- lapply(1:nsim, function(i) 2*(K[[i]] + 1) + 2*(loglike[[i]]) + 
                                 (((K[[i]] +1)*(K[[i]]+2))/(n*Time - K[[i]] - 2)))
-        select.qaicc <- lapply(1:nsim, function(i) which.max(unlist(PLL.qaicc[[i]])))
+        select.qaicc <- lapply(1:nsim, function(i) which.min(unlist(PLL.qaicc[[i]])))
         select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
         select_muRR.qaicc <- Reduce("+", select_mu.qaicc)/nsim
         E.qaicc <- select_muRR.qaicc
