@@ -2,22 +2,25 @@
 #' 
 #' This is the main distriution function for our model. This assumes we have a Poisson fixed effect and Gamma random effect. In order to deal with constraints from the Lasso function, we use the Poisson distirbution function here and account for overdispersion in the QIC.
 #' @param y observed values
-#' @param lambda vector of expected outcomes * exp(each column of each potential path)
-#' @param log whether or not the log-likelihood should be returned or the likelihood. Default is to be TRUE
-#' @return returns a matrix 
+#' @param lambda vector of exp(each column of each potential path). Assumes you exponentiate prior to using this function
+#' @param E0 expected counts (the offset). If in simulation, then this should be the E0 counts for each simulation. These E0 have been standardized such that E0 = E*(sum(y)/sum(E)) with the scale.sim()/scale() function depending on if a simulation is being run or not
+#' @return returns a a vector (or a list of vectors) of the Poisson log-likelihood for each proposed path of the Lasso tuning parameter values 
+#' 
+#' @examples 
+#' set.seed(1)
+#' E <- rnegbin(n = 20,mu = 15,theta = 1000)
+#' theta = 1000
+#' y <- rnegbin(E, theta=theta)
+#' E0 <- E*(sum(y)/sum(E))
+#' lambda <- exp(c(rep(0,15),rep(0.4,5)))
+#' dpoisson(y, lambda, E0)
 
-# dpoisson <- function(y, lambda, log = FALSE) {
-#     if(log == FALSE) 
-#         return(lambda^y * exp(-lambda)/factorial(y))
-#     else
-#         return(y*ifelse(lambda==0,1,log(lambda))-lambda)
-# }
-
-
-
-dpoisson <- function(x, lambda, log = FALSE) {
-    if(log == FALSE) 
-        return(lambda^x * exp(-lambda)/factorial(x))
-    else
-        return(x*ifelse(lambda==0,1,log(lambda))-lambda-log(factorial(x)))
+dpoisson <- function(y, lambda, E0) {
+    if (any(lambda == 0)) stop("Element of lambda is zero - log of zero will return -Inf. Make sure you exponentiated already")
+    #if (any(y == 0)) warning("At least one element of outcome y is zero")
+    if (any(E0 == 0)) warning("At least one element of expected E0 is zero")
+    loglik_i <- y*log(lambda*E0) - (lambda*E0)
+    return(sum(loglik_i))
 }
+
+

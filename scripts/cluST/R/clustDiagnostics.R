@@ -164,223 +164,245 @@ clust.diagnostics <- function(incluster, threshold, nullmod,...){
 #'clusters to be identified where the estimated values are less than the background rate, not more than the background rate as is the case in the 
 #'elevated relative risk models.
 #'@param nullmod Default is FALSE. If TRUE, then it will estimate detection based on the null model where there is no cluster. 
-detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE,nullmod){
-    prob.simBIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
-    prob.simAIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
-    prob.simAICc <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
-    print(nullmod)
-    if(tail(period, n=1) == Time | tail(period, n=1)==1){
-        maxTime = tail(period, n=1)    
+detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE,nullmod){
+    if(is.null(nullmod)){
+        message("Returning results for risk model")
+        #(Q)AIC
+        #extract things that are not the background rate
+        if(under==TRUE){
+            if(!is.null(under)) stop("Specify if you want under or null estimates")
+            #ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAIC[[i]],ncol=Time),6) < round(set$alphaAIC[[i]],6)))
+            ix <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) < round(as.vector(set$alphaAIC[[i]]),6)))
+        }
+        else{
+            ix <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) > round(as.vector(set$alphaAIC[[i]]),6)))
+            #ix <- lapply(1:nsim, function(i) which(round(as.vector(set$rr.simAIC[[i]]),6) > round(as.vector(set$alphaAIC[[i]]),6)))    
+        }
+        
+        #1)a) Did it find anything in the cluster?
+        
+        clust <- lapply(1:nsim, function(i) is.element(ix[[i]],set$indx.clust.truth))
+        in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
+        incluster.any.aic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
+        
+        
+        #1)b) Did it find something OUTSIDE of the cluster?
+        outclust <- lapply(1:nsim, function(i) setdiff(ix[[i]],set$indx.clust.truth))
+        out.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(setdiff(ix[[i]],set$indx.clust.truth))==0) == FALSE) out.clust.any=1 else out.clust.any = 0)
+        outcluster.any.aic <- paste0((sum(unlist(out.clust.any))/nsim)*100,"%")    
+        
+        
+        #2) |(A and B)|/|A U B|?
+        ##Calculate
+        #wasDetected <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAIC[[i]],ncol=Time),6) > round(set$alphaAIC[[i]],6), arr.ind=FALSE))    
+        wasDetected <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) > round(as.vector(set$alphaAIC[[i]]),6)))
+        shouldDetected <- which(rr!=1, arr.ind=FALSE)
+        ##Numerator
+        AandB <- lapply(1:nsim, function(i) length(intersect(wasDetected[[i]], shouldDetected)))
+        ##Denominator
+        AuB <- lapply(1:nsim, function(i) length(union(wasDetected[[i]], shouldDetected)))
+        ##Divide
+        prop.alldetect.aic <- lapply(1:nsim, function(i) AandB[[i]]/AuB[[i]])
+        
+        
+        #3) |(A and B)|/|A|? Proportion of what was detected was in overlap?
+        ##Calculate length of what was detected
+        A <- lapply(1:nsim, function(i) length(wasDetected[[i]]))
+        ##Divide
+        prop.wasdetect.aic <- lapply(1:nsim, function(i) AandB[[i]]/A[[i]])
+        
+        #4) |(A and B)|/|B|? Proportion of what should be detected was in overlap?
+        B <- length(shouldDetected)
+        prop.shoulddetect.aic <- lapply(1:nsim, function(i) AandB[[i]]/B)
+        
+        
+        
+        ########################################################################
+        #(Q)AICc
+        #extract things that are not the background rate
+        if(under==TRUE){
+            #ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAICc[[i]],ncol=Time),6) < round(set$alphaAICc[[i]],6)))
+            ix <- lapply(1:nsim, function(i) which(round(set$rr.simAICc[[i]],6) < round(as.vector(set$alphaAICc[[i]]),6)))
+        }
+        else{
+            #ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAICc[[i]],ncol=Time),6) > round(set$alphaAICc[[i]],6)))    
+            ix <- lapply(1:nsim, function(i) which(round(set$rr.simAICc[[i]],6) > round(as.vector(set$alphaAICc[[i]]),6)))
+        }
+        
+        #1)a) Did it find anything in the cluster?
+        
+        clust <- lapply(1:nsim, function(i) is.element(ix[[i]],set$indx.clust.truth))
+        in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
+        incluster.any.aicc <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
+        
+        
+        #1)b) Did it find something OUTSIDE of the cluster?
+        outclust <- lapply(1:nsim, function(i) setdiff(ix[[i]],set$indx.clust.truth))
+        out.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(setdiff(ix[[i]],set$indx.clust.truth))==0) == FALSE) out.clust.any=1 else out.clust.any = 0)
+        outcluster.any.aicc <- paste0((sum(unlist(out.clust.any))/nsim)*100,"%")    
+        
+        
+        #2) |(A and B)|/|A U B|?
+        ##Calculate
+        #wasDetected <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAICc[[i]],ncol=Time),6) > round(set$alphaAICc[[i]],6), arr.ind=FALSE))    
+        wasDetected <- lapply(1:nsim, function(i) which(round(set$rr.simAICc[[i]],6) > round(as.vector(set$alphaAICc[[i]]),6)))
+        shouldDetected <- which(rr!=1, arr.ind=FALSE)
+        ##Numerator
+        AandB <- lapply(1:nsim, function(i) length(intersect(wasDetected[[i]], shouldDetected)))
+        ##Denominator
+        AuB <- lapply(1:nsim, function(i) length(union(wasDetected[[i]], shouldDetected)))
+        ##Divide
+        prop.alldetect.aicc <- lapply(1:nsim, function(i) AandB[[i]]/AuB[[i]])
+        
+        
+        #3) |(A and B)|/|A|? Proportion of what was detected was in overlap?
+        ##Calculate length of what was detected
+        A <- lapply(1:nsim, function(i) length(wasDetected[[i]]))
+        ##Divide
+        prop.wasdetect.aicc <- lapply(1:nsim, function(i) AandB[[i]]/A[[i]])
+        
+        #4) |(A and B)|/|B|? Proportion of what should be detected was in overlap?
+        B <- length(shouldDetected)
+        prop.shoulddetect.aicc <- lapply(1:nsim, function(i) AandB[[i]]/B)
+        
+        
+        
+        ################################################################
+        #(Q)BIC
+        #extract things that are not the background rate
+        if(under==TRUE){
+            #ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simBIC[[i]],ncol=Time),6) < round(set$alphaBIC[[i]],6)))
+            ix <- lapply(1:nsim, function(i) which(round(set$rr.simBIC[[i]],6) < round(as.vector(set$alphaBIC[[i]]),6)))
+        }
+        else{
+            #ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simBIC[[i]],ncol=Time),6) > round(set$alphaBIC[[i]],6)))    
+            ix <- lapply(1:nsim, function(i) which(round(set$rr.simBIC[[i]],6) > round(as.vector(set$alphaBIC[[i]]),6)))
+        }
+        
+        #1)a) Did it find anything in the cluster?
+        
+        clust <- lapply(1:nsim, function(i) is.element(ix[[i]],set$indx.clust.truth))
+        in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
+        incluster.any.bic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
+        
+        
+        #1)b) Did it find something OUTSIDE of the cluster?
+        outclust <- lapply(1:nsim, function(i) setdiff(ix[[i]],set$indx.clust.truth))
+        out.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(setdiff(ix[[i]],set$indx.clust.truth))==0) == FALSE) out.clust.any=1 else out.clust.any = 0)
+        outcluster.any.bic <- paste0((sum(unlist(out.clust.any))/nsim)*100,"%")    
+        
+        
+        #2) |(A and B)|/|A U B|?
+        ##Calculate
+        #wasDetected <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simBIC[[i]],ncol=Time),6) > round(set$alphaBIC[[i]],6), arr.ind=FALSE))    
+        wasDetected <- lapply(1:nsim, function(i) which(round(set$rr.simBIC[[i]],6) > round(as.vector(set$alphaBIC[[i]]),6)))
+        shouldDetected <- which(rr!=1, arr.ind=FALSE)
+        ##Numerator
+        AandB <- lapply(1:nsim, function(i) length(intersect(wasDetected[[i]], shouldDetected)))
+        ##Denominator
+        AuB <- lapply(1:nsim, function(i) length(union(wasDetected[[i]], shouldDetected)))
+        ##Divide
+        prop.alldetect.bic <- lapply(1:nsim, function(i) AandB[[i]]/AuB[[i]])
+        
+        
+        #3) |(A and B)|/|A|? Proportion of what was detected was in overlap?
+        ##Calculate length of what was detected
+        A <- lapply(1:nsim, function(i) length(wasDetected[[i]]))
+        ##Divide
+        prop.wasdetect.bic <- lapply(1:nsim, function(i) AandB[[i]]/A[[i]])
+        
+        #4) |(A and B)|/|B|? Proportion of what should be detected was in overlap?
+        B <- length(shouldDetected)
+        prop.shoulddetect.bic <- lapply(1:nsim, function(i) AandB[[i]]/B)
+        
+        
     }
-    else {
-        maxTime = tail(period, n=1) +1
-    }
-    if(period[1] == 1){
-        minTime = 1
-    }
-    else{
-        minTime = period[1]-1
-    }
-    #(Q)AIC
-    #extract things that are not the background rate
-    if(under==TRUE){
-        #ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAIC[[i]],ncol=Time),6) < round(set$alphaAIC[[i]],6)))
-        ix <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) < round(as.vector(set$alphaAIC[[i]]),6)))
-    }
-    else{
-        print("ok1")
-        #print(str(set))
-        ix <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) > round(as.vector(set$alphaAIC[[i]]),6)))
-        #ix <- lapply(1:nsim, function(i) which(round(as.vector(set$rr.simAIC[[i]]),6) > round(as.vector(set$alphaAIC[[i]]),6)))    
-        print("ok2")
-    }
     
-    #1)a) Did it find anything in the cluster?
-    
-    clust <- lapply(1:nsim, function(i) is.element(ix[[i]],set$indx.clust.truth))
-    in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
-    incluster.any.aic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
-    
-    
-    #1)b) Did it find something OUTSIDE of the cluster?
-    outclust <- lapply(1:nsim, function(i) setdiff(ix[[i]],set$indx.clust.truth))
-    out.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(setdiff(ix[[i]],set$indx.clust.truth))==0) == FALSE) out.clust.any=1 else out.clust.any = 0)
-    outcluster.any.aic <- paste0((sum(unlist(out.clust.any))/nsim)*100,"%")    
-    
-    
-    #2) |(A and B)|/|A U B|?
-    ##Calculate
-    #wasDetected <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAIC[[i]],ncol=Time),6) > round(set$alphaAIC[[i]],6), arr.ind=FALSE))    
-    wasDetected <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) > round(as.vector(set$alphaAIC[[i]]),6)))
-    shouldDetected <- which(rr!=1, arr.ind=FALSE)
-    ##Numerator
-    AandB <- lapply(1:nsim, function(i) length(intersect(wasDetected[[i]], shouldDetected)))
-    ##Denominator
-    AuB <- lapply(1:nsim, function(i) length(union(wasDetected[[i]], shouldDetected)))
-    ##Divide
-    prop.alldetect.aic <- lapply(1:nsim, function(i) AandB[[i]]/AuB[[i]])
-    
-    
-    #3) |(A and B)|/|A|? Proportion of what was detected was in overlap?
-    ##Calculate length of what was detected
-    A <- lapply(1:nsim, function(i) length(wasDetected[[i]]))
-    ##Divide
-    prop.wasdetect.aic <- lapply(1:nsim, function(i) AandB[[i]]/A[[i]])
-    
-    #4) |(A and B)|/|B|? Proportion of what should be detected was in overlap?
-    B <- length(shouldDetected)
-    prop.shoulddetect.aic <- lapply(1:nsim, function(i) AandB[[i]]/B)
-    
-    #5) ONLY FOR NULL MODEL - DID IT FIND ANYTHING?
-    if(!is.null(nullmod)){
+    #ONLY FOR NULL MODEL - DID IT FIND ANYTHING?
+    if(!is.null(nullmod)==TRUE){
+        message("Null model diagnostics")
+        ########################################################################
+        #(Q)AIC
+        #extract things that are not the background rate
+        if(under==TRUE){
+            if(!is.null(under)) stop("Specify if you want under or null estimates")
+            #ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAIC[[i]],ncol=Time),6) < round(set$alphaAIC[[i]],6)))
+            ix <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) < round(as.vector(set$alphaAIC[[i]]),6)))
+        }
+        else{
+            ix <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) > round(as.vector(set$alphaAIC[[i]]),6)))
+            #ix <- lapply(1:nsim, function(i) which(round(as.vector(set$rr.simAIC[[i]]),6) > round(as.vector(set$alphaAIC[[i]]),6)))    
+        }
+        
         #of sims that find something, how many cells on average are being detected
         index.nonzero <- unlist(lapply(1:nsim, function(i) if(isTRUE(length(ix[[i]])!=0)) index.nonzero = i))
         nonzero <- NULL
         for(i in index.nonzero){
             nonzero <- append(nonzero, length(ix[[i]]))
         }
-        null.summary.mean.aic <- mean(nonzero)
-        null.summary.median.aic <- median(nonzero)
-        null.summary.sd.aic <- sd(nonzero)
+        null.summary.mean.aic <- mean(ifelse(is.null(nonzero),0,nonzero))
+        null.summary.median.aic <- median(ifelse(is.null(nonzero),0,nonzero))
+        null.summary.sd.aic <- sd(ifelse(is.null(nonzero),0,nonzero))
         
         #propr detected
         null.aic <- lapply(1:nsim, function(i) length(unlist(ix[[i]])))    
         #null.any <- lapply(1:nsim, function(i) if(isTRUE(null.aic[[i]] == 0)) null.any = 0 else null.any = 1)
         #null.any.aic <- paste0((sum(unlist(null.any))/nsim)*100,"%")   
-    }
-    
-    
-    ########################################################################
-    #(Q)AICc
-    #extract things that are not the background rate
-    if(under==TRUE){
-        #ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAICc[[i]],ncol=Time),6) < round(set$alphaAICc[[i]],6)))
-        ix <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) < round(as.vector(set$alphaAIC[[i]]),6)))
-    }
-    else{
-        #ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAICc[[i]],ncol=Time),6) > round(set$alphaAICc[[i]],6)))    
-        ix <- lapply(1:nsim, function(i) which(round(set$rr.simAICc[[i]],6) > round(as.vector(set$alphaAICc[[i]]),6)))
-    }
-    
-    #1)a) Did it find anything in the cluster?
-    
-    clust <- lapply(1:nsim, function(i) is.element(ix[[i]],set$indx.clust.truth))
-    in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
-    incluster.any.aicc <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
-    
-    
-    #1)b) Did it find something OUTSIDE of the cluster?
-    outclust <- lapply(1:nsim, function(i) setdiff(ix[[i]],set$indx.clust.truth))
-    out.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(setdiff(ix[[i]],set$indx.clust.truth))==0) == FALSE) out.clust.any=1 else out.clust.any = 0)
-    outcluster.any.aicc <- paste0((sum(unlist(out.clust.any))/nsim)*100,"%")    
-    
-    
-    #2) |(A and B)|/|A U B|?
-    ##Calculate
-    #wasDetected <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAICc[[i]],ncol=Time),6) > round(set$alphaAICc[[i]],6), arr.ind=FALSE))    
-    wasDetected <- lapply(1:nsim, function(i) which(round(set$rr.simAICc[[i]],6) > round(as.vector(set$alphaAICc[[i]]),6)))
-    shouldDetected <- which(rr!=1, arr.ind=FALSE)
-    ##Numerator
-    AandB <- lapply(1:nsim, function(i) length(intersect(wasDetected[[i]], shouldDetected)))
-    ##Denominator
-    AuB <- lapply(1:nsim, function(i) length(union(wasDetected[[i]], shouldDetected)))
-    ##Divide
-    prop.alldetect.aicc <- lapply(1:nsim, function(i) AandB[[i]]/AuB[[i]])
-    
-    
-    #3) |(A and B)|/|A|? Proportion of what was detected was in overlap?
-    ##Calculate length of what was detected
-    A <- lapply(1:nsim, function(i) length(wasDetected[[i]]))
-    ##Divide
-    prop.wasdetect.aicc <- lapply(1:nsim, function(i) AandB[[i]]/A[[i]])
-    
-    #4) |(A and B)|/|B|? Proportion of what should be detected was in overlap?
-    B <- length(shouldDetected)
-    prop.shoulddetect.aicc <- lapply(1:nsim, function(i) AandB[[i]]/B)
-    
-    #5) ONLY FOR NULL MODEL - DID IT FIND ANYTHING?
-    if(!is.null(nullmod)){
+        
+        ########################################################################
+        #(Q)AICc
+        
+        #extract things that are not the background rate
+        if(under==TRUE){
+            #ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAICc[[i]],ncol=Time),6) < round(set$alphaAICc[[i]],6)))
+            ix <- lapply(1:nsim, function(i) which(round(set$rr.simAICc[[i]],6) < round(as.vector(set$alphaAICc[[i]]),6)))
+        }
+        else{
+            #ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simAICc[[i]],ncol=Time),6) > round(set$alphaAICc[[i]],6)))    
+            ix <- lapply(1:nsim, function(i) which(round(set$rr.simAICc[[i]],6) > round(as.vector(set$alphaAICc[[i]]),6)))
+        }
         #of sims that find something, how many cells on average are being detected
         index.nonzero <- unlist(lapply(1:nsim, function(i) if(isTRUE(length(ix[[i]])!=0)) index.nonzero = i))
         nonzero <- NULL
         for(i in index.nonzero){
             nonzero <- append(nonzero, length(ix[[i]]))
         }
-        null.summary.mean.aicc <- mean(nonzero)
-        null.summary.median.aicc <- median(nonzero)
-        null.summary.sd.aicc <- sd(nonzero)
+        null.summary.mean.aicc <- mean(ifelse(is.null(nonzero),0,nonzero))
+        null.summary.median.aicc <- median(ifelse(is.null(nonzero),0,nonzero))
+        null.summary.sd.aicc <- sd(ifelse(is.null(nonzero),0,nonzero))
         
         #propr detected
         null.aicc <- lapply(1:nsim, function(i) length(unlist(ix[[i]])))    
-        #null.any <- lapply(1:nsim, function(i) if(isTRUE(null.aic[[i]] == 0)) null.any = 0 else null.any = 1)
-    }
-    ################################################################
-    #(Q)BIC
-    #extract things that are not the background rate
-    if(under==TRUE){
-        #ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simBIC[[i]],ncol=Time),6) < round(set$alphaBIC[[i]],6)))
-        ix <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) < round(as.vector(set$alphaAIC[[i]]),6)))
-    }
-    else{
-        #ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simBIC[[i]],ncol=Time),6) > round(set$alphaBIC[[i]],6)))    
-        ix <- lapply(1:nsim, function(i) which(round(set$rr.simBIC[[i]],6) > round(as.vector(set$alphaBIC[[i]]),6)))
-    }
-    
-    #1)a) Did it find anything in the cluster?
-    
-    clust <- lapply(1:nsim, function(i) is.element(ix[[i]],set$indx.clust.truth))
-    in.clust.any <- lapply(1:nsim, function(i) if(any(clust[[i]]==TRUE)) in.clust.any=1 else in.clust.any = 0)
-    incluster.any.bic <- paste0((sum(unlist(in.clust.any))/nsim)*100,"%")    
-    
-    
-    #1)b) Did it find something OUTSIDE of the cluster?
-    outclust <- lapply(1:nsim, function(i) setdiff(ix[[i]],set$indx.clust.truth))
-    out.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(setdiff(ix[[i]],set$indx.clust.truth))==0) == FALSE) out.clust.any=1 else out.clust.any = 0)
-    outcluster.any.bic <- paste0((sum(unlist(out.clust.any))/nsim)*100,"%")    
-    
-    
-    #2) |(A and B)|/|A U B|?
-    ##Calculate
-    #wasDetected <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simBIC[[i]],ncol=Time),6) > round(set$alphaBIC[[i]],6), arr.ind=FALSE))    
-    wasDetected <- lapply(1:nsim, function(i) which(round(set$rr.simBIC[[i]],6) > round(as.vector(set$alphaBIC[[i]]),6)))
-    shouldDetected <- which(rr!=1, arr.ind=FALSE)
-    ##Numerator
-    AandB <- lapply(1:nsim, function(i) length(intersect(wasDetected[[i]], shouldDetected)))
-    ##Denominator
-    AuB <- lapply(1:nsim, function(i) length(union(wasDetected[[i]], shouldDetected)))
-    ##Divide
-    prop.alldetect.bic <- lapply(1:nsim, function(i) AandB[[i]]/AuB[[i]])
-    
-    
-    #3) |(A and B)|/|A|? Proportion of what was detected was in overlap?
-    ##Calculate length of what was detected
-    A <- lapply(1:nsim, function(i) length(wasDetected[[i]]))
-    ##Divide
-    prop.wasdetect.bic <- lapply(1:nsim, function(i) AandB[[i]]/A[[i]])
-    
-    #4) |(A and B)|/|B|? Proportion of what should be detected was in overlap?
-    B <- length(shouldDetected)
-    prop.shoulddetect.bic <- lapply(1:nsim, function(i) AandB[[i]]/B)
-    
-    #5) ONLY FOR NULL MODEL - DID IT FIND ANYTHING?
-    if(!is.null(nullmod)){
+        
+        ################################################################
+        #(Q)BIC
+        #extract things that are not the background rate
+        if(under==TRUE){
+            #ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simBIC[[i]],ncol=Time),6) < round(set$alphaBIC[[i]],6)))
+            ix <- lapply(1:nsim, function(i) which(round(set$rr.simBIC[[i]],6) < round(as.vector(set$alphaBIC[[i]]),6)))
+        }
+        else{
+            #ix <- lapply(1:nsim, function(i) which(round(matrix(set$rr.simBIC[[i]],ncol=Time),6) > round(set$alphaBIC[[i]],6)))    
+            ix <- lapply(1:nsim, function(i) which(round(set$rr.simBIC[[i]],6) > round(as.vector(set$alphaBIC[[i]]),6)))
+        }
         #of sims that find something, how many cells on average are being detected
         index.nonzero <- unlist(lapply(1:nsim, function(i) if(isTRUE(length(ix[[i]])!=0)) index.nonzero = i))
         nonzero <- NULL
         for(i in index.nonzero){
             nonzero <- append(nonzero, length(ix[[i]]))
         }
-        null.summary.mean.bic <- mean(nonzero)
-        null.summary.median.bic <- median(as.numeric(nonzero))
-        null.summary.sd.bic <- sd(nonzero)
+        null.summary.mean.bic <- mean(ifelse(is.null(nonzero),0,nonzero))
+        null.summary.median.bic <- median(ifelse(is.null(nonzero),0,nonzero))
+        null.summary.sd.bic <- sd(ifelse(is.null(nonzero),0,nonzero))
         
         #propr detected
         null.bic <- lapply(1:nsim, function(i) length(unlist(ix[[i]])))    
         #null.any <- lapply(1:nsim, function(i) if(isTRUE(null.aic[[i]] == 0)) null.any = 0 else null.any = 1)
         #null.any.aic <- paste0((sum(unlist(null.any))/nsim)*100,"%")   
+        
+        
     }
-    
-    
+
     #Returns
     if(exists("null.aic") & exists("null.bic") & exists("null.aicc")){
         return(list(
@@ -397,8 +419,9 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
             prop.wasdetect.aic = prop.wasdetect.aic, prop.wasdetect.aicc = prop.wasdetect.aicc, prop.wasdetect.bic = prop.wasdetect.bic,
             prop.shoulddetect.aic = prop.shoulddetect.aic, prop.shoulddetect.aicc = prop.shoulddetect.aicc, prop.shoulddetect.bic = prop.shoulddetect.bic))
     }
-    
 }
+    
+
 
 
 
@@ -422,19 +445,19 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, period, Time,
 #'@return returns
 detect.incluster <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
                              radius, IC = c("aic","aicc","bic","ic"),under=FALSE, nullmod){
-    period = timeperiod
+    #period = timeperiod
     message("Detection Results for:\n"
-            , "\t Time Period: ", period,
+            , "\t Time Period: ", timeperiod,
             "\n \t Num. simulations: ", nsim,
             "\n \t Cluster center: ", center,
             "\n \t Cluster radius: ", radius,
-            "\n \t Cluster rel.risk: ",unique(as.vector(rr))[2])
+            "\n \t Cluster rel.risk: ",ifelse(length(unique(as.vector(rr)))==1,unique(as.vector(rr))[1],unique(as.vector(rr))[2]))
     IC <- match.arg(IC, several.ok= TRUE)
     switch(IC,
-           aic = detect.incluster.aic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE),
-           aicc = detect.incluster.aicc(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE),
-           bic = detect.incluster.bic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE),
-           ic = detect.incluster.ic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE, nullmod))
+           #aic = detect.incluster.aic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE),
+           #aicc = detect.incluster.aicc(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE),
+           #bic = detect.incluster.bic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE),
+           ic = detect.incluster.ic(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE, nullmod))
 } 
 
 
