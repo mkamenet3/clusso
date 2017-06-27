@@ -1,5 +1,7 @@
 #' Auxiliary Plotting Functions for Japanese Breast Cancer Data
 #' 
+#' Wrapper function easyplot
+#' 
 #' @param pdfname pdfname of what the output pdf will be called
 #' @param res resultant list from clust_ function
 #' @param mods string vector of which models you ran
@@ -31,8 +33,13 @@ easyplot <- function(pdfname, res, mods, space=c("space", "spacetime", "both")){
 }
 
 
-#Space-time plotting
-plotmap.st <- function(pdfname,res, obs = NULL, sub=NULL){
+#' #Space-time plotting
+#' @param pdfname pdfname of what the output pdf will be called
+#' @param res resultant list from clust_ function
+#' @param obs if observed is to be plotted or oracle from simulation
+#' @param optional parameter if you want to just use the function for plotting different vectors
+#' 
+plotmap.st <- function(pdfname,res, obs = NULL,sub=NULL){
     if(!is.null(obs)){
         firstrow = "Obs"
     }
@@ -41,7 +48,6 @@ plotmap.st <- function(pdfname,res, obs = NULL, sub=NULL){
     }
     if(!is.null(sub)){
         rrcolors <- sub
-        print("ok")
     }
     else {
         rrcolors <- res$rrcolors
@@ -50,7 +56,6 @@ plotmap.st <- function(pdfname,res, obs = NULL, sub=NULL){
     #Maps of Observed Counts
     par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    #polygon(japan.poly2,col=res$rrcolors$colors.obs[,1],border=F)
     polygon(japan.poly2,col=rrcolors$colors.obs[,1],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,paste0("Period 1 - ", firstrow),cex=1.00)
@@ -184,7 +189,12 @@ plotmap.st <- function(pdfname,res, obs = NULL, sub=NULL){
     dev.off()
 }
 
-#Spatial plotting (time period = 1)
+#' #Space-only plotting
+#' @param pdfname pdfname of what the output pdf will be called
+#' @param res resultant list from clust_ function
+#' @param obs if observed is to be plotted or oracle from simulation
+#' @param optional parameter if you want to just use the function for plotting different vectors
+#' 
 plotmap.s <- function(pdfname,res, obs = NULL, sub=NULL){
     if(!is.null(obs)){
         firstrow = "Obs"
@@ -194,8 +204,7 @@ plotmap.s <- function(pdfname,res, obs = NULL, sub=NULL){
     }
     if(!is.null(sub)){
         rrcolors <-  sub
-        print("ok -spaceonly")
-    }
+        }
     else{
         rrcolors <- res$rrcolors
     }

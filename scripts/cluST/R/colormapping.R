@@ -18,10 +18,18 @@ redblue=function(x,...) {
 #' @return returns vectors ofcolors for each time period, where risk ratios have been constrained to be between half risk and twice the risk
 #' @export
 #' @example 
-#' lassoresult <- spacetimeLasso_sim(clusters, vectors.sim, Time, spacetime=spacetime, pois=pois, nsim, YSIM)
-#' riskratios <- get.rr2(lassoresult, vectors.sim,init, E1,Time, sim=TRUE)
+#' set.seed(2)
+#' riskratios <- list(RRobs = rnorm(20, mean = 1, sd = 0.10), 
+#' RRbic = c(rep(1,18),c(2.1, 2.2)), 
+#' RRaic = c(rep(1,15),rnorm(5, 2,0.05)),
+#' RRaicc = c(rep(1,15),rnorm(5, 2,0.05)))
+#' Time = 2
 #' colormapping(riskratios, Time)
+
 colormapping <- function(riskratios,Time,...) {
+    if(max(riskratios$RRbic)>2) {warning("Max riskratios from BIC greater than 2")}
+    if(max(riskratios$RRaic)>2) {warning("Max riskratios from AIC greater than 2")}
+    if(max(riskratios$RRaicc)>2) {warning("Max riskratios from AICc greater than 2")}
     color.obs <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRobs[,i],2)))/log(4)))
     color.qbic <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRbic[,i],2)))/log(4))) 
     color.qaic <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRaic[,i],2)))/log(4)))

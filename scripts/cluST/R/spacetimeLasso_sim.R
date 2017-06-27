@@ -31,6 +31,7 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
         sparseMAT <- spaceMat(clusters, numCenters)
         message("Spatial matrix created")
     }
+    print(paste("Number of potential clusters to scan through: ", dim(sparseMAT)[2]))
     Ex <- vectors.sim$Ex
     Yx <- YSIM
     Period <- vectors.sim$Period
@@ -46,6 +47,11 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
                                                  function(i) sum(dpoisson(Yx[[k]], mu[[k]][,i],Ex[[k]]))))
     K <- lapply(1:nsim, function(i) lasso[[i]]$df)   
     message("Selecting best paths")
+    
+    #########################################################
+    #Space-Time, Quasi-Poisson only (yes overdispersion)
+    #########################################################
+    
     if(spacetime==TRUE & pois == FALSE){
         message("returning results for space-time Quasi-Poisson model")
         #calculate max overdispersion
@@ -54,7 +60,7 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
         print(paste("Overdispersion estimate:", overdisp.est))
         if(pois == FALSE & is.null(overdisp.est)) warning("No overdispersion for quasi-Poisson model. Please check.")
 
-     #QBIC
+        #QBIC
         PLL.qbic <- lapply(1:nsim, function(i) -2*(loglike[[i]]/overdisp.est) + ((K[[i]])*log(n*Time)))
         select.qbic <- lapply(1:nsim, function(i) which.min(unlist(PLL.qbic[[i]])))
         select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))

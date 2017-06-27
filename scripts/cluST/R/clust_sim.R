@@ -8,8 +8,10 @@
 #' @param Ex list of simulated and standardized expected counts
 #' @param Time number of time periods
 #' @param timeperiod explicit vector of timeperiods
+#' @param init initial list of vectors, inherited from function setVectors.
+#' @return returns space-time 
 #' 
-vectors.space <- function(x,Ex, YSIM,Time, timeperiod, init){
+vectors.space <- function(x,Ex, YSIM,Time, timeperiod, init,...){
     id <- rep(1:length(x), times = length(timeperiod))
     if(length(id)!=length(as.vector(Ex[[1]]))) stop("Length of ID var not equal to number of observations")
     vectors.sim.s <- list(Period = rep("1", length(x)),
@@ -24,7 +26,7 @@ vectors.space <- function(x,Ex, YSIM,Time, timeperiod, init){
 #'
 #'clust.sim.all
 #'
-#'This function runs both the space and space-time Lasso model simulations for all 4 models simulataneously: Quasi-Poisson vs. Poisson in both space and space-time.
+#'This helper function runs both the space and space-time Lasso model simulations for all 4 models simulataneously: Quasi-Poisson vs. Poisson in both space and space-time.
 #' This function is to be run on simulated data and all four models are run on the same simulated set. 
 #'A separate function (clust.sim) can be used for running simulations on individual models and (clust) can be used for observed data.
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
@@ -43,18 +45,17 @@ vectors.space <- function(x,Ex, YSIM,Time, timeperiod, init){
 #'this would mean we look at periods 2, 3, 4, and 5.
 #'@param utm default is true
 #'@param byrow TRUE
-#'@param thershold vector or value as threshold for cluster detection
+#'@param threshold vector or value as threshold for cluster detection
 #'@param space space and space-time. Default is to run all four models: quasi-poisson and poisson for both space and space-time. User can specify, space = space,
 #'space = spacetime, or space = both.
 #'@param nullmod default is NULL; otherwise will run null model
-#'@param colors TODO
 #'@return
 #'@details Optional functions include:
 #'- 1) utm - default is FALSE. If you have utm coordinates, you want to change this to TRUE.
 #'@export
 #'TODO allow user to change theta parameter in simulation
 clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
-                          timeperiod, utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"), nullmod=NULL){
+                          timeperiod, utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"), nullmod=NULL,...){
     #initial user setting
     if(utm==FALSE){
         message("Coordinates are assumed to be in lat/long coordinates. For utm coordinates, please specify 'utm=TRUE'")
@@ -117,7 +118,7 @@ clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, ce
 #'@export
 #'TODO allow user to change theta parameter in simulation
 clust.sim.all.both <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
-                               timeperiod,utm, byrow, threshold, nullmod=nullmod){
+                               timeperiod,utm, byrow, threshold, nullmod=nullmod,...){
     message("Running both Space and Space-Time Models")
     
     #set up clusters and fitted values

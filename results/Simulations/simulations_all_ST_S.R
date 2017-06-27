@@ -85,18 +85,23 @@ mods <- c("QuasiPoisson", "Poisson")
 #Set Some Initial Conditions
 x=dframe2$utmx/1000
 y=dframe2$utmy/1000
-rMax=30
+rMax=20
 Time=5
 #nsim=100
-nsim=1
+nsim=30
 center=50
 radius= 18
 timeperiod=c(1:5)
-risk.ratio=2
+risk.ratio=1.5
 
+
+#
+# period <- dframe$period
+# expected <- dframe$expdeath
+# observed <- dframe$death
 
 res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                    nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold, space= "both", nullmod=NULL)
+                    nsim,center, radius, risk.ratio, timeperiod, utm=TRUE, byrow=TRUE, threshold, space= "both")
 
 #save results
 (sim.i <- paste0("sim","_","center","_",center,"radius",radius,"_", "start",
@@ -185,51 +190,51 @@ easyplot(pdfname, res, mods, space="both")
 #########################################################################################################
 #########################################################################################################
 #
-# #Set Some Initial Conditions
-# x=dframe2$utmx/1000
-# y=dframe2$utmy/1000
-# rMax=30
-# Time=5
-# nsim=100
-# 
-# centers <- c(150, 35)
-# radii <- c(9, 11, 18)
-# timeperiods <- list(c(3:5), c(1:2), c(2:4))
-# risk.ratios <- c(1.1, 1.5, 2)
-# 
-# table.detection <- NULL
-# 
-# 
-# for(cent in centers){
-#     for(rad in radii){
-#         for(tim in timeperiods){
-#             for(risk in risk.ratios){
-#                 print(c(cent, rad, tim, risk))
-#                 system.time(res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-#                                      nsim,cent, rad, risk, tim, colors=TRUE, 
-#                                      utm=TRUE, byrow=TRUE, threshold, space= "both"))
-#                 #save results
-#                 (sim.i <- paste0("sim","_","center","_",cent,"radius",rad,"_", "start",
-#                                  "_",as.numeric(paste(tim, collapse = "")),"_","rr","_",gsub("[.]","",risk)))
-#                 filename <- paste0("SimulationOutput/",sim.i,".RData")
-#                 save(res, file = filename)
-#                 
-#                 #Print Detection for the Simulation
-#                 (tabn <- rbind("******",cbind(rad,risk,cent,time=as.numeric(paste(tim, collapse = "")), mod = "ST",
-#                                                rbind("QuasiPois",res$detect.out.qp.st), rbind("Pois",res$detect.out.p.st)), 
-#                                 cbind(rad,risk,cent,time=as.numeric(paste(tim, collapse = "")), mod = "Space",
-#                                       rbind("QuasiPois",res$detect.out.qp.s), rbind("Pois",res$detect.out.p.s))))
-#                 table.detection <- rbind(table.detection, tabn)
-#                 
-#                 #make maps
-#                 pdfname <- paste0("figures/simulations/sim","_","center","_",cent,"radius",rad,"_", "start",
-#                                   "_",as.numeric(paste(tim, collapse = "")),"_","rr","_",gsub("[.]","",risk),".pdf")
-#                 easyplot(pdfname, res, mods, space="both")
-#                 
-#             }
-#         }
-#     }
-# }
+#Set Some Initial Conditions
+x=dframe2$utmx/1000
+y=dframe2$utmy/1000
+rMax=30
+Time=5
+nsim=100
+
+centers <- c(150, 35)
+radii <- c(9, 11, 18)
+timeperiods <- list(c(3:5), c(1:2), c(2:4))
+risk.ratios <- c(1.1, 1.5, 2)
+
+table.detection <- NULL
+
+
+for(cent in centers){
+    for(rad in radii){
+        for(tim in timeperiods){
+            for(risk in risk.ratios){
+                print(c(cent, rad, tim, risk))
+                system.time(res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
+                                     nsim,cent, rad, risk, tim, colors=TRUE,
+                                     utm=TRUE, byrow=TRUE, threshold, space= "both"))
+                #save results
+                (sim.i <- paste0("sim","_","center","_",cent,"radius",rad,"_", "start",
+                                 "_",as.numeric(paste(tim, collapse = "")),"_","rr","_",gsub("[.]","",risk)))
+                filename <- paste0("SimulationOutput/",sim.i,".RData")
+                save(res, file = filename)
+
+                #Print Detection for the Simulation
+                (tabn <- rbind("******",cbind(rad,risk,cent,time=as.numeric(paste(tim, collapse = "")), mod = "ST",
+                                               rbind("QuasiPois",res$detect.out.qp.st), rbind("Pois",res$detect.out.p.st)),
+                                cbind(rad,risk,cent,time=as.numeric(paste(tim, collapse = "")), mod = "Space",
+                                      rbind("QuasiPois",res$detect.out.qp.s), rbind("Pois",res$detect.out.p.s))))
+                table.detection <- rbind(table.detection, tabn)
+
+                #make maps
+                pdfname <- paste0("figures/simulations/sim","_","center","_",cent,"radius",rad,"_", "start",
+                                  "_",as.numeric(paste(tim, collapse = "")),"_","rr","_",gsub("[.]","",risk),".pdf")
+                easyplot(pdfname, res, mods, space="both")
+
+            }
+        }
+    }
+}
 
 
 #########################################################################################################
@@ -298,85 +303,6 @@ save(table.detection, file="tabledetectionmultclust.RData")
 
 mytable.df <- do.call("rbind", lapply(table.detection, as.data.frame))
 write.csv(mytable.df, file="tabledetectiondf_multclust.csv", row.names=TRUE)
-
-
-
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-##BEGIN CLUSTER SIMULATIONS - Population-based clusters
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-
-#Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax= summary(pop)[[3]]
-Time=5
-#nsim=100
-nsim=100
-
-centers <- c(150)
-radii <- summary(pop)[[2]]
-timeperiod <- c(2:4)
-risk.ratios <- c(2)
-
-table.detection <- NULL
-
-
-# for(cent in centers){
-#     for(rad in radii){
-#         for(tim in timeperiods){
-#             for(risk in risk.ratios){
-#                 print(c(cent, rad, tim, risk))
-                system.time(res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                                                 nsim,centers, radii, risk.ratios, timeperiods, colors=TRUE,
-                                                 utm="pop", byrow=TRUE, threshold, space= "both", nullmod=NULL))
-                #save results
-                (sim.i <- paste0("sim","_","center","_",cent,"radius",rad,"_", "start",
-                                 "_",as.numeric(paste(tim, collapse = "")),"_","rr","_",gsub("[.]","",risk)))
-                filename <- paste0("SimulationOutput/",sim.i,".RData")
-                save(res, file = filename)
-                
-                #Print Detection for the Simulation
-                (tabn <- rbind("******",cbind(rad,risk,cent,time=as.numeric(paste(tim, collapse = "")), mod = "ST",
-                                              rbind("QuasiPois",res$detect.out.qp.st), rbind("Pois",res$detect.out.p.st)),
-                               cbind(rad,risk,cent,time=as.numeric(paste(tim, collapse = "")), mod = "Space",
-                                     rbind("QuasiPois",res$detect.out.qp.s), rbind("Pois",res$detect.out.p.s))))
-                table.detection <- rbind(table.detection, tabn)
-                
-                #make maps
-                pdfname <- paste0("figures/simulations/sim","_","center","_",cent,"radius",rad,"_", "start",
-                                  "_",as.numeric(paste(tim, collapse = "")),"_","rr","_",gsub("[.]","",risk),".pdf")
-                easyplot(pdfname, res, mods, space="both")
-    #             
-    #         }
-    #     }
-    # }
-}
-
-#WRITE TO CSV
-print(table.detection)
-write.csv(table.detection, file="tabledetectionmultclust.csv", row.names=TRUE)
-save(table.detection, file="tabledetectionmultclust.RData")
-
-mytable.df <- do.call("rbind", lapply(table.detection, as.data.frame))
-write.csv(mytable.df, file="tabledetectiondf_multclust.csv", row.names=TRUE)
-
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
 
 
 
