@@ -12,13 +12,13 @@
 #' @return returns space-time 
 #' 
 vectors.space <- function(x,Ex, YSIM,Time, timeperiod, init,...){
-    id <- rep(1:length(x), times = length(timeperiod))
+    id <- rep(1:length(x), times = Time)
     if(length(id)!=length(as.vector(Ex[[1]]))) stop("Length of ID var not equal to number of observations")
     vectors.sim.s <- list(Period = rep("1", length(x)),
-                          Ex = lapply(1:nsim, function(i) tapply(as.vector(matrix(Ex[[i]], ncol=Time)[, timeperiod]), id, function(x) mean(x))),
-                          E0_0 = tapply(as.vector(matrix(init$E0, ncol=Time)[, timeperiod]), id, function(x) mean(x)),
-                          Y.vec = tapply(as.vector(matrix(init$Y.vec, ncol=Time)[, timeperiod]), id, function(x) round(mean(x))))
-    YSIM.s <- lapply(1:nsim, function(i) tapply(as.vector(matrix(YSIM[[i]], ncol=Time)[, timeperiod]), id, function(x) round(mean(x))))
+                          Ex = lapply(1:nsim, function(i) tapply(as.vector(matrix(Ex[[i]], ncol=Time)), id, function(x) mean(x))),
+                          E0_0 = tapply(as.vector(matrix(init$E0, ncol=Time)), id, function(x) mean(x)),
+                          Y.vec = tapply(as.vector(matrix(init$Y.vec, ncol=Time)), id, function(x) round(mean(x))))
+    YSIM.s <- lapply(1:nsim, function(i) tapply(as.vector(matrix(YSIM[[i]], ncol=Time)), id, function(x) round(mean(x))))
     return(list(vectors.sim.s = vectors.sim.s, YSIM.s = YSIM.s))
 }
     
@@ -202,14 +202,15 @@ clust.sim.all.both <- function(x, y, rMax, period, expected, observed, Time, nsi
     #RR and Colors for Plotting
     ##SPACE-ONLY
     initial.s <- list(E0 = unlist(vectors.sim.s$E0_0))
-    id <- rep(1:length(x), times = length(timeperiod))
+    #id <- rep(1:length(x), times = length(timeperiod))
+    id <- rep(1:length(x), times=Time)
     riskratios.qp.s <- get.rr2(lassoresult.qp.s, vectors.sim.s,initial.s, 
-                               tapply(as.vector(matrix(E1, ncol=Time)[,timeperiod]), id, function(x) mean(x)),
+                               tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x)),
                                1, sim=TRUE)
     rrcolors.qp.s <- colormapping(riskratios.qp.s,1)
     
     riskratios.p.s <- get.rr2(lassoresult.p.s, vectors.sim.s, initial.s, 
-                              tapply(as.vector(matrix(E1, ncol=Time)[,timeperiod]), id, function(x) mean(x)),
+                              tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x)),
                               1, sim=TRUE)
     rrcolors.p.s <- colormapping(riskratios.p.s,1)
     
