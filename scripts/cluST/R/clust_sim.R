@@ -1,17 +1,18 @@
 #'Simulation functions for space and space-time cluster detection with lasso. 
 #'
 
-#' vectors.space
+#' vectors.space.sim
 #' 
 #' This function will collapse a space-time vector onto space only
 #' @param x vector coordinates (unique regardless of time period)
 #' @param Ex list of simulated and standardized expected counts
+#' @param YSIM simulated observed
 #' @param Time number of time periods
 #' @param timeperiod explicit vector of timeperiods
 #' @param init initial list of vectors, inherited from function setVectors.
 #' @return returns space-time 
 #' 
-vectors.space <- function(x,Ex, YSIM,Time, timeperiod, init,...){
+vectors.space.sim <- function(x,Ex, YSIM,Time, init,...){
     id <- rep(1:length(x), times = Time)
     if(length(id)!=length(as.vector(Ex[[1]]))) stop("Length of ID var not equal to number of observations")
     vectors.sim.s <- list(Period = rep("1", length(x)),
@@ -179,7 +180,7 @@ clust.sim.all.both <- function(x, y, rMax, period, expected, observed, Time, nsi
     vectors.sim <- list(Period = Period, Ex = Ex , E0_0 = init$E0, Y.vec=init$Y.vec)
     
     #create vectors.sim for space-only
-    spacevecs <- vectors.space(x, Ex, YSIM, Time, timeperiod, init)
+    spacevecs <- vectors.space.sim(x, Ex, YSIM, Time, timeperiod, init)
     vectors.sim.s <- spacevecs$vectors.sim.s 
     YSIM.s <- spacevecs$YSIM.s
     
