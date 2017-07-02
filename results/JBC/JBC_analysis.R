@@ -4,7 +4,7 @@
 #Space-time Analysis of Japanese Breast Cancer Data using cluST.R
 #Maria Kamenetsky
 #9-26-16
-#updated: 3-27-17
+#updated: 6-27-17
 
 ########################################################################################################
 ########################################################################################################
@@ -60,94 +60,46 @@ mods <- c("QuasiPoisson", "Poisson")
 
 
 ########################################################################################################
-#SPACETIME ONLY
+#REAL DATA - Japanese Breast Cancer
 ########################################################################################################
-
-####################################################
-#QUASI-POISSON ONLY
-####################################################
 #Initial inputs
 x=dframe2$utmx/1000
 y=dframe2$utmy/1000
-rMax <- 30 
+rMax <- 20 
 Time=5
 
 
-res.st.qp <- clust(x,y,rMax, dframe$period, dframe$expdeath, dframe$death, Time, spacetime=TRUE, pois=FALSE, utm=TRUE, byrow=TRUE)
+#res.st.qp <- clust(x,y,rMax, dframe$period, dframe$expdeath, dframe$death, Time, spacetime=TRUE, pois=FALSE, utm=TRUE, byrow=TRUE)
+system.time(res <- clust(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
+                                utm=TRUE, byrow=TRUE,space= "both"))
 
 #save results
-filename <- paste0("results/JBC/jbc_QP_ST",".RData")
-save(res.st.qp, file = filename)
+filename <- paste0("results/JBC/jbc_analysis",".RData")
+save(res, file = filename)
 
 #Create Empty PDF to Map Onto
-pdfname <- paste0("figures/JBC/jbc_QP_ST",".pdf")
-easyplot(pdfname, res.st.qp, mods, space="spacetime")
+pdfname <- paste0("figures/JBC/jbc_analysis",".pdf")
 
-####################################################
-#POISSON ONLY
-####################################################
-res.st.p <- clust(x,y,rMax, dframe$period, dframe$expdeath, dframe$death, Time, spacetime=TRUE, pois=TRUE, utm=TRUE, byrow=TRUE)
-
-#save results
-filename <- paste0("results/JBC/jbc_P_ST",".RData")
-save(res.st.p, file = filename)
-
-#Create Empty PDF to Map Onto
-pdfname <- paste0("figures/JBC/jbc_P_ST",".pdf")
-easyplot(pdfname, res.st.p, mods, space="spacetime")
+easyplot(pdfname, res, mods, space="both", obs=TRUE)
 
 
 ########################################################################################################
-########################################################################################################
-########################################################################################################
-
-########################################################################################################
-#SPACE ONLY
+#Table of Number of clusters detected
 ########################################################################################################
 
+model <- c(rep("Poisson",2), rep("Quasi-Poisson",2))
+st <- rep(c("Space", "Space-Time"),2)
+numclust.AIC <- c(res$lassoresult.p.s$numclust.qaic, res$lassoresult.p.st$numclust.qaic, 
+                  res$lassoresult.qp.s$numclust.qaic, res$lassoresult.qp.st$numclust.qaic)
+numclust.AICc <- c(res$lassoresult.p.s$numclust.qaicc, res$lassoresult.p.st$numclust.qaicc, 
+                   res$lassoresult.qp.s$numclust.qaicc, res$lassoresult.qp.st$numclust.qaicc)
+numclust.BIC <- c(res$lassoresult.p.s$numclust.qbic, res$lassoresult.p.st$numclust.qbic, 
+                  res$lassoresult.qp.s$numclust.qbic, res$lassoresult.qp.st$numclust.qbic)
 
-####################################################
-#QUASI-POISSON
-####################################################
-#Initial inputs
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
-rMax <- 30 
-Time=1
-
-
-#create average dataframe for spaceonly
-death <- with(dframe, tapply(death, id, function(x) round(mean(x))))
-expdeath <- with(dframe, tapply(expdeath, id, function(x) mean(x)))
-df <- cbind.data.frame(id = unique(dframe$id), period = rep("1", length(unique(dframe$id))), death = death, expdeath=expdeath)
+(table.clusters <- cbind(model, st, numclust.AIC, numclust.AICc, numclust.BIC))
 
 
-res.s.qp <- clust(x,y,rMax, df$period, df$expdeath, df$death, Time, spacetime=FALSE, pois=FALSE, utm=TRUE, byrow=TRUE)
-
-#save results
-filename <- paste0("results/JBC/jbc_QP_Space",".RData")
-save(res.s.qp, file = filename)
-
-#Create Empty PDF to Map Onto
-pdfname <- paste0("figures/JBC/jbc_QP_Space",".pdf")
-easyplot(pdfname, res.s.qp, mods, space="space")
-
-
-####################################################
-#POISSON
-####################################################
-
-res.s.p <- clust(x,y,rMax, df$period, df$expdeath, df$death, Time, spacetime=FALSE, pois=TRUE, utm=TRUE, byrow=TRUE)
-
-#save results
-filename <- paste0("results/JBC/jbc_P_Space",".RData")
-save(res.s.qp, file = filename)
-
-#Create Empty PDF to Map Onto
-pdfname <- paste0("figures/JBC/jbc_P_Space",".pdf")
-easyplot(pdfname, res.s.p, mods, space="space")
-
-
-
-
+#WRITE TO CSV
+print(table.clusters)
+write.csv(table.clusters, file="tables/tableclusters.csv", row.names=TRUE)
 
