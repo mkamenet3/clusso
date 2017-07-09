@@ -5,7 +5,6 @@
 #' @param clusters clusters dataframe from (cluster.df function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)
 #' @param numCenters the number of centers/centroids
 #' @return returns sparse matrix of 1's
-#' @export
 #' @example 
 #' sparseMAT <- spaceMat(clusters, numCenters)
 spaceMat <- function(clusters, numCenters,...){

@@ -52,25 +52,13 @@ get.rr2 <- function(lassoresult,vectors,init,E1, Time, sim=TRUE,...){
     }
     if(sim==FALSE){
         RRobs <- matrix(as.vector(vectors$Y.vec)/as.vector(vectors$E0),ncol=Time)
+        message("Returning results for real (non-sim) data")
     }
     return(list(RRbic=matrix(lassoresult$E.qbic,ncol=Time),
                 RRaic=matrix(lassoresult$E.qaic,ncol=Time),
                 RRaicc=matrix(lassoresult$E.qaicc,ncol=Time),
                 RRobs= RRobs))
 }
-# get.rr <- function(lassoresult,vectors, Time, sim=TRUE,...){
-#     if(sim==TRUE){
-#         E0_avg <- Reduce("+", vectors$E0)/length(vectors$E0)
-#         RRobs <- matrix(as.vector(E0_avg)/as.vector(vectors$E0_fit),ncol=Time)
-#         message("Relative risk ratios from simulated data - average RR over nsim")   
-#     }
-#     if(sim==FALSE){
-#         RRobs <- matrix(as.vector(vectors$Y.vec)/as.vector(vectors$E0),ncol=Time)
-#     }
-#     return(list(RRbic=matrix(lassoresult$E.qbic,ncol=Time),
-#                 RRaic=matrix(lassoresult$E.qaic,ncol=Time),
-#                 RRaicc=matrix(lassoresult$E.qaicc,ncol=Time),
-#                 RRobs= RRobs))
-# }
+
 
 

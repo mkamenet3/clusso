@@ -1,15 +1,18 @@
 #' Auxiliary Plotting Functions for Japanese Breast Cancer Data
 #' 
+#' Wrapper function easyplot
+#' 
 #' @param pdfname pdfname of what the output pdf will be called
 #' @param res resultant list from clust_ function
 #' @param mods string vector of which models you ran
 #' @param space If space="space", then the Quasi-Poisson and Poisson spatial only models will be run; if space="spacetime" then the Quasi-Poisson and Poisson
 #' spatio-temporal models will be run; if space="both" then all four models will be run
+#' @param obs default is NULL. If not null, then will add "observed" instead of "oracle" label to plot for comparison map.
 #' @export
 #' @example 
 #' pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start","_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
 #' easyplot(pdfname, res, mods, space="both")
-easyplot <- function(pdfname, res, mods, space=c("space", "spacetime", "both")){
+easyplot <- function(pdfname, res, mods, space=c("space", "spacetime", "both"), obs=NULL,...){
     if(is.null(space)){ stop("You must specify `space`, `spacetime` or `both`")}
     space <- match.arg(space, several.ok = FALSE)
     pdf_qp.s <- paste0(gsub(".pdf","", pdfname),mods[1],"space" ,".pdf")
@@ -24,15 +27,20 @@ easyplot <- function(pdfname, res, mods, space=c("space", "spacetime", "both")){
                plotmap.st(pdf_qp.st, res, sub = res$rrcolors$rrcolors.qp.st)
                plotmap.st(pdf_p.st, res, sub = res$rrcolors$rrcolors.p.st)},
            both = {
-               plotmap.s(pdf_qp.s, res, sub = res$rrcolors$rrcolors.qp.s)
-               plotmap.s(pdf_p.s, res, sub = res$rrcolors$rrcolors.p.s)
-               plotmap.st(pdf_qp.st, res, sub = res$rrcolors$rrcolors.qp.st)
-               plotmap.st(pdf_p.st, res, sub = res$rrcolors$rrcolors.p.st)})
+               plotmap.s(pdf_qp.s, res, obs, sub = res$rrcolors$rrcolors.qp.s)
+               plotmap.s(pdf_p.s, res, obs, sub = res$rrcolors$rrcolors.p.s)
+               plotmap.st(pdf_qp.st, res, obs, sub = res$rrcolors$rrcolors.qp.st)
+               plotmap.st(pdf_p.st, res, obs, sub = res$rrcolors$rrcolors.p.st)})
 }
 
 
-#Space-time plotting
-plotmap.st <- function(pdfname,res, obs = NULL, sub=NULL){
+#' #Space-time plotting
+#' @param pdfname pdfname of what the output pdf will be called
+#' @param res resultant list from clust_ function
+#' @param obs if observed is to be plotted or oracle from simulation
+#' @param optional parameter if you want to just use the function for plotting different vectors
+#' 
+plotmap.st <- function(pdfname,res, obs, sub,...){
     if(!is.null(obs)){
         firstrow = "Obs"
     }
@@ -41,7 +49,6 @@ plotmap.st <- function(pdfname,res, obs = NULL, sub=NULL){
     }
     if(!is.null(sub)){
         rrcolors <- sub
-        print("ok")
     }
     else {
         rrcolors <- res$rrcolors
@@ -50,7 +57,6 @@ plotmap.st <- function(pdfname,res, obs = NULL, sub=NULL){
     #Maps of Observed Counts
     par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))
     plot(japan.poly2,type='n',asp=1,axes=F,xlab='',ylab='')
-    #polygon(japan.poly2,col=res$rrcolors$colors.obs[,1],border=F)
     polygon(japan.poly2,col=rrcolors$colors.obs[,1],border=F)
     segments(japan.prefect2$x1,japan.prefect2$y1,japan.prefect2$x2,japan.prefect2$y2)
     text(355,4120,paste0("Period 1 - ", firstrow),cex=1.00)
@@ -184,8 +190,13 @@ plotmap.st <- function(pdfname,res, obs = NULL, sub=NULL){
     dev.off()
 }
 
-#Spatial plotting (time period = 1)
-plotmap.s <- function(pdfname,res, obs = NULL, sub=NULL){
+#' #Space-only plotting
+#' @param pdfname pdfname of what the output pdf will be called
+#' @param res resultant list from clust_ function
+#' @param obs if observed is to be plotted or oracle from simulation
+#' @param optional parameter if you want to just use the function for plotting different vectors
+#' 
+plotmap.s <- function(pdfname,res, obs, sub,...){
     if(!is.null(obs)){
         firstrow = "Obs"
     }
@@ -194,8 +205,7 @@ plotmap.s <- function(pdfname,res, obs = NULL, sub=NULL){
     }
     if(!is.null(sub)){
         rrcolors <-  sub
-        print("ok -spaceonly")
-    }
+        }
     else{
         rrcolors <- res$rrcolors
     }

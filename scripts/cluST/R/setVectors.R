@@ -11,15 +11,25 @@
 #' @return This function returns a list of expected and observed counts along with the period. 
 #' @export
 #' @examples
-#' setVectors(period, expected, observed, Time, byrow=TRUE)
-#' 
+#' period1 <- c(rep("1",5),rep("2",5))
+#' period2 <- rep(seq(1,2),5)
+#' expected <- rnegbin(n = 10,mu = 15,theta = 1000)
+#' observed <- rnegbin(expected, theta=1000)
+#' Time = 2
+#' setVectors(period1, expected, observed, Time, byrow=TRUE))
+#' setVectors(period2, expected, observed, Time, byrow=FALSE)
+
+
+
 setVectors <- function(period, expect, observed,Time, byrow=TRUE,...) {
     if (byrow==TRUE){
+        if(period[1] == period[2]) warning("Please check the format of the data, you may want byrow=FALSE. It appears that the time periods appear sequentially")
         E0=as.vector(matrix(expect, byrow=T, ncol=Time))
         Y.vec <- as.vector(matrix(observed,byrow=T, ncol=Time))
         Year <- as.vector(matrix(period, byrow=T, ncol=Time)) 
     }
     else {
+        if(period[1] != period[2]) warning("Please check the format of the data, you may want byrow=TRUE. It appears that the time periods do not appear sequentially")
         E0=as.vector(matrix(expect, ncol=Time))
         Y.vec <- as.vector(matrix(observed, ncol=Time))
         Year <- as.vector(matrix(period, ncol=Time))

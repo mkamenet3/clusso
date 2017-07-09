@@ -25,62 +25,77 @@ spacetimeLasso<- function(clusters, vectors, Time, spacetime=TRUE,pois=FALSE,...
     else{
         sparseMAT <- spaceMat(clusters, numCenters)
     }
-    message("Space-time matrix created")
-    Ex <- vectors$E0
+    print(paste("Number of potential clusters to scan through: ", dim(sparseMAT)[2]))
+    Ex <- vectors$Ex
     Yx <- vectors$Y.vec
     Period <- vectors$Period
     message("Running Lasso - stay tuned")
-    lasso <- glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex), nlambda = 2000, standardize = FALSE, dfmax = 10)
+    lasso <- glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex), nlambda = 2000, standardize = FALSE, intercept=FALSE,dfmax = 10)
     message("Lasso complete - extracting estimates and paths")
-    coefs.lasso.all <- coef(lasso)
-    intercept <- rep(1, dim(sparseMAT)[1])
-    sparseMAT <- cBind(intercept, sparseMAT)
+    #coefs.lasso.all <- coef(lasso)
+    coefs.lasso.all <- coef(lasso)[-1,]
+    #intercept <- rep(1, dim(sparseMAT)[1])
+    #sparseMAT <- cBind(intercept, sparseMAT)
     xbetaPath<- sparseMAT%*%coefs.lasso.all
     mu <- sapply(1:length(lasso$lambda), function(i) exp(xbetaPath[,i]))    
-    loglike <- sapply(1:length(lasso$lambda), function(i) sum(dpoisson(Yx, mu[,i],log=TRUE)))
-    K <- lasso$df + 1
+    loglike <- sapply(1:length(lasso$lambda), function(i) sum(dpoisson(Yx, mu[,i],Ex)))
+    K <- lasso$df 
+    
+    #########################################################
+    #Space-Time, Quasi-Poisson only (yes overdispersion)
+    #########################################################
     if(spacetime==TRUE & pois == FALSE){
         message("returning results for space-time Quasi-Poisson model")
         offset_reg <- glm(Yx ~ 1 + as.factor(vectors$Period) + offset(log(Ex)),family=poisson)
-        overdisp.est <- overdisp(offset_reg)
+        #overdisp.est <- overdisp(offset_reg)
+        overdisp.est <- max(unlist(deviance(offset_reg)/df.residual(offset_reg)))
         message("Selecting best paths")
         
         #QBIC
-        PLL.qbic  <- (loglike/overdisp.est)-log(n*Time)/2*K
-        select.qbic <- which.max(PLL.qbic)
+        PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(n*Time))
+        select.qbic <- which.min(PLL.qbic)
         E.qbic <- mu[,select.qbic]
+        numclust.qbic <- length(unique(coefs.lasso.all[,select.qbic]))-1
         
         #QAIC
-        PLL.qaic = (loglike/overdisp.est) - K
-        select.qaic <- which.max(PLL.qaic)
+        PLL.qaic <-  2*(K) - 2*(loglike/overdisp.est)
+        select.qaic <- which.min(PLL.qaic)
         E.qaic <- mu[,select.qaic]
+        numclust.qaic <- length(unique(coefs.lasso.all[,select.qaic]))-1
+        
         
         #QAICc
-        PLL.qaicc=(loglike/overdisp.est)- ((K*n*Time)/(n*Time-K-1))
-        select.qaicc <- which.max(PLL.qaicc)
+        PLL.qaicc <- 2*(K) - 2*(loglike/overdisp.est) + 
+                                ((2*K*(K + 1))/(n*Time - K - 1))
+        select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaic]
-        message("Returning results")
+        numclust.qaicc <- length(unique(coefs.lasso.all[,select.qaicc]))-1
+    
     }
     #########################################################
-    #Space-Time, Poisson only
+    #Space-Time, Poisson only (no overdispersion)
     #########################################################                
     else if(spacetime==TRUE & pois==TRUE){
         message("returning results for space-time Poisson model")
         #QBIC
-        PLL.qbic  <- (loglike)-log(n*Time)/2*K
-        select.qbic <- which.max(PLL.qbic)
+        PLL.qbic  <- -2*(loglike) + ((K)*log(n*Time))
+        select.qbic <- which.min(PLL.qbic)
         E.qbic <- mu[,select.qbic]
+        numclust.qbic <- length(unique(coefs.lasso.all[,select.qbic]))-1
         
         #QAIC
-        PLL.qaic = (loglike) - K
-        select.qaic <- which.max(PLL.qaic)
+        PLL.qaic <-  2*(K) - 2*(loglike)
+        select.qaic <- which.min(PLL.qaic)
         E.qaic <- mu[,select.qaic]
+        numclust.qaic <- length(unique(coefs.lasso.all[,select.qaic]))-1
+        
         
         #QAICc
-        PLL.qaicc=(loglike)- ((K*n*Time)/(n*Time-K-1))
-        select.qaicc <- which.max(PLL.qaicc)
+        PLL.qaicc <- 2*(K) - 2*(loglike) + 
+            ((2*K*(K + 1))/(n*Time - K - 1))
+        select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaic]
-        message("Returning results")
+        numclust.qaicc <- length(unique(coefs.lasso.all[,select.qaicc]))-1
     }
     #########################################################
     #Space-Only, Quasi-Poisson
@@ -88,24 +103,30 @@ spacetimeLasso<- function(clusters, vectors, Time, spacetime=TRUE,pois=FALSE,...
     else if(spacetime==FALSE & pois==FALSE){
         message("Returning results for space-only  Quasi-Poisson model")
         offset_reg <- glm(Yx ~ 1 + offset(log(Ex)),family=poisson)
-        overdisp.est <- overdisp(offset_reg)
+        overdisp.est <- max(unlist(deviance(offset_reg)/df.residual(offset_reg)))
+        print(paste("Overdispersion estimate:", overdisp.est))
         message("Selecting best paths")
+        if(pois==FALSE & is.null(overdisp.est)) warning("No overdispersion for quasi-Poisson model. Please check.")
         
         #QBIC
-        PLL.qbic  <- (loglike/overdisp.est)-log(n*Time)/2*K
-        select.qbic <- which.max(PLL.qbic)
+        PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(n*Time))
+        select.qbic <- which.min(PLL.qbic)
         E.qbic <- mu[,select.qbic]
+        numclust.qbic <- length(unique(coefs.lasso.all[,select.qbic]))-1
         
         #QAIC
-        PLL.qaic = (loglike/overdisp.est) - K
-        select.qaic <- which.max(PLL.qaic)
+        PLL.qaic <-  2*(K) - 2*(loglike/overdisp.est)
+        select.qaic <- which.min(PLL.qaic)
         E.qaic <- mu[,select.qaic]
+        numclust.qaic <- length(unique(coefs.lasso.all[,select.qaic]))-1
+        
         
         #QAICc
-        PLL.qaicc=(loglike/overdisp.est)- ((K*n*Time)/(n*Time-K-1))
-        select.qaicc <- which.max(PLL.qaicc)
+        PLL.qaicc <- 2*(K) - 2*(loglike/overdisp.est) + 
+            ((2*K*(K + 1))/(n*Time - K - 1))
+        select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaic]
-        message("Returning results")
+        numclust.qaicc <- length(unique(coefs.lasso.all[,select.qaicc]))-1
     }
     #########################################################
     #Space-only, Poisson only
@@ -113,22 +134,27 @@ spacetimeLasso<- function(clusters, vectors, Time, spacetime=TRUE,pois=FALSE,...
     else if(spacetime==FALSE & pois == TRUE){
         message("Returning results for space-only  Poisson model")
         #QBIC
-        PLL.qbic  <- (loglike)-log(n*Time)/2*K
-        select.qbic <- which.max(PLL.qbic)
+        PLL.qbic  <- -2*(loglike) + ((K)*log(n*Time))
+        select.qbic <- which.min(PLL.qbic)
         E.qbic <- mu[,select.qbic]
+        numclust.qbic <- length(unique(coefs.lasso.all[,select.qbic]))-1
         
         #QAIC
-        PLL.qaic = (loglike) - K
-        select.qaic <- which.max(PLL.qaic)
+        PLL.qaic <-  2*(K) - 2*(loglike)
+        select.qaic <- which.min(PLL.qaic)
         E.qaic <- mu[,select.qaic]
+        numclust.qaic <- length(unique(coefs.lasso.all[,select.qaic]))-1
+        
         
         #QAICc
-        PLL.qaicc=(loglike)- ((K*n*Time)/(n*Time-K-1))
-        select.qaicc <- which.max(PLL.qaicc)
+        PLL.qaicc <- 2*(K) - 2*(loglike) + 
+            ((2*K*(K + 1))/(n*Time - K - 1))
+        select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaic]
-        message("Returning results")
+        numclust.qaicc <- length(unique(coefs.lasso.all[,select.qaicc]))-1
     }
     
-    return(list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, Ex = Ex, Yx = Yx, lasso = lasso, K = K, n = n))  
+    return(list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, numclust.qaic = numclust.qaic,
+                numclust.qaicc = numclust.qaicc, numclust.qbic= numclust.qbic, Ex = Ex, Yx = Yx, lasso = lasso, K = K))  
 }
 
