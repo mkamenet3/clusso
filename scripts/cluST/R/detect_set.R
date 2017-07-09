@@ -49,13 +49,14 @@ detect_set <- function(lassoresult, vectors.sim, rr, Time, x, y, rMax, center, r
     rr.simAICc <- lapply(1:nsim, function(i) lassoresult$select_mu.qaicc[[i]])
     rr.simBIC <- lapply(1:nsim, function(i) lassoresult$select_mu.qbic[[i]])
     #Extract background rates as lists
+
     alpha.list.AIC <- lapply(1:nsim, function(i) lapply(1:Time, function(k)
-        sort(table(matrix(rr.simAIC[[i]], ncol=Time)[,k]),decreasing=TRUE)[1]))
-    alpha.list.AICc <- lapply(1:nsim, function(i) lapply(1:Time, function(k) 
+        sort(table(matrix(as.vector(rr.simAIC[[i]]), ncol=Time)[,k]),decreasing=TRUE)[1]))
+    alpha.list.AICc <- lapply(1:nsim, function(i) lapply(1:Time, function(k)
         sort(table(matrix(rr.simAICc[[i]], ncol=Time)[,k]),decreasing=TRUE)[1]))
-    alpha.list.BIC <- lapply(1:nsim, function(i) lapply(1:Time, function(k) 
+    alpha.list.BIC <- lapply(1:nsim, function(i) lapply(1:Time, function(k)
         sort(table(matrix(rr.simBIC[[i]], ncol=Time)[,k]),decreasing=TRUE)[1]))
-    
+
     #reformat alpha.list.AIC to be a matrix for each simulation
     alphaAIC <- lapply(1:nsim, function(i) matrix(as.numeric(attributes(unlist(alpha.list.AIC[[i]]))$names),
                                                   ncol=Time, byrow=TRUE, nrow=length(x)))

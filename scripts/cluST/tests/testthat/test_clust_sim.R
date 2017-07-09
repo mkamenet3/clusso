@@ -23,4 +23,5 @@ test_that("All parameters are correctly specified and trouble-shooted in clust.s
                                radius, risk.ratio, timeperiod, utm=TRUE, byrow=TRUE, threshold))
     expect_error(vectors.space(x,expected,Time, timeperiod))
     
+    
 })

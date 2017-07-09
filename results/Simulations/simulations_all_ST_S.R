@@ -115,9 +115,9 @@ save(res, file = filename)
 
 #Print Detection for the Simulation
 (tabn <- rbind("******",cbind(radius,risk.ratio,center,time=as.numeric(paste(timeperiod, collapse = "")), mod = "ST",
-                              rbind("QuasiPois",res$detect.out.qp.st), rbind("Pois",res$detect.out.qp.st)), 
+                              rbind("QuasiPois",res$detect.out.qp.st), rbind("Pois",res$detect.out.p.st)), 
                cbind(radius,risk.ratio,center,time=as.numeric(paste(timeperiod, collapse = "")), mod = "Space",
-                     rbind("QuasiPois",res$detect.out.qp.s), rbind("Pois",res$detect.out.qp.s))))
+                     rbind("QuasiPois",res$detect.out.qp.s), rbind("Pois",res$detect.out.p.s))))
 
 #make maps
 pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",

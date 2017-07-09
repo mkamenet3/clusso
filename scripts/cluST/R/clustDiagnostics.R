@@ -153,9 +153,11 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, T
         if(under==TRUE){
             if(!is.null(under)) stop("Specify if you want under or null estimates")
             ix <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) < round(as.vector(set$alphaAIC[[i]]),6)))
+            message("Running < 1 risk model")
         }
         else{
             ix <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) > round(as.vector(set$alphaAIC[[i]]),6)))
+            stopifnot(all.equal(ix, lapply(1:nsim, function(i) which(round(as.vector(set$rr.simAIC[[i]]),6) > round(as.vector(set$alphaAIC[[i]]),6)))))
         }
         
         #1)a) Did it find anything in the cluster?
@@ -297,6 +299,7 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, T
         if(under==TRUE){
             if(!is.null(under)) stop("Specify if you want under or null estimates")
             ix <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) < round(as.vector(set$alphaAIC[[i]]),6)))
+            message("Running < 1 risk model")
         }
         else{
             ix <- lapply(1:nsim, function(i) which(round(set$rr.simAIC[[i]],6) > round(as.vector(set$alphaAIC[[i]]),6)))

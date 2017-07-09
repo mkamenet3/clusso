@@ -180,7 +180,7 @@ clust.sim.all.both <- function(x, y, rMax, period, expected, observed, Time, nsi
     vectors.sim <- list(Period = Period, Ex = Ex , E0_0 = init$E0, Y.vec=init$Y.vec)
     
     #create vectors.sim for space-only
-    spacevecs <- vectors.space.sim(x, Ex, YSIM, Time, timeperiod, init)
+    spacevecs <- vectors.space.sim(x, Ex, YSIM, Time, init)
     vectors.sim.s <- spacevecs$vectors.sim.s 
     YSIM.s <- spacevecs$YSIM.s
     

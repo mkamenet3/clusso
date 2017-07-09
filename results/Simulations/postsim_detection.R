@@ -1,7 +1,7 @@
 ####################################################
 #Post-Sim Detection: 
 #M.Kamenetsky
-#3-26-17
+#7-3-2017
 ####################################################
 
 sink("postsimDetection.txt")
@@ -53,7 +53,7 @@ japan.prefect2 <- dframe.prefect2[,2:5]
 #Set Some Initial Conditions
 x=dframe2$utmx/1000
 y=dframe2$utmy/1000
-rMax=30
+rMax=20
 #Time=5
 nsim=100
 mods <- c("QuasiPoisson", "Poisson")
