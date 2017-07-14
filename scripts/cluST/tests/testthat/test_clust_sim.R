@@ -17,11 +17,26 @@ test_that("All parameters are correctly specified and trouble-shooted in clust.s
     expected <- lapply(1:nsim, function(i) rnegbin(n = 10,mu = 15,theta = 1000))
     observed <- lapply(1:nsim, function(i) rnegbin(n = 10,mu = 20,theta = 1000))
     YSIM <- lapply(1:nsim, function(i) rnegbin(n = 10,mu = 15,theta = 1000))
-    
-    
+    init <- setVectors(period, expected, observed, Time, byrow=TRUE)
     expect_error(clust.sim.all(x_utm, y_utm, period, expected, observed, Time, nsim, center,
                                radius, risk.ratio, timeperiod, utm=TRUE, byrow=TRUE, threshold))
-    expect_error(vectors.space(x,expected,Time, timeperiod))
+})
+
+
+test_that("Vectors.space.sim correctly collapses from space-time to space.", {
+    #set up
+    set.seed(2)
+    Time <- 2
+    theta = 1000
+    nsim = 2
+    period <- rep(seq(1,2),5)
+    expected <- list(rnegbin(n = 10,mu = 15,theta = 1000))
+    observed <- rnegbin(unlist(expected), theta=1000)
+    x <- c(399786.6, 360917.0, 385175.1, 371603.4, 388154.2)
+    Ex <- list(unlist(expected), unlist(expected))
+    #set init
+    init <- setVectors(period, unlist(expected), observed, Time, byrow=TRUE)
+    ysim <- lapply(1:nsim, function(i) rnegbin(unlist(expected), theta = theta))
     
-    
+    expect_equal(length(vectors.space.sim(x,Ex,YSIM, Time,init)),2)
 })

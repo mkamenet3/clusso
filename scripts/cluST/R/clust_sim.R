@@ -16,10 +16,10 @@ vectors.space.sim <- function(x,Ex, YSIM,Time, init,...){
     id <- rep(1:length(x), times = Time)
     if(length(id)!=length(as.vector(Ex[[1]]))) stop("Length of ID var not equal to number of observations")
     vectors.sim.s <- list(Period = rep("1", length(x)),
-                          Ex = lapply(1:nsim, function(i) tapply(as.vector(matrix(Ex[[i]], ncol=Time)), id, function(x) mean(x))),
-                          E0_0 = tapply(as.vector(matrix(init$E0, ncol=Time)), id, function(x) mean(x)),
-                          Y.vec = tapply(as.vector(matrix(init$Y.vec, ncol=Time)), id, function(x) round(mean(x))))
-    YSIM.s <- lapply(1:nsim, function(i) tapply(as.vector(matrix(YSIM[[i]], ncol=Time)), id, function(x) round(mean(x))))
+                          Ex = lapply(1:nsim, function(i) tapply(as.vector(matrix(Ex[[i]], ncol=Time)), id, function(x) sum(x))),
+                          E0_0 = tapply(as.vector(matrix(init$E0, ncol=Time)), id, function(x) sum(x)),
+                          Y.vec = tapply(as.vector(matrix(init$Y.vec, ncol=Time)), id, function(x) round(sum(x))))
+    YSIM.s <- lapply(1:nsim, function(i) tapply(as.vector(matrix(YSIM[[i]], ncol=Time)), id, function(x) round(sum(x))))
     return(list(vectors.sim.s = vectors.sim.s, YSIM.s = YSIM.s))
 }
     
@@ -49,6 +49,7 @@ vectors.space.sim <- function(x,Ex, YSIM,Time, init,...){
 #'@param threshold vector or value as threshold for cluster detection
 #'@param space space and space-time. Default is to run all four models: quasi-poisson and poisson for both space and space-time. User can specify, space = space,
 #'space = spacetime, or space = both.
+#'@param theta default is 1000. Can add in overdispersion to simulated model by changing this value.
 #'@param nullmod default is NULL; otherwise will run null model
 #'@return
 #'@details Optional functions include:
@@ -56,7 +57,7 @@ vectors.space.sim <- function(x,Ex, YSIM,Time, init,...){
 #'@export
 #'TODO allow user to change theta parameter in simulation
 clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
-                          timeperiod, utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"), nullmod=NULL,...){
+                          timeperiod, utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"), theta = NULL,nullmod=NULL,...){
     #initial user setting
     if(utm==FALSE){
         message("Coordinates are assumed to be in lat/long coordinates. For utm coordinates, please specify 'utm=TRUE'")
@@ -80,6 +81,14 @@ clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, ce
     else{
         nullmod=NULL
     }
+    if(!is.null(theta)){
+        theta = theta
+        message("Running model with user-specified theta value")
+    }
+    else{
+        theta = 1000
+        message("Running model with default theta value of 1000")
+    }
     if(length(space) > 1) stop("You must select either `space`, `spacetime`, or `both`")
     space <- match.arg(space, several.ok = FALSE)
     switch(space, 
@@ -88,7 +97,7 @@ clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, ce
            # spacetime = clust.sim.all.spacetime(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
            #                                     timeperiod,colors=NULL,utm, byrow, threshold, space=FALSE),
            both = clust.sim.all.both(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
-                                     timeperiod,utm, byrow, threshold, nullmod))
+                                     timeperiod,utm, byrow, threshold, theta, nullmod))
 }
 
 
@@ -113,13 +122,15 @@ clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, ce
 #'this would mean we look at periods 2, 3, 4, and 5.
 #'@param space space and space-time. Default is to run all four models: quasi-poisson and poisson for both space and space-time. User can specify, space = space,
 #'space = spacetime, or space = both.
+#'@param theta default is 1000. Can add in overdispersion to simulated model by changing this value.
+#'@param nullmod if TRUE, then null models will be run. Otherwise, default is null.
 #'@return
 #'@details Optional functions include:
 #'- 1) utm - default is FALSE. If you have utm coordinates, you want to change this to TRUE.
 #'@export
 #'TODO allow user to change theta parameter in simulation
 clust.sim.all.both <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
-                               timeperiod,utm, byrow, threshold, nullmod=nullmod,...){
+                               timeperiod,utm, byrow, threshold, theta = theta, nullmod=nullmod,...){
     message("Running both Space and Space-Time Models")
     
     #set up clusters and fitted values
@@ -173,7 +184,7 @@ clust.sim.all.both <- function(x, y, rMax, period, expected, observed, Time, nsi
     E1 = as.vector(rr)*init$E0
     Period <- init$Year
     #Simulate observed as NB(Eit, theta)
-    theta = 1000
+    #theta = 1000
     YSIM <- lapply(1:nsim, function(i) rnegbin(E1, theta = theta))
     Ex <- scale.sim(YSIM, init, nsim, Time)
     #create vectors.sim for spacetime
