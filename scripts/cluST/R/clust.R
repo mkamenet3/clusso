@@ -17,10 +17,10 @@ vectors.space <- function(x,Ex, Yx,Time, init,...){
     id <- rep(1:length(x), times = Time)
     if(length(id)!=length(as.vector(Ex))) stop("Length of ID var not equal to number of observations")
     vectors.s <- list(Period = rep("1", length(x)),
-                          Ex = tapply(as.vector(matrix(Ex, ncol=Time)), id, function(x) mean(x)),
-                          E0_0 = tapply(as.vector(matrix(init$E0, ncol=Time)), id, function(x) mean(x)),
-                          Y.vec = tapply(as.vector(matrix(init$Y.vec, ncol=Time)), id, function(x) round(mean(x))))
-    Yx.s <- tapply(as.vector(matrix(Yx, ncol=Time)), id, function(x) round(mean(x)))
+                          Ex = tapply(as.vector(matrix(Ex, ncol=Time)), id, function(x) sum(x)),
+                          E0_0 = tapply(as.vector(matrix(init$E0, ncol=Time)), id, function(x) sum(x)),
+                          Y.vec = tapply(as.vector(matrix(init$Y.vec, ncol=Time)), id, function(x) round(sum(x))))
+    Yx.s <- tapply(as.vector(matrix(Yx, ncol=Time)), id, function(x) round(sum(x)))
     return(list(vectors.s = vectors.s, Yx.s = Yx.s))
 }
 
