@@ -9,7 +9,7 @@
 #' @return This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
 #' a list of observed counts (Yx), the lasso object, a list of K values (number of unique values in each decision path), and n (length of unique centers in the clusters dataframe)
 #' @export
-#' @example 
+#' @examples 
 #' potentialclusters <- clusters2df(lat, long, utm=FALSE, length(lat))
 #' myvectors <- setVectors(period, expected, observed, Time, byrow=TRUE)
 #' myresults <- spacetimeLasso(potentialclusters, myvectors, spacetime=TRUE, pois=FALSE)

@@ -5,12 +5,11 @@
 #'@param threshold detection threshold set by user
 #'@param nullmod default is NULL. If not null, then null model results will be returned
 #'@return list of detection
-#'@example 
-#'set <- detect.set(lassoresult.qp.s, vectors.sim, rr, Time, x, y, rMax, center, radius)
-#'incluster.qp.s <- detect.incluster(lassoresult.qp.s, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, radius, IC = "ic")
-#'detect.qp.s <- list(clust.diagnostics(incluster.qp.s, threshold[1]), clust.diagnostics(incluster.qp.s , threshold[2]))
-#'
-#'
+#'@examples
+#'set <- detect_set(lassoresult.qp.s, vectors.sim, rr, Time, x, y, rMax, center, radius)
+#'incluster.qp.q <- detect.incluster(lassoresult.qp.s, vectors.sim, rr, set,timeperiod, Time, nsim, x, y, rMax, center, radius, IC = "ic")
+#'detect.qp.s <- list(clust.diagnostics(incluster.qp.s, threshold[1]),clust.diagnostics(incluster.qp.s, threshold[2])
+
 clust.diagnostics <- function(incluster, threshold, nullmod,...){
     if(is.null(nullmod)){
         #thresholding of prop.alldetect
@@ -407,7 +406,6 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, T
 #'(for aic/aicc/bic and qaic/qaicc/qbic, respectively).
 #'@param under default is FALSE. If risk.ratio is less than one (under-risk)
 #'@param nullmod default is NULL. If not null, then null model results will be estimated and returned.
-#'TODO add cluster detection in case where risk ratio is less than background rate
 #'@return returns
 detect.incluster <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
                              radius, IC = c("aic","aicc","bic","ic"),under=FALSE, nullmod){

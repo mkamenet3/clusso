@@ -10,21 +10,21 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 NumericVector prod_YxCpp (NumericVector vY, IntegerVector clast, IntegerVector ccenter){
-  int ind;
-  int M = clast.length();
-  NumericVector cums(M);
-  for(int i  = 0; i < M; i++){
-    //  cums[i] = 0.0;
-    double tmp;
-    ind = clast[i] - 1;
-    if((!i) || (ccenter[i]!=ccenter[i-1])){
-			cums[i]=vY[ind];}
-		else{
-			cums[i]=tmp+vY[ind];
-                  }
+    int ind;
+    int M = clast.length();
+    NumericVector cums(M);
+    for(int i  = 0; i < M; i++){
+        //  cums[i] = 0.0;
+        double tmp;
+        ind = clast[i] - 1;
+        if((!i) || (ccenter[i]!=ccenter[i-1])){
+            cums[i]=vY[ind];}
+        else{
+            cums[i]=tmp+vY[ind];
+        }
         tmp = cums[i];
-  }
-  return(cums);
+    }
+    return(cums);
 }
 
 // [[Rcpp::export]]
