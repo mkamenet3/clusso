@@ -54,7 +54,7 @@ japan.prefect2 <- dframe.prefect2[,2:5]
 x=dframe2$utmx/1000
 y=dframe2$utmy/1000
 rMax=20
-#Time=5
+Time=5
 nsim=100
 mods <- c("QuasiPoisson", "Poisson")
 threshold <- c(0.9, 0.5)
@@ -63,7 +63,7 @@ tabn <- NULL
 nullmod <- NULL
 #Load each of the .RData files and recalculate
 
-files <- list.files(path="SimulationOutput/simoutputALL", pattern="*.RData", full.names=T, recursive=FALSE)
+files <- list.files(path="SimulationOutput/", pattern="*.RData", full.names=T, recursive=FALSE)
 #files <- list.files(path="SimulationOutput/", pattern="*.RData", full.names=T, recursive=FALSE)
 
 table.detection <- lapply(1:length(files), function(x){
