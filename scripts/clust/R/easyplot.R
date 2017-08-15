@@ -23,16 +23,16 @@ easyplot <- function(pdfname, res, mods, space=c("space", "spacetime", "both"), 
     pdf_p.st <- paste0(gsub(".pdf","", pdfname),mods[2],"ST", ".pdf")
     switch(space, 
            space = {
-               plotmap.s(pdf_qp.s, res, sub = res$rrcolors$rrcolors.qp.s) 
-               plotmap.s(pdf_p.s, res, sub = res$rrcolors$rrcolors.p.s)},
+               plotmap_S(pdf_qp.s, res, sub = res$rrcolors$rrcolors.qp.s) 
+               plotmap_S(pdf_p.s, res, sub = res$rrcolors$rrcolors.p.s)},
            spacetime = {
-               plotmap.st(pdf_qp.st, res, sub = res$rrcolors$rrcolors.qp.st)
-               plotmap.st(pdf_p.st, res, sub = res$rrcolors$rrcolors.p.st)},
+               plotmap_ST(pdf_qp.st, res, sub = res$rrcolors$rrcolors.qp.st)
+               plotmap_ST(pdf_p.st, res, sub = res$rrcolors$rrcolors.p.st)},
            both = {
-               plotmap.s(pdf_qp.s, res, obs, sub = res$rrcolors$rrcolors.qp.s)
-               plotmap.s(pdf_p.s, res, obs, sub = res$rrcolors$rrcolors.p.s)
-               plotmap.st(pdf_qp.st, res, obs, sub = res$rrcolors$rrcolors.qp.st)
-               plotmap.st(pdf_p.st, res, obs, sub = res$rrcolors$rrcolors.p.st)})
+               plotmap_S(pdf_qp.s, res, obs, sub = res$rrcolors$rrcolors.qp.s)
+               plotmap_S(pdf_p.s, res, obs, sub = res$rrcolors$rrcolors.p.s)
+               plotmap_ST(pdf_qp.st, res, obs, sub = res$rrcolors$rrcolors.qp.st)
+               plotmap_ST(pdf_p.st, res, obs, sub = res$rrcolors$rrcolors.p.st)})
 }
 
 
@@ -42,7 +42,7 @@ easyplot <- function(pdfname, res, mods, space=c("space", "spacetime", "both"), 
 #' @param obs if observed is to be plotted or oracle from simulation
 #' @param optional parameter if you want to just use the function for plotting different vectors
 #' 
-plotmap.st <- function(pdfname,res, obs, sub,...){
+plotmap_ST <- function(pdfname,res, obs, sub,...){
     if(!is.null(obs)){
         firstrow = "Obs"
     }
@@ -198,7 +198,7 @@ plotmap.st <- function(pdfname,res, obs, sub,...){
 #' @param obs if observed is to be plotted or oracle from simulation
 #' @param optional parameter if you want to just use the function for plotting different vectors
 #' 
-plotmap.s <- function(pdfname,res, obs, sub,...){
+plotmap_S <- function(pdfname,res, obs, sub,...){
     if(!is.null(obs)){
         firstrow = "Obs"
     }

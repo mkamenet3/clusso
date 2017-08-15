@@ -48,9 +48,9 @@ scale <- function(init,Time,...){
 #'#set init
 #'init <- setVectors(period, expected, observed, Time, byrow=TRUE)
 #'ysim <- lapply(1:nsim, function(i) rnegbin(expected, theta = theta))
-#'scale.sim(ysim, init, nsim, Time))
+#'scale_sim(ysim, init, nsim, Time))
 
-scale.sim <- function(YSIM, init, nsim,Time,...){
+scale_sim <- function(YSIM, init, nsim,Time,...){
     if(isTRUE(length(init$E0)!= mean(unlist(lapply(YSIM, function(x) length(x)))))) {
         stop("Length of Expected vector (E0) not divisible by number of observed YSIM[[i]] in at least one simulation")
         }
