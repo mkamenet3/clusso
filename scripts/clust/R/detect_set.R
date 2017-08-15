@@ -18,22 +18,6 @@
 #'3) rr.simBIC, rr.simAIC, rr.simAICc - the risk ratios as determined by BIC, AIC, and AICc (respectively), and 4) alphaBIC, alphaAIC, alphaAICc - the calculated
 #'background risk rates as determined by BIC, AIC, and AICc or QBIC, QAIC, QAICc. 
 #'@export
-#'@example
-#'x=dframe2$utmx/1000
-#'y=dframe2$utmy/1000
-#'rMax=30 
-#'Time=5  
-#'nsim=100
-#'center=50
-#'radius= 18
-#'timeperiod=5
-#'risk.ratio=2
-#'threshold = 0.5
-#'res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,nsim,center, radius, risk.ratio, timeperiod, colors=TRUE, utm=TRUE, byrow=TRUE, threshold)
-#'set <- detect_set(res$lassoresult, res$init.vec, res$rr.mat, Time=5, x, y, rMax, center, radius)
-#'
-#'#detect_set for null model
-#'set <- detect_set(res$lassoresult, res$init.vec, res$rr.mat, Time=5,x, y, rMax, 0, radius, nullmod=TRUE)
 
 detect_set <- function(lassoresult, vectors.sim, rr, Time, x, y, rMax, center, radius,nullmod,...){
     #Indices of True cluster only

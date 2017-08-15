@@ -2,8 +2,10 @@
 #'
 #'
 #'
-#' vectors.space
+#'@title
+#'vectors.space
 #' 
+#' @description 
 #' This function will collapse a space-time vector onto space only
 #' @param x vector coordinates (unique regardless of time period)
 #' @param Ex list of simulated and standardized expected counts
@@ -25,9 +27,9 @@ vectors.space <- function(x,Ex, Yx,Time, init,...){
 }
 
 
-#'
+#'@title
 #'clust
-#'
+#' @description
 #'This function is the helper function to run both the space and space-time Lasso models.
 #'runs both the space and space-time Lasso model. This function is to be run on observed data. A separate function (clust.sim) can be used for simulating data and running diagnostics on simulations.
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
@@ -41,9 +43,7 @@ vectors.space <- function(x,Ex, Yx,Time, init,...){
 #'@param byrow default is True. If data should be imported by column then set to FALSE
 #'@param space space and space-time. Default is to run all four models: quasi-poisson and poisson for both space and space-time. User can specify, space = space,
 #'space = spacetime, or space = both.
-#'@return
-#'@details Optional functions include:
-#'- 1) utm - default is FALSE. If you have utm coordinates, you want to change this to TRUE.
+#'@return returns list
 
 clust <- function(x, y, rMax, period, expected, observed, Time, utm=TRUE, byrow=TRUE,space = c("space","spacetime", "both"),...){
     if(utm==FALSE){
@@ -71,8 +71,9 @@ clust <- function(x, y, rMax, period, expected, observed, Time, utm=TRUE, byrow=
 }
     
     
-#'
+#' @title
 #'clust.all.both
+#' @description 
 #'This function runs both the space and space-time Lasso model. This function is to be run on observed data. A separate function (clust) is the helper function which will have 
 #'flexibility to specify the space or spacetime or both models to be run (TODO).
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.

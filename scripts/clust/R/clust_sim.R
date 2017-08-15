@@ -51,11 +51,9 @@ vectors.space.sim <- function(x,Ex, YSIM,Time, init,...){
 #'space = spacetime, or space = both.
 #'@param theta default is 1000. Can add in overdispersion to simulated model by changing this value.
 #'@param nullmod default is NULL; otherwise will run null model
-#'@return
-#'@details Optional functions include:
-#'- 1) utm - default is FALSE. If you have utm coordinates, you want to change this to TRUE.
+#'@return returns list of lists
 #'@export
-#'TODO allow user to change theta parameter in simulation
+
 clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
                           timeperiod, utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"), theta = NULL,nullmod=NULL,...){
     #initial user setting
@@ -124,11 +122,9 @@ clust.sim.all <- function(x, y, rMax, period, expected, observed, Time, nsim, ce
 #'space = spacetime, or space = both.
 #'@param theta default is 1000. Can add in overdispersion to simulated model by changing this value.
 #'@param nullmod if TRUE, then null models will be run. Otherwise, default is null.
-#'@return
-#'@details Optional functions include:
-#'- 1) utm - default is FALSE. If you have utm coordinates, you want to change this to TRUE.
+#'@return returns list of lists
 #'@export
-#'TODO allow user to change theta parameter in simulation
+
 clust.sim.all.both <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
                                timeperiod,utm, byrow, threshold, theta = theta, nullmod=nullmod,...){
     message("Running both Space and Space-Time Models")

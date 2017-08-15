@@ -17,14 +17,14 @@ redblue=function(x,...) {
 #' @param Time how many time periods are in the model? If this is only a spatial model, then time is set to 1
 #' @return returns vectors ofcolors for each time period, where risk ratios have been constrained to be between half risk and twice the risk
 #' @export
-#' @example 
-#' set.seed(2)
-#' riskratios <- list(RRobs = rnorm(20, mean = 1, sd = 0.10), 
-#' RRbic = c(rep(1,18),c(2.1, 2.2)), 
-#' RRaic = c(rep(1,15),rnorm(5, 2,0.05)),
-#' RRaicc = c(rep(1,15),rnorm(5, 2,0.05)))
-#' Time = 2
-#' colormapping(riskratios, Time)
+#'@examples
+#'set.seed(2)
+#'riskratios <- list(RRobs = rnorm(20, mean = 1, sd = 0.10)
+#'RRbic <- c(rep(1,18), c(2.1,2.2))
+#'RRaic <- c(rep(1,15), rnorm(5, 2, 0.05))
+#'RRaicc <- c(rep(1,15), rnorm(5, 2, 0.05))
+#'Time = 2
+#'colormapping(riskratios,Time)
 
 colormapping <- function(riskratios,Time,...) {
     if(max(riskratios$RRbic)>2) {warning("Max riskratios from BIC greater than 2")}
