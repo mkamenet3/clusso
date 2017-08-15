@@ -11,7 +11,7 @@ dpoisson(y, lambda, E0)
 
 \item{lambda}{vector of exp(each column of each potential path). Assumes you exponentiate prior to using this function}
 
-\item{E0}{expected counts (the offset). If in simulation, then this should be the E0 counts for each simulation. These E0 have been standardized such that E0 = E*(sum(y)/sum(E)) with the scale.sim()/scale() function depending on if a simulation is being run or not}
+\item{E0}{expected counts (the offset). If in simulation, then this should be the E0 counts for each simulation. These E0 have been standardized such that E0 = E*(sum(y)/sum(E)) with the scale_sim()/scale() function depending on if a simulation is being run or not}
 }
 \value{
 returns a a vector (or a list of vectors) of the Poisson log-likelihood for each proposed path of the Lasso tuning parameter values
