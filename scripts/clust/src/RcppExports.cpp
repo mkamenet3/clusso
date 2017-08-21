@@ -19,6 +19,16 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// rcpp_hello_world
+List rcpp_hello_world();
+RcppExport SEXP clust_rcpp_hello_world() {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    __result = Rcpp::wrap(rcpp_hello_world());
+    return __result;
+END_RCPP
+}
 // prod_YxCpp
 NumericVector prod_YxCpp(NumericVector vY, IntegerVector clast, IntegerVector ccenter);
 RcppExport SEXP clust_prod_YxCpp(SEXP vYSEXP, SEXP clastSEXP, SEXP ccenterSEXP) {

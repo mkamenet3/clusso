@@ -20,11 +20,12 @@ sink("august2017.txt")
 ##############################################
 
 
-
 ####################################################
 #Source Files, Scripts, and Packages
 ####################################################
 #import libraries
+#library("clust")
+
 library("Rcpp")
 library("MASS")
 library("RColorBrewer")
