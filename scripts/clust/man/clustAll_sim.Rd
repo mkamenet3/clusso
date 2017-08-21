@@ -5,9 +5,8 @@
 \title{clustAll_sim}
 \usage{
 clustAll_sim(x, y, rMax, period, expected, observed, Time, nsim, center, radius,
-  risk.ratio, timeperiod, utm = TRUE, byrow = TRUE, threshold,
-  space = c("space", "spacetime", "both"), theta = NULL, nullmod = NULL,
-  ...)
+  risk.ratio, timeperiod, utm, byrow, threshold, theta = theta,
+  nullmod = nullmod, ...)
 }
 \arguments{
 \item{x}{x coordinates (easting/latitude); if utm coordinates, scale to km.}
@@ -36,24 +35,18 @@ clustAll_sim(x, y, rMax, period, expected, observed, Time, nsim, center, radius,
 we will only be looking at periods 2 and 5. If multi_period is TRUE, then we will instead consider timeperiod through period_end (timeperiod:period_end). Following the same example,
 this would mean we look at periods 2, 3, 4, and 5.}
 
-\item{utm}{default is true}
+\item{theta}{default is 1000. Can add in overdispersion to simulated model by changing this value.}
 
-\item{byrow}{TRUE}
-
-\item{threshold}{vector or value as threshold for cluster detection}
+\item{nullmod}{if TRUE, then null models will be run. Otherwise, default is null.}
 
 \item{space}{space and space-time. Default is to run all four models: quasi-poisson and poisson for both space and space-time. User can specify, space = space,
 space = spacetime, or space = both.}
-
-\item{theta}{default is 1000. Can add in overdispersion to simulated model by changing this value.}
-
-\item{nullmod}{default is NULL; otherwise will run null model}
 }
 \value{
 returns list of lists
 }
 \description{
-This helper function runs both the space and space-time Lasso model simulations for all 4 models simulataneously: Quasi-Poisson vs. Poisson in both space and space-time.
+This function runs both the space and space-time Lasso model simulations for all 4 models simulataneously: Quasi-Poisson vs. Poisson in both space and space-time.
 This function is to be run on simulated data and all four models are run on the same simulated set. 
 A separate function (clust.sim) can be used for running simulations on individual models and (clust) can be used for observed data.
 }
