@@ -6,12 +6,12 @@
 ##This should later be integrated into vignettes/examples
 
 #Maria Kamenetsky
-#7-9-2017
+#8-20-17
 ########################################################################################################
 ########################################################################################################
 ########################################################################################################
 
-sink("july11.txt")
+sink("august2017.txt")
 
 ##############################################
 ##############################################
@@ -36,13 +36,13 @@ library(spdep)
 library(sp)
 
 #Source .cpp files
-sourceCpp("scripts/cluST/src/maxcol.cpp")
-sourceCpp("scripts/cluST/src/st_matCpp.cpp")
-sourceCpp("scripts/cluST/src/prod_yx.cpp")
+sourceCpp("scripts/clust/src/maxcol.cpp")
+sourceCpp("scripts/clust/src/st_matCpp.cpp")
+#sourceCpp("scripts/cluST/src/prod_yx.cpp")
 
 
 #temporarily source my clustR files
-file.sources = list.files(path="scripts/cluST/R/.",pattern="*.R", full.names = TRUE)
+file.sources = list.files(path="scripts/clust/R/.",pattern="*.R", full.names = TRUE)
 sapply(file.sources, source, .GlobalEnv)
 
 ########################################################################################################
@@ -50,7 +50,7 @@ sapply(file.sources, source, .GlobalEnv)
 ####################################################
 #Import Data
 ####################################################
-set.seed(1152017)
+set.seed(8202017)
 
 dframe1 <- read.csv("data/JBC/jap.breast.F.9.10.11.csv")
 dframe2 <- read.csv("data//JBC//utmJapan.csv")
@@ -105,13 +105,14 @@ theta = NULL
 # expected <- dframe$expdeath
 # observed <- dframe$death
 
-res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                    nsim,center, radius, risk.ratio, timeperiod, utm=TRUE, byrow=TRUE, threshold, space= "both", theta = theta,nullmod=TRUE)
+res <- clust_sim(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
+                    nsim,center, radius, risk.ratio, timeperiod, utm=TRUE, byrow=TRUE, 
+                    threshold, space= "both", theta = theta,nullmod=TRUE)
 
 #save results
 (sim.i <- paste0("sim","_","center","_",center,"radius",radius,"_", "start",
                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio)))
-filename <- paste0("SimulationOutput/",sim.i,".RData")
+filename <- paste0("SimulationOutput/",sim.i,"TESTESTEST.RData")
 save(res, file = filename)
 
 #Print Detection for the Simulation
@@ -122,7 +123,7 @@ save(res, file = filename)
 
 #make maps
 pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
+                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),"TESTEST.pdf")
 easyplot(pdfname, res, mods, space="both")
 
 
@@ -153,7 +154,7 @@ table.detection.null <- NULL
 
 
 
-system.time(res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
+system.time(res <- clust_sim(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
                                  nsim,center, radius, risk, timeperiod,
                                  utm=TRUE, byrow=TRUE, threshold, space= "both", theta = theta, nullmod = TRUE))
 #save results
@@ -218,7 +219,7 @@ for(cent in centers){
         for(tim in timeperiods){
             for(risk in risk.ratios){
                 print(c(cent, rad, tim, risk))
-                system.time(res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
+                system.time(res <- clust_sim(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
                                      nsim,cent, rad, risk, tim, utm=TRUE, byrow=TRUE, threshold, space= "both", theta, nullmod))
                 #save results
                 (sim.i <- paste0("sim","_","center","_",cent,"radius",rad,"_", "start",
@@ -293,7 +294,7 @@ for(cent in centers){
         for(tim in timeperiods){
             for(risk in risk.ratios){
                 print(c(cent, rad, tim, risk))
-                system.time(res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
+                system.time(res <- clust_sim(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
                                                  nsim,cent, rad, risk, tim, utm=TRUE, byrow=TRUE, threshold, space= "both", 
                                                  theta = theta, nullmod = nullmod))
                 #save results
@@ -332,81 +333,8 @@ save(table.detection, file="tabledetectionclustersimOVERDISP.RData")
 table.detection
 print(table.detection)
 
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
 
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-##BEGIN CLUSTER SIMULATIONS - MULTICLUSTER MODELS
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
 
-# #Set Some Initial Conditions
-# x=dframe2$utmx/1000
-# y=dframe2$utmy/1000
-# rMax=20
-# Time=5
-# nsim=100
-# nullmod = NULL
-# theta = NULL
-# 
-# centers <- c(list(c(150, 35)), list(c(50, 100)))
-# radii <- c(9, 18)
-# timeperiods <- list(c(2:4))
-# risk.ratios <- c(1.1, 1.5, 2)
-# 
-# table.detection <- NULL
-# 
-# 
-# 
-# for(cent in centers){
-#     for(rad in radii){
-#         for(tim in timeperiods){
-#             for(risk in risk.ratios){
-#                 print(c(cent, rad, tim, risk))
-#                 system.time(res <- clust.sim.all(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-#                                      nsim,cent, rad, risk, tim, colors=TRUE,
-#                                      utm=TRUE, byrow=TRUE, threshold, space= "both", theta = theta, nullmod=nullmod))
-#                 #save results
-#                 (sim.i <- paste0("sim","_","center","_",as.numeric(paste(unlist(cent),collapse="")),"radius",rad,"_", "start",
-#                                  "_",as.numeric(paste(tim, collapse = "")),"_","rr","_",gsub("[.]","",risk), "multclust"))
-#                 filename <- paste0("SimulationOutput/",sim.i,"multclust",".RData")
-#                 save(res, file = filename)
-# 
-#                 #Print Detection for the Simulation
-#                 (tabn <- rbind("******",cbind(rad,risk,cent=paste(cent, collapse=""),time=as.numeric(paste(tim, collapse = "")), mod = "ST",
-#                                                rbind("QuasiPois",res$detect.out.qp.st), rbind("Pois",res$detect.out.p.st)),
-#                                 cbind(rad,risk,paste(unlist(cent), collapse=""),time=as.numeric(paste(tim, collapse = "")), mod = "Space",
-#                                       rbind("QuasiPois",res$detect.out.qp.s), rbind("Pois",res$detect.out.p.s))))
-#                 table.detection <- rbind(table.detection, tabn)
-# 
-#                 #make maps
-#                 pdfname <- paste0("figures/simulations/sim","_","center","_",as.numeric(paste(unlist(cent),collapse="")),"radius",rad,"_", "start",
-#                                   "_",as.numeric(paste(tim, collapse = "")),"_","rr","_",gsub("[.]","",risk),"multclust",".pdf")
-#                 easyplot(pdfname, res, mods, space="both")
-# 
-#             }
-#         }
-#     }
-# }
-# 
-# #WRITE TO CSV
-# print(table.detection)
-# write.csv(table.detection, file="tabledetectionmultclust.csv", row.names=TRUE)
-# save(table.detection, file="tabledetectionmultclust.RData")
-# 
-# #Print Table Detection
-# table.detection
-# print(table.detection)
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
 
 sink()
 
