@@ -25,7 +25,7 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init,...){
     
     
 #'
-#'clustAll_sim
+#'clust_sim
 #'
 #'This helper function runs both the space and space-time Lasso model simulations for all 4 models simulataneously: Quasi-Poisson vs. Poisson in both space and space-time.
 #' This function is to be run on simulated data and all four models are run on the same simulated set. 
@@ -54,7 +54,7 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init,...){
 #'@return returns list of lists
 #'@export
 
-clustAll_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
+clust_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
                           timeperiod, utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"), theta = NULL,nullmod=NULL,...){
     #initial user setting
     if(utm==FALSE){
@@ -94,12 +94,12 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, cen
            #                             timeperiod,colors=NULL,utm, byrow, threshold, space=TRUE),
            # spacetime = clustAll_sim.spacetime(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
            #                                     timeperiod,colors=NULL,utm, byrow, threshold, space=FALSE),
-           both = clustAll_sim_STS(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
+           both = clustAll_sim(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
                                      timeperiod,utm, byrow, threshold, theta, nullmod))
 }
 
 
-#'clustAll_sim_STS
+#'clustAll_sim
 #'
 #'This function runs both the space and space-time Lasso model simulations for all 4 models simulataneously: Quasi-Poisson vs. Poisson in both space and space-time.
 #' This function is to be run on simulated data and all four models are run on the same simulated set. 
@@ -125,7 +125,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, cen
 #'@return returns list of lists
 #'@export
 
-clustAll_sim_STS <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
+clustAll_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
                                timeperiod,utm, byrow, threshold, theta = theta, nullmod=nullmod,...){
     message("Running both Space and Space-Time Models")
     
