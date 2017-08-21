@@ -1,6 +1,6 @@
 #' These functions will extract the risk ratios from the output
 #' 
-#' set.rr
+#' set_rr
 #' 
 #' This function will create vectors of the risk ratios as determined by observed counts, QBIC, QAIC, and QAICc, respectively.
 #' @param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso function
@@ -10,7 +10,7 @@
 #' @return This returns a list of the risk ratios (observed over expected) as determined by 1) pure observed/expected counts,
 #' 2) observed based on QBIC path/expected; 3) observed based on QAIC path/expected; 4) observed based on QAICc path/expected.
 #' @export
-set.rr<- function(lassoresult, vectors, Time, sim=FALSE,...){
+set_rr<- function(lassoresult, vectors, Time, sim=FALSE,...){
     if(sim==FALSE){
         RRobs <- matrix(as.vector(vectors$Y.vec)/as.vector(vectors$E0),ncol=Time)
         RRbic <- matrix(lassoresult$E.qbic/as.vector(vectors$E0),ncol=Time)
@@ -30,7 +30,7 @@ set.rr<- function(lassoresult, vectors, Time, sim=FALSE,...){
 }
 
 
-#' get.rr
+#' get_rr
 #' 
 #' This function will extract the relative risk ratios as determined by observed counts, QBIC, QAIC, and QAICc, respectively. This method determines the 
 #' relative risk by averageing the relative risk in each simulation over the number of simulations. This is in contrast to $setRR$ where the expected counts
@@ -46,7 +46,7 @@ set.rr<- function(lassoresult, vectors, Time, sim=FALSE,...){
 #' 2) observed based on QBIC path/expected; 3) observed based on QAIC path/expected; 4) observed based on QAICc path/expected.
 #' @export
 #' 
-get.rr2 <- function(lassoresult,vectors,init,E1, Time, sim=TRUE,...){
+get_rr <- function(lassoresult,vectors,init,E1, Time, sim=TRUE,...){
     if(sim==TRUE){
         RRobs <- matrix(as.vector(E1)/as.vector(init$E0),ncol=Time)
     }

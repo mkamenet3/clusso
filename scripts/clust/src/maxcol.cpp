@@ -6,7 +6,7 @@ using namespace Rcpp;
 // function (or via the Source button on the editor toolbar)
 
 // For more on using Rcpp click the Help button on the editor toolbar
-
+//' @export
 // [[Rcpp::export]]
 IntegerVector max_colCpp (const int N, int iMax, IntegerVector cn, IntegerVector clast){
   Rcpp::IntegerVector maxcol(N,0);    

@@ -1,16 +1,16 @@
 #' Suite of function for cluster detection diagnostics - incluster diagnostics
 #'
-#'clust.diagnostics
-#'@param incluster inherited object from detect.incluster.ic
+#'clustDiagnostics
+#'@param incluster inherited object from detect_incluster_ic
 #'@param threshold detection threshold set by user
 #'@param nullmod default is NULL. If not null, then null model results will be returned
 #'@return list of detection
 #'@examples
 #'set <- detect_set(lassoresult.qp.s, vectors.sim, rr, Time, x, y, rMax, center, radius)
-#'incluster.qp.q <- detect.incluster(lassoresult.qp.s, vectors.sim, rr, set,timeperiod, Time, nsim, x, y, rMax, center, radius, IC = "ic")
-#'detect.qp.s <- list(clust.diagnostics(incluster.qp.s, threshold[1]),clust.diagnostics(incluster.qp.s, threshold[2])
+#'incluster.qp.q <- detect_incluster(lassoresult.qp.s, vectors.sim, rr, set,timeperiod, Time, nsim, x, y, rMax, center, radius, IC = "ic")
+#'detect.qp.s <- list(clustDiagnostics(incluster.qp.s, threshold[1]),clustDiagnostics(incluster.qp.s, threshold[2])
 
-clust.diagnostics <- function(incluster, threshold, nullmod,...){
+clustDiagnostics <- function(incluster, threshold, nullmod,...){
     if(is.null(nullmod)){
         #thresholding of prop.alldetect
         alldetect.aic <- paste0((length(which(unlist(incluster$prop.alldetect.aic)> threshold))/nsim)*100, "%")
@@ -129,10 +129,10 @@ clust.diagnostics <- function(incluster, threshold, nullmod,...){
 }
 
 
-#'detect.incluster.ic
+#'detect_incluster_ic
 #'This function will calculate detection based on the three information criterion. You can run detection on a null model (no cluster),
 #'a model with an under-estimated cluster (artificial cluster <1), and on an elevated relative risk cluster. This is called by the more general
-#'function *detect.incluster* which will switch to this function (TODO - Allow for detection options for AIC, AICc, and BIC only). 
+#'function *detect_incluster* which will switch to this function (TODO - Allow for detection options for AIC, AICc, and BIC only). 
 #'@param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso.sim function
 #'@param vectors.sim  dataframe of initial vectors of the observed and expected counts that went into simulation function
 #'@param rr risk ratio matrix that was used in the simulation
@@ -144,7 +144,7 @@ clust.diagnostics <- function(incluster, threshold, nullmod,...){
 #'clusters to be identified where the estimated values are less than the background rate, not more than the background rate as is the case in the 
 #'elevated relative risk models.
 #'@param nullmod Default is NULL. If TRUE, then it will estimate detection based on the null model where there is no cluster. 
-detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE,nullmod){
+detect_incluster_ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE,nullmod){
     if(is.null(nullmod)){
         message("Returning results for risk model")
         #(Q)AIC
@@ -386,7 +386,7 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, T
 
 
 
-#'detect.incluster
+#'detect_incluster
 #'
 #'This function will calculate the percent of simulations which correctly identify elements in cluster based on (Q)AIC, (Q)AICc, and (Q)BIC. The user can specify
 #'if they want to only return one of these criterion or all three for further analysis.
@@ -407,7 +407,7 @@ detect.incluster.ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, T
 #'@param under default is FALSE. If risk.ratio is less than one (under-risk)
 #'@param nullmod default is NULL. If not null, then null model results will be estimated and returned.
 #'@return returns
-detect.incluster <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
+detect_incluster <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
                              radius, IC = c("aic","aicc","bic","ic"),under=FALSE, nullmod){
     #period = timeperiod
     message("Detection Results for:\n"
@@ -418,10 +418,10 @@ detect.incluster <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time
             "\n \t Cluster rel.risk: ",ifelse(length(unique(as.vector(rr)))==1,unique(as.vector(rr))[1],unique(as.vector(rr))[2]))
     IC <- match.arg(IC, several.ok= TRUE)
     switch(IC,
-           #aic = detect.incluster.aic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE),
-           #aicc = detect.incluster.aicc(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE),
-           #bic = detect.incluster.bic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE),
-           ic = detect.incluster.ic(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE, nullmod))
+           #aic = detect_incluster.aic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE),
+           #aicc = detect_incluster.aicc(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE),
+           #bic = detect_incluster.bic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE),
+           ic = detect_incluster_ic(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE, nullmod))
 } 
 
 

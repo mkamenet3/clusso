@@ -3,7 +3,7 @@
 #'
 #'
 #'@title
-#'vectors.space
+#'vectors_space
 #' 
 #' @description 
 #' This function will collapse a space-time vector onto space only
@@ -15,7 +15,7 @@
 #' @param init initial list of vectors, inherited from function setVectors.
 #' @return returns space-time 
 #' 
-vectors.space <- function(x,Ex, Yx,Time, init,...){
+vectors_space <- function(x,Ex, Yx,Time, init,...){
     id <- rep(1:length(x), times = Time)
     if(length(id)!=length(as.vector(Ex))) stop("Length of ID var not equal to number of observations")
     vectors.s <- list(Period = rep("1", length(x)),
@@ -67,12 +67,12 @@ clust <- function(x, y, rMax, period, expected, observed, Time, utm=TRUE, byrow=
            #                             timeperiod,colors=NULL,utm, byrow, threshold, space=TRUE),
            # spacetime = clust.sim.all.spacetime(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
            #                                     timeperiod,colors=NULL,utm, byrow, threshold, space=FALSE),
-           both = clust.all.both(x, y, rMax,period, expected, observed, Time, utm, byrow))
+           both = clustAll(x, y, rMax,period, expected, observed, Time, utm, byrow))
 }
     
     
 #' @title
-#'clust.all.both
+#'clustAll
 #' @description 
 #'This function runs both the space and space-time Lasso model. This function is to be run on observed data. A separate function (clust) is the helper function which will have 
 #'flexibility to specify the space or spacetime or both models to be run (TODO).
@@ -88,7 +88,7 @@ clust <- function(x, y, rMax, period, expected, observed, Time, utm=TRUE, byrow=
 #'@return
 #'               
     
-clust.all.both <- function(x,y,rMax, period, expected, observed, Time, utm, byrow){    
+clustAll <- function(x,y,rMax, period, expected, observed, Time, utm, byrow){    
     message("Running both Space and Space-Time Models")
     
     #set up clusters and fitted values
@@ -101,7 +101,7 @@ clust.all.both <- function(x,y,rMax, period, expected, observed, Time, utm, byro
     #timeperiod <- 1:Time
     #set vectors
     vectors <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec)
-    spacevecs <- vectors.space(x, Ex, Yx, Time,init)
+    spacevecs <- vectors_space(x, Ex, Yx, Time,init)
     vectors.s <- spacevecs$vectors.s
     
     #run lasso
@@ -115,8 +115,8 @@ clust.all.both <- function(x,y,rMax, period, expected, observed, Time, utm, byro
     
     #space time
     ##risk ratios
-    riskratios.p.st <- get.rr2(lassoresult.p.st, vectors,init,E1,Time, sim=FALSE)
-    riskratios.qp.st <- get.rr2(lassoresult.qp.st, vectors,init,E1,Time, sim=FALSE)
+    riskratios.p.st <- get_rr(lassoresult.p.st, vectors,init,E1,Time, sim=FALSE)
+    riskratios.qp.st <- get_rr(lassoresult.qp.st, vectors,init,E1,Time, sim=FALSE)
     ##color mapping
     rrcolors.p.st <- colormapping(riskratios.p.st,Time)
     rrcolors.qp.st <- colormapping(riskratios.qp.st,Time)
@@ -125,10 +125,10 @@ clust.all.both <- function(x,y,rMax, period, expected, observed, Time, utm, byro
     ##risk ratios
     initial.s <- list(E0 = unlist(vectors.s$E0_0))
     id <- rep(1:length(x), times=Time)
-    riskratios.p.s <- get.rr2(lassoresult.p.s, vectors.s,inistial.s,
+    riskratios.p.s <- get_rr(lassoresult.p.s, vectors.s,inistial.s,
                               tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x)),
                               1,sim=FALSE)
-    riskratios.qp.s <- get.rr2(lassoresult.qp.s,vectors.s,inistial.s,
+    riskratios.qp.s <- get_rr(lassoresult.qp.s,vectors.s,inistial.s,
                                tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x)),
                                1,sim=FALSE)
     ##color mapping

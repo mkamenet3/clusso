@@ -7,7 +7,7 @@ using namespace Rcpp;
 // function (or via the Source button on the editor toolbar)
 
 // For more on using Rcpp click the Help button on the editor toolbar
-
+//' @export
 // [[Rcpp::export]]
 NumericVector prod_YxCpp (NumericVector vY, IntegerVector clast, IntegerVector ccenter){
     int ind;
@@ -27,6 +27,7 @@ NumericVector prod_YxCpp (NumericVector vY, IntegerVector clast, IntegerVector c
     return(cums);
 }
 
+//' @export
 // [[Rcpp::export]]
 NumericVector st_matCpp (NumericMatrix X, IntegerVector last, IntegerVector center, int T){
     int n = X.nrow();
