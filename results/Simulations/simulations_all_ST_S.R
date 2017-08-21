@@ -24,27 +24,27 @@ sink("august2017.txt")
 #Source Files, Scripts, and Packages
 ####################################################
 #import libraries
-#library("clust")
+library("clust")
 
-library("Rcpp")
-library("MASS")
-library("RColorBrewer")
-library("geosphere")
-library(Matrix)
-library(glmnet)
-library(maps)
-library(spdep)
-library(sp)
-
-#Source .cpp files
-sourceCpp("scripts/clust/src/maxcol.cpp")
-sourceCpp("scripts/clust/src/st_matCpp.cpp")
-#sourceCpp("scripts/cluST/src/prod_yx.cpp")
-
-
-#temporarily source my clustR files
-file.sources = list.files(path="scripts/clust/R/.",pattern="*.R", full.names = TRUE)
-sapply(file.sources, source, .GlobalEnv)
+# library("Rcpp")
+# library("MASS")
+# library("RColorBrewer")
+# library("geosphere")
+# library(Matrix)
+# library(glmnet)
+# library(maps)
+# library(spdep)
+# library(sp)
+# 
+# #Source .cpp files
+# sourceCpp("scripts/clust/src/maxcol.cpp")
+# sourceCpp("scripts/clust/src/st_matCpp.cpp")
+# #sourceCpp("scripts/cluST/src/prod_yx.cpp")
+# 
+# 
+# #temporarily source my clustR files
+# file.sources = list.files(path="scripts/clust/R/.",pattern="*.R", full.names = TRUE)
+# sapply(file.sources, source, .GlobalEnv)
 
 ########################################################################################################
 
