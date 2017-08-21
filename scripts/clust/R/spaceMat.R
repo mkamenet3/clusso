@@ -22,5 +22,5 @@ spaceMat <- function(clusters, numCenters,...){
         jj <- c(jj, mymat[[k]]@i)
         ii <- c(ii, rep(k,length(mymat[[k]]@x)))
     }
-    return(t(sparseMatrix(i = ii, j = jj, x =xx, dims = c(length(mymat), numCenters))))
+    return(Matrix::t(sparseMatrix(i = ii, j = jj, x =xx, dims = c(length(mymat), numCenters))))
 }
