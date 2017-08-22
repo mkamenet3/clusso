@@ -14,7 +14,7 @@
 #'only the probability values will be returned. If true, then the probability values and the mapped colors will be returned in a list.
 #'@return returns vector which calculated the number of time the cluster was correctly identified out of the simulations
 #'@export
-probmap <- function(lassoresult, vectors.sim, rr, nsim, Time, colormap=FALSE,...){
+probmap <- function(lassoresult, vectors.sim, rr, nsim, Time, colormap=FALSE){
     prob.simBIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
     prob.simAIC <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))
     prob.simAICc <- lapply(1:nsim, function(x) matrix(0, nrow(rr)*Time))

@@ -17,9 +17,10 @@
 #'should be, 2) indx, which contains the index of cluster as determined where the risk ratio in the rr matrix is not 1,
 #'3) rr.simBIC, rr.simAIC, rr.simAICc - the risk ratios as determined by BIC, AIC, and AICc (respectively), and 4) alphaBIC, alphaAIC, alphaAICc - the calculated
 #'background risk rates as determined by BIC, AIC, and AICc or QBIC, QAIC, QAICc. 
+#'@param nsim number of simulations
 #'@export
 
-detect_set <- function(lassoresult, vectors.sim, rr, Time, x, y, rMax, center, radius,nullmod,...){
+detect_set <- function(lassoresult, vectors.sim, rr, Time, x, y, rMax, center, radius,nullmod,nsim){
     #Indices of True cluster only
     if(!is.null(nullmod)){
         indx.clust.truth <- NULL

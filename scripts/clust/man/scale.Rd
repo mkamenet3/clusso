@@ -4,14 +4,12 @@
 \alias{scale}
 \title{Re-scaling data to get SMR (standardized mortality rate)}
 \usage{
-scale(init, Time, ...)
+scale(init, Time)
 }
 \arguments{
 \item{init}{list of initial settings in spacetimeLasso}
 
 \item{Time}{number of time periods}
-
-\item{YSIM}{list of simulated observed}
 }
 \description{
 This function standardizes the fitted values by the sum of the observed/the sum of the expected within each time period. Inputs should all be in vector form.

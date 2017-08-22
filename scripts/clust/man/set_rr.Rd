@@ -4,7 +4,7 @@
 \alias{set_rr}
 \title{These functions will extract the risk ratios from the output}
 \usage{
-set_rr(lassoresult, vectors, Time, sim = FALSE, ...)
+set_rr(lassoresult, vectors, Time, sim = FALSE)
 }
 \arguments{
 \item{lassoresult}{List of QBIC, QAIC, QAICc estimates from the mylasso function}

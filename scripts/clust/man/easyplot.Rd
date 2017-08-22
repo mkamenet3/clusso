@@ -5,7 +5,7 @@
 \title{Auxiliary Plotting Functions for Japanese Breast Cancer Data}
 \usage{
 easyplot(pdfname, res, mods, space = c("space", "spacetime", "both"),
-  obs = NULL, ...)
+  obs = NULL)
 }
 \arguments{
 \item{pdfname}{pdfname of what the output pdf will be called}

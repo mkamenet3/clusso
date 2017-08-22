@@ -14,7 +14,7 @@
 #' easyplot(pdfname, res, mods, space="both")
 
 
-easyplot <- function(pdfname, res, mods, space=c("space", "spacetime", "both"), obs=NULL,...){
+easyplot <- function(pdfname, res, mods, space=c("space", "spacetime", "both"), obs=NULL){
     if(is.null(space)){ stop("You must specify `space`, `spacetime` or `both`")}
     space <- match.arg(space, several.ok = FALSE)
     pdf_qp.s <- paste0(gsub(".pdf","", pdfname),mods[1],"space" ,".pdf")
@@ -40,7 +40,7 @@ easyplot <- function(pdfname, res, mods, space=c("space", "spacetime", "both"), 
 #' @param pdfname pdfname of what the output pdf will be called
 #' @param res resultant list from clust_ function
 #' @param obs if observed is to be plotted or oracle from simulation
-#' @param optional parameter if you want to just use the function for plotting different vectors
+#' @param sub optional parameter if you want to just use the function for plotting different vectors
 #' 
 plotmap_ST <- function(pdfname,res, obs, sub,...){
     if(!is.null(obs)){
@@ -196,7 +196,7 @@ plotmap_ST <- function(pdfname,res, obs, sub,...){
 #' @param pdfname pdfname of what the output pdf will be called
 #' @param res resultant list from clust_ function
 #' @param obs if observed is to be plotted or oracle from simulation
-#' @param optional parameter if you want to just use the function for plotting different vectors
+#' @param sub optional parameter if you want to just use the function for plotting different vectors
 #' 
 plotmap_S <- function(pdfname,res, obs, sub,...){
     if(!is.null(obs)){

@@ -4,7 +4,7 @@
 \alias{setVectors}
 \title{Creates a List Arranged by Time Period with Expected and Observed Counts and Time Period}
 \usage{
-setVectors(period, expect, observed, Time, byrow = TRUE, ...)
+setVectors(period, expect, observed, Time, byrow = TRUE)
 }
 \arguments{
 \item{period}{vector of periods or years in dataset. Should be imported as a factor.}

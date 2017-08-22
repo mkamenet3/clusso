@@ -4,7 +4,7 @@
 \alias{colormapping}
 \title{colormapping}
 \usage{
-colormapping(riskratios, Time, ...)
+colormapping(riskratios, Time)
 }
 \arguments{
 \item{riskratios}{this will be the risk ratios shrunk to be on the scale of half risk to twice the risk as end points.}

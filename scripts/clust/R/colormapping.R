@@ -5,8 +5,8 @@
 #' This function establishes the spread of reds and blues for the risk ratios to be mapped to. Higher risk ratios will be deeper red colors and lower risk ratios will be deeper blue colors.
 #' @param x this will be the risk ratios shrunk to be on the scale of half risk to twice the risk as end points.
 #' @return colors
-redblue=function(x,...) { 
-    y=colorRamp(brewer.pal(11,"RdBu")[11:1])(x); rgb(y[,1],y[,2],y[,3],max=255) 
+redblue=function(x) { 
+    y=colorRamp(RColorBrewer::brewer.pal(11,"RdBu")[11:1])(x); rgb(y[,1],y[,2],y[,3],maxColorValue=255) 
 }
 
 
@@ -26,7 +26,7 @@ redblue=function(x,...) {
 #'Time = 2
 #'colormapping(riskratios,Time)
 
-colormapping <- function(riskratios,Time,...) {
+colormapping <- function(riskratios,Time) {
     if(max(riskratios$RRbic)>2) {warning("Max riskratios from BIC greater than 2")}
     if(max(riskratios$RRaic)>2) {warning("Max riskratios from AIC greater than 2")}
     if(max(riskratios$RRaicc)>2) {warning("Max riskratios from AICc greater than 2")}

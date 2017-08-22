@@ -7,7 +7,7 @@
 #' @return returns sparse matrix of 1's
 #' @examples
 #' sparseMAT <- spaceMat(clusters, numCenters)
-spaceMat <- function(clusters, numCenters,...){
+spaceMat <- function(clusters, numCenters){
     potClus <- numCenters
     mymat <- NULL
     for(i in 1:nrow(clusters)){
@@ -22,5 +22,5 @@ spaceMat <- function(clusters, numCenters,...){
         jj <- c(jj, mymat[[k]]@i)
         ii <- c(ii, rep(k,length(mymat[[k]]@x)))
     }
-    return(Matrix::t(sparseMatrix(i = ii, j = jj, x =xx, dims = c(length(mymat), numCenters))))
+    return(Matrix::t(Matrix::sparseMatrix(i = ii, j = jj, x =xx, dims = c(length(mymat), numCenters))))
 }

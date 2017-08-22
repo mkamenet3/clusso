@@ -8,7 +8,7 @@
 #' @export     
 #' @examples 
 #' spacetimeMat(clusters, numCenters, Time)
-spacetimeMat <- function(clusters, numCenters, Time,...){
+spacetimeMat <- function(clusters, numCenters, Time){
     space <- spaceMat(clusters, numCenters)
     time <- timeMat(Time)
     spacetimeMatrix <- kronecker(time, space)
@@ -24,13 +24,13 @@ spacetimeMat <- function(clusters, numCenters, Time,...){
 #' @param Time Number of time periods in the data
 #' @return returns sparse matrix of 1's as indicators of membership in the time cluster
 #' @export
-timeMat <-function(Time,..){
-    block <- Matrix(diag(1,Time),sparse=TRUE)
+timeMat <-function(Time){
+    block <- Matrix::Matrix(diag(1,Time),sparse=TRUE)
     master <- block
     for(i in 1:(Time-2)){
         diag(block[(i+1):Time,])<-1
-        master <- cBind(master, block[,1:(Time-i)])        
+        master <- Matrix::cBind(master, block[,1:(Time-i)])        
     }
-    master <- cBind(master, Matrix(rep(1,Time)))
+    master <- Matrix::cBind(master, Matrix::Matrix(rep(1,Time)))
     return(master)
 }

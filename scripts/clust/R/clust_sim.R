@@ -12,14 +12,14 @@
 #' @param init initial list of vectors, inherited from function setVectors.
 #' @return returns space-time 
 #' 
-vectors_space_sim <- function(x,Ex, YSIM,Time, init,...){
+vectors_space_sim <- function(x,Ex, YSIM,Time, init){
     id <- rep(1:length(x), times = Time)
     if(length(id)!=length(as.vector(Ex[[1]]))) stop("Length of ID var not equal to number of observations")
     vectors.sim.s <- list(Period = rep("1", length(x)),
-                          Ex = lapply(1:nsim, function(i) tapply(as.vector(matrix(Ex[[i]], ncol=Time)), id, function(x) sum(x))),
+                          Ex = lapply(1:length(YSIM), function(i) tapply(as.vector(matrix(Ex[[i]], ncol=Time)), id, function(x) sum(x))),
                           E0_0 = tapply(as.vector(matrix(init$E0, ncol=Time)), id, function(x) sum(x)),
                           Y.vec = tapply(as.vector(matrix(init$Y.vec, ncol=Time)), id, function(x) round(sum(x))))
-    YSIM.s <- lapply(1:nsim, function(i) tapply(as.vector(matrix(YSIM[[i]], ncol=Time)), id, function(x) round(sum(x))))
+    YSIM.s <- lapply(1:length(YSIM), function(i) tapply(as.vector(matrix(YSIM[[i]], ncol=Time)), id, function(x) round(sum(x))))
     return(list(vectors.sim.s = vectors.sim.s, YSIM.s = YSIM.s))
 }
     
@@ -51,11 +51,13 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init,...){
 #'space = spacetime, or space = both.
 #'@param theta default is 1000. Can add in overdispersion to simulated model by changing this value.
 #'@param nullmod default is NULL; otherwise will run null model
+#'@param floor floor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
 #'@return returns list of lists
 #'@export
 
 clust_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
-                          timeperiod, utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"), theta = NULL,nullmod=NULL,...){
+                          timeperiod, utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"), 
+                      theta = NULL,nullmod=NULL, floor){
     #initial user setting
     if(utm==FALSE){
         message("Coordinates are assumed to be in lat/long coordinates. For utm coordinates, please specify 'utm=TRUE'")
@@ -70,6 +72,12 @@ clust_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, center
     else{
         byrow=TRUE
         message("Data assumed to be in panel data. To use vector data instead, please specify 'byrow=FALSE'")
+    }
+    if(floor==FALSE){
+        floor <- FALSE
+    }
+    else{
+        floor <- TRUE
     }
     if(!is.null(nullmod)){
         if(isTRUE(nullmod)) warning("Null mod has been set to true")
@@ -95,7 +103,7 @@ clust_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, center
            # spacetime = clustAll_sim.spacetime(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
            #                                     timeperiod,colors=NULL,utm, byrow, threshold, space=FALSE),
            both = clustAll_sim(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
-                                     timeperiod,utm, byrow, threshold, theta, nullmod))
+                                     timeperiod,utm, byrow, threshold, theta, nullmod, floor))
 }
 
 
@@ -118,15 +126,17 @@ clust_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, center
 #'@param timeperiod time period where the cluster  starts in the simulation
 #'we will only be looking at periods 2 and 5. If multi_period is TRUE, then we will instead consider timeperiod through period_end (timeperiod:period_end). Following the same example,
 #'this would mean we look at periods 2, 3, 4, and 5.
-#'@param space space and space-time. Default is to run all four models: quasi-poisson and poisson for both space and space-time. User can specify, space = space,
-#'space = spacetime, or space = both.
+#'@param utm utm TRUE/FALSE as to whether or not the x and y coordinates are in UTM (TRUE) or LAT/LONG(FALSE)
+#'@param byrow  byrow default is True. If data should be imported by column then set to FALSE
+#'@param threshold  vector or value as threshold for cluster detection
 #'@param theta default is 1000. Can add in overdispersion to simulated model by changing this value.
 #'@param nullmod if TRUE, then null models will be run. Otherwise, default is null.
+#'@param floor floor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
 #'@return returns list of lists
 #'@export
 
 clustAll_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
-                               timeperiod,utm, byrow, threshold, theta = theta, nullmod=nullmod,...){
+                               timeperiod,utm, byrow, threshold, theta = theta, nullmod=nullmod,floor=floor,...){
     message("Running both Space and Space-Time Models")
     
     #set up clusters and fitted values
@@ -181,7 +191,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, cen
     Period <- init$Year
     #Simulate observed as NB(Eit, theta)
     #theta = 1000
-    YSIM <- lapply(1:nsim, function(i) rnegbin(E1, theta = theta))
+    YSIM <- lapply(1:nsim, function(i) MASS::rnegbin(E1, theta = theta))
     Ex <- scale_sim(YSIM, init, nsim, Time)
     #create vectors.sim for spacetime
     vectors.sim <- list(Period = Period, Ex = Ex , E0_0 = init$E0, Y.vec=init$Y.vec)
@@ -194,16 +204,16 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, cen
     # #SPACE-ONLY MODELS
     #set up and run simulation models
     message("RUNNING: SPACE-ONLY QUASI-POISSON")
-    lassoresult.qp.s <- spacetimeLasso_sim(clusters, vectors.sim.s, 1, spacetime=FALSE, pois=FALSE, nsim, YSIM.s)
+    lassoresult.qp.s <- spacetimeLasso_sim(clusters, vectors.sim.s, 1, spacetime=FALSE, pois=FALSE, nsim, YSIM.s, floor)
     message("RUNNING: SPACE-ONLY POISSON")
-    lassoresult.p.s <- spacetimeLasso_sim(clusters, vectors.sim.s, 1, spacetime=FALSE, pois=TRUE, nsim, YSIM.s)
+    lassoresult.p.s <- spacetimeLasso_sim(clusters, vectors.sim.s, 1, spacetime=FALSE, pois=TRUE, nsim, YSIM.s, floor)
     
     #SPACE-TIME MODELS 
     #set up and run simulation models
     message("RUNNING: SPACE-TIME QUASI-POISSON")
-    lassoresult.qp.st <- spacetimeLasso_sim(clusters, vectors.sim, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM)
+    lassoresult.qp.st <- spacetimeLasso_sim(clusters, vectors.sim, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM, floor)
     message("RUNNING: SPACE-TIME POISSON")
-    lassoresult.p.st <- spacetimeLasso_sim(clusters, vectors.sim, Time, spacetime=TRUE, pois=TRUE, nsim, YSIM)
+    lassoresult.p.st <- spacetimeLasso_sim(clusters, vectors.sim, Time, spacetime=TRUE, pois=TRUE, nsim, YSIM, floor)
     
     message("All models ran successfully")
     
@@ -237,10 +247,10 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, cen
     
     #DETECTION
     ##QP - Space
-    set <- detect_set(lassoresult.qp.s, vectors.sim.s, as.matrix(rr[,timeperiod[1]]), 1, x, y, rMax, center, radius, nullmod)
+    set <- detect_set(lassoresult.qp.s, vectors.sim.s, as.matrix(rr[,timeperiod[1]]), 1, x, y, rMax, center, radius, nullmod,nsim)
     incluster.qp.s <- detect_incluster(lassoresult.qp.s, vectors.sim.s, as.matrix(rr[,timeperiod[1]]), set, 1, 1, nsim, x, y, rMax, center, 
                                        radius, IC = "ic", under=FALSE, nullmod)
-    detect.qp.s <- list(clustDiagnostics(incluster.qp.s, threshold[1], nullmod), clustDiagnostics(incluster.qp.s , threshold[2], nullmod))
+    detect.qp.s <- list(clustDiagnostics(incluster.qp.s, threshold[1], nullmod, nsim), clustDiagnostics(incluster.qp.s , threshold[2], nullmod,nsim))
     if(!is.null(nullmod)){
         detect.out.qp.s <- (matrix(unlist(detect.qp.s), ncol=3, byrow=TRUE,
                                    dimnames = list(c(
@@ -294,10 +304,10 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, cen
     }
     
     ##P - Space
-    set <- detect_set(lassoresult.p.s, vectors.sim.s, as.matrix(rr[,timeperiod[1]]), 1, x, y, rMax, center, radius, nullmod)
+    set <- detect_set(lassoresult.p.s, vectors.sim.s, as.matrix(rr[,timeperiod[1]]), 1, x, y, rMax, center, radius, nullmod,nsim)
     incluster.p.s <- detect_incluster(lassoresult.p.s, vectors.sim.s, as.matrix(rr[,timeperiod[1]]), set, 1, 1, nsim, x, y, rMax, center, 
                                       radius, IC = "ic", under=FALSE,nullmod)
-    detect.p.s <- list(clustDiagnostics(incluster.p.s, threshold[1], nullmod), clustDiagnostics(incluster.p.s, threshold[2], nullmod))
+    detect.p.s <- list(clustDiagnostics(incluster.p.s, threshold[1], nullmod,nsim), clustDiagnostics(incluster.p.s, threshold[2], nullmod,nsim))
     if(!is.null(nullmod)){
         detect.out.p.s <- (matrix(unlist(detect.p.s), ncol=3, byrow=TRUE,
                                   dimnames = list(c(
@@ -351,10 +361,10 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, cen
     }
 
     ##QP - SPACETIME
-    set <- detect_set(lassoresult.qp.st, vectors.sim, rr, Time, x, y, rMax, center, radius, nullmod)
+    set <- detect_set(lassoresult.qp.st, vectors.sim, rr, Time, x, y, rMax, center, radius, nullmod,nsim)
     incluster.qp.st <- detect_incluster(lassoresult.qp.st, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
                                         radius, IC = "ic", under=FALSE, nullmod)
-    detect.qp.st <- list(clustDiagnostics(incluster.qp.st , threshold[1], nullmod), clustDiagnostics(incluster.qp.st , threshold[2], nullmod))
+    detect.qp.st <- list(clustDiagnostics(incluster.qp.st , threshold[1], nullmod,nsim), clustDiagnostics(incluster.qp.st , threshold[2], nullmod,nsim))
     
     if(!is.null(nullmod)){
         detect.out.qp.st <- (matrix(unlist(detect.qp.st), ncol=3, byrow=TRUE,
@@ -409,10 +419,10 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, cen
     }
     
     ##P - SPACETIME
-    set <- detect_set(lassoresult.p.st, vectors.sim, rr, Time, x, y, rMax, center, radius, nullmod)
+    set <- detect_set(lassoresult.p.st, vectors.sim, rr, Time, x, y, rMax, center, radius, nullmod,nsim)
     incluster.p.st <- detect_incluster(lassoresult.p.st, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
                                        radius, IC = "ic", under=FALSE, nullmod)
-    detect.p.st <- list(clustDiagnostics(incluster.p.st, threshold[1], nullmod), clustDiagnostics(incluster.p.st, threshold[2], nullmod))
+    detect.p.st <- list(clustDiagnostics(incluster.p.st, threshold[1], nullmod,nsim), clustDiagnostics(incluster.p.st, threshold[2], nullmod,nsim))
     
     if(!is.null(nullmod)){
         detect.out.p.st <- (matrix(unlist(detect.p.st), ncol=3, byrow=TRUE,

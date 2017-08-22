@@ -1,7 +1,7 @@
 #' Create the clusters dataframe
 #' 
-#' @param vector xP x coordinates (easting/latitude); if utm coordinates, scale to km.
-#' @param vector yP y coordinates (northing/longitude); if utm coordinates, scale to km.
+#' @param xP vector of x coordinates (easting/latitude); if utm coordinates, scale to km.
+#' @param yP vector of y coordinates (northing/longitude); if utm coordinates, scale to km.
 #' @param r.max set max radius (in km)
 #' @param utm TRUE/FALSE as to whether or not the x and y coordinates are in UTM (TRUE) or LAT/LONG(FALSE)
 #' @param n Number of coordinate pairs/number of centers
@@ -25,7 +25,7 @@ clusters2df <- function(xP,yP, r.max, utm=FALSE,n){
         if(mean(nchar(vapply(strsplit(as.character(xP), "[.]"),"[", 1, FUN.VALUE=character(1))))>2 & 
            mean(nchar(vapply(strsplit(as.character(yP), "[.]"),"[", 1, FUN.VALUE=character(1))))>2)
             stop("Your coordinates may be in UTM due to character length. Please double check.")
-        tmpR <- (as.matrix(distm(cbind(xP, yP), fun=distHaversine))[indR,])/1000    
+        tmpR <- (as.matrix(geosphere::distm(cbind(xP, yP), fun=distHaversine))[indR,])/1000    
     } 
     else{
         if(mean(nchar(vapply(strsplit(as.character(xP), "[.]"),"[", 1, FUN.VALUE=character(1))))<=2 & 

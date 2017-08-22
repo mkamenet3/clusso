@@ -5,7 +5,7 @@
 \title{Set initial conditions to enable detection diagnostic functions}
 \usage{
 detect_set(lassoresult, vectors.sim, rr, Time, x, y, rMax, center, radius,
-  nullmod, ...)
+  nullmod, nsim)
 }
 \arguments{
 \item{lassoresult}{List of QBIC, QAIC, QAICc estimates from the mylasso.sim function}
@@ -25,6 +25,8 @@ detect_set(lassoresult, vectors.sim, rr, Time, x, y, rMax, center, radius,
 \item{radius}{radius of the simulated cluster}
 
 \item{nullmod}{indicator for whether or not the simulation being run is the null model or not. Default is not null.}
+
+\item{nsim}{number of simulations}
 }
 \value{
 returns a list of 1) indx_truth, which is a vector of indices where our cluster

@@ -13,7 +13,7 @@ plotmap_ST(pdfname, res, obs, sub, ...)
 
 \item{obs}{if observed is to be plotted or oracle from simulation}
 
-\item{optional}{parameter if you want to just use the function for plotting different vectors}
+\item{sub}{optional parameter if you want to just use the function for plotting different vectors}
 }
 \description{
 #Space-time plotting

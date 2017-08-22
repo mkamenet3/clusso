@@ -4,7 +4,7 @@
 \alias{spacetimeMat}
 \title{Spatio-temporal Sparse Matrix}
 \usage{
-spacetimeMat(clusters, numCenters, Time, ...)
+spacetimeMat(clusters, numCenters, Time)
 }
 \arguments{
 \item{clusters}{the potential clusters dataframe created by *clusters2df*}
