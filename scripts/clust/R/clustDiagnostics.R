@@ -7,10 +7,11 @@
 #'@param nsim number of simulations
 #'@return list of detection
 #'@examples
+#'nullmod = NULL
 #'set <- detect_set(lassoresult.qp.s, vectors.sim, rr, Time, x, y, rMax, center, radius,nullmod=NULL, nsim)
 #'incluster.qp.q <- detect_incluster(lassoresult.qp.s, vectors.sim, rr, set,timeperiod, Time, nsim, x, y, rMax, center, radius, IC = "ic")
-#'detect.qp.s <- list(clustDiagnostics(incluster.qp.s, threshold[1]),clustDiagnostics(incluster.qp.s, threshold[2])
-clustDiagnostics <- function(incluster, threshold, nullmod,nsim.){
+#'detect.qp.s <- list(clustDiagnostics(incluster.qp.s, threshold[1], nullmod,nsim),clustDiagnostics(incluster.qp.s, threshold[2], nullmod, nsim)
+clustDiagnostics <- function(incluster, threshold, nullmod,nsim){
     if(is.null(nullmod)){
         #thresholding of prop.alldetect
         alldetect.aic <- paste0((length(which(unlist(incluster$prop.alldetect.aic)> threshold))/nsim)*100, "%")
