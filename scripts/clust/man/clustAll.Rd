@@ -4,7 +4,7 @@
 \alias{clustAll}
 \title{clustAll}
 \usage{
-clustAll(x, y, rMax, period, expected, observed, Time, utm, byrow)
+clustAll(x, y, rMax, period, expected, observed, Time, utm, byrow, floor)
 }
 \arguments{
 \item{x}{x coordinates (easting/latitude); if utm coordinates, scale to km.}
@@ -24,6 +24,8 @@ clustAll(x, y, rMax, period, expected, observed, Time, utm, byrow)
 \item{utm}{default is TRUE. If FALSE, then will run long/lat data}
 
 \item{byrow}{default is True. If data should be imported by column then set to FALSE}
+
+\item{floor}{floor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.}
 }
 \value{
 

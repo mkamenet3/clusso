@@ -6,7 +6,7 @@
 \usage{
 clustAll_sim(x, y, rMax, period, expected, observed, Time, nsim, center, radius,
   risk.ratio, timeperiod, utm, byrow, threshold, theta = theta,
-  nullmod = nullmod, ...)
+  nullmod = nullmod, floor = floor, ...)
 }
 \arguments{
 \item{x}{x coordinates (easting/latitude); if utm coordinates, scale to km.}
@@ -38,6 +38,8 @@ this would mean we look at periods 2, 3, 4, and 5.}
 \item{theta}{default is 1000. Can add in overdispersion to simulated model by changing this value.}
 
 \item{nullmod}{if TRUE, then null models will be run. Otherwise, default is null.}
+
+\item{floor}{floor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.}
 
 \item{space}{space and space-time. Default is to run all four models: quasi-poisson and poisson for both space and space-time. User can specify, space = space,
 space = spacetime, or space = both.}

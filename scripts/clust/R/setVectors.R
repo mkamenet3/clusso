@@ -21,7 +21,7 @@
 
 
 
-setVectors <- function(period, expect, observed,Time, byrow=TRUE,...) {
+setVectors <- function(period, expect, observed,Time, byrow=TRUE) {
     if (byrow==TRUE){
         if(period[1] == period[2]) warning("Please check the format of the data, you may want byrow=FALSE. It appears that the time periods appear sequentially")
         E0=as.vector(matrix(expect, byrow=T, ncol=Time))

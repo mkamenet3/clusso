@@ -10,7 +10,7 @@
 #' @return This returns a list of the risk ratios (observed over expected) as determined by 1) pure observed/expected counts,
 #' 2) observed based on QBIC path/expected; 3) observed based on QAIC path/expected; 4) observed based on QAICc path/expected.
 #' @export
-set_rr<- function(lassoresult, vectors, Time, sim=FALSE,...){
+set_rr<- function(lassoresult, vectors, Time, sim=FALSE){
     if(sim==FALSE){
         RRobs <- matrix(as.vector(vectors$Y.vec)/as.vector(vectors$E0),ncol=Time)
         RRbic <- matrix(lassoresult$E.qbic/as.vector(vectors$E0),ncol=Time)
@@ -46,7 +46,7 @@ set_rr<- function(lassoresult, vectors, Time, sim=FALSE,...){
 #' 2) observed based on QBIC path/expected; 3) observed based on QAIC path/expected; 4) observed based on QAICc path/expected.
 #' @export
 #' 
-get_rr <- function(lassoresult,vectors,init,E1, Time, sim=TRUE,...){
+get_rr <- function(lassoresult,vectors.sim,init,E1, Time, sim=TRUE){
     if(sim==TRUE){
         RRobs <- matrix(as.vector(E1)/as.vector(init$E0),ncol=Time)
     }

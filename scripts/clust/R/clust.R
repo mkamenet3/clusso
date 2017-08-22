@@ -11,11 +11,10 @@
 #' @param Ex list of simulated and standardized expected counts
 #' @param Yx observed
 #' @param Time number of time periods
-#' @param timeperiod explicit vector of timeperiods
 #' @param init initial list of vectors, inherited from function setVectors.
 #' @return returns space-time 
 #' 
-vectors_space <- function(x,Ex, Yx,Time, init,...){
+vectors_space <- function(x,Ex, Yx,Time, init){
     id <- rep(1:length(x), times = Time)
     if(length(id)!=length(as.vector(Ex))) stop("Length of ID var not equal to number of observations")
     vectors.s <- list(Period = rep("1", length(x)),
@@ -43,9 +42,10 @@ vectors_space <- function(x,Ex, Yx,Time, init,...){
 #'@param byrow default is True. If data should be imported by column then set to FALSE
 #'@param space space and space-time. Default is to run all four models: quasi-poisson and poisson for both space and space-time. User can specify, space = space,
 #'space = spacetime, or space = both.
+#'@param floor floor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
 #'@return returns list
 
-clust <- function(x, y, rMax, period, expected, observed, Time, utm=TRUE, byrow=TRUE,space = c("space","spacetime", "both"),...){
+clust <- function(x, y, rMax, period, expected, observed, Time, utm=TRUE, byrow=TRUE,space = c("space","spacetime", "both"),floor,...){
     if(utm==FALSE){
         message("Coordinates are assumed to be in lat/long coordinates. For utm coordinates, please specify 'utm=TRUE'")
         utm=FALSE
@@ -60,6 +60,12 @@ clust <- function(x, y, rMax, period, expected, observed, Time, utm=TRUE, byrow=
         byrow=TRUE
         message("Data assumed to be in panel data. To use vector data instead, please specify 'byrow=FALSE'")
     }
+    if(floor==FALSE){
+        floor <- FALSE
+    }
+    else{
+        floor <- TRUE
+    }
     if(length(space) > 1) stop("You must select either `space`, `spacetime`, or `both`")
     space <- match.arg(space, several.ok = FALSE)
     switch(space, 
@@ -67,7 +73,7 @@ clust <- function(x, y, rMax, period, expected, observed, Time, utm=TRUE, byrow=
            #                             timeperiod,colors=NULL,utm, byrow, threshold, space=TRUE),
            # spacetime = clust.sim.all.spacetime(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
            #                                     timeperiod,colors=NULL,utm, byrow, threshold, space=FALSE),
-           both = clustAll(x, y, rMax,period, expected, observed, Time, utm, byrow))
+           both = clustAll(x, y, rMax,period, expected, observed, Time, utm, byrow, floor))
 }
     
     
@@ -85,10 +91,11 @@ clust <- function(x, y, rMax, period, expected, observed, Time, utm=TRUE, byrow=
 #'@param Time Number of time periods or years in your dataset. Must be declared as numeric.
 #'@param utm default is TRUE. If FALSE, then will run long/lat data
 #'@param byrow default is True. If data should be imported by column then set to FALSE
+#'@param floor floor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
 #'@return
 #'               
     
-clustAll <- function(x,y,rMax, period, expected, observed, Time, utm, byrow){    
+clustAll <- function(x,y,rMax, period, expected, observed, Time, utm, byrow, floor){    
     message("Running both Space and Space-Time Models")
     
     #set up clusters and fitted values
@@ -105,10 +112,10 @@ clustAll <- function(x,y,rMax, period, expected, observed, Time, utm, byrow){
     vectors.s <- spacevecs$vectors.s
     
     #run lasso
-    lassoresult.p.st <- spacetimeLasso(clusters, vectors, Time, spacetime=TRUE,pois=TRUE)
-    lassoresult.qp.st <- spacetimeLasso(clusters, vectors, Time, spacetime=TRUE,pois=FALSE)
-    lassoresult.p.s <- spacetimeLasso(clusters, vectors.s, 1, spacetime=FALSE,pois=TRUE)
-    lassoresult.qp.s <- spacetimeLasso(clusters, vectors.s, 1, spacetime=FALSE,pois=FALSE)
+    lassoresult.p.st <- spacetimeLasso(clusters, vectors, Time, spacetime=TRUE,pois=TRUE, floor)
+    lassoresult.qp.st <- spacetimeLasso(clusters, vectors, Time, spacetime=TRUE,pois=FALSE, floor)
+    lassoresult.p.s <- spacetimeLasso(clusters, vectors.s, 1, spacetime=FALSE,pois=TRUE, floor)
+    lassoresult.qp.s <- spacetimeLasso(clusters, vectors.s, 1, spacetime=FALSE,pois=FALSE, floor)
     
     message("All models ran successfully")
     
@@ -125,10 +132,10 @@ clustAll <- function(x,y,rMax, period, expected, observed, Time, utm, byrow){
     ##risk ratios
     initial.s <- list(E0 = unlist(vectors.s$E0_0))
     id <- rep(1:length(x), times=Time)
-    riskratios.p.s <- get_rr(lassoresult.p.s, vectors.s,inistial.s,
+    riskratios.p.s <- get_rr(lassoresult.p.s, vectors.s,initial.s,
                               tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x)),
                               1,sim=FALSE)
-    riskratios.qp.s <- get_rr(lassoresult.qp.s,vectors.s,inistial.s,
+    riskratios.qp.s <- get_rr(lassoresult.qp.s,vectors.s,initial.s,
                                tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x)),
                                1,sim=FALSE)
     ##color mapping
