@@ -4,7 +4,7 @@
 \alias{timeMat}
 \title{timeMat}
 \usage{
-timeMat(Time, ..)
+timeMat(Time)
 }
 \arguments{
 \item{Time}{Number of time periods in the data}

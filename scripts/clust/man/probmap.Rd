@@ -4,7 +4,7 @@
 \alias{probmap}
 \title{Mapping colors to create a black/white probability map}
 \usage{
-probmap(lassoresult, vectors.sim, rr, nsim, Time, colormap = FALSE, ...)
+probmap(lassoresult, vectors.sim, rr, nsim, Time, colormap = FALSE)
 }
 \arguments{
 \item{lassoresult}{List of QBIC, QAIC, QAICc estimates from the mylasso.sim function}

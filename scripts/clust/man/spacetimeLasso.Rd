@@ -5,7 +5,7 @@
 \title{Spatial and Spatio-Temporal Lasso}
 \usage{
 spacetimeLasso(clusters, vectors, Time, spacetime = TRUE, pois = FALSE,
-  floor, ...)
+  floor)
 }
 \arguments{
 \item{clusters}{clusters dataframe from (cluster.df function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)}

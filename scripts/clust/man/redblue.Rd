@@ -4,7 +4,7 @@
 \alias{redblue}
 \title{Color-mapping of risk ratios to red-blue gradient}
 \usage{
-redblue(x, ...)
+redblue(x)
 }
 \arguments{
 \item{x}{this will be the risk ratios shrunk to be on the scale of half risk to twice the risk as end points.}

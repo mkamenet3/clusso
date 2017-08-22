@@ -5,7 +5,7 @@
 \title{Simulations forSpatial and Spatio-Temporal Lasso}
 \usage{
 spacetimeLasso_sim(clusters, vectors.sim, Time, spacetime, pois, nsim, YSIM,
-  floor, ...)
+  floor)
 }
 \arguments{
 \item{clusters}{clusters dataframe from (cluster.df function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)}

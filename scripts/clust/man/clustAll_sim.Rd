@@ -35,14 +35,17 @@ clustAll_sim(x, y, rMax, period, expected, observed, Time, nsim, center, radius,
 we will only be looking at periods 2 and 5. If multi_period is TRUE, then we will instead consider timeperiod through period_end (timeperiod:period_end). Following the same example,
 this would mean we look at periods 2, 3, 4, and 5.}
 
+\item{utm}{utm TRUE/FALSE as to whether or not the x and y coordinates are in UTM (TRUE) or LAT/LONG(FALSE)}
+
+\item{byrow}{byrow default is True. If data should be imported by column then set to FALSE}
+
+\item{threshold}{vector or value as threshold for cluster detection}
+
 \item{theta}{default is 1000. Can add in overdispersion to simulated model by changing this value.}
 
 \item{nullmod}{if TRUE, then null models will be run. Otherwise, default is null.}
 
 \item{floor}{floor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.}
-
-\item{space}{space and space-time. Default is to run all four models: quasi-poisson and poisson for both space and space-time. User can specify, space = space,
-space = spacetime, or space = both.}
 }
 \value{
 returns list of lists

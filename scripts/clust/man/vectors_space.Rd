@@ -4,7 +4,7 @@
 \alias{vectors_space}
 \title{vectors_space}
 \usage{
-vectors_space(x, Ex, Yx, Time, init, ...)
+vectors_space(x, Ex, Yx, Time, init)
 }
 \arguments{
 \item{x}{vector coordinates (unique regardless of time period)}
@@ -16,8 +16,6 @@ vectors_space(x, Ex, Yx, Time, init, ...)
 \item{Time}{number of time periods}
 
 \item{init}{initial list of vectors, inherited from function setVectors.}
-
-\item{timeperiod}{explicit vector of timeperiods}
 }
 \value{
 returns space-time

@@ -7,15 +7,15 @@
 clusters2df(xP, yP, r.max, utm = FALSE, n)
 }
 \arguments{
+\item{xP}{vector of x coordinates (easting/latitude); if utm coordinates, scale to km.}
+
+\item{yP}{vector of y coordinates (northing/longitude); if utm coordinates, scale to km.}
+
 \item{r.max}{set max radius (in km)}
 
 \item{utm}{TRUE/FALSE as to whether or not the x and y coordinates are in UTM (TRUE) or LAT/LONG(FALSE)}
 
 \item{n}{Number of coordinate pairs/number of centers}
-
-\item{vector}{xP x coordinates (easting/latitude); if utm coordinates, scale to km.}
-
-\item{vector}{yP y coordinates (northing/longitude); if utm coordinates, scale to km.}
 }
 \value{
 This function returns a dataframe that contains

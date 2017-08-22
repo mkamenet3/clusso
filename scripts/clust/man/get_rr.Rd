@@ -4,10 +4,12 @@
 \alias{get_rr}
 \title{get_rr}
 \usage{
-get_rr(lassoresult, vectors, init, E1, Time, sim = TRUE, ...)
+get_rr(lassoresult, vectors.sim, init, E1, Time, sim = TRUE)
 }
 \arguments{
 \item{lassoresult}{List of QBIC, QAIC, QAICc estimates from the mylasso function}
+
+\item{vectors.sim}{dataframe of initial vectors of the observed and expected counts}
 
 \item{init}{initial settings}
 
@@ -16,8 +18,6 @@ get_rr(lassoresult, vectors, init, E1, Time, sim = TRUE, ...)
 \item{Time}{number of time period}
 
 \item{sim}{default is TRUE. Signals whether these values are to be extracted from a simulated model or real data.}
-
-\item{vectors.sim}{dataframe of initial vectors of the observed and expected counts}
 }
 \value{
 This returns a list of the risk ratios (observed over expected) as determined by 1) pure observed/expected counts,

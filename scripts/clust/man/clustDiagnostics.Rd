@@ -4,7 +4,7 @@
 \alias{clustDiagnostics}
 \title{Suite of function for cluster detection diagnostics - incluster diagnostics}
 \usage{
-clustDiagnostics(incluster, threshold, nullmod, ...)
+clustDiagnostics(incluster, threshold, nullmod, nsim)
 }
 \arguments{
 \item{incluster}{inherited object from detect_incluster_ic}
@@ -12,6 +12,8 @@ clustDiagnostics(incluster, threshold, nullmod, ...)
 \item{threshold}{detection threshold set by user}
 
 \item{nullmod}{default is NULL. If not null, then null model results will be returned}
+
+\item{nsim}{number of simulations}
 }
 \value{
 list of detection
@@ -20,8 +22,9 @@ list of detection
 clustDiagnostics
 }
 \examples{
-set <- detect_set(lassoresult.qp.s, vectors.sim, rr, Time, x, y, rMax, center, radius)
+nullmod = NULL
+set <- detect_set(lassoresult.qp.s, vectors.sim, rr, Time, x, y, rMax, center, radius,nullmod=NULL, nsim)
 incluster.qp.q <- detect_incluster(lassoresult.qp.s, vectors.sim, rr, set,timeperiod, Time, nsim, x, y, rMax, center, radius, IC = "ic")
-detect.qp.s <- list(clustDiagnostics(incluster.qp.s, threshold[1]),clustDiagnostics(incluster.qp.s, threshold[2])
+detect.qp.s <- list(clustDiagnostics(incluster.qp.s, threshold[1], nullmod,nsim),clustDiagnostics(incluster.qp.s, threshold[2], nullmod, nsim)
 }
 

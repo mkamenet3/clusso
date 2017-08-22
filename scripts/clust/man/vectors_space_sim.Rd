@@ -4,7 +4,7 @@
 \alias{vectors_space_sim}
 \title{Simulation functions for space and space-time cluster detection with lasso.}
 \usage{
-vectors_space_sim(x, Ex, YSIM, Time, init, ...)
+vectors_space_sim(x, Ex, YSIM, Time, init)
 }
 \arguments{
 \item{x}{vector coordinates (unique regardless of time period)}
