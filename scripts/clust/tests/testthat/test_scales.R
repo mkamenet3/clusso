@@ -17,8 +17,8 @@ test_that("Test simulation scales", {
     ysim2 <- ysim
     ysim2[[1]] <- ysim[[1]][-1]
     #expectations
-    expect_that(length(scale.sim(ysim, init, nsim, Time)), equals(nsim))
-    expect_error(scale.sim(ysim2, init, nsim, Time))
+    expect_that(length(scale_sim(ysim, init, nsim, Time)), equals(nsim))
+    expect_error(scale_sim(ysim2, init, nsim, Time))
 })
 
 test_that("Test scales (non-sim)", {

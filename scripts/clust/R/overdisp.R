@@ -8,7 +8,7 @@
 #' @examples
 #' offset <- glm(Yx ~ 1 + as.factor(vectors$Period) + offset(log(Ex)), family=poisson)
 #' overdisp.est <- overdisp(offset_reg)
-overdisp <- function(offset_reg, sim, floor) {
+overdisp <- function(offset_reg, sim = TRUE, floor = TRUE) {
     if(sim==TRUE){
         stopifnot(inherits(offset_reg[[1]], c("glm", "lm")))
         phi <- max(unlist(lapply(1:length(offset_reg), function(i) deviance(offset_reg[[i]])/df.residual(offset_reg[[i]]))))

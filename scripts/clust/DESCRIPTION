@@ -37,3 +37,4 @@ Maintainer: Maria Kamenetsky <maria.kamenetsky@gmail.com>
 BugReports: https://github.com/mkamenet3/cluST/issues
 LazyData: true
 RoxygenNote: 5.0.1
+Suggests: testthat

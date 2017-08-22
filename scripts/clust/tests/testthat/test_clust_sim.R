@@ -1,7 +1,7 @@
 library("testthat")
 context("Simulation of cluster lasso")
 
-test_that("All parameters are correctly specified and trouble-shooted in clust.sim.all", {
+test_that("All parameters are correctly specified and trouble-shooted in clust_sim", {
     #set up
     x <- c(399786.6, 360917.0, 385175.1, 371603.4, 388154.2, 375023.3,383905.5, 392283.1, 412155.6, 412654.0)
     y <- c(4047756, 4023885, 4025749, 4018172, 4047900, 4068053, 4064599, 4020110, 4032090, 4080899)
@@ -10,6 +10,7 @@ test_that("All parameters are correctly specified and trouble-shooted in clust.s
     nsim = 2
     center = 1
     radius = 10
+    floor = TRUE
     risk.ratio = 2
     threshold = 0.9
     period <- rep(seq(1,2),5)
@@ -18,12 +19,13 @@ test_that("All parameters are correctly specified and trouble-shooted in clust.s
     observed <- lapply(1:nsim, function(i) rnegbin(n = 10,mu = 20,theta = 1000))
     YSIM <- lapply(1:nsim, function(i) rnegbin(n = 10,mu = 15,theta = 1000))
     init <- setVectors(period, expected, observed, Time, byrow=TRUE)
-    expect_error(clust.sim.all(x_utm, y_utm, period, expected, observed, Time, nsim, center,
-                               radius, risk.ratio, timeperiod, utm=TRUE, byrow=TRUE, threshold))
+    expect_error(clust_sim(x_utm, y_utm, radius, period, expected, observed, Time, nsim, center,
+                               radius, risk.ratio, timeperiod, utm=TRUE, byrow=TRUE,
+                           space = "both", threshold, floor))
 })
 
 
-test_that("Vectors.space.sim correctly collapses from space-time to space.", {
+test_that("Vectors_space_sim correctly collapses from space-time to space.", {
     #set up
     set.seed(2)
     Time <- 2
@@ -38,5 +40,5 @@ test_that("Vectors.space.sim correctly collapses from space-time to space.", {
     init <- setVectors(period, unlist(expected), observed, Time, byrow=TRUE)
     ysim <- lapply(1:nsim, function(i) rnegbin(unlist(expected), theta = theta))
     
-    expect_equal(length(vectors.space.sim(x,Ex,YSIM, Time,init)),2)
+    expect_equal(length(vectors_space_sim(x,Ex,YSIM, Time,init)),2)
 })
