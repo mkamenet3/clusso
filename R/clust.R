@@ -31,8 +31,8 @@ vectors_space <- function(x,Ex, Yx,Time, init){
 #' @description
 #'This function is the helper function to run both the space and space-time Lasso models.
 #'runs both the space and space-time Lasso model. This function is to be run on observed data. A separate function (clust.sim) can be used for simulating data and running diagnostics on simulations.
-#'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
-#'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
+#'@param xx x coordinates (easting/latitude); if utm coordinates, scale to km.
+#'@param yy y coordinates (northing/longitude); if utm coordinates, scale to km.
 #'@param rMax set max radius (in km)
 #'@param period vector of periods or years in dataset. Should be imported as a factor.
 #'@param expected vector of expected counts. Expected counts must match up with the year and observed vectors.
@@ -43,9 +43,20 @@ vectors_space <- function(x,Ex, Yx,Time, init){
 #'@param space space and space-time. Default is to run all four models: quasi-poisson and poisson for both space and space-time. User can specify, space = space,
 #'space = spacetime, or space = both.
 #'@param floor floor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
+#'@param cv option for cross-validation
 #'@return returns list
 
-clust <- function(x, y, rMax, period, expected, observed, Time, utm=TRUE, byrow=TRUE,space = c("space","spacetime", "both"),floor,...){
+clust <- function(clst,covars, xx,yy,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","spacetime", "both"),floor=NULL, cv = NULL){
+    expected <- clst$expected
+    observed <- clst$observed
+    period <- clst$timeperiod
+    if(!is.null(covars)){
+        covars <- covars
+    }
+    else{
+        covars <- NULL
+    }
+    
     if(utm==FALSE){
         message("Coordinates are assumed to be in lat/long coordinates. For utm coordinates, please specify 'utm=TRUE'")
         utm=FALSE
@@ -66,6 +77,12 @@ clust <- function(x, y, rMax, period, expected, observed, Time, utm=TRUE, byrow=
     else{
         floor <- TRUE
     }
+    if(!is.null(cv)){
+        cv = cv
+    }
+    else{
+        cv = NULL
+    }
     if(length(space) > 1) stop("You must select either `space`, `spacetime`, or `both`")
     space <- match.arg(space, several.ok = FALSE)
     switch(space, 
@@ -73,7 +90,7 @@ clust <- function(x, y, rMax, period, expected, observed, Time, utm=TRUE, byrow=
            #                             timeperiod,colors=NULL,utm, byrow, threshold, space=TRUE),
            # spacetime = clust.sim.all.spacetime(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
            #                                     timeperiod,colors=NULL,utm, byrow, threshold, space=FALSE),
-           both = clustAll(x, y, rMax,period, expected, observed, Time, utm, byrow, floor))
+           both = clustAll(x, y, rMax,period, expected, observed, covars, Time, utm, byrow, floor, cv))
 }
     
     
@@ -88,14 +105,16 @@ clust <- function(x, y, rMax, period, expected, observed, Time, utm=TRUE, byrow=
 #'@param period vector of periods or years in dataset. Should be imported as a factor.
 #'@param expected vector of expected counts. Expected counts must match up with the year and observed vectors.
 #'@param observed vector of observed counts. Observed counts must match up with the year and expected vectors.
+#'@param covars matrix of covariates.
 #'@param Time Number of time periods or years in your dataset. Must be declared as numeric.
 #'@param utm default is TRUE. If FALSE, then will run long/lat data
 #'@param byrow default is True. If data should be imported by column then set to FALSE
 #'@param floor floor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
+#'@param cv option for cross-validation - numeric input specifies how many folds; default is 10
 #'@return
 #'               
     
-clustAll <- function(x,y,rMax, period, expected, observed, Time, utm, byrow, floor){    
+clustAll <- function(x,y,rMax, period, expected, observed, covars= NULL,Time, utm, byrow, floor, cv){    
     message("Running both Space and Space-Time Models")
     
     #set up clusters and fitted values
@@ -112,10 +131,10 @@ clustAll <- function(x,y,rMax, period, expected, observed, Time, utm, byrow, flo
     vectors.s <- spacevecs$vectors.s
     
     #run lasso
-    lassoresult.p.st <- spacetimeLasso(clusters, vectors, Time, spacetime=TRUE,pois=TRUE, floor)
-    lassoresult.qp.st <- spacetimeLasso(clusters, vectors, Time, spacetime=TRUE,pois=FALSE, floor)
-    lassoresult.p.s <- spacetimeLasso(clusters, vectors.s, 1, spacetime=FALSE,pois=TRUE, floor)
-    lassoresult.qp.s <- spacetimeLasso(clusters, vectors.s, 1, spacetime=FALSE,pois=FALSE, floor)
+    lassoresult.p.st <- spacetimeLasso(clusters, vectors, covars,Time, spacetime=TRUE,pois=TRUE, floor, cv)
+    lassoresult.qp.st <- spacetimeLasso(clusters, vectors, covars, Time, spacetime=TRUE,pois=FALSE, floor, cv)
+    lassoresult.p.s <- spacetimeLasso(clusters, vectors.s, covars, 1, spacetime=FALSE,pois=TRUE, floor,cv)
+    lassoresult.qp.s <- spacetimeLasso(clusters, vectors.s, covars, 1, spacetime=FALSE,pois=FALSE, floor,cv)
     
     message("All models ran successfully")
     

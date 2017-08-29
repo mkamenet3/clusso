@@ -19,7 +19,7 @@
 #' YSIM <- lapply(1:nsim, function(i) rnegbin(expected, theta = theta))
 #' myresults <- spacetimeLasso_sim(potentialclusters, myvectors, spacetime=TRUE, pois=FALSE, nsim=100, YSIM, floor=TRUE)
 
-spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim,YSIM,floor){
+spacetimeLasso_sim <- function(clusters, vectors.sim, covars = NULL, Time, spacetime,pois, nsim,YSIM,floor){
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
@@ -32,6 +32,15 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
         sparseMAT <- spaceMat(clusters, numCenters)
         message("Spatial matrix created")
     }
+    if(!is.null(covars)){
+        covarMat <- Matrix::Matrix(data.matrix(covars), sparse=TRUE)
+        sparseMAT <- Matrix::cBind(sparseMAT, covarMat)
+        message("Running with covariates")
+    }
+    else{
+        message("No covariates found")
+    }
+    
     message(paste("Number of potential clusters to scan through: ", dim(sparseMAT)[2]))
     Ex <- vectors.sim$Ex
     Yx <- YSIM
@@ -56,7 +65,28 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
     if(spacetime==TRUE & pois == FALSE){
         message("returning results for space-time Quasi-Poisson model")
         #calculate max overdispersion
-        offset_reg <- lapply(1:nsim, function(i) glm(Yx[[i]] ~ 1 + as.factor(vectors.sim$Period) +offset(log(Ex[[i]])),family=poisson))
+        if(!is.null(covars)){
+            covarnames <- paste0("covars$",names(covars))
+            for(i in 1:length(covarnames)){
+                assign(x = paste0(covarnames[[i]]),
+                value = covars[,i])
+            }
+            
+            d <- data.frame(period = vectors.sim$Period)
+            rhs <- cbind(covars, d)
+            # covarnames <- paste(paste0("covars$",names(covars)),collapse=" + ")
+            # frmla <- paste(1,'+',covarnames, '+',
+            #              'as.factor(vectors.sim$Period) + offset(log(Ex[[i]]))', 
+            #              collapse="+")
+            # reformulate(termlabels = covarnames, response=Yx)
+            # 
+            
+            offset_reg <- lapply(1:nsim, function(i) glm(Yx[[i]] ~  1 + as.factor(vectors.sim$Period) +offset(log(Ex[[i]])),
+                                                         family=poisson))
+        }
+        else{
+            offset_reg <- lapply(1:nsim, function(i) glm(Yx[[i]] ~ 1 + as.factor(vectors.sim$Period) +offset(log(Ex[[i]])),family=poisson))
+        }
         #overdisp.est <- max(unlist(lapply(1:nsim, function(i) deviance(offset_reg[[i]])/df.residual(offset_reg[[i]]))))
         overdisp.est <- overdisp(offset_reg, sim=TRUE, floor = floor)
         message(paste("Overdispersion estimate:", overdisp.est))

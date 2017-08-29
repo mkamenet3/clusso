@@ -55,10 +55,19 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init){
 #'@return returns list of lists
 #'@export
 
-clust_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
+clust_sim <- function(clst,covars, xx,yy, rMax, Time, nsim, center, radius, risk.ratio, 
                           timeperiod, utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"), 
                       theta = NULL,nullmod=NULL, floor){
+    expected <- clst$expected
+    observed <- clst$observed
+    period <- clst$timeperiod
     #initial user setting
+    if(!is.null(covars)){
+        covars <- covars
+    }
+    else{
+        covars <- NULL
+    }
     if(utm==FALSE){
         message("Coordinates are assumed to be in lat/long coordinates. For utm coordinates, please specify 'utm=TRUE'")
         utm=FALSE
@@ -102,7 +111,7 @@ clust_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, center
            #                             timeperiod,colors=NULL,utm, byrow, threshold, space=TRUE),
            # spacetime = clustAll_sim.spacetime(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
            #                                     timeperiod,colors=NULL,utm, byrow, threshold, space=FALSE),
-           both = clustAll_sim(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
+           both = clustAll_sim(x, y, rMax,period, expected, observed, covars, Time, nsim, center, radius, risk.ratio,
                                      timeperiod,utm, byrow, threshold, theta, nullmod, floor))
 }
 
@@ -135,7 +144,7 @@ clust_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, center
 #'@return returns list of lists
 #'@export
 
-clustAll_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
+clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, nsim, center, radius, risk.ratio, 
                                timeperiod,utm, byrow, threshold, theta = theta, nullmod=nullmod,floor=floor,...){
     message("Running both Space and Space-Time Models")
     
@@ -204,16 +213,16 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, cen
     # #SPACE-ONLY MODELS
     #set up and run simulation models
     message("RUNNING: SPACE-ONLY QUASI-POISSON")
-    lassoresult.qp.s <- spacetimeLasso_sim(clusters, vectors.sim.s, 1, spacetime=FALSE, pois=FALSE, nsim, YSIM.s, floor)
+    lassoresult.qp.s <- spacetimeLasso_sim(clusters, vectors.sim.s, covars, 1, spacetime=FALSE, pois=FALSE, nsim, YSIM.s, floor)
     message("RUNNING: SPACE-ONLY POISSON")
-    lassoresult.p.s <- spacetimeLasso_sim(clusters, vectors.sim.s, 1, spacetime=FALSE, pois=TRUE, nsim, YSIM.s, floor)
+    lassoresult.p.s <- spacetimeLasso_sim(clusters, vectors.sim.s, covars, 1, spacetime=FALSE, pois=TRUE, nsim, YSIM.s, floor)
     
     #SPACE-TIME MODELS 
     #set up and run simulation models
     message("RUNNING: SPACE-TIME QUASI-POISSON")
-    lassoresult.qp.st <- spacetimeLasso_sim(clusters, vectors.sim, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM, floor)
+    lassoresult.qp.st <- spacetimeLasso_sim(clusters, vectors.sim, covars, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM, floor)
     message("RUNNING: SPACE-TIME POISSON")
-    lassoresult.p.st <- spacetimeLasso_sim(clusters, vectors.sim, Time, spacetime=TRUE, pois=TRUE, nsim, YSIM, floor)
+    lassoresult.p.st <- spacetimeLasso_sim(clusters, vectors.sim, covars, Time, spacetime=TRUE, pois=TRUE, nsim, YSIM, floor)
     
     message("All models ran successfully")
     
