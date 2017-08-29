@@ -66,7 +66,7 @@ Set other conditions. Right now, the null model requires to still input a center
 ```{r}
 rMax=20
 Time=5
-nsim=10 #number of simulations
+nsim=2 #number of simulations
 
 #need inputs for model to run
 center=1
@@ -89,7 +89,7 @@ Run the null model and store results into object $res$.
 ```{r}
 system.time(res <- clust_sim(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
                                  nsim,center, radius, risk, timeperiod,
-                                 utm=TRUE, byrow=TRUE, threshold, 
+                                 utm=TRUE, byrow=TRUE, threshold, space= "both",
                              theta = theta, nullmod = TRUE, floor))
 ```
 
@@ -145,7 +145,8 @@ x=dframe2$utmx/1000
 y=dframe2$utmy/1000
 rMax=20
 Time=5
-nsim=10 #change number of simulations
+#nsim=100
+nsim=2 #change number of simulations
 
 
 centers <- c(150, 35)
@@ -171,7 +172,7 @@ for(cent in centers){
                 print(c(cent, rad, tim, risk))
                 system.time(res <- clust_sim(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
                                      nsim,cent, rad, risk, tim, utm=TRUE, byrow=TRUE, threshold, 
-                                     theta, nullmod, floor))
+                                     space= "both", theta, nullmod, floor))
                 #save results
                 (sim.i <- paste0("sim","_","center","_",cent,"radius",rad,"_", "start",
                                  "_",as.numeric(paste(tim, collapse = "")),"_","rr","_",gsub("[.]","",risk)))
