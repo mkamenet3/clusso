@@ -1,5 +1,5 @@
 ---
-title: "Running clust with Simulated Data"
+title: "Running *clust* with Simulations"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Intro to clust}
@@ -17,100 +17,205 @@ library("clust")
 ```
 
 
+## Running the Null Model (no cluster to detect)
 
+### Prepare Data
 
-##Prepare Data
-
-This example is adapted from **Applied Spatial Statistics for Public Health Data** by Lance Waller and Carol Gotway (2004).
-
-We will create 4 time periods.
-Notice that these are not standardized in the beginning. Clust will do this internally.
 
 ```{r}
-#set initial
-set.seed(8212017)
-ncentroids <- 25
+set.seed(8202017)
 
-#generate expected, observed, period, id, and utm coordinates
+dframe1 <- read.csv("../data/jap.breast.F.9.10.11.csv")
+dframe2 <- read.csv("../data/utmJapan.csv")
+dframe3 <- aggregate(dframe1, by=list(as.factor(rep(1:(nrow(dframe1)/4),each=4))), FUN="sum")
+dframe=data.frame(id=as.factor(dframe3$id/4),period=as.factor(dframe3$year),death=dframe3$death,expdeath=dframe3$expdeath)
+levels(dframe$period) <- c("1","2","3","4","5")
 
-##generate data
-observed_disease <- rnbinom(ncentroids*4, 5 ,prob = 0.3)
-expect_disease <- rnbinom(ncentroids*4, 5 ,prob = 0.32)
-id <- as.character(rep(1:25, each=4))
-period <- as.factor(rep(1:25, times = 4))
+dframe.poly2 <- read.csv("../data/japan_poly2.csv")
+japan.poly2 <- dframe.poly2[,2:3]
+dframe.prefect2 <- read.csv("../data/japan_prefect2.csv")
+japan.prefect2 <- dframe.prefect2[,2:5]
 
-##put together the vectors into a dataframe
-df <-cbind.data.frame(id, period, observed_disease, expect_disease)
-str(df)
+head(dframe)
+head(dframe.poly2)
+head(dframe.prefect2)
 ```
 
 
 
+### Set global conditions
 
-##Explore the Data
 
-
-##Using *clust*
-
+Set threshold(s):
 
 ```{r}
-
-##get coordinates
-easting <- c(380775.664, 429643.221, 467554.861,398199.760,375444.918, 400212.232, 415835.404,454305.848, 446806.707,434104.476, 344402.500, 374321.622,493865.557, 412989.631, 325675.232,364082.121, 463548.477,383019.454, 366888.053, 454245.142, 321340.050, 408546.111, 334630.866, 440181.095,388725.451)
-
-northing <- c(3606798.382, 3587905.874, 3581547.440, 3581861.311, 3558825.264, 3549337.656, 3560344.423, 3544080.578, 3524848.421, 3505692.396, 3524049.993, 3513589.072, 3539584.049, 3497227.698, 3487194.532, 3494227.776, 3486352.845, 3473351.819, 3438399.181, 3456655.732, 3464443.158, 3453357.994, 3423796.886, 3425482.335, 3424758.917)
-```
-
-
-Set up initial parameters:
-
-```{r}
-#Set Some Initial Conditions
-x=easting/1000 #dividing by 1000 because utm coordinates and radius will be based on km
-y=northing/1000
-rMax=20 #maximum radius for definition of potential cluster
-Time=4
-#nsim=100
-nsim=1
-center=2
-radius= 18
-timeperiod=c(1:4)
-risk.ratio=1
-theta = NULL
 threshold <- c(0.9, 0.5)
 mods <- c("QuasiPoisson", "Poisson")
+```
+
+Set the easting and northing coordinates:
+
+```{r}
+x=dframe2$utmx/1000
+y=dframe2$utmy/1000
+
+```
+
+Set other conditions. Right now, the null model requires to still input a center and radius even for the null case, but this will be adjusted in future versions.
+
+```{r}
+rMax=20
+Time=5
+nsim=10 #number of simulations
+
+#need inputs for model to run
+center=1
+radius=18
+timeperiod = c(1:5)
+risk=1
+theta = NULL
+floor = TRUE
+
+table.detection.null <- NULL
 
 ```
 
 
-```{r}
+### Running the models
 
-res <- clust_sim(x,y,rMax,df$period, df$expect_disease, df$observed_disease, Time,
-                    nsim,center, radius, risk.ratio, timeperiod, utm=TRUE, byrow=TRUE, 
-                    threshold, space= "both", theta = theta,nullmod=TRUE)
+
+Run the null model and store results into object $res$.
+
+```{r}
+system.time(res <- clust_sim(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
+                                 nsim,center, radius, risk, timeperiod,
+                                 utm=TRUE, byrow=TRUE, threshold, 
+                             theta = theta, nullmod = TRUE, floor))
+```
+
+### Diagnostics and Maps
+
+Save diagnostics into csv:
+
+```{r}
 
 #save results
 (sim.i <- paste0("sim","_","center","_",center,"radius",radius,"_", "start",
-                 "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio)))
-(filename <- paste0("vignettes/sampleoutput/",sim.i,"TEST.RData"))
+                 "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk), "NULL"))
+filename <- paste0("sampleoutput/",sim.i,".RData")
 save(res, file = filename)
 
 #Print Detection for the Simulation
-(tabn <- rbind("******",cbind(radius,risk.ratio,center,time=as.numeric(paste(timeperiod, collapse = "")), mod = "ST",
-                              rbind("QuasiPois",res$detect.out.qp.st), rbind("Pois",res$detect.out.p.st)), 
-               cbind(radius,risk.ratio,center,time=as.numeric(paste(timeperiod, collapse = "")), mod = "Space",
+(tabn <- rbind("******",cbind(radius,risk,center,time=as.numeric(paste(timeperiod, collapse = "")), mod = "ST",
+                              rbind("QuasiPois",res$detect.out.qp.st), rbind("Pois",res$detect.out.p.st)),
+               cbind(radius,risk,center,time=as.numeric(paste(timeperiod, collapse = "")), mod = "Space",
                      rbind("QuasiPois",res$detect.out.qp.s), rbind("Pois",res$detect.out.p.s))))
+table.detection.null <- rbind(table.detection.null, tabn)
+
+
+#WRITE TO CSV
+print(table.detection.null)
+write.csv(table.detection.null, file="sampleoutpuet/tabledetectionNULL.csv", row.names=TRUE)
+
+
 ```
 
 
-
+Make maps!
 
 ```{r}
 #make maps
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_", "start",
-                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),"TESTEST.pdf")
+pdfname <- paste0("sampleoutput/sim","_","center","_",center,"radius",radius,"_", "start",
+                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),"NULL.pdf")
 easyplot(pdfname, res, mods, space="both")
+```
+
+
+
+
+## Running Cluster Model with Multiple Simulated Clusters
+
+We use the same dataset as before
+
+Set initial conditions:
+
+```{r}
+#Set Some Initial Conditions
+x=dframe2$utmx/1000
+y=dframe2$utmy/1000
+rMax=20
+Time=5
+nsim=10 #change number of simulations
+
+
+centers <- c(150, 35)
+radii <- c(9, 11, 18)
+timeperiods <- list(c(3:5), c(1:2), c(2:4))
+risk.ratios <- c(1.1, 1.5, 2)
+nullmod = NULL
+theta = 2 #with overdispersion. For no overdispersion, set theta = NULL
+floor = TRUE
+
+table.detection <- NULL
+```
+
+
+
+Run multiple models:
+
+```{r}
+for(cent in centers){
+    for(rad in radii){
+        for(tim in timeperiods){
+            for(risk in risk.ratios){
+                print(c(cent, rad, tim, risk))
+                system.time(res <- clust_sim(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
+                                     nsim,cent, rad, risk, tim, utm=TRUE, byrow=TRUE, threshold, 
+                                     theta, nullmod, floor))
+                #save results
+                (sim.i <- paste0("sim","_","center","_",cent,"radius",rad,"_", "start",
+                                 "_",as.numeric(paste(tim, collapse = "")),"_","rr","_",gsub("[.]","",risk)))
+                filename <- paste0("sampleoutput/",sim.i,".RData")
+                save(res, file = filename)
+
+                #Print Detection for the Simulation
+                (tabn <- rbind("******",cbind(rad,risk,cent,time=as.numeric(paste(tim, collapse = "")), mod = "ST",
+                                               rbind("QuasiPois",res$detect.out.qp.st), rbind("Pois",res$detect.out.p.st)),
+                                cbind(rad,risk,cent,time=as.numeric(paste(tim, collapse = "")), mod = "Space",
+                                      rbind("QuasiPois",res$detect.out.qp.s), rbind("Pois",res$detect.out.p.s))))
+                table.detection <- rbind(table.detection, tabn)
+
+                #Print Descriptives
+
+                #make maps
+                pdfname <- paste0("sampleoutput/sim","_","center","_",cent,"radius",rad,"_", "start",
+                                  "_",as.numeric(paste(tim, collapse = "")),"_","rr","_",gsub("[.]","",risk),".pdf")
+                easyplot(pdfname, res, mods, space="both")
+
+            }
+        }
+    }
+}
 
 ```
+
+Write output to csv:
+
+```{r}
+
+#WRITE TO CSV
+print(table.detection)
+write.csv(table.detection, file="sampleoutput/tabledetectionclustersim.csv", row.names=TRUE)
+
+#Print Table Detection
+table.detection
+print(table.detection)
+
+```
+
+
+
+
+
 
 

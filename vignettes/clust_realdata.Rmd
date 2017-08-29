@@ -1,0 +1,110 @@
+---
+title: "Running *clust* with Real Data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Intro to clust}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+#Introduction
+
+Load *clust*
+
+```{r, message=FALSE, warning=FALSE}
+library("clust")
+```
+
+
+## Running the _clust_ with real data
+
+### Prepare Data
+
+
+```{r}
+set.seed(8282017)
+#Load Data
+
+dframe1 <- read.csv("../data/jap.breast.F.9.10.11.csv")
+dframe2 <- read.csv("../data/utmJapan.csv")
+dframe3 <- aggregate(dframe1, by=list(as.factor(rep(1:(nrow(dframe1)/4),each=4))), FUN="sum")
+dframe=data.frame(id=as.factor(dframe3$id/4),period=as.factor(dframe3$year),death=dframe3$death,expdeath=dframe3$expdeath)
+levels(dframe$period) <- c("1","2","3","4","5")
+
+dframe.poly2 <- read.csv("../data/japan_poly2.csv")
+japan.poly2 <- dframe.poly2[,2:3]
+dframe.prefect2 <- read.csv("../data/japan_prefect2.csv")
+japan.prefect2 <- dframe.prefect2[,2:5]
+
+head(dframe)
+head(dframe.poly2)
+head(dframe.prefect2)
+
+
+```
+
+### Set global conditions
+
+```{r}
+#Initial inputs
+mods <- c("QuasiPoisson", "Poisson")
+x=dframe2$utmx/1000
+y=dframe2$utmy/1000
+rMax <- 20 
+Time=5
+floor = TRUE
+
+```
+
+
+### Running the models
+
+```{r}
+system.time(res <- clust(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
+                                utm=TRUE, byrow=TRUE, floor))
+
+```
+
+### Maps
+
+Save diagnostics into csv:
+
+```{r}
+#save results
+filename <- paste0("sampleoutput/jbc_analysis",".RData")
+save(res, file = filename)
+
+
+#Create Empty PDF to Map Onto
+pdfname <- paste0("sampleoutput/jbc_analysis",".pdf")
+
+easyplot(pdfname, res, mods, space="both", obs=TRUE)
+```
+
+
+### Diagnostics of Clusters Detected
+
+```{r}
+
+model <- c(rep("Poisson",2), rep("Quasi-Poisson",2))
+st <- rep(c("Space", "Space-Time"),2)
+numclust.AIC <- c(res$lassoresult.p.s$numclust.qaic, res$lassoresult.p.st$numclust.qaic, 
+                  res$lassoresult.qp.s$numclust.qaic, res$lassoresult.qp.st$numclust.qaic)
+numclust.AICc <- c(res$lassoresult.p.s$numclust.qaicc, res$lassoresult.p.st$numclust.qaicc, 
+                   res$lassoresult.qp.s$numclust.qaicc, res$lassoresult.qp.st$numclust.qaicc)
+numclust.BIC <- c(res$lassoresult.p.s$numclust.qbic, res$lassoresult.p.st$numclust.qbic, 
+                  res$lassoresult.qp.s$numclust.qbic, res$lassoresult.qp.st$numclust.qbic)
+
+(table.clusters <- cbind(model, st, numclust.AIC, numclust.AICc, numclust.BIC))
+
+
+#WRITE TO CSV
+print(table.clusters)
+write.csv(table.clusters, file="sampleoutput/tableclusters.csv", row.names=TRUE)
+
+```
+
+
+
+
+
