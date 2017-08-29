@@ -51,7 +51,7 @@ get_rr <- function(lassoresult,vectors.sim,init,E1, Time, sim=TRUE){
         RRobs <- matrix(as.vector(E1)/as.vector(init$E0),ncol=Time)
     }
     if(sim==FALSE){
-        RRobs <- matrix(as.vector(vectors$Y.vec)/as.vector(vectors$E0),ncol=Time)
+        RRobs <- matrix(as.vector(vectors.sim$Y.vec)/as.vector(vectors.sim$E0),ncol=Time)
         message("Returning results for real (non-sim) data")
     }
     return(list(RRbic=matrix(lassoresult$E.qbic,ncol=Time),

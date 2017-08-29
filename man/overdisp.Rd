@@ -4,7 +4,7 @@
 \alias{overdisp}
 \title{Calculate overdispersion for quasi-likelihood models}
 \usage{
-overdisp(offset_reg, sim, floor)
+overdisp(offset_reg, sim = TRUE, floor = TRUE)
 }
 \arguments{
 \item{offset_reg}{object of class glm}
