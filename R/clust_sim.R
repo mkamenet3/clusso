@@ -55,7 +55,7 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init){
 #'@return returns list of lists
 #'@export
 
-clust_sim <- function(clst,covars, xx,yy, rMax, Time, nsim, center, radius, risk.ratio, 
+clust_sim <- function(clst,covars, x,y, rMax, Time, nsim, center, radius, risk.ratio, 
                           timeperiod, utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"), 
                       theta = NULL,nullmod=NULL, floor){
     expected <- clst$expected

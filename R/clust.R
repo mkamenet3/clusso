@@ -31,8 +31,8 @@ vectors_space <- function(x,Ex, Yx,Time, init){
 #' @description
 #'This function is the helper function to run both the space and space-time Lasso models.
 #'runs both the space and space-time Lasso model. This function is to be run on observed data. A separate function (clust.sim) can be used for simulating data and running diagnostics on simulations.
-#'@param xx x coordinates (easting/latitude); if utm coordinates, scale to km.
-#'@param yy y coordinates (northing/longitude); if utm coordinates, scale to km.
+#'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
+#'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
 #'@param rMax set max radius (in km)
 #'@param period vector of periods or years in dataset. Should be imported as a factor.
 #'@param expected vector of expected counts. Expected counts must match up with the year and observed vectors.
@@ -46,7 +46,7 @@ vectors_space <- function(x,Ex, Yx,Time, init){
 #'@param cv option for cross-validation
 #'@return returns list
 
-clust <- function(clst,covars, xx,yy,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","spacetime", "both"),floor=NULL, cv = NULL){
+clust <- function(clst,covars, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","spacetime", "both"),floor=NULL, cv = NULL){
     expected <- clst$expected
     observed <- clst$observed
     period <- clst$timeperiod
