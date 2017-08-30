@@ -57,9 +57,8 @@ spacetimeLasso<- function(clusters, vectors,covars = NULL, Time, spacetime=TRUE,
     
     #if running cross-validation version:
     if(!is.null(cv)){
-        res <- stLasso.cv(lasso, xbetaPath, Yx, Ex, coefs.lasso.all)
+        res <- stLasso.cv(lasso, sparseMAT)
     }
-    
     #information criteria selection version:
     else{
         mu <- sapply(1:length(lasso$lambda), function(i) exp(xbetaPath[,i]))
@@ -192,17 +191,15 @@ spacetimeLasso<- function(clusters, vectors,covars = NULL, Time, spacetime=TRUE,
 #' This function will output results from cross-validation results.
 #' 
 #' @param lasso results of cv.glmnet
-#' @param xbetaPath calculated xbeta
-#' @param Yx response
-#' @param Ex expected counts(offset)
-#' @param coefs.lasso.all coefficients from lasso
 #' @return list of expected values, number of clusters, Ex, Yx, and lasso object
 #' 
-stLasso.cv <- function(lasso, xbetaPath, Yx, Ex, coefs.lasso.all){
+stLasso.cv <- function(lasso, sparseMAT){
     #cv version
-    mu <- sapply(1:length(lasso$lambda.min), function(i) exp(xbetaPath[,i]))    
-    #cv-select
-    numclust.cv <- length(unique(coefs.lasso.all))-1
+    ix <- which(lasso$lambda == lasso$lambda.min)
+    print(dim(sparseMAT), dim(lasso$glmnet.fit$beta[,ix]))
+    xbetaPath<- sparseMAT%*%lasso$glmnet.fit$beta[,ix]
+    mu <- exp(xbetaPath)
+    numclust.cv <- length(unique(mu@x))-1
     return(list(E.cv = mu[,1], numclust.cv = numclust.cv,
                 Ex = Ex, Yx = Yx, lasso = lasso))
 }

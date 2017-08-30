@@ -142,12 +142,7 @@ floor <- TRUE
 cv <- 10 #how many folds
 clst <- cbind.data.frame(expected = dframe$expdeath, observed = dframe$death,timeperiod = dframe$period)
 
-
-
-#system.time(res <- clust(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
- #                               utm=TRUE, ,byrow=TRUE,space = "both", floor=TRUE))
-res <- clust(clst, covars = NULL, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", floor, cv)
-
+system.time(res <- clust(clst, covars = NULL, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", floor, cv))
 
 
 ```
@@ -156,18 +151,15 @@ res <- clust(clst, covars = NULL, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="
 
 model <- c(rep("Poisson",2), rep("Quasi-Poisson",2))
 st <- rep(c("Space", "Space-Time"),2)
-numclust.AIC <- c(res$lassoresult.p.s$numclust.qaic, res$lassoresult.p.st$numclust.qaic, 
-                  res$lassoresult.qp.s$numclust.qaic, res$lassoresult.qp.st$numclust.qaic)
-numclust.AICc <- c(res$lassoresult.p.s$numclust.qaicc, res$lassoresult.p.st$numclust.qaicc, 
-                   res$lassoresult.qp.s$numclust.qaicc, res$lassoresult.qp.st$numclust.qaicc)
-numclust.BIC <- c(res$lassoresult.p.s$numclust.qbic, res$lassoresult.p.st$numclust.qbic, 
-                  res$lassoresult.qp.s$numclust.qbic, res$lassoresult.qp.st$numclust.qbic)
+numclust.cv <- c(res$lassoresult.p.s$numclust.cv, res$lassoresult.p.st$numclust.cv, 
+                  res$lassoresult.qp.s$numclust.cv, res$lassoresult.qp.st$numclust.cv)
 
-(table.clusters <- cbind(model, st, numclust.AIC, numclust.AICc, numclust.BIC))
+
+(table.clusterscv <- cbind(model, st, numclust.cv))
 
 
 #WRITE TO CSV
-print(table.clusters)
-write.csv(table.clusters, file="sampleoutput/tableclusters.csv", row.names=TRUE)
+print(table.clusterscv)
+write.csv(table.clusterscv, file="sampleoutput/tableclusters_cv.csv", row.names=TRUE)
 ```
 
