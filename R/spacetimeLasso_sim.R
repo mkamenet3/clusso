@@ -67,6 +67,11 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, covars = NULL, Time, space
         #calculate max overdispersion
         if(!is.null(covars)){
             covarnames <- paste0("covars$",names(covars))
+            
+            
+            substitute(expression(y ~ x), list(x = x, y = y))
+            
+            
             for(i in 1:length(covarnames)){
                 assign(x = paste0(covarnames[[i]]),
                 value = covars[,i])

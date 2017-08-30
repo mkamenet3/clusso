@@ -20,18 +20,26 @@ spacetimeLasso<- function(clusters, vectors,covars = NULL, Time, spacetime=TRUE,
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
-    message("Creating space-time matrix")
+    
     if(spacetime==TRUE){
+        message("Creating space-time matrix")
         sparseMAT <- spacetimeMat(clusters, numCenters, Time)
+        
+        #set initial
+        Ex <- vectors$Ex
+        Yx <- vectors$Y.vec
+        Period <- vectors$Period
     }
-    if(spacetime!=TRUE) {
+    else{
+        message("Creating space-only matrix")
         sparseMAT <- spaceMat(clusters, numCenters)
+        
+        #set initial
+        Ex <- as.vector(vectors$Ex)
+        Yx <- as.vector(vectors$Y.vec)
+        Period <- as.factor(as.vector(vectors$Period))
     }
-    print("ok")
     print(paste("Number of potential clusters to scan through: ", dim(sparseMAT)[2]))
-    Ex <- vectors$Ex
-    Yx <- vectors$Y.vec
-    Period <- vectors$Period
     message("Running Lasso - stay tuned")
     if(!is.null(cv)){
         message("Path selection: cross-validation")

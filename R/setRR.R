@@ -46,18 +46,27 @@ set_rr<- function(lassoresult, vectors, Time, sim=FALSE){
 #' 2) observed based on QBIC path/expected; 3) observed based on QAIC path/expected; 4) observed based on QAICc path/expected.
 #' @export
 #' 
-get_rr <- function(lassoresult,vectors.sim,init,E1, Time, sim=TRUE){
-    if(sim==TRUE){
-        RRobs <- matrix(as.vector(E1)/as.vector(init$E0),ncol=Time)
-    }
-    if(sim==FALSE){
+get_rr <- function(lassoresult,vectors.sim,init,E1, Time, sim=TRUE, cv){
+    if(!is.null(cv)){
         RRobs <- matrix(as.vector(vectors.sim$Y.vec)/as.vector(vectors.sim$E0),ncol=Time)
-        message("Returning results for real (non-sim) data")
+        message("Returning CV results for real (non-sim) data")
+        res <- list(RRcv = matrix(lassoresult$E.cv, ncol=Time),
+            RRobs = RRobs)
     }
-    return(list(RRbic=matrix(lassoresult$E.qbic,ncol=Time),
-                RRaic=matrix(lassoresult$E.qaic,ncol=Time),
-                RRaicc=matrix(lassoresult$E.qaicc,ncol=Time),
-                RRobs= RRobs))
+    else{
+        if(sim==TRUE){
+            RRobs <- matrix(as.vector(E1)/as.vector(init$E0),ncol=Time)
+        }
+        if(sim==FALSE){
+            RRobs <- matrix(as.vector(vectors.sim$Y.vec)/as.vector(vectors.sim$E0),ncol=Time)
+            message("Returning results for real (non-sim) data")
+        }
+        res <- list(RRbic=matrix(lassoresult$E.qbic,ncol=Time),
+                    RRaic=matrix(lassoresult$E.qaic,ncol=Time),
+                    RRaicc=matrix(lassoresult$E.qaicc,ncol=Time),
+                    RRobs= RRobs)
+    }
+    return(res)
 }
 
 

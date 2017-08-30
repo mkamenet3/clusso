@@ -26,13 +26,21 @@ redblue=function(x) {
 #'Time = 2
 #'colormapping(riskratios,Time)
 
-colormapping <- function(riskratios,Time) {
-    if(max(riskratios$RRbic)>2) {warning("Max riskratios from BIC greater than 2")}
-    if(max(riskratios$RRaic)>2) {warning("Max riskratios from AIC greater than 2")}
-    if(max(riskratios$RRaicc)>2) {warning("Max riskratios from AICc greater than 2")}
-    color.obs <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRobs[,i],2)))/log(4)))
-    color.qbic <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRbic[,i],2)))/log(4))) 
-    color.qaic <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRaic[,i],2)))/log(4)))
-    color.qaicc <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRaicc[,i],2)))/log(4)))
-    return(list(colors.obs = color.obs, color.qbic = color.qbic, color.qaic = color.qaic, color.qaicc = color.qaicc)) 
+colormapping <- function(riskratios,Time, cv) {
+    if(!is.null(cv)){
+        color.obs <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRobs[,i],2)))/log(4)))
+        color.cv <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRcv[,i],2)))/log(4)))
+        res <- list(colors.obs = color.obs, colors.cv = color.cv)
+    }
+    else{
+        if(max(riskratios$RRbic)>2) {warning("Max riskratios from BIC greater than 2")}
+        if(max(riskratios$RRaic)>2) {warning("Max riskratios from AIC greater than 2")}
+        if(max(riskratios$RRaicc)>2) {warning("Max riskratios from AICc greater than 2")}
+        color.obs <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRobs[,i],2)))/log(4)))
+        color.qbic <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRbic[,i],2)))/log(4))) 
+        color.qaic <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRaic[,i],2)))/log(4)))
+        color.qaicc <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRaicc[,i],2)))/log(4)))
+        res <- list(colors.obs = color.obs, color.qbic = color.qbic, color.qaic = color.qaic, color.qaicc = color.qaicc)
+    }
+    return(res) 
 }
