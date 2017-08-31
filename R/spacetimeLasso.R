@@ -16,7 +16,7 @@
 #' myvectors <- setVectors(period, expected, observed, Time, byrow=TRUE)
 #' myresults <- spacetimeLasso(potentialclusters, myvectors, spacetime=TRUE, pois=FALSE)
 #' 
-spacetimeLasso<- function(clusters, vectors,covars = NULL, Time, spacetime=TRUE,pois=FALSE,floor, cv){
+spacetimeLasso<- function(clusters, vectors,covars, Time, spacetime=TRUE,pois=FALSE,floor, cv){
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
@@ -70,7 +70,12 @@ spacetimeLasso<- function(clusters, vectors,covars = NULL, Time, spacetime=TRUE,
         #########################################################
         if(spacetime==TRUE & pois == FALSE){
             message("returning results for space-time Quasi-Poisson model")
-            offset_reg <- glm(Yx ~ 1 + as.factor(vectors$Period) + offset(log(Ex)),family=poisson)
+            if(!is.null(covars)){
+                offset_reg <- glm(Yx ~ . + as.factor(vectors$Period) + offset(log(Ex)),data = covars,family=quasipoisson)
+            }
+            else{
+                offset_reg <- glm(Yx ~ 1 + as.factor(vectors$Period) + offset(log(Ex)),family=quasipoisson)
+            }
             overdisp.est <- overdisp(offset_reg, sim = FALSE, floor = floor)
             message(paste("Overdispersion estimate:", overdisp.est))
             #overdisp.est <- max(unlist(deviance(offset_reg)/df.residual(offset_reg)))
@@ -127,6 +132,12 @@ spacetimeLasso<- function(clusters, vectors,covars = NULL, Time, spacetime=TRUE,
         #########################################################
         else if(spacetime==FALSE & pois==FALSE){
             message("Returning results for space-only  Quasi-Poisson model")
+            if(!is.null(covars)){
+                offset_reg <- glm(Yx ~ . + as.factor(vectors$Period) + offset(log(Ex)),data = covars,family=quasipoisson)
+            }
+            else{
+                offset_reg <- glm(Yx ~ 1 + as.factor(vectors$Period) + offset(log(Ex)),family=quasipoisson)
+            }
             offset_reg <- glm(Yx ~ 1 + offset(log(Ex)),family=poisson)
             #overdisp.est <- max(unlist(deviance(offset_reg)/df.residual(offset_reg)))
             overdisp.est <- overdisp(offset_reg, sim = FALSE, floor = floor)

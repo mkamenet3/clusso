@@ -215,7 +215,7 @@ rMax <- 20
 Time <- 5
 floor <- TRUE
 cv <- 10 #how many folds
-clst <- toclust(df, expected = df$expdeath, observed = df$death, timeperiods = df$period, covars=TRUE)
+clst <- toclust(df, expected = df$expdeath, observed = df$death, timeperiod = df$period, covars=TRUE)
 
 system.time(res <- clust(clst, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", floor, cv))
 
