@@ -33,11 +33,18 @@ spacetimeLasso<- function(clusters, vectors,covars, Time, spacetime=TRUE,pois=FA
     else{
         message("Creating space-only matrix")
         sparseMAT <- spaceMat(clusters, numCenters)
-        
         #set initial
         Ex <- as.vector(vectors$Ex)
         Yx <- as.vector(vectors$Y.vec)
         Period <- as.factor(as.vector(vectors$Period))
+    }
+    if(!is.null(covars)){
+        covarMat <- Matrix::Matrix(data.matrix(covars), sparse=TRUE)
+        sparseMat <- Matrix::cBind(sparseMat, covarMat)
+        message("Running with covariates")
+    }
+    else{
+        message("No covariates found")
     }
     print(paste("Number of potential clusters to scan through: ", dim(sparseMAT)[2]))
     message("Running Lasso - stay tuned")
@@ -71,10 +78,12 @@ spacetimeLasso<- function(clusters, vectors,covars, Time, spacetime=TRUE,pois=FA
         if(spacetime==TRUE & pois == FALSE){
             message("returning results for space-time Quasi-Poisson model")
             if(!is.null(covars)){
-                offset_reg <- glm(Yx ~ . + as.factor(vectors$Period) + offset(log(Ex)),data = covars,family=quasipoisson)
+                offset_reg <- glm(Yx ~ . + as.factor(vectors$Period) + offset(log(Ex)),
+                                  data = covars,family=quasipoisson)
             }
             else{
-                offset_reg <- glm(Yx ~ 1 + as.factor(vectors$Period) + offset(log(Ex)),family=quasipoisson)
+                offset_reg <- glm(Yx ~ 1 + as.factor(vectors$Period) + offset(log(Ex)),
+                                  family=quasipoisson)
             }
             overdisp.est <- overdisp(offset_reg, sim = FALSE, floor = floor)
             message(paste("Overdispersion estimate:", overdisp.est))

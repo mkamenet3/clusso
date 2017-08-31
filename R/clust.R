@@ -31,6 +31,7 @@ vectors_space <- function(x,Ex, Yx,Time, init){
 #' @description
 #'This function is the helper function to run both the space and space-time Lasso models.
 #'runs both the space and space-time Lasso model. This function is to be run on observed data. A separate function (clust.sim) can be used for simulating data and running diagnostics on simulations.
+#'@param clst list; output from toclust function. Must be of class clst.
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
 #'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
 #'@param rMax set max radius (in km)

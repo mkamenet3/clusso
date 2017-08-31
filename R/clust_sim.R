@@ -30,6 +30,7 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init){
 #'This helper function runs both the space and space-time Lasso model simulations for all 4 models simulataneously: Quasi-Poisson vs. Poisson in both space and space-time.
 #' This function is to be run on simulated data and all four models are run on the same simulated set. 
 #'A separate function (clust.sim) can be used for running simulations on individual models and (clust) can be used for observed data.
+#'@param clst list; output from toclust function. Must be of class clst.
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
 #'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
 #'@param rMax set max radius (in km)
@@ -58,12 +59,12 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init){
 clust_sim <- function(clst,covars, x,y, rMax, Time, nsim, center, radius, risk.ratio, 
                           timeperiod, utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"), 
                       theta = NULL,nullmod=NULL, floor){
-    expected <- clst$expected
-    observed <- clst$observed
-    period <- clst$timeperiod
+    expected <- clst$required_df$expected
+    observed <- clst$required_df$observed
+    period <- clst$required_df$timeperiod
     #initial user setting
-    if(!is.null(covars)){
-        covars <- covars
+    if(!is.null(clst$othercovariates_df)){
+        covars <- clst$othercovariates_df
     }
     else{
         covars <- NULL

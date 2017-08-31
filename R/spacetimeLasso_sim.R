@@ -19,7 +19,7 @@
 #' YSIM <- lapply(1:nsim, function(i) rnegbin(expected, theta = theta))
 #' myresults <- spacetimeLasso_sim(potentialclusters, myvectors, spacetime=TRUE, pois=FALSE, nsim=100, YSIM, floor=TRUE)
 
-spacetimeLasso_sim <- function(clusters, vectors.sim, covars = NULL, Time, spacetime,pois, nsim,YSIM,floor){
+spacetimeLasso_sim <- function(clusters, vectors.sim, covars, Time, spacetime,pois, nsim,YSIM,floor){
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
@@ -61,36 +61,16 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, covars = NULL, Time, space
     #########################################################
     #Space-Time, Quasi-Poisson only (yes overdispersion)
     #########################################################
-    
     if(spacetime==TRUE & pois == FALSE){
         message("returning results for space-time Quasi-Poisson model")
         #calculate max overdispersion
         if(!is.null(covars)){
-            covarnames <- paste0("covars$",names(covars))
-            
-            
-            substitute(expression(y ~ x), list(x = x, y = y))
-            
-            
-            for(i in 1:length(covarnames)){
-                assign(x = paste0(covarnames[[i]]),
-                value = covars[,i])
-            }
-            
-            d <- data.frame(period = vectors.sim$Period)
-            rhs <- cbind(covars, d)
-            # covarnames <- paste(paste0("covars$",names(covars)),collapse=" + ")
-            # frmla <- paste(1,'+',covarnames, '+',
-            #              'as.factor(vectors.sim$Period) + offset(log(Ex[[i]]))', 
-            #              collapse="+")
-            # reformulate(termlabels = covarnames, response=Yx)
-            # 
-            
-            offset_reg <- lapply(1:nsim, function(i) glm(Yx[[i]] ~  1 + as.factor(vectors.sim$Period) +offset(log(Ex[[i]])),
-                                                         family=poisson))
+            offset_reg <- lapply(1:nsim, function(i) glm(Yx[[i]] ~ . + as.factor(vectors.sim$Period) +offset(log(Ex[[i]])),
+                                                         data = covars, family=quasipoisson))
         }
         else{
-            offset_reg <- lapply(1:nsim, function(i) glm(Yx[[i]] ~ 1 + as.factor(vectors.sim$Period) +offset(log(Ex[[i]])),family=poisson))
+            offset_reg <- lapply(1:nsim, function(i) glm(Yx[[i]] ~ 1 + as.factor(vectors.sim$Period) +offset(log(Ex[[i]])),
+                                                         family=quasipoisson))
         }
         #overdisp.est <- max(unlist(lapply(1:nsim, function(i) deviance(offset_reg[[i]])/df.residual(offset_reg[[i]]))))
         overdisp.est <- overdisp(offset_reg, sim=TRUE, floor = floor)
@@ -166,8 +146,14 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, covars = NULL, Time, space
     #########################################################
     else if(spacetime==FALSE & pois == FALSE){
         message("Returning results for space-only  Quasi-Poisson model")
-        offset_reg <- lapply(1:nsim, function(i) glm(Yx[[i]] ~ 1  +offset(log(Ex[[i]])),family=poisson))
-        #overdisp.est <- max(unlist(lapply(1:nsim, function(i) deviance(offset_reg[[i]])/df.residual(offset_reg[[i]]))))
+        if(!is.null(covars)){
+            offset_reg <- lapply(1:nsim, function(i) glm(Yx[[i]] ~ . + as.factor(vectors.sim$Period) +offset(log(Ex[[i]])),
+                                                         data = covars, family=quasipoisson))
+        }
+        else{
+            offset_reg <- lapply(1:nsim, function(i) glm(Yx[[i]] ~ 1 + as.factor(vectors.sim$Period) +offset(log(Ex[[i]])),
+                                                         family=quasipoisson))
+        }
         overdisp.est <- overdisp(offset_reg, sim=TRUE, floor = floor)
         message(paste("Overdispersion estimate:", overdisp.est))
         if(pois == FALSE & is.null(overdisp.est)) warning("No overdispersion for quasi-Poisson model. Please check.")

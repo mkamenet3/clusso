@@ -167,6 +167,8 @@ write.csv(table.clusterscv, file="sampleoutput/tableclusters_cv.csv", row.names=
 
 ## Real Data Example with Covariates
 
+Import geography data:
+
 ```{r}
 
 dframe.poly2 <- read.csv("../data/japan_poly2.csv")

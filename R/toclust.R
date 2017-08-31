@@ -48,5 +48,6 @@ toclust<- function(df, expected, observed, timeperiod, covars=FALSE){
     }
     res <- list(required_df = required_df,
                 othercovariates_df = othercovariates_df)
+    class(res) <- "clst"
     return(res)
 }
