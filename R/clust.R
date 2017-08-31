@@ -46,12 +46,12 @@ vectors_space <- function(x,Ex, Yx,Time, init){
 #'@param cv option for cross-validation
 #'@return returns list
 
-clust <- function(clst,covars, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","spacetime", "both"),floor=NULL, cv = NULL){
-    expected <- clst$expected
-    observed <- clst$observed
-    period <- clst$timeperiod
-    if(!is.null(covars)){
-        covars <- covars
+clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","spacetime", "both"),floor=NULL, cv = NULL){
+    expected <- clst$required_df$expected
+    observed <- clst$required_df$observed
+    period <- clst$required_df$timeperiod
+    if(!is.null(clst$othercovariates_df)){
+        covars <- clst$othercovariates_df
     }
     else{
         covars <- NULL
@@ -114,7 +114,7 @@ clust <- function(clst,covars, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("s
 #'@return
 #'               
     
-clustAll <- function(x,y,rMax, period, expected, observed, covars= NULL,Time, utm, byrow, floor, cv){    
+clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byrow, floor, cv){    
     message("Running both Space and Space-Time Models")
     
     #set up clusters and fitted values

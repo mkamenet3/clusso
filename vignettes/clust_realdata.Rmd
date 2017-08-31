@@ -163,3 +163,61 @@ print(table.clusterscv)
 write.csv(table.clusterscv, file="sampleoutput/tableclusters_cv.csv", row.names=TRUE)
 ```
 
+
+
+## Real Data Example with Covariates
+
+```{r}
+
+dframe.poly2 <- read.csv("../data/japan_poly2.csv")
+japan.poly2 <- dframe.poly2[,2:3]
+dframe.prefect2 <- read.csv("../data/japan_prefect2.csv")
+japan.prefect2 <- dframe.prefect2[,2:5]
+
+head(dframe.poly2)
+head(dframe.prefect2)
+
+
+```
+
+
+```{r}
+#Set-up
+dframe1 <- read.csv("../data/jap.breast.F.9.10.11.csv")
+dframe2 <- read.csv("../data/utmJapan.csv")
+dframe3 <- aggregate(dframe1, by=list(as.factor(rep(1:(nrow(dframe1)/4),each=4))), FUN="sum")
+dframe=data.frame(id=as.factor(dframe3$id/4),period=as.factor(dframe3$year),death=dframe3$death,expdeath=dframe3$expdeath)
+levels(dframe$period) <- c("1","2","3","4","5")
+
+#add a couple of covariates to the dataframe
+covar1 <- rnorm(n = nrow(dframe),mean = 500, sd = 30)
+covar2 <- rpois(n = nrow(dframe), lambda = dframe$expdeath)
+covar3 <- rbinom(n = nrow(dframe), size = 50, prob = 0.7)
+covar4 <- rbinom(n = nrow(dframe), 1, 0.5)
+covar5 <- rbinom(n = nrow(dframe), 1, 0.2)
+
+#add new covariates to dataframe
+df <- cbind.data.frame(dframe[,-1], covar1, covar2, covar3, covar4, covar5)
+
+#check out the new dataframe
+head(df)
+
+#assume this is what you start with
+```
+
+
+```{r}
+#Initial inputs
+mods <- c("QuasiPoisson", "Poisson")
+x <- dframe2$utmx/1000
+y <- dframe2$utmy/1000
+rMax <- 20 
+Time <- 5
+floor <- TRUE
+cv <- 10 #how many folds
+clst <- toclust(df, expected = df$expdeath, observed = df$death, timeperiods = df$period, covars=TRUE)
+
+system.time(res <- clust(clst, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", floor, cv))
+
+```
+
