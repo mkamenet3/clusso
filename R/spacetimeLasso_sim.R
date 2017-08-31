@@ -19,10 +19,11 @@
 #' YSIM <- lapply(1:nsim, function(i) rnegbin(expected, theta = theta))
 #' myresults <- spacetimeLasso_sim(potentialclusters, myvectors, spacetime=TRUE, pois=FALSE, nsim=100, YSIM, floor=TRUE)
 
-spacetimeLasso_sim <- function(clusters, vectors.sim, covars, Time, spacetime,pois, nsim,YSIM,floor){
+spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim,YSIM,floor){
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
+    covars <- vectors.sim$covars
     #message("Creating space-time matrix")
     if(spacetime==TRUE){
         sparseMAT <- spacetimeMat(clusters, numCenters, Time)
@@ -33,8 +34,8 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, covars, Time, spacetime,po
         message("Spatial matrix created")
     }
     if(!is.null(covars)){
-        covarMat <- Matrix::Matrix(data.matrix(covars), sparse=TRUE)
-        sparseMAT <- Matrix::cBind(sparseMAT, covarMat)
+        covarMAT <- Matrix::Matrix(data.matrix(covars), sparse=TRUE)
+        sparseMAT <- Matrix::cBind(sparseMAT, covarMAT)
         message("Running with covariates")
     }
     else{
@@ -65,14 +66,15 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, covars, Time, spacetime,po
         message("returning results for space-time Quasi-Poisson model")
         #calculate max overdispersion
         if(!is.null(covars)){
-            offset_reg <- lapply(1:nsim, function(i) glm(Yx[[i]] ~ . + as.factor(vectors.sim$Period) +offset(log(Ex[[i]])),
+            offset_reg <- lapply(1:nsim, 
+                                 function(i) glm(Yx[[i]] ~ . + as.factor(vectors.sim$Period) +offset(log(Ex[[i]])),
                                                          data = covars, family=quasipoisson))
+
         }
         else{
             offset_reg <- lapply(1:nsim, function(i) glm(Yx[[i]] ~ 1 + as.factor(vectors.sim$Period) +offset(log(Ex[[i]])),
                                                          family=quasipoisson))
         }
-        #overdisp.est <- max(unlist(lapply(1:nsim, function(i) deviance(offset_reg[[i]])/df.residual(offset_reg[[i]]))))
         overdisp.est <- overdisp(offset_reg, sim=TRUE, floor = floor)
         message(paste("Overdispersion estimate:", overdisp.est))
         if(pois == FALSE & is.null(overdisp.est)) warning("No overdispersion for quasi-Poisson model. Please check.")
@@ -147,11 +149,11 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, covars, Time, spacetime,po
     else if(spacetime==FALSE & pois == FALSE){
         message("Returning results for space-only  Quasi-Poisson model")
         if(!is.null(covars)){
-            offset_reg <- lapply(1:nsim, function(i) glm(Yx[[i]] ~ . + as.factor(vectors.sim$Period) +offset(log(Ex[[i]])),
+            offset_reg <- lapply(1:nsim, function(i) glm(as.vector(Yx[[i]]) ~ . +offset(log(as.vector(Ex[[i]]))),
                                                          data = covars, family=quasipoisson))
         }
         else{
-            offset_reg <- lapply(1:nsim, function(i) glm(Yx[[i]] ~ 1 + as.factor(vectors.sim$Period) +offset(log(Ex[[i]])),
+            offset_reg <- lapply(1:nsim, function(i) glm(Yx[[i]] ~ 1  +offset(log(Ex[[i]])),
                                                          family=quasipoisson))
         }
         overdisp.est <- overdisp(offset_reg, sim=TRUE, floor = floor)

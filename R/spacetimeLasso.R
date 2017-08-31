@@ -16,11 +16,11 @@
 #' myvectors <- setVectors(period, expected, observed, Time, byrow=TRUE)
 #' myresults <- spacetimeLasso(potentialclusters, myvectors, spacetime=TRUE, pois=FALSE)
 #' 
-spacetimeLasso<- function(clusters, vectors,covars, Time, spacetime=TRUE,pois=FALSE,floor, cv){
+spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,floor, cv){
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
-    
+    covars <- vectors$covars
     if(spacetime==TRUE){
         message("Creating space-time matrix")
         sparseMAT <- spacetimeMat(clusters, numCenters, Time)
@@ -39,8 +39,9 @@ spacetimeLasso<- function(clusters, vectors,covars, Time, spacetime=TRUE,pois=FA
         Period <- as.factor(as.vector(vectors$Period))
     }
     if(!is.null(covars)){
-        covarMat <- Matrix::Matrix(data.matrix(covars), sparse=TRUE)
-        sparseMat <- Matrix::cBind(sparseMat, covarMat)
+        covarMAT <- Matrix::Matrix(data.matrix(covars), sparse=TRUE)
+        dim(sparseMAT)
+        sparseMat <- Matrix::cBind(sparseMAT, covarMAT)
         message("Running with covariates")
     }
     else{

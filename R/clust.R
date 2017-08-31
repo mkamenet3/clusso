@@ -16,13 +16,25 @@
 #' 
 vectors_space <- function(x,Ex, Yx,Time, init){
     id <- rep(1:length(x), times = Time)
-    if(length(id)!=length(as.vector(Ex))) stop("Length of ID var not equal to number of observations")
+    if(length(id)!=length(as.vector(Ex))){
+        stop("Length of ID var not equal to number of observations")
+    }
+    if(!is.null(init$covars)){
+        covars.s <- sapply(1:ncol(init$covars), 
+                       function(i) tapply(as.vector(matrix(init$covars[,i], ncol=Time)),id, 
+                                          function(x) sum(x)))
+    }
+    else{
+        covars.s <- NULL
+    }
     vectors.s <- list(Period = rep("1", length(x)),
-                          Ex = tapply(as.vector(matrix(Ex, ncol=Time)), id, function(x) sum(x)),
-                          E0_0 = tapply(as.vector(matrix(init$E0, ncol=Time)), id, function(x) sum(x)),
-                          Y.vec = tapply(as.vector(matrix(init$Y.vec, ncol=Time)), id, function(x) round(sum(x))))
-    Yx.s <- tapply(as.vector(matrix(Yx, ncol=Time)), id, function(x) round(sum(x)))
-    return(list(vectors.s = vectors.s, Yx.s = Yx.s))
+                      Ex = tapply(as.vector(matrix(Ex, ncol=Time)), id, function(x) sum(x)),
+                      E0_0 = tapply(as.vector(matrix(init$E0, ncol=Time)), id, function(x) sum(x)),
+                      Y.vec = tapply(as.vector(matrix(init$Y.vec, ncol=Time)), id, function(x) round(sum(x))),
+                      covars.s = as.data.frame(covars.s))
+    Yx.s <- tapply(as.vector(matrix(Yx, ncol=Time)), id, function(x) round(sum(x))) 
+    res <- list(vectors.s = vectors.s, Yx.s = Yx.s)
+    return(res)
 }
 
 
@@ -121,21 +133,22 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byr
     #set up clusters and fitted values
     clusters <- clusters2df(x,y,rMax, utm=utm, length(x))
     n <- length(x)
-    init <- setVectors(period, expected, observed, Time, byrow)
+    #init <- setVectors(period, expected, observed, Time, byrow)
+    init <- setVectors(period, expected, observed, covars, Time, byrow)
     E1 <- init$E0
     Ex <- scale(init, Time)
     Yx <- init$Y.vec
     #timeperiod <- 1:Time
     #set vectors
-    vectors <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec)
+    vectors <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec, covars = covars)
     spacevecs <- vectors_space(x, Ex, Yx, Time,init)
     vectors.s <- spacevecs$vectors.s
     
     #run lasso
-    lassoresult.p.st <- spacetimeLasso(clusters, vectors, covars,Time, spacetime=TRUE,pois=TRUE, floor, cv)
-    lassoresult.qp.st <- spacetimeLasso(clusters, vectors, covars, Time, spacetime=TRUE,pois=FALSE, floor, cv)
-    lassoresult.p.s <- spacetimeLasso(clusters, vectors.s, covars, 1, spacetime=FALSE,pois=TRUE, floor,cv)
-    lassoresult.qp.s <- spacetimeLasso(clusters, vectors.s, covars, 1, spacetime=FALSE,pois=FALSE, floor,cv)
+    lassoresult.p.st <- spacetimeLasso(clusters, vectors,Time, spacetime=TRUE,pois=TRUE, floor, cv)
+    lassoresult.qp.st <- spacetimeLasso(clusters, vectors, Time, spacetime=TRUE,pois=FALSE, floor, cv)
+    lassoresult.p.s <- spacetimeLasso(clusters, vectors.s, 1, spacetime=FALSE,pois=TRUE, floor,cv)
+    lassoresult.qp.s <- spacetimeLasso(clusters, vectors.s, 1, spacetime=FALSE,pois=FALSE, floor,cv)
     
     message("All models ran successfully")
     

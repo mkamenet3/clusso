@@ -14,11 +14,22 @@
 #' 
 vectors_space_sim <- function(x,Ex, YSIM,Time, init){
     id <- rep(1:length(x), times = Time)
-    if(length(id)!=length(as.vector(Ex[[1]]))) stop("Length of ID var not equal to number of observations")
+    if(length(id)!=length(as.vector(Ex[[1]]))){
+        stop("Length of ID var not equal to number of observations")  
+    } 
+    if(!is.null(init$covars)){
+        covars.s <- sapply(1:ncol(init$covars), 
+                           function(i) tapply(as.vector(matrix(init$covars[,i], ncol=Time)),id, 
+                                              function(x) sum(x)))
+    }
+    else{
+        covars.sim.s <- NULL
+    }
     vectors.sim.s <- list(Period = rep("1", length(x)),
                           Ex = lapply(1:length(YSIM), function(i) tapply(as.vector(matrix(Ex[[i]], ncol=Time)), id, function(x) sum(x))),
                           E0_0 = tapply(as.vector(matrix(init$E0, ncol=Time)), id, function(x) sum(x)),
-                          Y.vec = tapply(as.vector(matrix(init$Y.vec, ncol=Time)), id, function(x) round(sum(x))))
+                          Y.vec = tapply(as.vector(matrix(init$Y.vec, ncol=Time)), id, function(x) round(sum(x))),
+                          covars.s = as.data.frame(covars.s))
     YSIM.s <- lapply(1:length(YSIM), function(i) tapply(as.vector(matrix(YSIM[[i]], ncol=Time)), id, function(x) round(sum(x))))
     return(list(vectors.sim.s = vectors.sim.s, YSIM.s = YSIM.s))
 }
@@ -56,7 +67,7 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init){
 #'@return returns list of lists
 #'@export
 
-clust_sim <- function(clst,covars, x,y, rMax, Time, nsim, center, radius, risk.ratio, 
+clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio, 
                           timeperiod, utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"), 
                       theta = NULL,nullmod=NULL, floor){
     expected <- clst$required_df$expected
@@ -152,7 +163,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     #set up clusters and fitted values
     clusters <- clusters2df(x,y,rMax, utm=utm, length(x))
     n <- length(x)
-    init <- setVectors(period, expected, observed, Time=Time, byrow=byrow)
+    init <- setVectors(period, expected, observed, covars, Time, byrow)
     
     #TODO change this to be a function and not hard-coded
     if(length(center) == 2){
@@ -204,7 +215,8 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     YSIM <- lapply(1:nsim, function(i) MASS::rnegbin(E1, theta = theta))
     Ex <- scale_sim(YSIM, init, nsim, Time)
     #create vectors.sim for spacetime
-    vectors.sim <- list(Period = Period, Ex = Ex , E0_0 = init$E0, Y.vec=init$Y.vec)
+    vectors.sim <- list(Period = Period, Ex = Ex , E0_0 = init$E0, 
+                        Y.vec=init$Y.vec, covars = covars)
     
     #create vectors.sim for space-only
     spacevecs <- vectors_space_sim(x, Ex, YSIM, Time, init)
@@ -214,16 +226,16 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     # #SPACE-ONLY MODELS
     #set up and run simulation models
     message("RUNNING: SPACE-ONLY QUASI-POISSON")
-    lassoresult.qp.s <- spacetimeLasso_sim(clusters, vectors.sim.s, covars, 1, spacetime=FALSE, pois=FALSE, nsim, YSIM.s, floor)
+    lassoresult.qp.s <- spacetimeLasso_sim(clusters, vectors.sim.s, 1, spacetime=FALSE, pois=FALSE, nsim, YSIM.s, floor)
     message("RUNNING: SPACE-ONLY POISSON")
-    lassoresult.p.s <- spacetimeLasso_sim(clusters, vectors.sim.s, covars, 1, spacetime=FALSE, pois=TRUE, nsim, YSIM.s, floor)
+    lassoresult.p.s <- spacetimeLasso_sim(clusters, vectors.sim.s, 1, spacetime=FALSE, pois=TRUE, nsim, YSIM.s, floor)
     
     #SPACE-TIME MODELS 
     #set up and run simulation models
     message("RUNNING: SPACE-TIME QUASI-POISSON")
-    lassoresult.qp.st <- spacetimeLasso_sim(clusters, vectors.sim, covars, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM, floor)
+    lassoresult.qp.st <- spacetimeLasso_sim(clusters, vectors.sim, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM, floor)
     message("RUNNING: SPACE-TIME POISSON")
-    lassoresult.p.st <- spacetimeLasso_sim(clusters, vectors.sim, covars, Time, spacetime=TRUE, pois=TRUE, nsim, YSIM, floor)
+    lassoresult.p.st <- spacetimeLasso_sim(clusters, vectors.sim, Time, spacetime=TRUE, pois=TRUE, nsim, YSIM, floor)
     
     message("All models ran successfully")
     

@@ -21,21 +21,34 @@
 
 
 
-setVectors <- function(period, expect, observed,Time, byrow=TRUE) {
+setVectors <- function(period, expect, observed, covars, Time, byrow=TRUE) {
     if (byrow==TRUE){
         if(period[1] == period[2]) warning("Please check the format of the data, you may want byrow=FALSE. It appears that the time periods appear sequentially")
-        E0=as.vector(matrix(expect, byrow=T, ncol=Time))
-        Y.vec <- as.vector(matrix(observed,byrow=T, ncol=Time))
-        Year <- as.vector(matrix(period, byrow=T, ncol=Time)) 
+        E0=as.vector(matrix(expect, byrow=TRUE, ncol=Time))
+        Y.vec <- as.vector(matrix(observed,byrow=TRUE, ncol=Time))
+        Year <- as.vector(matrix(period, byrow=TRUE, ncol=Time)) 
+        if(!is.null(covars)){
+            covars_df <- sapply(covars, function(x) matrix(x, byrow=TRUE, ncol=Time))    
+        }
+        else{
+            covars_df <- NULL
+        }
     }
     else {
         if(period[1] != period[2]) warning("Please check the format of the data, you may want byrow=TRUE. It appears that the time periods do not appear sequentially")
         E0=as.vector(matrix(expect, ncol=Time))
         Y.vec <- as.vector(matrix(observed, ncol=Time))
         Year <- as.vector(matrix(period, ncol=Time))
+        if(!is.null(covars)){
+            covars_df <- sapply(covars, function(x) matrix(x, ncol=Time))
+        }
+        else{
+            covars_df <-NULL
+        }
     }
     return(list(
         E0 = E0,
         Y.vec = Y.vec,
-        Year = Year))
+        Year = Year,
+        covars = covars_df))
 }

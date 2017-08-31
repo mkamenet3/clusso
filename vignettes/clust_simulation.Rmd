@@ -277,10 +277,10 @@ nsim <- 2
 ### Set conditions for cluster
 
 ```{r}
-centers <- 75 #can take values 1 - 208 because we have a total of 208 centroids
-radii <- 11
-timeperiods <- list(c(3:5))
-risk.ratios <- 1.5
+center <- 75 #can take values 1 - 208 because we have a total of 208 centroids
+radius <- 11
+timeperiods <- c(3:5)
+risk.ratio <- 1.5
 nullmod <- NULL #set to NULL if we want to run non-null model (model with a cluster we've created)
 theta <- 2 #with overdispersion. For no overdispersion, set theta = NULL
 floor <- TRUE
@@ -295,17 +295,8 @@ table.detection <- NULL
 
 clst <- toclust(df, expected = df$expdeath, observed = df$death, timeperiod = df$period, covars=TRUE)
 
-#system.time(res <- clust(clst, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", floor, cv))
-
-system.time(res <- clust_sim(clst, x, y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                                     nsim,cent, rad, risk, tim, utm=TRUE, byrow=TRUE, threshold, 
-                                     space= "both", theta, nullmod, floor))
-
-
-# system.time(res <- clust_sim(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-#                                      nsim,cent, rad, risk, tim, utm=TRUE, byrow=TRUE, threshold, 
-#                                      space= "both", theta, nullmod, floor))
-
+system.time(res <- clust_sim(clst, x, y,rMax,Time, nsim,centers, radius, risk.ratios, timeperiods, 
+                             utm=TRUE, byrow=TRUE, threshold, space= "both", theta, nullmod, floor))
 
 ```
 
