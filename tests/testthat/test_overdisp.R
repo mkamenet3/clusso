@@ -31,6 +31,7 @@ test_that("Test sim work",{
                      rnegbin(n = 10,mu = 15,theta = 1000))
     observed <- list(rnegbin(expected[[1]], theta=1000),
                      rnegbin(expected[[1]], theta=1000))
+    nsim <-2
     m <- lapply(1:nsim, function(i) glm(observed[[i]] ~ 1 + as.factor(period)))
     expect_gt(overdisp(m), 1)
     expect_gt(overdisp(m, sim=TRUE), 1)

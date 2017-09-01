@@ -24,16 +24,16 @@ easyplot <- function(prefect, polygons, pdfname, res, mods, space=c("space", "sp
     pdf_p.st <- paste0(gsub(".pdf","", pdfname),mods[2],"ST", ".pdf")
     switch(space, 
            space = {
-               plotmap_S(pdf_qp.s, res, sub = res$rrcolors$rrcolors.qp.s) 
-               plotmap_S(pdf_p.s, res, sub = res$rrcolors$rrcolors.p.s)},
+               plotmap_S(prefect, polygons, pdf_qp.s, res, obs, sub = res$rrcolors$rrcolors.qp.s) 
+               plotmap_S(prefect, polygons, pdf_p.s, res, obs, sub = res$rrcolors$rrcolors.p.s)},
            spacetime = {
-               plotmap_ST(pdf_qp.st, res, sub = res$rrcolors$rrcolors.qp.st)
-               plotmap_ST(pdf_p.st, res, sub = res$rrcolors$rrcolors.p.st)},
+               plotmap_ST(prefect, polygons, pdf_qp.st, res, obs, sub = res$rrcolors$rrcolors.qp.st)
+               plotmap_ST(prefect, polygons, pdf_p.st, res, obs, sub = res$rrcolors$rrcolors.p.st)},
            both = {
-               plotmap_S(pdf_qp.s, res, obs, sub = res$rrcolors$rrcolors.qp.s)
-               plotmap_S(pdf_p.s, res, obs, sub = res$rrcolors$rrcolors.p.s)
-               plotmap_ST(pdf_qp.st, res, obs, sub = res$rrcolors$rrcolors.qp.st)
-               plotmap_ST(pdf_p.st, res, obs, sub = res$rrcolors$rrcolors.p.st)})
+               plotmap_S(prefect, polygons, pdf_qp.s, res, obs, sub = res$rrcolors$rrcolors.qp.s)
+               plotmap_S(prefect, polygons, pdf_p.s, res, obs, sub = res$rrcolors$rrcolors.p.s)
+               plotmap_ST(prefect, polygons, pdf_qp.st, res, obs, sub = res$rrcolors$rrcolors.qp.st)
+               plotmap_ST(prefect, polygons, pdf_p.st, res, obs, sub = res$rrcolors$rrcolors.p.st)})
 }
 
 

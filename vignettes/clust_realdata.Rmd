@@ -53,7 +53,6 @@ y <- dframe2$utmy/1000
 rMax <- 20 
 Time <- 5
 overdispfloor <- TRUE
-cv <- 10
 
 ```
 
@@ -64,7 +63,7 @@ cv <- 10
 
 clst <- toclust(dframe, expected = dframe$expdeath, observed = dframe$death,timeperiod = dframe$period, covars = FALSE)
 
-system.time(res <- clust(clst, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor=TRUE, cv))
+system.time(res <- clust(clst, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor=TRUE, cv=NULL))
 
 ```
 
@@ -81,7 +80,7 @@ save(res, file = filename)
 #Create Empty PDF to Map Onto
 pdfname <- paste0("sampleoutput/jbc_analysis",".pdf")
 
-easyplot(dframe.prefect2, dframe.prefect2 ,pdfname, res, mods, space="both", obs=TRUE)
+easyplot(japan.prefect2, japan.poly2 ,pdfname, res, mods, space="both", obs=TRUE)
 ```
 
 
@@ -141,9 +140,9 @@ rMax <- 20
 Time <- 5
 overdispfloor <- TRUE
 cv <- 10 #how many folds
-clst <- cbind.data.frame(expected = dframe$expdeath, observed = dframe$death,timeperiod = dframe$period)
+clst <- toclust(dframe, expected = dframe$expdeath, observed = dframe$death,timeperiod = dframe$period, covars=FALSE)
 
-system.time(res <- clust(clst, covars = NULL, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor, cv))
+system.time(res <- clust(clst,x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor=TRUE, cv))
 
 
 ```
@@ -164,6 +163,20 @@ print(table.clusterscv)
 write.csv(table.clusterscv, file="sampleoutput/tableclusters_cv.csv", row.names=TRUE)
 ```
 
+### Maps
+
+```{r}
+#save results
+filename <- paste0("sampleoutput/jbc_analysis_cv",".RData")
+save(res, file = filename)
+
+
+#Create Empty PDF to Map Onto
+pdfname <- paste0("sampleoutput/jbc_analysis_cv",".pdf")
+
+easyplot(japan.prefect2, japan.poly2 ,pdfname, res, mods, space="both", obs=TRUE)
+
+```
 
 
 ## Real Data Example with Covariates
@@ -222,5 +235,20 @@ clst <- toclust(df, expected = df$expdeath, observed = df$death, timeperiod = df
 
 system.time(res <- clust(clst, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor, cv))
 
+```
+
+### Maps
+
+
+```{r}
+#save results
+filename <- paste0("sampleoutput/jbc_analysis_covars",".RData")
+save(res, file = filename)
+
+
+#Create Empty PDF to Map Onto
+pdfname <- paste0("sampleoutput/jbc_analysis_covars",".pdf")
+
+easyplot(japan.prefect2, japan.poly2 ,pdfname, res, mods, space="both", obs=TRUE)
 ```
 
