@@ -6,7 +6,7 @@
 #' @param Time number of time periods in the dataset
 #' @param spacetime indicator of whether the cluster detection method should be run on all space-time clusters(default) or on only the potential space clusters.
 #' @param pois whether or not the Quasi-Poisson or Poisson model should be run. Default is pois=FALSE (default is Quasi-Poisson model is to be run)
-#' @param floor default is TRUE. If TRUE, does not allow for underdispersion. If FALSE, allows for underdispersion (phi < 1)
+#' @param overdispfloor default is TRUE. If TRUE, does not allow for underdispersion. If FALSE, allows for underdispersion (phi < 1)
 #' @param cv option for cross-validation instead of AIC/BIC. Default is set to FALSE
 #' @return This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
 #' a list of observed counts (Yx), the lasso object, a list of K values (number of unique values in each decision path), and n (length of unique centers in the clusters dataframe)
@@ -16,7 +16,7 @@
 #' myvectors <- setVectors(period, expected, observed, Time, byrow=TRUE)
 #' myresults <- spacetimeLasso(potentialclusters, myvectors, spacetime=TRUE, pois=FALSE)
 #' 
-spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,floor, cv){
+spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,overdispfloor, cv){
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
@@ -86,7 +86,7 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,floo
                 offset_reg <- glm(Yx ~ 1 + as.factor(vectors$Period) + offset(log(Ex)),
                                   family=quasipoisson)
             }
-            overdisp.est <- overdisp(offset_reg, sim = FALSE, floor = floor)
+            overdisp.est <- overdisp(offset_reg, sim = FALSE, overdispfloor = overdispfloor)
             message(paste("Overdispersion estimate:", overdisp.est))
             #overdisp.est <- max(unlist(deviance(offset_reg)/df.residual(offset_reg)))
             message("Selecting best paths")
@@ -150,7 +150,7 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,floo
             }
             offset_reg <- glm(Yx ~ 1 + offset(log(Ex)),family=poisson)
             #overdisp.est <- max(unlist(deviance(offset_reg)/df.residual(offset_reg)))
-            overdisp.est <- overdisp(offset_reg, sim = FALSE, floor = floor)
+            overdisp.est <- overdisp(offset_reg, sim = FALSE, overdispfloor = overdispfloor)
             message(paste("Overdispersion estimate:", overdisp.est))
             message("Selecting best paths")
             if(pois==FALSE & is.null(overdisp.est)) warning("No overdispersion for quasi-Poisson model. Please check.")

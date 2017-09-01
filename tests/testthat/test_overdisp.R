@@ -11,7 +11,7 @@ test_that("Test overdispersion model is from glm",{
     expect_error(overdisp(m))
 })
 
-test_that("Test underdispersion is handled properly with floor argument",{
+test_that("Test underdispersion is handled properly with overdispfloor argument",{
     #setup
     set.seed(2)
     period <- c(rep("1",5),rep("2",5))
@@ -19,7 +19,7 @@ test_that("Test underdispersion is handled properly with floor argument",{
     observed <- rnegbin(expected, theta=1000)
     m <- glm(observed ~ 1 + as.factor(period), family="poisson")
     expect_message(overdisp(m, sim=FALSE))
-    expect_message(overdisp(m, sim=FALSE, floor=FALSE))
+    expect_message(overdisp(m, sim=FALSE, overdispfloor=FALSE))
 })
 
 
@@ -37,7 +37,7 @@ test_that("Test sim work",{
 })
 
 
-test_that("Test sim works with floor",{
+test_that("Test sim works with overdispfloor",{
     #setup
     set.seed(2)
     period <- c(rep("1",5),rep("2",5))
@@ -46,6 +46,6 @@ test_that("Test sim works with floor",{
     observed <- list(rnegbin(expected[[1]], theta=1000),
                      rnegbin(expected[[2]], theta=1000))
     m <- lapply(1:nsim, function(i) glm(observed[[i]] ~ 1 + as.factor(period)))
-    expect_message(overdisp(m, sim=TRUE, floor=TRUE))
+    expect_message(overdisp(m, sim=TRUE, overdispfloor=TRUE))
     expect_message(overdisp(m, sim=TRUE))
 })

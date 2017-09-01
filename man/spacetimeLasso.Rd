@@ -5,7 +5,7 @@
 \title{Spatial and Spatio-Temporal Lasso}
 \usage{
 spacetimeLasso(clusters, vectors, Time, spacetime = TRUE, pois = FALSE,
-  floor)
+  overdispfloor)
 }
 \arguments{
 \item{clusters}{clusters dataframe from (cluster.df function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)}
@@ -18,7 +18,7 @@ spacetimeLasso(clusters, vectors, Time, spacetime = TRUE, pois = FALSE,
 
 \item{pois}{whether or not the Quasi-Poisson or Poisson model should be run. Default is pois=FALSE (default is Quasi-Poisson model is to be run)}
 
-\item{floor}{default is TRUE. If TRUE, does not allow for underdispersion. If FALSE, allows for underdispersion (phi < 1)}
+\item{overdispfloor}{default is TRUE. If TRUE, does not allow for underdispersion. If FALSE, allows for underdispersion (phi < 1)}
 }
 \value{
 This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),

@@ -55,11 +55,11 @@ vectors_space <- function(x,Ex, Yx,Time, init){
 #'@param byrow default is True. If data should be imported by column then set to FALSE
 #'@param space space and space-time. Default is to run all four models: quasi-poisson and poisson for both space and space-time. User can specify, space = space,
 #'space = spacetime, or space = both.
-#'@param floor floor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
+#'@param overdispfloor overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
 #'@param cv option for cross-validation
 #'@return returns list
 
-clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","spacetime", "both"),floor=NULL, cv = NULL){
+clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","spacetime", "both"),overdispfloor=NULL, cv = NULL){
     expected <- clst$required_df$expected
     observed <- clst$required_df$observed
     period <- clst$required_df$timeperiod
@@ -84,11 +84,11 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","
         byrow=TRUE
         message("Data assumed to be in panel data. To use vector data instead, please specify 'byrow=FALSE'")
     }
-    if(floor==FALSE){
-        floor <- FALSE
+    if(overdispfloor==FALSE){
+        overdispfloor <- FALSE
     }
     else{
-        floor <- TRUE
+        overdispfloor <- TRUE
     }
     if(!is.null(cv)){
         cv = cv
@@ -103,7 +103,7 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","
            #                             timeperiod,colors=NULL,utm, byrow, threshold, space=TRUE),
            # spacetime = clust.sim.all.spacetime(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
            #                                     timeperiod,colors=NULL,utm, byrow, threshold, space=FALSE),
-           both = clustAll(x, y, rMax,period, expected, observed, covars, Time, utm, byrow, floor, cv))
+           both = clustAll(x, y, rMax,period, expected, observed, covars, Time, utm, byrow, overdispfloor, cv))
 }
     
     
@@ -122,12 +122,12 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","
 #'@param Time Number of time periods or years in your dataset. Must be declared as numeric.
 #'@param utm default is TRUE. If FALSE, then will run long/lat data
 #'@param byrow default is True. If data should be imported by column then set to FALSE
-#'@param floor floor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
+#'@param overdispfloor overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
 #'@param cv option for cross-validation - numeric input specifies how many folds; default is 10
 #'@return
 #'               
     
-clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byrow, floor, cv){    
+clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byrow, overdispfloor, cv){    
     message("Running both Space and Space-Time Models")
     
     #set up clusters and fitted values
@@ -145,10 +145,10 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byr
     vectors.s <- spacevecs$vectors.s
     
     #run lasso
-    lassoresult.p.st <- spacetimeLasso(clusters, vectors,Time, spacetime=TRUE,pois=TRUE, floor, cv)
-    lassoresult.qp.st <- spacetimeLasso(clusters, vectors, Time, spacetime=TRUE,pois=FALSE, floor, cv)
-    lassoresult.p.s <- spacetimeLasso(clusters, vectors.s, 1, spacetime=FALSE,pois=TRUE, floor,cv)
-    lassoresult.qp.s <- spacetimeLasso(clusters, vectors.s, 1, spacetime=FALSE,pois=FALSE, floor,cv)
+    lassoresult.p.st <- spacetimeLasso(clusters, vectors,Time, spacetime=TRUE,pois=TRUE, overdispfloor, cv)
+    lassoresult.qp.st <- spacetimeLasso(clusters, vectors, Time, spacetime=TRUE,pois=FALSE, overdispfloor, cv)
+    lassoresult.p.s <- spacetimeLasso(clusters, vectors.s, 1, spacetime=FALSE,pois=TRUE, overdispfloor,cv)
+    lassoresult.qp.s <- spacetimeLasso(clusters, vectors.s, 1, spacetime=FALSE,pois=FALSE, overdispfloor,cv)
     
     message("All models ran successfully")
     

@@ -52,7 +52,7 @@ x <- dframe2$utmx/1000
 y <- dframe2$utmy/1000
 rMax <- 20 
 Time <- 5
-floor <- TRUE
+overdispfloor <- TRUE
 
 
 ```
@@ -62,8 +62,8 @@ floor <- TRUE
 
 ```{r}
 #system.time(res <- clust(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
- #                               utm=TRUE, ,byrow=TRUE,space = "both", floor=TRUE))
-res <- clust(clst, covars = NULL, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", floor=TRUE, cv=TRUE)
+ #                               utm=TRUE, ,byrow=TRUE,space = "both", overdispfloor=TRUE))
+res <- clust(clst, covars = NULL, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor=TRUE, cv=TRUE)
 
 ```
 
@@ -138,11 +138,11 @@ x <- dframe2$utmx/1000
 y <- dframe2$utmy/1000
 rMax <- 20 
 Time <- 5
-floor <- TRUE
+overdispfloor <- TRUE
 cv <- 10 #how many folds
 clst <- cbind.data.frame(expected = dframe$expdeath, observed = dframe$death,timeperiod = dframe$period)
 
-system.time(res <- clust(clst, covars = NULL, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", floor, cv))
+system.time(res <- clust(clst, covars = NULL, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor, cv))
 
 
 ```
@@ -215,11 +215,11 @@ x <- dframe2$utmx/1000
 y <- dframe2$utmy/1000
 rMax <- 20 
 Time <- 5
-floor <- TRUE
+overdispfloor <- TRUE
 cv <- 10 #how many folds
 clst <- toclust(df, expected = df$expdeath, observed = df$death, timeperiod = df$period, covars=TRUE)
 
-system.time(res <- clust(clst, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", floor, cv))
+system.time(res <- clust(clst, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor, cv))
 
 ```
 

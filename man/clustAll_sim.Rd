@@ -6,7 +6,7 @@
 \usage{
 clustAll_sim(x, y, rMax, period, expected, observed, Time, nsim, center, radius,
   risk.ratio, timeperiod, utm, byrow, threshold, theta = theta,
-  nullmod = nullmod, floor = floor, ...)
+  nullmod = nullmod, overdispfloor = overdispfloor, ...)
 }
 \arguments{
 \item{x}{x coordinates (easting/latitude); if utm coordinates, scale to km.}
@@ -45,7 +45,7 @@ this would mean we look at periods 2, 3, 4, and 5.}
 
 \item{nullmod}{if TRUE, then null models will be run. Otherwise, default is null.}
 
-\item{floor}{floor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.}
+\item{overdispfloor}{overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.}
 }
 \value{
 returns list of lists

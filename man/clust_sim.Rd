@@ -7,7 +7,7 @@
 clust_sim(x, y, rMax, period, expected, observed, Time, nsim, center, radius,
   risk.ratio, timeperiod, utm = TRUE, byrow = TRUE, threshold,
   space = c("space", "spacetime", "both"), theta = NULL, nullmod = NULL,
-  floor)
+  overdispfloor)
 }
 \arguments{
 \item{x}{x coordinates (easting/latitude); if utm coordinates, scale to km.}
@@ -49,7 +49,7 @@ space = spacetime, or space = both.}
 
 \item{nullmod}{default is NULL; otherwise will run null model}
 
-\item{floor}{floor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.}
+\item{overdispfloor}{overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.}
 }
 \value{
 returns list of lists

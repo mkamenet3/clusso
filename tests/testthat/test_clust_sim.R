@@ -10,7 +10,7 @@ test_that("All parameters are correctly specified and trouble-shooted in clust_s
     nsim = 2
     center = 1
     radius = 10
-    floor = TRUE
+    overdispfloor = TRUE
     risk.ratio = 2
     threshold = 0.9
     period <- rep(seq(1,2),5)
@@ -21,7 +21,7 @@ test_that("All parameters are correctly specified and trouble-shooted in clust_s
     init <- setVectors(period, expected, observed, Time, byrow=TRUE)
     expect_error(clust_sim(x_utm, y_utm, radius, period, expected, observed, Time, nsim, center,
                                radius, risk.ratio, timeperiod, utm=TRUE, byrow=TRUE,
-                           space = "both", threshold, floor))
+                           space = "both", threshold, overdispfloor))
 })
 
 
