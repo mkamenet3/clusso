@@ -2,7 +2,7 @@
 % Please edit documentation in R/clust_sim.R
 \name{vectors_space_sim}
 \alias{vectors_space_sim}
-\title{Simulation functions for space and space-time cluster detection with lasso.}
+\title{vectors_space_sim}
 \usage{
 vectors_space_sim(x, Ex, YSIM, Time, init)
 }
@@ -16,16 +16,11 @@ vectors_space_sim(x, Ex, YSIM, Time, init)
 \item{Time}{number of time periods}
 
 \item{init}{initial list of vectors, inherited from function setVectors.}
-
-\item{timeperiod}{explicit vector of timeperiods}
 }
 \value{
 returns space-time
 }
 \description{
-vectors_space_sim
-}
-\details{
-This function will collapse a space-time vector onto space only
+Simulation functions for space and space-time cluster detection with lasso. This function will collapse a space-time vector onto space only
 }
 

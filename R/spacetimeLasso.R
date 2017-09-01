@@ -1,5 +1,8 @@
 #' Spatial and Spatio-Temporal Lasso
+#' @title 
+#' spacetimeLasso
 #' 
+#' @description 
 #' This function runs the Lasso regularization technique on our large sparse matric of potential space or space-time clusters.
 #' @param clusters clusters dataframe from (cluster.df function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)
 #' @param vectors takes in the list of expected and observed counts from setVectors function
@@ -65,7 +68,7 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
     
     #if running cross-validation version:
     if(!is.null(cv)){
-        res <- stLasso.cv(lasso, sparseMAT)
+        res <- stLasso_cv(lasso, sparseMAT)
     }
     #information criteria selection version:
     else{
@@ -208,13 +211,18 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
 
 
 #' Selection via cross-validation
+#' @title 
+#' stLasso_cv
 #' 
+#' @description 
 #' This function will output results from cross-validation results.
-#' 
 #' @param lasso results of cv.glmnet
-#' @return list of expected values, number of clusters, Ex, Yx, and lasso object
+#' @param sparseMAT sparse spatial or spatio-temporal design matrix
+#' @param Ex expected counts (inherits from setVectors)
+#' @param Yx observed counts (inherits from setVectors)
+#' #' @return list of expected values, number of clusters, Ex, Yx, and lasso object
 #' 
-stLasso.cv <- function(lasso, sparseMAT){
+stLasso_cv <- function(lasso, sparseMAT, Ex, Yx){
     #cv version
     ix <- which(lasso$lambda == lasso$lambda.min)
     print(dim(sparseMAT), dim(lasso$glmnet.fit$beta[,ix]))

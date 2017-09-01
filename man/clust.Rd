@@ -4,21 +4,17 @@
 \alias{clust}
 \title{clust}
 \usage{
-clust(x, y, rMax, period, expected, observed, Time, utm = TRUE,
-  byrow = TRUE, space = c("space", "spacetime", "both"), overdispfloor, ...)
+clust(clst, x, y, rMax, Time, utm = TRUE, byrow = TRUE, space = c("space",
+  "spacetime", "both"), overdispfloor = NULL, cv = NULL)
 }
 \arguments{
+\item{clst}{list; output from toclust function. Must be of class clst.}
+
 \item{x}{x coordinates (easting/latitude); if utm coordinates, scale to km.}
 
 \item{y}{y coordinates (northing/longitude); if utm coordinates, scale to km.}
 
 \item{rMax}{set max radius (in km)}
-
-\item{period}{vector of periods or years in dataset. Should be imported as a factor.}
-
-\item{expected}{vector of expected counts. Expected counts must match up with the year and observed vectors.}
-
-\item{observed}{vector of observed counts. Observed counts must match up with the year and expected vectors.}
 
 \item{Time}{Number of time periods or years in your dataset. Must be declared as numeric.}
 
@@ -30,6 +26,8 @@ clust(x, y, rMax, period, expected, observed, Time, utm = TRUE,
 space = spacetime, or space = both.}
 
 \item{overdispfloor}{overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.}
+
+\item{cv}{option for cross-validation}
 }
 \value{
 returns list

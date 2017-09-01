@@ -2,10 +2,10 @@
 % Please edit documentation in R/spacetimeLasso.R
 \name{spacetimeLasso}
 \alias{spacetimeLasso}
-\title{Spatial and Spatio-Temporal Lasso}
+\title{spacetimeLasso}
 \usage{
 spacetimeLasso(clusters, vectors, Time, spacetime = TRUE, pois = FALSE,
-  overdispfloor)
+  overdispfloor, cv)
 }
 \arguments{
 \item{clusters}{clusters dataframe from (cluster.df function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)}
@@ -19,6 +19,8 @@ spacetimeLasso(clusters, vectors, Time, spacetime = TRUE, pois = FALSE,
 \item{pois}{whether or not the Quasi-Poisson or Poisson model should be run. Default is pois=FALSE (default is Quasi-Poisson model is to be run)}
 
 \item{overdispfloor}{default is TRUE. If TRUE, does not allow for underdispersion. If FALSE, allows for underdispersion (phi < 1)}
+
+\item{cv}{option for cross-validation instead of AIC/BIC. Default is set to FALSE}
 }
 \value{
 This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
@@ -26,6 +28,9 @@ a list of observed counts (Yx), the lasso object, a list of K values (number of 
 }
 \description{
 This function runs the Lasso regularization technique on our large sparse matric of potential space or space-time clusters.
+}
+\details{
+Spatial and Spatio-Temporal Lasso
 }
 \examples{
 potentialclusters <- clusters2df(lat, long, utm=FALSE, length(lat))

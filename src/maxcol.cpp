@@ -5,7 +5,13 @@ using namespace Rcpp;
 // source this function into an R session using the Rcpp::sourceCpp 
 // function (or via the Source button on the editor toolbar)
 
-// For more on using Rcpp click the Help button on the editor toolbar
+//' Calculates maximum column for spatial radius
+//' @title return maximum center based on a raidus supplied
+//' @param N total number of centroids
+//' @param iMax each row of clusters dataframe (from clusters2df function)
+//' @param cn identifier of centroid to which the count belongs to
+//' @param clast last observation of that centroid group
+//' @return integer vector for the last observation in a sequence of observations by growing radius, given users rMax specifications.
 //' @export
 // [[Rcpp::export]]
 IntegerVector max_colCpp (const int N, int iMax, IntegerVector cn, IntegerVector clast){

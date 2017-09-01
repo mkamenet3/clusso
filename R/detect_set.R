@@ -7,6 +7,7 @@
 #'@param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso.sim function
 #'@param vectors.sim  dataframe of initial vectors of the observed and expected counts that went into simulation function
 #'@param rr risk ratio matrix that was used in the simulation
+#'@param Time how many time periods in the data?
 #'@param x x coordinates
 #'@param y y coordinates
 #'@param rMax set maximum radius for a cluster

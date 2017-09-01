@@ -42,6 +42,7 @@ set_rr<- function(lassoresult, vectors, Time, sim=FALSE){
 #' @param E1 initial expected counts
 #' @param Time number of time period
 #' @param sim default is TRUE. Signals whether these values are to be extracted from a simulated model or real data.
+#' @param cv default is NULL. Otherwise if not null, then results will be provided for risk ratios selected by cross-validation
 #' @return This returns a list of the risk ratios (observed over expected) as determined by 1) pure observed/expected counts,
 #' 2) observed based on QBIC path/expected; 3) observed based on QAIC path/expected; 4) observed based on QAICc path/expected.
 #' @export

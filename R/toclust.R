@@ -1,12 +1,8 @@
-#'Create clst object for creating potential spatial and spatio-temporal clusters. 
-#'
-#'
-#'
-#'@title
+#' @title
 #'toclust
 #' 
 #' @description 
-#' This function will create a clst object which will contain the expected, observed, and time period information necessary to run further cluster functions.
+#' Create clst object for creating potential spatial and spatio-temporal clusters. This function will create a clst object which will contain the expected, observed, and time period information necessary to run further cluster functions.
 #' If dataframe is fed in, assumes panel format. Also used for converting covariates to proper object.
 #' @param df dataframe of variables
 #' @param expected vector or column in a dataframe of expected counts. Format must be supplied as df$var
@@ -15,7 +11,7 @@
 #' @param covars are there additional covariates in the dataframe beyond the three required? Default is FALSE
 #' @return clst object
 #' 
-toclust<- function(df, expected, observed, timeperiod, covars=FALSE){
+toclust <- function(df, expected, observed, timeperiod, covars=FALSE){
     cl <- match.call()
     if(inherits(df,"data.frame") == FALSE){
         stop("Input must be a dataframe with clearly labeled covariates")

@@ -4,9 +4,13 @@
 \alias{plotmap_ST}
 \title{#Space-time plotting}
 \usage{
-plotmap_ST(pdfname, res, obs, sub, ...)
+plotmap_ST(prefect, polygons, pdfname, res, obs, sub)
 }
 \arguments{
+\item{prefect}{prefects dataframe}
+
+\item{polygons}{polygons dataframe}
+
 \item{pdfname}{pdfname of what the output pdf will be called}
 
 \item{res}{resultant list from clust_ function}

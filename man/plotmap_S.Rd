@@ -4,9 +4,13 @@
 \alias{plotmap_S}
 \title{#Space-only plotting}
 \usage{
-plotmap_S(pdfname, res, obs, sub, ...)
+plotmap_S(prefect, polygons, pdfname, res, obs, sub)
 }
 \arguments{
+\item{prefect}{prefects dataframe}
+
+\item{polygons}{polygons dataframe}
+
 \item{pdfname}{pdfname of what the output pdf will be called}
 
 \item{res}{resultant list from clust_ function}

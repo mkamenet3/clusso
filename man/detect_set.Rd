@@ -14,6 +14,8 @@ detect_set(lassoresult, vectors.sim, rr, Time, x, y, rMax, center, radius,
 
 \item{rr}{risk ratio matrix that was used in the simulation}
 
+\item{Time}{how many time periods in the data?}
+
 \item{x}{x coordinates}
 
 \item{y}{y coordinates}

@@ -39,7 +39,7 @@ Maintainer: Maria Kamenetsky <maria.kamenetsky@gmail.com>
 \keyword{ package }
 \seealso{
 ~~ Optional links to other man pages, e.g. ~~
-~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
+~~ \code{\link[clust:clust-package]{clust}} ~~
 }
 \examples{
 %% ~~ simple examples of the most important functions ~~

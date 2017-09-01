@@ -47,9 +47,6 @@ vectors_space <- function(x,Ex, Yx,Time, init){
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
 #'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
 #'@param rMax set max radius (in km)
-#'@param period vector of periods or years in dataset. Should be imported as a factor.
-#'@param expected vector of expected counts. Expected counts must match up with the year and observed vectors.
-#'@param observed vector of observed counts. Observed counts must match up with the year and expected vectors.
 #'@param Time Number of time periods or years in your dataset. Must be declared as numeric.
 #'@param utm default is TRUE. If FALSE, then will run long/lat data
 #'@param byrow default is True. If data should be imported by column then set to FALSE

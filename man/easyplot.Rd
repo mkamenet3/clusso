@@ -4,10 +4,14 @@
 \alias{easyplot}
 \title{Auxiliary Plotting Functions for Japanese Breast Cancer Data}
 \usage{
-easyplot(pdfname, res, mods, space = c("space", "spacetime", "both"),
-  obs = NULL)
+easyplot(prefect, polygons, pdfname, res, mods, space = c("space",
+  "spacetime", "both"), obs = NULL)
 }
 \arguments{
+\item{prefect}{prefects dataframe}
+
+\item{polygons}{polygons dataframe}
+
 \item{pdfname}{pdfname of what the output pdf will be called}
 
 \item{res}{resultant list from clust_ function}

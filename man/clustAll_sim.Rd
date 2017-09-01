@@ -4,9 +4,9 @@
 \alias{clustAll_sim}
 \title{clustAll_sim}
 \usage{
-clustAll_sim(x, y, rMax, period, expected, observed, Time, nsim, center, radius,
-  risk.ratio, timeperiod, utm, byrow, threshold, theta = theta,
-  nullmod = nullmod, overdispfloor = overdispfloor, ...)
+clustAll_sim(x, y, rMax, period, expected, observed, covars, Time, nsim, center,
+  radius, risk.ratio, timeperiod, utm, byrow, threshold, theta = theta,
+  nullmod = nullmod, overdispfloor = overdispfloor)
 }
 \arguments{
 \item{x}{x coordinates (easting/latitude); if utm coordinates, scale to km.}
@@ -20,6 +20,8 @@ clustAll_sim(x, y, rMax, period, expected, observed, Time, nsim, center, radius,
 \item{expected}{vector of expected counts. Expected counts must match up with the year and observed vectors.}
 
 \item{observed}{vector of observed counts. Observed counts must match up with the year and expected vectors.}
+
+\item{covars}{dataframe of covariates, if supplied to `toclust` function.}
 
 \item{Time}{Number of time periods or years in your dataset. Must be declared as numeric.}
 

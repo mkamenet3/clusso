@@ -1,14 +1,12 @@
-#'Simulation functions for space and space-time cluster detection with lasso. 
 #'
-
+#' @title
 #' vectors_space_sim
-#' 
-#' This function will collapse a space-time vector onto space only
+#' @description 
+#' Simulation functions for space and space-time cluster detection with lasso. This function will collapse a space-time vector onto space only
 #' @param x vector coordinates (unique regardless of time period)
 #' @param Ex list of simulated and standardized expected counts
 #' @param YSIM simulated observed
 #' @param Time number of time periods
-#' @param timeperiod explicit vector of timeperiods
 #' @param init initial list of vectors, inherited from function setVectors.
 #' @return returns space-time 
 #' 
@@ -34,10 +32,11 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init){
     return(list(vectors.sim.s = vectors.sim.s, YSIM.s = YSIM.s))
 }
     
-    
-#'
+
+#'@title
 #'clust_sim
 #'
+#'@description 
 #'This helper function runs both the space and space-time Lasso model simulations for all 4 models simulataneously: Quasi-Poisson vs. Poisson in both space and space-time.
 #' This function is to be run on simulated data and all four models are run on the same simulated set. 
 #'A separate function (clust.sim) can be used for running simulations on individual models and (clust) can be used for observed data.
@@ -45,9 +44,6 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init){
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
 #'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
 #'@param rMax set max radius (in km)
-#'@param period vector of periods or years in dataset. Should be imported as a factor.
-#'@param expected vector of expected counts. Expected counts must match up with the year and observed vectors.
-#'@param observed vector of observed counts. Observed counts must match up with the year and expected vectors.
 #'@param Time Number of time periods or years in your dataset. Must be declared as numeric.
 #'@param nsim Number of simulations you would like to run
 #'@param center can be a single center or for multiple clusters, concatenate them. Max three TODO extend this
@@ -128,8 +124,10 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
 }
 
 
-#'clustAll_sim
 #'
+#'@title
+#'clustAll_sim
+#' @description 
 #'This function runs both the space and space-time Lasso model simulations for all 4 models simulataneously: Quasi-Poisson vs. Poisson in both space and space-time.
 #' This function is to be run on simulated data and all four models are run on the same simulated set. 
 #'A separate function (clust.sim) can be used for running simulations on individual models and (clust) can be used for observed data.
@@ -139,6 +137,7 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
 #'@param period vector of periods or years in dataset. Should be imported as a factor.
 #'@param expected vector of expected counts. Expected counts must match up with the year and observed vectors.
 #'@param observed vector of observed counts. Observed counts must match up with the year and expected vectors.
+#'@param covars dataframe of covariates, if supplied to `toclust` function. 
 #'@param Time Number of time periods or years in your dataset. Must be declared as numeric.
 #'@param nsim Number of simulations you would like to run
 #'@param center can be a single center or for multiple clusters, concatenate them. Max three TODO extend this
@@ -157,7 +156,7 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
 #'@export
 
 clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, nsim, center, radius, risk.ratio, 
-                               timeperiod,utm, byrow, threshold, theta = theta, nullmod=nullmod,overdispfloor=overdispfloor,...){
+                               timeperiod,utm, byrow, threshold, theta = theta, nullmod=nullmod,overdispfloor=overdispfloor){
     message("Running both Space and Space-Time Models")
     
     #set up clusters and fitted values
