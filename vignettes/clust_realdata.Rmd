@@ -53,7 +53,7 @@ y <- dframe2$utmy/1000
 rMax <- 20 
 Time <- 5
 overdispfloor <- TRUE
-
+cv <- 10
 
 ```
 
@@ -61,9 +61,10 @@ overdispfloor <- TRUE
 ### Running the models
 
 ```{r}
-#system.time(res <- clust(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
- #                               utm=TRUE, ,byrow=TRUE,space = "both", overdispfloor=TRUE))
-res <- clust(clst, covars = NULL, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor=TRUE, cv=TRUE)
+
+clst <- toclust(dframe, expected = dframe$expdeath, observed = dframe$death,timeperiod = dframe$period, covars = FALSE)
+
+system.time(res <- clust(clst, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor=TRUE, cv))
 
 ```
 
@@ -80,7 +81,7 @@ save(res, file = filename)
 #Create Empty PDF to Map Onto
 pdfname <- paste0("sampleoutput/jbc_analysis",".pdf")
 
-easyplot(pdfname, res, mods, space="both", obs=TRUE)
+easyplot(dframe.prefect2, dframe.prefect2 ,pdfname, res, mods, space="both", obs=TRUE)
 ```
 
 

@@ -23,7 +23,12 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
-    covars <- vectors$covars
+    if(spacetime == FALSE && nrow(vectors$covars) ==0){
+        covars<- NULL
+    }
+    else{
+        covars <- vectors$covars    
+    }
     if(spacetime==TRUE){
         message("Creating space-time matrix")
         sparseMAT <- spacetimeMat(clusters, numCenters, Time)
@@ -42,10 +47,13 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
         Period <- as.factor(as.vector(vectors$Period))
     }
     if(!is.null(covars)){
+        str(covars)
+        print(nrow(covars))
+        print(isTRUE(nrow(covars)!=0))
+        message("Running with covariates")
         covarMAT <- Matrix::Matrix(data.matrix(covars), sparse=TRUE)
         dim(sparseMAT)
         sparseMat <- Matrix::cBind(sparseMAT, covarMAT)
-        message("Running with covariates")
     }
     else{
         message("No covariates found")
@@ -68,7 +76,7 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
     
     #if running cross-validation version:
     if(!is.null(cv)){
-        res <- stLasso_cv(lasso, sparseMAT)
+        res <- stLasso_cv(lasso, sparseMAT, Ex, Yx)
     }
     #information criteria selection version:
     else{
