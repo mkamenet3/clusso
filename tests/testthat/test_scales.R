@@ -11,8 +11,9 @@ test_that("Test simulation scales", {
     period <- rep(seq(1,2),5)
     expected <- rnegbin(n = 10,mu = 15,theta = 1000)
     observed <- rnegbin(expected, theta=1000)
+    covars <- NULL
     #set init
-    init <- setVectors(period, expected, observed, Time, byrow=TRUE)
+    init <- setVectors(period, expected, observed, covars, Time, byrow=TRUE)
     ysim <- lapply(1:nsim, function(i) rnegbin(expected, theta = theta))
     ysim2 <- ysim
     ysim2[[1]] <- ysim[[1]][-1]
@@ -30,8 +31,9 @@ test_that("Test scales (non-sim)", {
     period <- rep(seq(1,2),5)
     expected <- rnegbin(n = 10,mu = 15,theta = 1000)
     observed <- rnegbin(expected, theta=1000)
+    covars <- NULL
     #set init
-    init <- setVectors(period, expected, observed, Time, byrow=TRUE)
+    init <- setVectors(period, expected, observed, covars, Time, byrow=TRUE)
     #expectations
     expect_error(length(scale(init, 4)))
 })

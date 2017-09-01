@@ -52,7 +52,7 @@ x <- dframe2$utmx/1000
 y <- dframe2$utmy/1000
 rMax <- 20 
 Time <- 5
-floor <- TRUE
+overdispfloor <- TRUE
 
 ```
 
@@ -60,8 +60,10 @@ floor <- TRUE
 ### Running the models
 
 ```{r}
-system.time(res <- clust(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
-                                utm=TRUE, ,byrow=TRUE,space = "both", floor=TRUE))
+
+clst <- toclust(dframe, expected = dframe$expdeath, observed = dframe$death,timeperiod = dframe$period, covars = FALSE)
+
+system.time(res <- clust(clst, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor=TRUE, cv=NULL))
 
 ```
 
@@ -78,7 +80,7 @@ save(res, file = filename)
 #Create Empty PDF to Map Onto
 pdfname <- paste0("sampleoutput/jbc_analysis",".pdf")
 
-easyplot(pdfname, res, mods, space="both", obs=TRUE)
+easyplot(japan.prefect2, japan.poly2 ,pdfname, res, mods, space="both", obs=TRUE)
 ```
 
 
@@ -107,4 +109,146 @@ write.csv(table.clusters, file="sampleoutput/tableclusters.csv", row.names=TRUE)
 
 
 
+## Comparison to Cross-Validation
+
+
+```{r}
+#Set-up
+dframe1 <- read.csv("../data/jap.breast.F.9.10.11.csv")
+dframe2 <- read.csv("../data/utmJapan.csv")
+dframe3 <- aggregate(dframe1, by=list(as.factor(rep(1:(nrow(dframe1)/4),each=4))), FUN="sum")
+dframe=data.frame(id=as.factor(dframe3$id/4),period=as.factor(dframe3$year),death=dframe3$death,expdeath=dframe3$expdeath)
+levels(dframe$period) <- c("1","2","3","4","5")
+
+dframe.poly2 <- read.csv("../data/japan_poly2.csv")
+japan.poly2 <- dframe.poly2[,2:3]
+dframe.prefect2 <- read.csv("../data/japan_prefect2.csv")
+japan.prefect2 <- dframe.prefect2[,2:5]
+
+head(dframe)
+head(dframe.poly2)
+head(dframe.prefect2)
+```
+
+
+```{r}
+#Initial inputs
+mods <- c("QuasiPoisson", "Poisson")
+x <- dframe2$utmx/1000
+y <- dframe2$utmy/1000
+rMax <- 20 
+Time <- 5
+overdispfloor <- TRUE
+cv <- 10 #how many folds
+clst <- toclust(dframe, expected = dframe$expdeath, observed = dframe$death,timeperiod = dframe$period, covars=FALSE)
+
+system.time(res <- clust(clst,x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor=TRUE, cv))
+
+
+```
+
+```{r}
+
+model <- c(rep("Poisson",2), rep("Quasi-Poisson",2))
+st <- rep(c("Space", "Space-Time"),2)
+numclust.cv <- c(res$lassoresult.p.s$numclust.cv, res$lassoresult.p.st$numclust.cv, 
+                  res$lassoresult.qp.s$numclust.cv, res$lassoresult.qp.st$numclust.cv)
+
+
+(table.clusterscv <- cbind(model, st, numclust.cv))
+
+
+#WRITE TO CSV
+print(table.clusterscv)
+write.csv(table.clusterscv, file="sampleoutput/tableclusters_cv.csv", row.names=TRUE)
+```
+
+### Maps
+
+```{r}
+#save results
+filename <- paste0("sampleoutput/jbc_analysis_cv",".RData")
+save(res, file = filename)
+
+
+#Create Empty PDF to Map Onto
+pdfname <- paste0("sampleoutput/jbc_analysis_cv",".pdf")
+
+easyplot(japan.prefect2, japan.poly2 ,pdfname, res, mods, space="both", obs=TRUE)
+
+```
+
+
+## Real Data Example with Covariates
+
+Import geography data:
+
+```{r}
+
+dframe.poly2 <- read.csv("../data/japan_poly2.csv")
+japan.poly2 <- dframe.poly2[,2:3]
+dframe.prefect2 <- read.csv("../data/japan_prefect2.csv")
+japan.prefect2 <- dframe.prefect2[,2:5]
+
+head(dframe.poly2)
+head(dframe.prefect2)
+
+
+```
+
+
+```{r}
+#Set-up
+dframe1 <- read.csv("../data/jap.breast.F.9.10.11.csv")
+dframe2 <- read.csv("../data/utmJapan.csv")
+dframe3 <- aggregate(dframe1, by=list(as.factor(rep(1:(nrow(dframe1)/4),each=4))), FUN="sum")
+dframe=data.frame(id=as.factor(dframe3$id/4),period=as.factor(dframe3$year),death=dframe3$death,expdeath=dframe3$expdeath)
+levels(dframe$period) <- c("1","2","3","4","5")
+
+#add a couple of covariates to the dataframe
+covar1 <- rnorm(n = nrow(dframe),mean = 500, sd = 30)
+covar2 <- rpois(n = nrow(dframe), lambda = dframe$expdeath)
+covar3 <- rbinom(n = nrow(dframe), size = 50, prob = 0.7)
+covar4 <- rbinom(n = nrow(dframe), 1, 0.5)
+covar5 <- rbinom(n = nrow(dframe), 1, 0.2)
+
+#add new covariates to dataframe
+df <- cbind.data.frame(dframe[,-1], covar1, covar2, covar3, covar4, covar5)
+
+#check out the new dataframe
+head(df)
+
+#assume this is what you start with
+```
+
+
+```{r}
+#Initial inputs
+mods <- c("QuasiPoisson", "Poisson")
+x <- dframe2$utmx/1000
+y <- dframe2$utmy/1000
+rMax <- 20 
+Time <- 5
+overdispfloor <- TRUE
+cv <- 10 #how many folds
+clst <- toclust(df, expected = df$expdeath, observed = df$death, timeperiod = df$period, covars=TRUE)
+
+system.time(res <- clust(clst, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor, cv))
+
+```
+
+### Maps
+
+
+```{r}
+#save results
+filename <- paste0("sampleoutput/jbc_analysis_covars",".RData")
+save(res, file = filename)
+
+
+#Create Empty PDF to Map Onto
+pdfname <- paste0("sampleoutput/jbc_analysis_covars",".pdf")
+
+easyplot(japan.prefect2, japan.poly2 ,pdfname, res, mods, space="both", obs=TRUE)
+```
 

@@ -7,7 +7,14 @@ using namespace Rcpp;
 // function (or via the Source button on the editor toolbar)
 
 // For more on using Rcpp click the Help button on the editor toolbar
-//' @export
+//' @title
+//' Calculates sequencce of values based on maximum radius
+//' @name prod_YxCpp
+//' @param vY numeric vector
+//' @param clast last observation in sequence 
+//' @param ccenter centroid value
+//' @return numeric vector that feeds into st_matCpp function
+//' @description helper function
 // [[Rcpp::export]]
 NumericVector prod_YxCpp (NumericVector vY, IntegerVector clast, IntegerVector ccenter){
     int ind;
@@ -27,7 +34,15 @@ NumericVector prod_YxCpp (NumericVector vY, IntegerVector clast, IntegerVector c
     return(cums);
 }
 
-//' @export
+//' @title
+//' Helper function
+//' @name st_matCpp
+//' @param X takes in numeric matrix
+//' @param last takes in integer vector of last observation in a sequence given a radius
+//' @param center centroid value
+//' @param T integer
+//' @return numeric vector
+//' @description helper function
 // [[Rcpp::export]]
 NumericVector st_matCpp (NumericMatrix X, IntegerVector last, IntegerVector center, int T){
     int n = X.nrow();

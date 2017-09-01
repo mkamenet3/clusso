@@ -2,8 +2,7 @@
 % Please edit documentation in R/scales.R
 \name{scale_sim}
 \alias{scale_sim}
-\title{This function standardizes the fitted values by the sum of the *simulated* observed/the sum of the expected within each time period. Inputs should all be in vector form.
-The function handles standardizing within time period as long. This function should be used with simulation study.}
+\title{Re-scaling data to get SMR (standardized mortality rate) for simulation}
 \usage{
 scale_sim(YSIM, init, nsim, Time)
 }
@@ -19,18 +18,5 @@ scale_sim(YSIM, init, nsim, Time)
 \description{
 This function standardizes the fitted values by the sum of the *simulated* observed/the sum of the expected within each time period. Inputs should all be in vector form.
 The function handles standardizing within time period as long. This function should be used with simulation study.
-}
-\examples{
-
-#Simulation
-#set up
-Time <- 2; theta = 1000; nsim = 2
-period <- rep(seq(1,2),5)
-expected <- rnegbin(n = 10,mu = 15,theta = 1000)
-observed <- rnegbin(E, theta=1000)
-#set init
-init <- setVectors(period, expected, observed, Time, byrow=TRUE)
-ysim <- lapply(1:nsim, function(i) rnegbin(expected, theta = theta))
-scale_sim(ysim, init, nsim, Time))
 }
 

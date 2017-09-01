@@ -4,26 +4,19 @@
 \alias{colormapping}
 \title{colormapping}
 \usage{
-colormapping(riskratios, Time)
+colormapping(riskratios, Time, cv)
 }
 \arguments{
 \item{riskratios}{this will be the risk ratios shrunk to be on the scale of half risk to twice the risk as end points.}
 
 \item{Time}{how many time periods are in the model? If this is only a spatial model, then time is set to 1}
+
+\item{cv}{triggered if cross-validation model run on real data}
 }
 \value{
 returns vectors ofcolors for each time period, where risk ratios have been constrained to be between half risk and twice the risk
 }
 \description{
 This function establishes the spread of reds and blues for the risk ratios to be mapped to. Higher risk ratios will be deeper red colors and lower risk ratios will be deeper blue colors.
-}
-\examples{
-set.seed(2)
-riskratios <- list(RRobs = rnorm(20, mean = 1, sd = 0.10)
-RRbic <- c(rep(1,18), c(2.1,2.2))
-RRaic <- c(rep(1,15), rnorm(5, 2, 0.05))
-RRaicc <- c(rep(1,15), rnorm(5, 2, 0.05))
-Time = 2
-colormapping(riskratios,Time)
 }
 

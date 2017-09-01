@@ -5,7 +5,7 @@
 \title{Simulations forSpatial and Spatio-Temporal Lasso}
 \usage{
 spacetimeLasso_sim(clusters, vectors.sim, Time, spacetime, pois, nsim, YSIM,
-  floor)
+  overdispfloor)
 }
 \arguments{
 \item{clusters}{clusters dataframe from (cluster.df function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)}
@@ -22,7 +22,7 @@ spacetimeLasso_sim(clusters, vectors.sim, Time, spacetime, pois, nsim, YSIM,
 
 \item{YSIM}{vector of simulated observed counts}
 
-\item{floor}{default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.}
+\item{overdispfloor}{default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.}
 }
 \value{
 This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
@@ -30,12 +30,5 @@ a list of observed counts (Yx), the lasso object, a list of K values (number of 
 }
 \description{
 This function runs the Lasso regularization technique on our large sparse matric of potential space-time clusters.It is specifically created to use with simulations.
-}
-\examples{
-potentialclusters <- clusters2df(lat, long, utm=FALSE, length(lat))
-myvectors <- setVectors(period, expected, observed, Time, byrow=TRUE)
-theta = 1000
-YSIM <- lapply(1:nsim, function(i) rnegbin(expected, theta = theta))
-myresults <- spacetimeLasso_sim(potentialclusters, myvectors, spacetime=TRUE, pois=FALSE, nsim=100, YSIM, floor=TRUE)
 }
 

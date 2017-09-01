@@ -4,23 +4,19 @@
 \alias{overdisp}
 \title{Calculate overdispersion for quasi-likelihood models}
 \usage{
-overdisp(offset_reg, sim = TRUE, floor = TRUE)
+overdisp(offset_reg, sim = TRUE, overdispfloor = TRUE)
 }
 \arguments{
 \item{offset_reg}{object of class glm}
 
 \item{sim}{for a simulation run this takes on TRUE, else it should be FALSE. Default is set to TRUE.}
 
-\item{floor}{Default is set to TRUE so model will not estimate any under-dispersion where phi < 1. The floor is set for phi to be 1. In a case where this}
+\item{overdispfloor}{Default is set to TRUE so model will not estimate any under-dispersion where phi < 1. The overdispfloor is set for phi to be 1. In a case where this}
 }
 \value{
 returns phi overdispersion parameter
 }
 \description{
 This function calculates the overdispersion parameter for the QIC 'c' overdispersion parameter.
-}
-\examples{
-offset <- glm(Yx ~ 1 + as.factor(vectors$Period) + offset(log(Ex)), family=poisson)
-overdisp.est <- overdisp(offset_reg)
 }
 

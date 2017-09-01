@@ -4,10 +4,14 @@
 \alias{easyplot}
 \title{Auxiliary Plotting Functions for Japanese Breast Cancer Data}
 \usage{
-easyplot(pdfname, res, mods, space = c("space", "spacetime", "both"),
-  obs = NULL)
+easyplot(prefect, polygons, pdfname, res, mods, space = c("space",
+  "spacetime", "both"), obs = NULL)
 }
 \arguments{
+\item{prefect}{prefects dataframe}
+
+\item{polygons}{polygons dataframe}
+
 \item{pdfname}{pdfname of what the output pdf will be called}
 
 \item{res}{resultant list from clust_ function}
@@ -21,9 +25,5 @@ spatio-temporal models will be run; if space="both" then all four models will be
 }
 \description{
 Wrapper function easyplot
-}
-\examples{
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_","start","_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot(pdfname, res, mods, space="both")
 }
 

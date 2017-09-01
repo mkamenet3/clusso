@@ -4,7 +4,7 @@
 \alias{get_rr}
 \title{get_rr}
 \usage{
-get_rr(lassoresult, vectors.sim, init, E1, Time, sim = TRUE)
+get_rr(lassoresult, vectors.sim, init, E1, Time, sim = TRUE, cv)
 }
 \arguments{
 \item{lassoresult}{List of QBIC, QAIC, QAICc estimates from the mylasso function}
@@ -18,6 +18,8 @@ get_rr(lassoresult, vectors.sim, init, E1, Time, sim = TRUE)
 \item{Time}{number of time period}
 
 \item{sim}{default is TRUE. Signals whether these values are to be extracted from a simulated model or real data.}
+
+\item{cv}{default is NULL. Otherwise if not null, then results will be provided for risk ratios selected by cross-validation}
 }
 \value{
 This returns a list of the risk ratios (observed over expected) as determined by 1) pure observed/expected counts,

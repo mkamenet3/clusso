@@ -4,9 +4,9 @@
 \alias{clustAll_sim}
 \title{clustAll_sim}
 \usage{
-clustAll_sim(x, y, rMax, period, expected, observed, Time, nsim, center, radius,
-  risk.ratio, timeperiod, utm, byrow, threshold, theta = theta,
-  nullmod = nullmod, floor = floor, ...)
+clustAll_sim(x, y, rMax, period, expected, observed, covars, Time, nsim, center,
+  radius, risk.ratio, timeperiod, utm, byrow, threshold, theta = theta,
+  nullmod = nullmod, overdispfloor = overdispfloor)
 }
 \arguments{
 \item{x}{x coordinates (easting/latitude); if utm coordinates, scale to km.}
@@ -20,6 +20,8 @@ clustAll_sim(x, y, rMax, period, expected, observed, Time, nsim, center, radius,
 \item{expected}{vector of expected counts. Expected counts must match up with the year and observed vectors.}
 
 \item{observed}{vector of observed counts. Observed counts must match up with the year and expected vectors.}
+
+\item{covars}{dataframe of covariates, if supplied to `toclust` function.}
 
 \item{Time}{Number of time periods or years in your dataset. Must be declared as numeric.}
 
@@ -45,7 +47,7 @@ this would mean we look at periods 2, 3, 4, and 5.}
 
 \item{nullmod}{if TRUE, then null models will be run. Otherwise, default is null.}
 
-\item{floor}{floor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.}
+\item{overdispfloor}{overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.}
 }
 \value{
 returns list of lists

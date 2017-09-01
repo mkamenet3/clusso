@@ -6,11 +6,7 @@
 #'@param nullmod default is NULL. If not null, then null model results will be returned
 #'@param nsim number of simulations
 #'@return list of detection
-#'@examples
-#'nullmod = NULL
-#'set <- detect_set(lassoresult.qp.s, vectors.sim, rr, Time, x, y, rMax, center, radius,nullmod=NULL, nsim)
-#'incluster.qp.q <- detect_incluster(lassoresult.qp.s, vectors.sim, rr, set,timeperiod, Time, nsim, x, y, rMax, center, radius, IC = "ic")
-#'detect.qp.s <- list(clustDiagnostics(incluster.qp.s, threshold[1], nullmod,nsim),clustDiagnostics(incluster.qp.s, threshold[2], nullmod, nsim)
+
 clustDiagnostics <- function(incluster, threshold, nullmod,nsim){
     if(is.null(nullmod)){
         #thresholding of prop.alldetect
@@ -130,7 +126,9 @@ clustDiagnostics <- function(incluster, threshold, nullmod,nsim){
 }
 
 
+#'@title
 #'detect_incluster_ic
+#'@description
 #'This function will calculate detection based on the three information criterion. You can run detection on a null model (no cluster),
 #'a model with an under-estimated cluster (artificial cluster <1), and on an elevated relative risk cluster. This is called by the more general
 #'function *detect_incluster* which will switch to this function (TODO - Allow for detection options for AIC, AICc, and BIC only). 

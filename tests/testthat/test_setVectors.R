@@ -10,8 +10,9 @@ test_that("Data imported correct way (byrow check)",{
     expected <- rnegbin(n = 10,mu = 15,theta = 1000)
     observed <- rnegbin(expected, theta=1000)
     Time = 2
-    expect_warning(setVectors(period1, expected, observed, Time, byrow=TRUE))
-    expect_warning(setVectors(period2, expected, observed, Time, byrow=FALSE))
+    covars <- NULL
+    expect_warning(setVectors(period1, expected, observed, covars, Time, byrow=TRUE))
+    expect_warning(setVectors(period2, expected, observed, covars, Time, byrow=FALSE))
 })
 
 

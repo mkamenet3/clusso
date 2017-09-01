@@ -2,7 +2,7 @@
 % Please edit documentation in R/detect_set.R
 \name{detect_set}
 \alias{detect_set}
-\title{Set initial conditions to enable detection diagnostic functions}
+\title{detect_set}
 \usage{
 detect_set(lassoresult, vectors.sim, rr, Time, x, y, rMax, center, radius,
   nullmod, nsim)
@@ -13,6 +13,8 @@ detect_set(lassoresult, vectors.sim, rr, Time, x, y, rMax, center, radius,
 \item{vectors.sim}{dataframe of initial vectors of the observed and expected counts that went into simulation function}
 
 \item{rr}{risk ratio matrix that was used in the simulation}
+
+\item{Time}{how many time periods in the data?}
 
 \item{x}{x coordinates}
 
@@ -35,7 +37,7 @@ should be, 2) indx, which contains the index of cluster as determined where the 
 background risk rates as determined by BIC, AIC, and AICc or QBIC, QAIC, QAICc.
 }
 \description{
-This function will extract and set the necessary vectors in order to detect what percent of clusters
+Set initial conditions to enable detection diagnostic functions. This function will extract and set the necessary vectors in order to detect what percent of clusters
 in the simulation were detected (true positives), what percent of clusters were incorrectly in the background (false negatives),
 and what percent were incorrectly identified as clusters (false positives).
 }

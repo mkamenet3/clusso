@@ -2,9 +2,9 @@
 % Please edit documentation in R/setVectors.R
 \name{setVectors}
 \alias{setVectors}
-\title{Creates a List Arranged by Time Period with Expected and Observed Counts and Time Period}
+\title{setVectors}
 \usage{
-setVectors(period, expect, observed, Time, byrow = TRUE)
+setVectors(period, expect, observed, covars, Time, byrow = TRUE)
 }
 \arguments{
 \item{period}{vector of periods or years in dataset. Should be imported as a factor.}
@@ -12,6 +12,8 @@ setVectors(period, expect, observed, Time, byrow = TRUE)
 \item{expect}{vector of expected counts. Expected counts must match up with the year and observed vectors.}
 
 \item{observed}{vector of observed counts. Observed counts must match up with the year and expected vectors.}
+
+\item{covars}{dataframe of covariates. NULL if no covariates supplied. Inherits this argument from `clust` or `clust_sim` functions}
 
 \item{Time}{Number of time periods or years in your dataset. Must be declared as numeric.}
 
@@ -32,7 +34,8 @@ period2 <- rep(seq(1,2),5)
 expected <- rnegbin(n = 10,mu = 15,theta = 1000)
 observed <- rnegbin(expected, theta=1000)
 Time = 2
-setVectors(period1, expected, observed, Time, byrow=TRUE))
-setVectors(period2, expected, observed, Time, byrow=FALSE)
+covars <- NULL
+setVectors(period1, expected, observed, covars, Time, byrow=TRUE)
+setVectors(period2, expected, observed, covars, Time, byrow=FALSE)
 }
 

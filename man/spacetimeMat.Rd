@@ -19,7 +19,4 @@ Returns sparse space time matrix
 \description{
 This function takes the Kronecker product of the space and time matrices to create the space-time matrix
 }
-\examples{
-spacetimeMat(clusters, numCenters, Time)
-}
 

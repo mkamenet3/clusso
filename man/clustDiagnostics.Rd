@@ -21,10 +21,4 @@ list of detection
 \description{
 clustDiagnostics
 }
-\examples{
-nullmod = NULL
-set <- detect_set(lassoresult.qp.s, vectors.sim, rr, Time, x, y, rMax, center, radius,nullmod=NULL, nsim)
-incluster.qp.q <- detect_incluster(lassoresult.qp.s, vectors.sim, rr, set,timeperiod, Time, nsim, x, y, rMax, center, radius, IC = "ic")
-detect.qp.s <- list(clustDiagnostics(incluster.qp.s, threshold[1], nullmod,nsim),clustDiagnostics(incluster.qp.s, threshold[2], nullmod, nsim)
-}
 

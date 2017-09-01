@@ -1,41 +1,49 @@
-#'Simulation functions for space and space-time cluster detection with lasso. 
 #'
-
+#' @title
 #' vectors_space_sim
-#' 
-#' This function will collapse a space-time vector onto space only
+#' @description 
+#' Simulation functions for space and space-time cluster detection with lasso. This function will collapse a space-time vector onto space only
 #' @param x vector coordinates (unique regardless of time period)
 #' @param Ex list of simulated and standardized expected counts
 #' @param YSIM simulated observed
 #' @param Time number of time periods
-#' @param timeperiod explicit vector of timeperiods
 #' @param init initial list of vectors, inherited from function setVectors.
 #' @return returns space-time 
 #' 
 vectors_space_sim <- function(x,Ex, YSIM,Time, init){
     id <- rep(1:length(x), times = Time)
-    if(length(id)!=length(as.vector(Ex[[1]]))) stop("Length of ID var not equal to number of observations")
+    if(length(id)!=length(as.vector(Ex[[1]]))){
+        stop("Length of ID var not equal to number of observations")  
+    } 
+    if(!is.null(init$covars)){
+        covars.sim.s <- sapply(1:ncol(init$covars), 
+                           function(i) tapply(as.vector(matrix(init$covars[,i], ncol=Time)),id, 
+                                              function(x) sum(x)))
+    }
+    else{
+        covars.sim.s <- NULL
+    }
     vectors.sim.s <- list(Period = rep("1", length(x)),
                           Ex = lapply(1:length(YSIM), function(i) tapply(as.vector(matrix(Ex[[i]], ncol=Time)), id, function(x) sum(x))),
                           E0_0 = tapply(as.vector(matrix(init$E0, ncol=Time)), id, function(x) sum(x)),
-                          Y.vec = tapply(as.vector(matrix(init$Y.vec, ncol=Time)), id, function(x) round(sum(x))))
+                          Y.vec = tapply(as.vector(matrix(init$Y.vec, ncol=Time)), id, function(x) round(sum(x))),
+                          covars.s = as.data.frame(covars.sim.s))
     YSIM.s <- lapply(1:length(YSIM), function(i) tapply(as.vector(matrix(YSIM[[i]], ncol=Time)), id, function(x) round(sum(x))))
     return(list(vectors.sim.s = vectors.sim.s, YSIM.s = YSIM.s))
 }
     
-    
-#'
+
+#'@title
 #'clust_sim
 #'
+#'@description 
 #'This helper function runs both the space and space-time Lasso model simulations for all 4 models simulataneously: Quasi-Poisson vs. Poisson in both space and space-time.
 #' This function is to be run on simulated data and all four models are run on the same simulated set. 
 #'A separate function (clust.sim) can be used for running simulations on individual models and (clust) can be used for observed data.
+#'@param clst list; output from toclust function. Must be of class clst.
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
 #'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
 #'@param rMax set max radius (in km)
-#'@param period vector of periods or years in dataset. Should be imported as a factor.
-#'@param expected vector of expected counts. Expected counts must match up with the year and observed vectors.
-#'@param observed vector of observed counts. Observed counts must match up with the year and expected vectors.
 #'@param Time Number of time periods or years in your dataset. Must be declared as numeric.
 #'@param nsim Number of simulations you would like to run
 #'@param center can be a single center or for multiple clusters, concatenate them. Max three TODO extend this
@@ -51,14 +59,23 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init){
 #'space = spacetime, or space = both.
 #'@param theta default is 1000. Can add in overdispersion to simulated model by changing this value.
 #'@param nullmod default is NULL; otherwise will run null model
-#'@param floor floor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
+#'@param overdispfloor overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
 #'@return returns list of lists
 #'@export
 
-clust_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
+clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio, 
                           timeperiod, utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"), 
-                      theta = NULL,nullmod=NULL, floor){
+                      theta = NULL,nullmod=NULL, overdispfloor){
+    expected <- clst$required_df$expected
+    observed <- clst$required_df$observed
+    period <- clst$required_df$timeperiod
     #initial user setting
+    if(!is.null(clst$othercovariates_df)){
+        covars <- clst$othercovariates_df
+    }
+    else{
+        covars <- NULL
+    }
     if(utm==FALSE){
         message("Coordinates are assumed to be in lat/long coordinates. For utm coordinates, please specify 'utm=TRUE'")
         utm=FALSE
@@ -73,11 +90,11 @@ clust_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, center
         byrow=TRUE
         message("Data assumed to be in panel data. To use vector data instead, please specify 'byrow=FALSE'")
     }
-    if(floor==FALSE){
-        floor <- FALSE
+    if(overdispfloor==FALSE){
+        overdispfloor <- FALSE
     }
     else{
-        floor <- TRUE
+        overdispfloor <- TRUE
     }
     if(!is.null(nullmod)){
         if(isTRUE(nullmod)) warning("Null mod has been set to true")
@@ -102,13 +119,15 @@ clust_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, center
            #                             timeperiod,colors=NULL,utm, byrow, threshold, space=TRUE),
            # spacetime = clustAll_sim.spacetime(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
            #                                     timeperiod,colors=NULL,utm, byrow, threshold, space=FALSE),
-           both = clustAll_sim(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
-                                     timeperiod,utm, byrow, threshold, theta, nullmod, floor))
+           both = clustAll_sim(x, y, rMax,period, expected, observed, covars, Time, nsim, center, radius, risk.ratio,
+                                     timeperiod,utm, byrow, threshold, theta, nullmod, overdispfloor))
 }
 
 
-#'clustAll_sim
 #'
+#'@title
+#'clustAll_sim
+#' @description 
 #'This function runs both the space and space-time Lasso model simulations for all 4 models simulataneously: Quasi-Poisson vs. Poisson in both space and space-time.
 #' This function is to be run on simulated data and all four models are run on the same simulated set. 
 #'A separate function (clust.sim) can be used for running simulations on individual models and (clust) can be used for observed data.
@@ -118,6 +137,7 @@ clust_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, center
 #'@param period vector of periods or years in dataset. Should be imported as a factor.
 #'@param expected vector of expected counts. Expected counts must match up with the year and observed vectors.
 #'@param observed vector of observed counts. Observed counts must match up with the year and expected vectors.
+#'@param covars dataframe of covariates, if supplied to `toclust` function. 
 #'@param Time Number of time periods or years in your dataset. Must be declared as numeric.
 #'@param nsim Number of simulations you would like to run
 #'@param center can be a single center or for multiple clusters, concatenate them. Max three TODO extend this
@@ -131,18 +151,18 @@ clust_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, center
 #'@param threshold  vector or value as threshold for cluster detection
 #'@param theta default is 1000. Can add in overdispersion to simulated model by changing this value.
 #'@param nullmod if TRUE, then null models will be run. Otherwise, default is null.
-#'@param floor floor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
+#'@param overdispfloor overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
 #'@return returns list of lists
 #'@export
 
-clustAll_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, center, radius, risk.ratio, 
-                               timeperiod,utm, byrow, threshold, theta = theta, nullmod=nullmod,floor=floor,...){
+clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, nsim, center, radius, risk.ratio, 
+                               timeperiod,utm, byrow, threshold, theta = theta, nullmod=nullmod,overdispfloor=overdispfloor){
     message("Running both Space and Space-Time Models")
     
     #set up clusters and fitted values
     clusters <- clusters2df(x,y,rMax, utm=utm, length(x))
     n <- length(x)
-    init <- setVectors(period, expected, observed, Time=Time, byrow=byrow)
+    init <- setVectors(period, expected, observed, covars, Time, byrow)
     
     #TODO change this to be a function and not hard-coded
     if(length(center) == 2){
@@ -194,7 +214,8 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, cen
     YSIM <- lapply(1:nsim, function(i) MASS::rnegbin(E1, theta = theta))
     Ex <- scale_sim(YSIM, init, nsim, Time)
     #create vectors.sim for spacetime
-    vectors.sim <- list(Period = Period, Ex = Ex , E0_0 = init$E0, Y.vec=init$Y.vec)
+    vectors.sim <- list(Period = Period, Ex = Ex , E0_0 = init$E0, 
+                        Y.vec=init$Y.vec, covars = covars)
     
     #create vectors.sim for space-only
     spacevecs <- vectors_space_sim(x, Ex, YSIM, Time, init)
@@ -204,16 +225,16 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, Time, nsim, cen
     # #SPACE-ONLY MODELS
     #set up and run simulation models
     message("RUNNING: SPACE-ONLY QUASI-POISSON")
-    lassoresult.qp.s <- spacetimeLasso_sim(clusters, vectors.sim.s, 1, spacetime=FALSE, pois=FALSE, nsim, YSIM.s, floor)
+    lassoresult.qp.s <- spacetimeLasso_sim(clusters, vectors.sim.s, 1, spacetime=FALSE, pois=FALSE, nsim, YSIM.s, overdispfloor)
     message("RUNNING: SPACE-ONLY POISSON")
-    lassoresult.p.s <- spacetimeLasso_sim(clusters, vectors.sim.s, 1, spacetime=FALSE, pois=TRUE, nsim, YSIM.s, floor)
+    lassoresult.p.s <- spacetimeLasso_sim(clusters, vectors.sim.s, 1, spacetime=FALSE, pois=TRUE, nsim, YSIM.s, overdispfloor)
     
     #SPACE-TIME MODELS 
     #set up and run simulation models
     message("RUNNING: SPACE-TIME QUASI-POISSON")
-    lassoresult.qp.st <- spacetimeLasso_sim(clusters, vectors.sim, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM, floor)
+    lassoresult.qp.st <- spacetimeLasso_sim(clusters, vectors.sim, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM, overdispfloor)
     message("RUNNING: SPACE-TIME POISSON")
-    lassoresult.p.st <- spacetimeLasso_sim(clusters, vectors.sim, Time, spacetime=TRUE, pois=TRUE, nsim, YSIM, floor)
+    lassoresult.p.st <- spacetimeLasso_sim(clusters, vectors.sim, Time, spacetime=TRUE, pois=TRUE, nsim, YSIM, overdispfloor)
     
     message("All models ran successfully")
     
