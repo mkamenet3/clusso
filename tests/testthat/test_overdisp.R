@@ -46,6 +46,7 @@ test_that("Test sim works with overdispfloor",{
                      rnegbin(n = 10,mu = 1,theta = 1000))
     observed <- list(rnegbin(expected[[1]], theta=1000),
                      rnegbin(expected[[2]], theta=1000))
+    nsim <-2
     m <- lapply(1:nsim, function(i) glm(observed[[i]] ~ 1 + as.factor(period)))
     expect_message(overdisp(m, sim=TRUE, overdispfloor=TRUE))
     expect_message(overdisp(m, sim=TRUE))

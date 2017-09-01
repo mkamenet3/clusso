@@ -44,9 +44,9 @@ test_that("Vectors_space_sim correctly collapses from space-time to space.", {
     observed <- rnegbin(unlist(expected), theta=1000)
     x <- c(399786.6, 360917.0, 385175.1, 371603.4, 388154.2)
     Ex <- list(unlist(expected), unlist(expected))
-    covars.s <- NULL
+    covars <- NULL
     #set init
-    init <- setVectors(period, unlist(expected), observed, covars.s, Time, byrow=TRUE)
+    init <- setVectors(period, unlist(expected), observed, covars, Time, byrow=TRUE)
     ysim <- lapply(1:nsim, function(i) rnegbin(unlist(expected), theta = theta))
     
     expect_equal(length(vectors_space_sim(x,Ex,ysim, Time,init)),2)

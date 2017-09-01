@@ -1,12 +1,11 @@
 #' Creating sparse spatial matrix based on clusters dataframe
 #' 
 #' This function creates a sparse matrix of 1's of all potential clusters for the Lasso algorithm to cycle over; this will take in the potential clusters dataframe 
-#' created by **clusters2df** function
+#' created by ```clusters2df()``` function
 #' @param clusters clusters dataframe from (cluster.df function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)
 #' @param numCenters the number of centers/centroids
 #' @return returns sparse matrix of 1's
-#' @examples
-#' sparseMAT <- spaceMat(clusters, numCenters)
+
 spaceMat <- function(clusters, numCenters){
     potClus <- numCenters
     mymat <- NULL

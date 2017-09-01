@@ -12,12 +12,6 @@
 #' @return This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
 #' a list of observed counts (Yx), the lasso object, a list of K values (number of unique values in each decision path), and n (length of unique centers in the clusters dataframe)
 #' @export
-#' @examples 
-#' potentialclusters <- clusters2df(lat, long, utm=FALSE, length(lat))
-#' myvectors <- setVectors(period, expected, observed, Time, byrow=TRUE)
-#' theta = 1000
-#' YSIM <- lapply(1:nsim, function(i) rnegbin(expected, theta = theta))
-#' myresults <- spacetimeLasso_sim(potentialclusters, myvectors, spacetime=TRUE, pois=FALSE, nsim=100, YSIM, overdispfloor=TRUE)
 
 spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim,YSIM,overdispfloor){
     n <- length(unique(clusters$center))

@@ -1,7 +1,9 @@
-#'
-#'Set initial conditions to enable detection diagnostic functions
-#'
-#'This function will extract and set the necessary vectors in order to detect what percent of clusters
+#'@name
+#'detect_set
+#'@title
+#'detect_set
+#'@description
+#'Set initial conditions to enable detection diagnostic functions. This function will extract and set the necessary vectors in order to detect what percent of clusters
 #'in the simulation were detected (true positives), what percent of clusters were incorrectly in the background (false negatives),
 #'and what percent were incorrectly identified as clusters (false positives). 
 #'@param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso.sim function

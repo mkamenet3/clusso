@@ -13,8 +13,10 @@ stLasso_cv(lasso, sparseMAT, Ex, Yx)
 
 \item{Ex}{expected counts (inherits from setVectors)}
 
-\item{Yx}{observed counts (inherits from setVectors)
-#' @return list of expected values, number of clusters, Ex, Yx, and lasso object}
+\item{Yx}{observed counts (inherits from setVectors)}
+}
+\value{
+list of expected values, number of clusters, Ex, Yx, and lasso object
 }
 \description{
 This function will output results from cross-validation results.

@@ -126,7 +126,9 @@ clustDiagnostics <- function(incluster, threshold, nullmod,nsim){
 }
 
 
+#'@title
 #'detect_incluster_ic
+#'@description
 #'This function will calculate detection based on the three information criterion. You can run detection on a null model (no cluster),
 #'a model with an under-estimated cluster (artificial cluster <1), and on an elevated relative risk cluster. This is called by the more general
 #'function *detect_incluster* which will switch to this function (TODO - Allow for detection options for AIC, AICc, and BIC only). 

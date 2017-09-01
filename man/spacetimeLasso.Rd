@@ -32,10 +32,4 @@ This function runs the Lasso regularization technique on our large sparse matric
 \details{
 Spatial and Spatio-Temporal Lasso
 }
-\examples{
-potentialclusters <- clusters2df(lat, long, utm=FALSE, length(lat))
-myvectors <- setVectors(period, expected, observed, Time, byrow=TRUE)
-myresults <- spacetimeLasso(potentialclusters, myvectors, spacetime=TRUE, pois=FALSE)
-
-}
 

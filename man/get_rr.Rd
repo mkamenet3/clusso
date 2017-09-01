@@ -4,7 +4,7 @@
 \alias{get_rr}
 \title{get_rr}
 \usage{
-get_rr(lassoresult, vectors.sim, init, E1, Time, sim = TRUE, cv = NULL)
+get_rr(lassoresult, vectors.sim, init, E1, Time, sim = TRUE, cv)
 }
 \arguments{
 \item{lassoresult}{List of QBIC, QAIC, QAICc estimates from the mylasso function}

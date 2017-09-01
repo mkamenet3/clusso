@@ -5,9 +5,7 @@
 #' @param sim for a simulation run this takes on TRUE, else it should be FALSE. Default is set to TRUE.
 #' @param overdispfloor Default is set to TRUE so model will not estimate any under-dispersion where phi < 1. The overdispfloor is set for phi to be 1. In a case where this 
 #' @return returns phi overdispersion parameter
-#' @examples
-#' offset <- glm(Yx ~ 1 + as.factor(vectors$Period) + offset(log(Ex)), family=poisson)
-#' overdisp.est <- overdisp(offset_reg)
+
 overdisp <- function(offset_reg, sim = TRUE, overdispfloor = TRUE) {
     if(sim==TRUE){
         stopifnot(inherits(offset_reg[[1]], c("glm", "lm")))

@@ -2,7 +2,7 @@
 % Please edit documentation in R/easyplot.R
 \name{plotmap_S}
 \alias{plotmap_S}
-\title{#Space-only plotting}
+\title{Space-only plotting}
 \usage{
 plotmap_S(prefect, polygons, pdfname, res, obs, sub)
 }
@@ -20,6 +20,6 @@ plotmap_S(prefect, polygons, pdfname, res, obs, sub)
 \item{sub}{optional parameter if you want to just use the function for plotting different vectors}
 }
 \description{
-#Space-only plotting
+Space-only plotting
 }
 

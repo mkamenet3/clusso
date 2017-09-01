@@ -18,20 +18,12 @@ redblue=function(x) {
 #' @param cv triggered if cross-validation model run on real data
 #' @return returns vectors ofcolors for each time period, where risk ratios have been constrained to be between half risk and twice the risk
 #' @export
-#' @examples
-#' set.seed(2)
-#' riskratios <- list(RRobs = rnorm(20, mean = 1, sd = 0.10))
-#' RRbic <- c(rep(1,18), c(2.1,2.2))
-#' RRaic <- c(rep(1,15), rnorm(5, 2, 0.05))
-#' RRaicc <- c(rep(1,15), rnorm(5, 2, 0.05))
-#' Time = 2
-#' colormapping(riskratios,Time, cv = NULL)
 
 colormapping <- function(riskratios,Time, cv) {
     if(!is.null(cv)){
         color.obs <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRobs[,i],2)))/log(4)))
         color.cv <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(riskratios$RRcv[,i],2)))/log(4)))
-        res <- list(colors.obs = color.obs, colors.cv = color.cv)
+        res <- list(colors.obs = color.obs, color.cv = color.cv)
     }
     else{
         if(max(riskratios$RRbic)>2) {warning("Max riskratios from BIC greater than 2")}

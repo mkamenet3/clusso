@@ -34,7 +34,8 @@ period2 <- rep(seq(1,2),5)
 expected <- rnegbin(n = 10,mu = 15,theta = 1000)
 observed <- rnegbin(expected, theta=1000)
 Time = 2
-setVectors(period1, expected, observed, Time, byrow=TRUE))
-setVectors(period2, expected, observed, Time, byrow=FALSE)
+covars <- NULL
+setVectors(period1, expected, observed, covars, Time, byrow=TRUE)
+setVectors(period2, expected, observed, covars, Time, byrow=FALSE)
 }
 

@@ -26,8 +26,4 @@ spatio-temporal models will be run; if space="both" then all four models will be
 \description{
 Wrapper function easyplot
 }
-\examples{
-pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_","start","_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-easyplot(pdfname, res, mods, space="both")
-}
 

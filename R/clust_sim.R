@@ -16,7 +16,7 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init){
         stop("Length of ID var not equal to number of observations")  
     } 
     if(!is.null(init$covars)){
-        covars.s <- sapply(1:ncol(init$covars), 
+        covars.sim.s <- sapply(1:ncol(init$covars), 
                            function(i) tapply(as.vector(matrix(init$covars[,i], ncol=Time)),id, 
                                               function(x) sum(x)))
     }
@@ -27,7 +27,7 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init){
                           Ex = lapply(1:length(YSIM), function(i) tapply(as.vector(matrix(Ex[[i]], ncol=Time)), id, function(x) sum(x))),
                           E0_0 = tapply(as.vector(matrix(init$E0, ncol=Time)), id, function(x) sum(x)),
                           Y.vec = tapply(as.vector(matrix(init$Y.vec, ncol=Time)), id, function(x) round(sum(x))),
-                          covars.s = as.data.frame(covars.s))
+                          covars.s = as.data.frame(covars.sim.s))
     YSIM.s <- lapply(1:length(YSIM), function(i) tapply(as.vector(matrix(YSIM[[i]], ncol=Time)), id, function(x) round(sum(x))))
     return(list(vectors.sim.s = vectors.sim.s, YSIM.s = YSIM.s))
 }

@@ -10,9 +10,6 @@
 #' spatio-temporal models will be run; if space="both" then all four models will be run
 #' @param obs default is NULL. If not null, then will add "observed" instead of "oracle" label to plot for comparison map.
 #' @export
-#' @examples
-#' pdfname <- paste0("figures/simulations/sim","_","center","_",center,"radius",radius,"_","start","_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio),".pdf")
-#' easyplot(pdfname, res, mods, space="both")
 
 
 easyplot <- function(prefect, polygons, pdfname, res, mods, space=c("space", "spacetime", "both"), obs=NULL){
@@ -37,7 +34,7 @@ easyplot <- function(prefect, polygons, pdfname, res, mods, space=c("space", "sp
 }
 
 
-#' #Space-time plotting
+#' Space-time plotting
 #' @param prefect prefects dataframe
 #' @param polygons polygons dataframe
 #' @param pdfname pdfname of what the output pdf will be called
@@ -195,7 +192,7 @@ plotmap_ST <- function(prefect, polygons, pdfname,res, obs, sub){
     dev.off()
 }
 
-#' #Space-only plotting
+#' Space-only plotting
 #' @param prefect prefects dataframe
 #' @param polygons polygons dataframe
 #' @param pdfname pdfname of what the output pdf will be called

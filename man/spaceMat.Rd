@@ -16,9 +16,6 @@ returns sparse matrix of 1's
 }
 \description{
 This function creates a sparse matrix of 1's of all potential clusters for the Lasso algorithm to cycle over; this will take in the potential clusters dataframe 
-created by **clusters2df** function
-}
-\examples{
-sparseMAT <- spaceMat(clusters, numCenters)
+created by ```clusters2df()``` function
 }
 

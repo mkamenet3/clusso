@@ -31,11 +31,4 @@ a list of observed counts (Yx), the lasso object, a list of K values (number of 
 \description{
 This function runs the Lasso regularization technique on our large sparse matric of potential space-time clusters.It is specifically created to use with simulations.
 }
-\examples{
-potentialclusters <- clusters2df(lat, long, utm=FALSE, length(lat))
-myvectors <- setVectors(period, expected, observed, Time, byrow=TRUE)
-theta = 1000
-YSIM <- lapply(1:nsim, function(i) rnegbin(expected, theta = theta))
-myresults <- spacetimeLasso_sim(potentialclusters, myvectors, spacetime=TRUE, pois=FALSE, nsim=100, YSIM, overdispfloor=TRUE)
-}
 

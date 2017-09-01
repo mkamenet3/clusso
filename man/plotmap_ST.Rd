@@ -2,7 +2,7 @@
 % Please edit documentation in R/easyplot.R
 \name{plotmap_ST}
 \alias{plotmap_ST}
-\title{#Space-time plotting}
+\title{Space-time plotting}
 \usage{
 plotmap_ST(prefect, polygons, pdfname, res, obs, sub)
 }
@@ -20,6 +20,6 @@ plotmap_ST(prefect, polygons, pdfname, res, obs, sub)
 \item{sub}{optional parameter if you want to just use the function for plotting different vectors}
 }
 \description{
-#Space-time plotting
+Space-time plotting
 }
 

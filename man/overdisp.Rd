@@ -19,8 +19,4 @@ returns phi overdispersion parameter
 \description{
 This function calculates the overdispersion parameter for the QIC 'c' overdispersion parameter.
 }
-\examples{
-offset <- glm(Yx ~ 1 + as.factor(vectors$Period) + offset(log(Ex)), family=poisson)
-overdisp.est <- overdisp(offset_reg)
-}
 

@@ -47,7 +47,7 @@ set_rr<- function(lassoresult, vectors, Time, sim=FALSE){
 #' 2) observed based on QBIC path/expected; 3) observed based on QAIC path/expected; 4) observed based on QAICc path/expected.
 #' @export
 #' 
-get_rr <- function(lassoresult,vectors.sim,init,E1, Time, sim=TRUE, cv=NULL){
+get_rr <- function(lassoresult,vectors.sim,init,E1, Time, sim=TRUE, cv){
     if(!is.null(cv)){
         RRobs <- matrix(as.vector(vectors.sim$Y.vec)/as.vector(vectors.sim$E0),ncol=Time)
         message("Returning CV results for real (non-sim) data")

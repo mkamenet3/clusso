@@ -6,8 +6,6 @@
 #' @param Time number of time periods
 #' @return Returns sparse space time matrix     
 #' @export     
-#' @examples 
-#' spacetimeMat(clusters, numCenters, Time)
 spacetimeMat <- function(clusters, numCenters, Time){
     space <- spaceMat(clusters, numCenters)
     time <- timeMat(Time)
