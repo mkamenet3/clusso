@@ -87,7 +87,11 @@ table.detection.null <- NULL
 Run the null model and store results into object $res$.
 
 ```{r}
-system.time(res <- clust_sim(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
+
+
+clst <- toclust(dframe, expected = dframe$expdeath, observed = dframe$death,timeperiod = dframe$period, covars = FALSE)
+
+system.time(res <- clust_sim(clst, x,y,rMax, Time,
                                  nsim,center, radius, risk, timeperiod,
                                  utm=TRUE, byrow=TRUE, threshold, space= "both",
                              theta = theta, nullmod = TRUE, overdispfloor))

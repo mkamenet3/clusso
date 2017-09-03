@@ -210,7 +210,6 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     E1 = as.vector(rr)*init$E0
     Period <- init$Year
     #Simulate observed as NB(Eit, theta)
-    #theta = 1000
     YSIM <- lapply(1:nsim, function(i) MASS::rnegbin(E1, theta = theta))
     Ex <- scale_sim(YSIM, init, nsim, Time)
     #create vectors.sim for spacetime
@@ -245,26 +244,54 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     id <- rep(1:length(x), times=Time)
     riskratios.qp.s <- get_rr(lassoresult.qp.s, vectors.sim.s,initial.s, 
                                tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x)),
-                               1, sim=TRUE)
-    rrcolors.qp.s <- colormapping(riskratios.qp.s,1)
+                               1, sim=TRUE, cv= NULL)
+    print("ok1")
+    rrcolors.qp.s <- colormapping(riskratios.qp.s, 1, cv=NULL)
+    print("ok2")
     
     riskratios.p.s <- get_rr(lassoresult.p.s, vectors.sim.s, initial.s, 
                               tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x)),
-                              1, sim=TRUE)
-    rrcolors.p.s <- colormapping(riskratios.p.s,1)
+                              1, sim=TRUE, cv=NULL)
+    rrcolors.p.s <- colormapping(riskratios.p.s,1, cv=NULL)
+    
+    ###Probability map
+    pb.qp.s <- get_prob(lassoresult.qp.s, initial.s,
+                        tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x)) ,n, Time)
+    probcolors.qp.s <- colormapping(pb.qp.s, Time, cv = NULL)
+    
+    pb.p.s <- get_prob(lassoresult.p.s, initial.s,
+                       tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x)) ,n, Time)
+    probcolors.p.s <- colormapping(pb.p.s, Time, cv = NULL)
+    
+    # 
+    ################################
     
     ##SPACE-TIME
-    riskratios.qp.st <- get_rr(lassoresult.qp.st, vectors.sim,init, E1,Time, sim=TRUE)
-    rrcolors.qp.st <- colormapping(riskratios.qp.st,Time)
+    riskratios.qp.st <- get_rr(lassoresult.qp.st, vectors.sim,init, E1,Time, sim=TRUE, cv=NULL)
+    rrcolors.qp.st <- colormapping(riskratios.qp.st,Time, cv=NULL)
     
-    riskratios.p.st <- get_rr(lassoresult.p.st, vectors.sim,init, E1,Time, sim=TRUE)
-    rrcolors.p.st <- colormapping(riskratios.p.st,Time)
+    riskratios.p.st <- get_rr(lassoresult.p.st, vectors.sim,init, E1,Time, sim=TRUE, cv=NULL)
+    rrcolors.p.st <- colormapping(riskratios.p.st,Time, cv=NULL)
+    ###Probability map
+    pb.qp.st <- get_prob(lassoresult.qp.st, init, E1, n, Time)
+    probcolors.qp.st <- colormapping(pb.qp.st, Time, cv = NULL)
+    
+    pb.p.st <- get_prob(lassoresult.p.st, init, E1, n, Time)
+    probcolors.p.st <- colormapping(pb.p.st, Time, cv = NULL)
+    
+    ################################
     
     #COMBINE RISKRATIOS INTO LISTS
     riskratios <- list(riskratios.qp.s = riskratios.qp.s, riskratios.p.s = riskratios.p.s, 
                        riskratios.qp.st = riskratios.qp.st, riskratios.p.st = riskratios.p.st)
     rrcolors <- list(rrcolors.qp.s = rrcolors.qp.s, rrcolors.p.s = rrcolors.p.s,
                      rrcolors.qp.st = rrcolors.qp.st, rrcolors.p.st = rrcolors.p.st)
+    #COMBINE Probabilities INTO LISTS
+    probrates <- list(pb.qp.s = pb.qp.s, pb.p.s = pb.p.s,
+                      pb.qp.st = pb.qp.st, pb.p.st = pb.p.st)
+    probcolors <- list(probcolors.qp.s = probcolors.qp.s, probcolors.p.s = probcolors.p.s,
+                       probcolors.qp.st = probcolors.qp.st, probcolors.p.st = probcolors.p.st)
+    
     
     #DETECTION
     ##QP - Space
@@ -505,6 +532,8 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                 lassoresult.p.s = lassoresult.p.s,
                 riskratios = riskratios,
                 rrcolors = rrcolors,
+                probrates = probrates,
+                probcolors = probcolors,
                 rr.mat = rr,
                 init.vec = vectors.sim,
                 init.vec.s = vectors.sim.s ,
