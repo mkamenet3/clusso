@@ -288,6 +288,9 @@ risk.ratio <- 1.5
 nullmod <- NULL #set to NULL if we want to run non-null model (model with a cluster we've created)
 theta <- 2 #with overdispersion. For no overdispersion, set theta = NULL
 overdispfloor <- TRUE
+threshold <- c(0.9, 0.5)
+mods <- c("QuasiPoisson", "Poisson")
+
 
 table.detection <- NULL
 
@@ -297,9 +300,12 @@ table.detection <- NULL
 
 ```{r}
 
-clst <- toclust(df, expected = df$expdeath, observed = df$death, timeperiod = df$period, covars=TRUE)
+#clst <- toclust(df, expected = df$expdeath, observed = df$death, timeperiod = df$period, covars=TRUE)
+dframe <- dframe[,-1]
 
-system.time(res <- clust_sim(clst, x, y,rMax,Time, nsim,centers, radius, risk.ratios, timeperiods, 
+clst <- toclust(dframe, expected = dframe$expdeath, observed = dframe$death, timeperiod = dframe$period, covars=FALSE)
+
+system.time(res <- clust_sim(clst, x, y,rMax,Time, nsim,center, radius, risk.ratio, timeperiods, 
                              utm=TRUE, byrow=TRUE, threshold, space= "both", theta, nullmod, overdispfloor))
 
 ```

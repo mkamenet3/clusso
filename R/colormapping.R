@@ -36,10 +36,12 @@ colormapping <- function(rates,Time, cv) {
         cl <- match.call()        
         rate <- cl[[2]]
         #assign
-        rbic <- eval(rate)[[1]]
-        raic <- eval(rate)[[2]]
-        raicc <- eval(rate)[[3]]
-        robs <- eval(rate)[[4]]
+        rbic <- matrix(eval(rate)[[1]], ncol=Time)
+        raic <- matrix(eval(rate)[[2]], ncol=Time)
+        raicc <- matrix(eval(rate)[[3]], ncol=Time)
+        robs <- matrix(eval(rate)[[4]], ncol=Time)
+        print(str(rbic))
+        #print(c(str(robs), str(rbic)))
         
         if(max(rbic)>2) {warning("Max riskratios from BIC greater than 2")}
         if(max(raic)>2) {warning("Max riskratios from AIC greater than 2")}

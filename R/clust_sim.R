@@ -250,18 +250,19 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     print("ok2")
     
     riskratios.p.s <- get_rr(lassoresult.p.s, vectors.sim.s, initial.s, 
-                              tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x)),
+                              as.vector(tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x))),
                               1, sim=TRUE, cv=NULL)
     rrcolors.p.s <- colormapping(riskratios.p.s,1, cv=NULL)
     
     ###Probability map
-    pb.qp.s <- get_prob(lassoresult.qp.s, initial.s,
-                        tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x)) ,n, Time)
-    probcolors.qp.s <- colormapping(pb.qp.s, Time, cv = NULL)
+    pb.qp.s <- get_prob(lassoresult.qp.s, spacetime = FALSE, initial.s,
+                        as.vector(tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x))) ,n, 1)
+    probcolors.qp.s <- colormapping(pb.qp.s, 1, cv = NULL)
     
-    pb.p.s <- get_prob(lassoresult.p.s, initial.s,
-                       tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x)) ,n, Time)
-    probcolors.p.s <- colormapping(pb.p.s, Time, cv = NULL)
+    
+    pb.p.s <- get_prob(lassoresult.p.s, spacetime = FALSE, initial.s,
+                       tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x)) ,n, 1)
+    probcolors.p.s <- colormapping(pb.p.s, 1, cv = NULL)
     
     # 
     ################################
@@ -273,10 +274,10 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     riskratios.p.st <- get_rr(lassoresult.p.st, vectors.sim,init, E1,Time, sim=TRUE, cv=NULL)
     rrcolors.p.st <- colormapping(riskratios.p.st,Time, cv=NULL)
     ###Probability map
-    pb.qp.st <- get_prob(lassoresult.qp.st, init, E1, n, Time)
+    pb.qp.st <- get_prob(lassoresult.qp.st, spacetime = TRUE, init, E1, n, Time)
     probcolors.qp.st <- colormapping(pb.qp.st, Time, cv = NULL)
     
-    pb.p.st <- get_prob(lassoresult.p.st, init, E1, n, Time)
+    pb.p.st <- get_prob(lassoresult.p.st, spacetime=TRUE, init, E1, n, Time)
     probcolors.p.st <- colormapping(pb.p.st, Time, cv = NULL)
     
     ################################

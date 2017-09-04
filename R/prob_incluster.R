@@ -8,11 +8,16 @@
 #' @param Time number of time periods
 #' @return returns list of probabilities.
 #' 
-get_prob <- function(lassoresult, init, E1, ncentroids, Time){
+get_prob <- function(lassoresult, spacetime,init, E1, ncentroids, Time){
     prob.bic <- probs(lassoresult$E.qbic, lassoresult$probs.qbic)
     prob.aic <- probs(lassoresult$E.qaic, lassoresult$probs.qaic)
     prob.aicc <- probs(lassoresult$E.qaicc, lassoresult$probs.qaicc)
-    obs <- matrix(as.vector(E1)/as.vector(init$E0),ncol=Time)
+    if(spacetime == FALSE){
+        obs <-as.vector(matrix(as.vector(E1)/as.vector(init$E0),ncol=Time))
+    }
+    else{
+         obs <- matrix(as.vector(E1)/as.vector(init$E0),ncol=Time)
+    }
     prob.obs <- ifelse(obs>1,1,0)
     res <- list(prob.bic = prob.bic, prob.aic = prob.aic, prob.aicc = prob.aicc, prob.obs = prob.obs)
     return(res)
