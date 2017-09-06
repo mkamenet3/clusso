@@ -28,9 +28,7 @@ toclust <- function(df, expected, observed, timeperiod, covars=FALSE){
     if(length(expected) != length(observed) | length(expected) != length(timeperiod) | length(observed)!=length(timeperiod)){
         stop("Lengths of at least one of the three required parameters (expected, observed, timeperiod) are not equal")
     }
-    #print(expected)
     
-    #print(unlist(strsplit(as.character(cl[[3]]),"[$]"))[3])
     requiredcolNames <- c(unlist(strsplit(as.character(cl[[3]]),"[$]"))[3],
                           unlist(strsplit(as.character(cl[[4]]),"[$]"))[3],
                           unlist(strsplit(as.character(cl[[5]]),"[$]"))[3])

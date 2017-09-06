@@ -8,10 +8,10 @@
 #' @param Time number of time periods
 #' @return returns list of probabilities.
 #' 
-get_prob <- function(lassoresult, spacetime,init, E1, ncentroids, Time){
-    prob.bic <- probs(lassoresult$E.qbic, lassoresult$probs.qbic)
-    prob.aic <- probs(lassoresult$E.qaic, lassoresult$probs.qaic)
-    prob.aicc <- probs(lassoresult$E.qaicc, lassoresult$probs.qaicc)
+get_prob <- function(lassoresult, spacetime,init, E1, ncentroids, Time, nsim){
+    prob.bic <- prob_incluster(lassoresult$select_mu.qbic, ncentroids, Time, nsim)
+    prob.aic <- prob_incluster(lassoresult$select_mu.qaic, ncentroids, Time, nsim)
+    prob.aicc <- prob_incluster(lassoresult$select_mu.qaicc, ncentroids, Time, nsim)
     if(spacetime == FALSE){
         obs <-as.vector(matrix(as.vector(E1)/as.vector(init$E0),ncol=Time))
     }
@@ -38,14 +38,11 @@ get_prob <- function(lassoresult, spacetime,init, E1, ncentroids, Time){
 #'@param colormap default is FALSE. Signals whether the probabilities should directly be mapped to the red-blue color scheme. If this is false,
 #'only the probability values will be returned. If true, then the probability values and the mapped colors will be returned in a list.
 #'@return returns vector which calculated the number of time the cluster was correctly identified out of the simulations
-prob_incluster <- function(lassoresult_selectmu, ncentroids, Time, nsim){
-    # if(Time == 1){
-    #     print("space-only")
-    #     
-    # }
+prob_incluster <- function(expxbetaMat, ncentroids, Time, nsim){
     vec <- rep(0, ncentroids * Time)
     position <- list(vec)[rep(1, nsim)]
-    ix <- lapply(1:nsim, function(x) which(lassoresult_selectmu[[x]] >1))
+    xbetaMat <- lapply(expxbetaMat, log)
+    ix <- lapply(1:nsim, function(x) which(abs(xbetaMat[[x]]) > 0))
     
     #quick function to recode
     reval <- function(probs, ix){
@@ -58,21 +55,21 @@ prob_incluster <- function(lassoresult_selectmu, ncentroids, Time, nsim){
     return(probs)
 }    
 
-
-#' @title
-#' probs
-#' @description 
-#' Helper function
-#' @param lassoresult_E
-#' @param lassoresult_probs
-#' @return returns vector of probabilities mapped of being included in the cluster based on IC or cv.
-
-probs <- function(lassoresult_E, lassoresult_probs){
-    out <- log(as.vector(lassoresult_E))/lassoresult_probs
-    ix <- which(is.na(out) | is.infinite(out) | is.nan(out) | (out < 0))
-    out[ix] <- 0
-    return(out)
-}
+#' 
+#' #' @title
+#' #' probs
+#' #' @description 
+#' #' Helper function
+#' #' @param lassoresult_E
+#' #' @param lassoresult_probs
+#' #' @return returns vector of probabilities mapped of being included in the cluster based on IC or cv.
+#' 
+#' probs <- function(lassoresult_E, lassoresult_probs){
+#'     out <- log(as.vector(lassoresult_E))/lassoresult_probs
+#'     ix <- which(is.na(out) | is.infinite(out) | is.nan(out) | (out < 0))
+#'     out[ix] <- 0
+#'     return(out)
+#' }
 
 
 

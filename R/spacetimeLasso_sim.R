@@ -18,11 +18,7 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
     potClus <- n
     numCenters <- n
     covars <- vectors.sim$covars
-    # if(!is.null(covars) & nrow(covars) == 0){
-    #     print("OKOKOK")
-    #     covars <- NULL
-    # }
-    #message("Creating space-time matrix")
+    
     if(spacetime==TRUE){
         sparseMAT <- spacetimeMat(clusters, numCenters, Time)
         message("Space-time matrix created")
@@ -35,9 +31,9 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
             covars<- NULL
         }
     }
-    print(str(covars))
+
     if(!is.null(covars)){
-        print(nrow(covars))
+        
         message("Running with covariates")
         covarMAT <- Matrix::Matrix(data.matrix(covars), sparse=TRUE)
         sparseMAT <- Matrix::cBind(sparseMAT, covarMAT)

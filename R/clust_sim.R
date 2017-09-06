@@ -225,6 +225,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     #set up and run simulation models
     message("RUNNING: SPACE-ONLY QUASI-POISSON")
     lassoresult.qp.s <- spacetimeLasso_sim(clusters, vectors.sim.s, 1, spacetime=FALSE, pois=FALSE, nsim, YSIM.s, overdispfloor)
+
     message("RUNNING: SPACE-ONLY POISSON")
     lassoresult.p.s <- spacetimeLasso_sim(clusters, vectors.sim.s, 1, spacetime=FALSE, pois=TRUE, nsim, YSIM.s, overdispfloor)
     
@@ -240,47 +241,54 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     #RR and Colors for Plotting
     ##SPACE-ONLY
     initial.s <- list(E0 = unlist(vectors.sim.s$E0_0))
-    #id <- rep(1:length(x), times = length(timeperiod))
     id <- rep(1:length(x), times=Time)
+    ################################################################
+    ###Space - QP
+    ####RR
     riskratios.qp.s <- get_rr(lassoresult.qp.s, vectors.sim.s,initial.s, 
-                               tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x)),
+                               tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) sum(x)),
                                1, sim=TRUE, cv= NULL)
-    print("ok1")
-    rrcolors.qp.s <- colormapping(riskratios.qp.s, 1, cv=NULL)
-    print("ok2")
+    rrcolors.qp.s <- colormapping(riskratios.qp.s, Time = 1, cv=NULL, prob=FALSE)
     
-    riskratios.p.s <- get_rr(lassoresult.p.s, vectors.sim.s, initial.s, 
-                              as.vector(tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x))),
-                              1, sim=TRUE, cv=NULL)
-    rrcolors.p.s <- colormapping(riskratios.p.s,1, cv=NULL)
-    
-    ###Probability map
+    ####Probs
     pb.qp.s <- get_prob(lassoresult.qp.s, spacetime = FALSE, initial.s,
-                        as.vector(tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x))) ,n, 1)
-    probcolors.qp.s <- colormapping(pb.qp.s, 1, cv = NULL)
+                        as.vector(tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) sum(x))) ,n, 1, nsim)
+    probcolors.qp.s <- colormapping(pb.qp.s, 1, cv = NULL, prob=TRUE)
     
+    ###Space - P
+    ####RR
+    riskratios.p.s <- get_rr(lassoresult.p.s, vectors.sim.s, initial.s, 
+                              as.vector(tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) sum(x))),
+                              1, sim=TRUE, cv=NULL)
+    rrcolors.p.s <- colormapping(riskratios.p.s,1, cv=NULL, prob=FALSE)
     
+    ####Probs
     pb.p.s <- get_prob(lassoresult.p.s, spacetime = FALSE, initial.s,
-                       tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x)) ,n, 1)
-    probcolors.p.s <- colormapping(pb.p.s, 1, cv = NULL)
+                       tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) sum(x)) ,n, 1, nsim)
+    probcolors.p.s <- colormapping(pb.p.s, 1, cv = NULL, prob = TRUE)
     
     # 
     ################################
     
-    ##SPACE-TIME
+    ###Space-TIME - QP
+    ####RR
     riskratios.qp.st <- get_rr(lassoresult.qp.st, vectors.sim,init, E1,Time, sim=TRUE, cv=NULL)
-    rrcolors.qp.st <- colormapping(riskratios.qp.st,Time, cv=NULL)
+    rrcolors.qp.st <- colormapping(riskratios.qp.st,Time, cv=NULL, prob = FALSE)
     
+    ####Probs
+    pb.qp.st <- get_prob(lassoresult.qp.st, spacetime = TRUE, init, E1, n, Time, nsim)
+    probcolors.qp.st <- colormapping(pb.qp.st, Time, cv = NULL, prob = TRUE)
+    
+    ###Space-TIME - P
+    ####RR
     riskratios.p.st <- get_rr(lassoresult.p.st, vectors.sim,init, E1,Time, sim=TRUE, cv=NULL)
-    rrcolors.p.st <- colormapping(riskratios.p.st,Time, cv=NULL)
-    ###Probability map
-    pb.qp.st <- get_prob(lassoresult.qp.st, spacetime = TRUE, init, E1, n, Time)
-    probcolors.qp.st <- colormapping(pb.qp.st, Time, cv = NULL)
+    rrcolors.p.st <- colormapping(riskratios.p.st,Time, cv=NULL, prob = FALSE)
     
-    pb.p.st <- get_prob(lassoresult.p.st, spacetime=TRUE, init, E1, n, Time)
-    probcolors.p.st <- colormapping(pb.p.st, Time, cv = NULL)
+    ####Probs
+    pb.p.st <- get_prob(lassoresult.p.st, spacetime=TRUE, init, E1, n, Time, nsim)
+    probcolors.p.st <- colormapping(pb.p.st, Time, cv = NULL, prob = TRUE)
     
-    ################################
+    ################################################################
     
     #COMBINE RISKRATIOS INTO LISTS
     riskratios <- list(riskratios.qp.s = riskratios.qp.s, riskratios.p.s = riskratios.p.s, 
@@ -295,6 +303,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     
     
     #DETECTION
+    ################################################################
     ##QP - Space
     set <- detect_set(lassoresult.qp.s, vectors.sim.s, as.matrix(rr[,timeperiod[1]]), 1, x, y, rMax, center, radius, nullmod,nsim)
     incluster.qp.s <- detect_incluster(lassoresult.qp.s, vectors.sim.s, as.matrix(rr[,timeperiod[1]]), set, 1, 1, nsim, x, y, rMax, center, 
@@ -351,7 +360,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                                                            paste0("truedetect.summary.sd.", threshold[2])),
                                                            c("aic","aicc","bic"))))
     }
-    
+    ################################################################
     ##P - Space
     set <- detect_set(lassoresult.p.s, vectors.sim.s, as.matrix(rr[,timeperiod[1]]), 1, x, y, rMax, center, radius, nullmod,nsim)
     incluster.p.s <- detect_incluster(lassoresult.p.s, vectors.sim.s, as.matrix(rr[,timeperiod[1]]), set, 1, 1, nsim, x, y, rMax, center, 
@@ -408,7 +417,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                                       paste0("truedetect.summary.sd.", threshold[2])),
                                       c("aic","aicc","bic"))))
     }
-
+    ################################################################
     ##QP - SPACETIME
     set <- detect_set(lassoresult.qp.st, vectors.sim, rr, Time, x, y, rMax, center, radius, nullmod,nsim)
     incluster.qp.st <- detect_incluster(lassoresult.qp.st, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
@@ -466,7 +475,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                                        paste0("truedetect.summary.sd.", threshold[2])),
                                        c("aic","aicc","bic"))))
     }
-    
+    ################################################################
     ##P - SPACETIME
     set <- detect_set(lassoresult.p.st, vectors.sim, rr, Time, x, y, rMax, center, radius, nullmod,nsim)
     incluster.p.st <- detect_incluster(lassoresult.p.st, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
@@ -524,7 +533,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                                        paste0("truedetect.summary.sd.", threshold[2])),
                                        c("aic","aicc","bic"))))
     }
-    
+    ################################################################
     
     #RETURN
     return(list(lassoresult.qp.st = lassoresult.qp.st,
