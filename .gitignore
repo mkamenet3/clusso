@@ -1,3 +1,5 @@
 man/rcpp_hello_world.Rd
 Read-and-delete-me.*
 data/*.csv
+vignettes/*.pdf
+*.pdf

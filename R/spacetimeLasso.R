@@ -44,8 +44,7 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
     }
     if(!is.null(covars)){
         str(covars)
-        print(nrow(covars))
-        print(isTRUE(nrow(covars)!=0))
+        
         message("Running with covariates")
         covarMAT <- Matrix::Matrix(data.matrix(covars), sparse=TRUE)
         dim(sparseMAT)
@@ -54,7 +53,7 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
     else{
         message("No covariates found")
     }
-    print(paste("Number of potential clusters to scan through: ", dim(sparseMAT)[2]))
+    message(paste("Number of potential clusters to scan through: ", dim(sparseMAT)[2]))
     message("Running Lasso - stay tuned")
     if(!is.null(cv)){
         message("Path selection: cross-validation")
@@ -229,7 +228,7 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
 stLasso_cv <- function(lasso, sparseMAT, Ex, Yx){
     #cv version
     ix <- which(lasso$lambda == lasso$lambda.min)
-    print(dim(sparseMAT), dim(lasso$glmnet.fit$beta[,ix]))
+    
     xbetaPath<- sparseMAT%*%lasso$glmnet.fit$beta[,ix]
     mu <- exp(xbetaPath)
     numclust.cv <- length(unique(mu@x))-1

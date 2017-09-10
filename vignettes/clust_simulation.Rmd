@@ -87,7 +87,11 @@ table.detection.null <- NULL
 Run the null model and store results into object $res$.
 
 ```{r}
-system.time(res <- clust_sim(x,y,rMax,dframe$period, dframe$expdeath, dframe$death, Time,
+
+
+clst <- toclust(dframe, expected = dframe$expdeath, observed = dframe$death,timeperiod = dframe$period, covars = FALSE)
+
+system.time(res <- clust_sim(clst, x,y,rMax, Time,
                                  nsim,center, radius, risk, timeperiod,
                                  utm=TRUE, byrow=TRUE, threshold, space= "both",
                              theta = theta, nullmod = TRUE, overdispfloor))
@@ -270,20 +274,25 @@ y <- dframe2$utmy/1000
 rMax <- 20 
 Time <- 5
 overdispfloor <- TRUE
-nsim <- 2
+nsim <- 100
+threshold <- c(0.9, 0.5)
+mods <- c("QuasiPoisson", "Poisson")
 
 ```
 
 ### Set conditions for cluster
 
 ```{r}
-center <- 75 #can take values 1 - 208 because we have a total of 208 centroids
-radius <- 11
+center <- 35 #can take values 1 - 208 because we have a total of 208 centroids
+radius <- 18
 timeperiods <- c(3:5)
-risk.ratio <- 1.5
+risk.ratio <- 2
 nullmod <- NULL #set to NULL if we want to run non-null model (model with a cluster we've created)
 theta <- 2 #with overdispersion. For no overdispersion, set theta = NULL
 overdispfloor <- TRUE
+threshold <- c(0.9, 0.5)
+mods <- c("QuasiPoisson", "Poisson")
+
 
 table.detection <- NULL
 
@@ -293,10 +302,58 @@ table.detection <- NULL
 
 ```{r}
 
-clst <- toclust(df, expected = df$expdeath, observed = df$death, timeperiod = df$period, covars=TRUE)
+#clst <- toclust(df, expected = df$expdeath, observed = df$death, timeperiod = df$period, covars=TRUE)
+dframe <- dframe[,-1]
 
-system.time(res <- clust_sim(clst, x, y,rMax,Time, nsim,centers, radius, risk.ratios, timeperiods, 
+clst <- toclust(dframe, expected = dframe$expdeath, observed = dframe$death, timeperiod = dframe$period, covars=FALSE)
+
+system.time(res <- clust_sim(clst, x, y,rMax,Time, nsim,center, radius, risk.ratio, timeperiods, 
                              utm=TRUE, byrow=TRUE, threshold, space= "both", theta, nullmod, overdispfloor))
+
+```
+
+### Diagnostics and Maps
+
+Save diagnostics into csv:
+
+```{r}
+
+#save results
+(sim.i <- paste0("sim","_","center","_",center,"radius",radius,"_", "start",
+                 "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio), "NULLCOVARS"))
+filename <- paste0("sampleoutput/",sim.i,".RData")
+save(res, file = filename)
+
+#Print Detection for the Simulation
+(tabn <- rbind("******",cbind(radius,risk.ratio,center,time=as.numeric(paste(timeperiod, collapse = "")), mod = "ST",
+                              rbind("QuasiPois",res$detect.out.qp.st), rbind("Pois",res$detect.out.p.st)),
+               cbind(radius,risk.ratio,center,time=as.numeric(paste(timeperiod, collapse = "")), mod = "Space",
+                     rbind("QuasiPois",res$detect.out.qp.s), rbind("Pois",res$detect.out.p.s))))
+
+#WRITE TO CSV
+print(tabn)
+write.csv(table.detection.null, file="sampleoutpuet/tabledetectionNULL.csv", row.names=TRUE)
+
+
+```
+
+
+Make maps!
+
+
+```{r}
+pdfname1 <- paste0("rrmaps.pdf")
+pdfname2 <- paste0("probabilitymaps.pdf")
+pdfname3 <- paste0("probmapsthresh1.pdf")
+pdfname4 <- paste0("probmapsthresh2.pdf")
+
+easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname1, res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL)
+
+easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname2, res$probcolors, mods, space="both", probmap=TRUE, obs = NULL)
+easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname3, res$probcolors.thresh1, mods, space="both", probmap=TRUE, obs = NULL)
+easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname4, res$probcolors.thresh2, mods, space="both", probmap=TRUE, obs = NULL)
+
+
 
 ```
 
