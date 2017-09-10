@@ -250,10 +250,14 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                                1, sim=TRUE, cv= NULL)
     rrcolors.qp.s <- colormapping(riskratios.qp.s, Time = 1, cv=NULL, prob=FALSE)
     
-    ####Probs
+    ####Probs and threshold probs
     pb.qp.s <- get_prob(lassoresult.qp.s, spacetime = FALSE, initial.s,
-                        as.vector(tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) sum(x))) ,n, 1, nsim)
-    probcolors.qp.s <- colormapping(pb.qp.s, 1, cv = NULL, prob=TRUE)
+                        as.vector(tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) sum(x))) ,n, 1, nsim, threshold)
+    probcolors.qp.s <- colormapping(pb.qp.s$probs, 1, cv = NULL, prob=TRUE)
+    probcolors.qp.s.thresh1 <- colormapping(pb.qp.s$probs.thresh1, 1, cv = NULL, prob=TRUE)
+    probcolors.qp.s.thresh2 <- colormapping(pb.qp.s$probs.thresh2, 1, cv = NULL, prob=TRUE)
+    
+    
     
     ###Space - P
     ####RR
@@ -262,12 +266,13 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                               1, sim=TRUE, cv=NULL)
     rrcolors.p.s <- colormapping(riskratios.p.s,1, cv=NULL, prob=FALSE)
     
-    ####Probs
+    ####Probs and threshold probs
     pb.p.s <- get_prob(lassoresult.p.s, spacetime = FALSE, initial.s,
-                       tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) sum(x)) ,n, 1, nsim)
-    probcolors.p.s <- colormapping(pb.p.s, 1, cv = NULL, prob = TRUE)
-    
-    # 
+                       tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) sum(x)) ,n, 1, nsim,threshold)
+    probcolors.p.s <- colormapping(pb.p.s$probs, 1, cv = NULL, prob = TRUE)
+    probcolors.p.s.thresh1 <- colormapping(pb.p.s$probs.thresh1, 1, cv = NULL, prob=TRUE)
+    probcolors.p.s.thresh2 <- colormapping(pb.p.s$probs.thresh2, 1, cv = NULL, prob=TRUE)
+     
     ################################
     
     ###Space-TIME - QP
@@ -275,18 +280,23 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     riskratios.qp.st <- get_rr(lassoresult.qp.st, vectors.sim,init, E1,Time, sim=TRUE, cv=NULL)
     rrcolors.qp.st <- colormapping(riskratios.qp.st,Time, cv=NULL, prob = FALSE)
     
-    ####Probs
-    pb.qp.st <- get_prob(lassoresult.qp.st, spacetime = TRUE, init, E1, n, Time, nsim)
-    probcolors.qp.st <- colormapping(pb.qp.st, Time, cv = NULL, prob = TRUE)
+    ####Probs and threshold probs
+    pb.qp.st <- get_prob(lassoresult.qp.st, spacetime = TRUE, init, E1, n, Time, nsim,threshold)
+    probcolors.qp.st <- colormapping(pb.qp.st$probs, Time, cv = NULL, prob = TRUE)
+    probcolors.qp.st.thresh1 <- colormapping(pb.qp.st$probs.thresh1, Time, cv = NULL, prob = TRUE)
+    probcolors.qp.st.thresh2 <- colormapping(pb.qp.st$probs.thresh2, Time, cv = NULL, prob = TRUE)
+    
     
     ###Space-TIME - P
     ####RR
     riskratios.p.st <- get_rr(lassoresult.p.st, vectors.sim,init, E1,Time, sim=TRUE, cv=NULL)
     rrcolors.p.st <- colormapping(riskratios.p.st,Time, cv=NULL, prob = FALSE)
     
-    ####Probs
-    pb.p.st <- get_prob(lassoresult.p.st, spacetime=TRUE, init, E1, n, Time, nsim)
-    probcolors.p.st <- colormapping(pb.p.st, Time, cv = NULL, prob = TRUE)
+    ####Probs and threshold probs
+    pb.p.st <- get_prob(lassoresult.p.st, spacetime=TRUE, init, E1, n, Time, nsim,threshold)
+    probcolors.p.st <- colormapping(pb.p.st$probs, Time, cv = NULL, prob = TRUE)
+    probcolors.p.st.thresh1 <- colormapping(pb.p.st$probs.thresh1, Time, cv = NULL, prob = TRUE)
+    probcolors.p.st.thresh2 <- colormapping(pb.p.st$probs.thresh2, Time, cv = NULL, prob = TRUE)
     
     ################################################################
     
@@ -300,6 +310,11 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                       pb.qp.st = pb.qp.st, pb.p.st = pb.p.st)
     probcolors <- list(probcolors.qp.s = probcolors.qp.s, probcolors.p.s = probcolors.p.s,
                        probcolors.qp.st = probcolors.qp.st, probcolors.p.st = probcolors.p.st)
+    probcolors.thresh1 <- list(probcolors.qp.s = probcolors.qp.s.thresh1, probcolors.p.s = probcolors.p.s.thresh1,
+                               probcolors.qp.st = probcolors.qp.st.thresh1, probcolors.p.st = probcolors.p.st.thresh1)
+    probcolors.thresh2 <- list(probcolors.qp.s = probcolors.qp.s.thresh2, probcolors.p.s = probcolors.p.s.thresh2,
+                               probcolors.qp.st = probcolors.qp.st.thresh2, probcolors.p.st = probcolors.p.st.thresh2)
+    
     
     
     #DETECTION
@@ -544,6 +559,8 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                 rrcolors = rrcolors,
                 probrates = probrates,
                 probcolors = probcolors,
+                probcolors.thresh1 = probcolors.thresh1,
+                probcolors.thresh2 = probcolors.thresh2,
                 rr.mat = rr,
                 init.vec = vectors.sim,
                 init.vec.s = vectors.sim.s ,

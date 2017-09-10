@@ -342,9 +342,18 @@ Make maps!
 
 
 ```{r}
+pdfname1 <- paste0("rrmaps.pdf")
 pdfname2 <- paste0("probabilitymaps.pdf")
+pdfname3 <- paste0("probmapsthresh1.pdf")
+pdfname4 <- paste0("probmapsthresh2.pdf")
 
-easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname2, res, mods, space="both", probmap=TRUE, obs = NULL)
+easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname1, res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL)
+
+easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname2, res$probcolors, mods, space="both", probmap=TRUE, obs = NULL)
+easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname3, res$probcolors.thresh1, mods, space="both", probmap=TRUE, obs = NULL)
+easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname4, res$probcolors.thresh2, mods, space="both", probmap=TRUE, obs = NULL)
+
+
 
 ```
 

@@ -59,10 +59,10 @@ colormapping <- function(rate,Time,cv, prob) {
             if(max(rbic)>1) {warning("Max probability from BIC greater than 1")}
             if(max(raic)>1) {warning("Max probability from AIC greater than 1")}
             if(max(raicc)>1) {warning("Max probability from AICc greater than 1")}
-            color.obs <- sapply(1:Time, function(i) reds(robs[,i]))
-            color.qbic <- sapply(1:Time, function(i) reds(rbic[,i]))
-            color.qaic <- sapply(1:Time, function(i) reds(raic[,i]))
-            color.qaicc <- sapply(1:Time, function(i) reds(raicc[,i]))
+            color.obs <- sapply(1:Time, function(i) reds(log(2*pmax(1/2,pmin(robs[,i],2)))/log(4)))
+            color.qbic <- sapply(1:Time, function(i) reds(log(2*pmax(1/2,pmin(rbic[,i],2)))/log(4)))
+            color.qaic <- sapply(1:Time, function(i) reds(log(2*pmax(1/2,pmin(raic[,i],2)))/log(4)))
+            color.qaicc <- sapply(1:Time, function(i) reds(log(2*pmax(1/2,pmin(raicc[,i],2)))/log(4)))
             res <- list(colors.obs = color.obs, color.qbic = color.qbic, color.qaic = color.qaic, color.qaicc = color.qaicc)
             
         }

@@ -12,7 +12,7 @@
 #' @export
 
 
-easyplot <- function(prefect, polygons, pdfname, res, mods, space=c("space", "spacetime", "both"), probmap, cv=NULL,obs=NULL){
+easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space", "spacetime", "both"), probmap, cv=NULL,obs=NULL){
     if(is.null(space)){ stop("You must specify `space`, `spacetime` or `both`")}
     space <- match.arg(space, several.ok = FALSE)
     pdf_qp.s <- paste0(gsub(".pdf","", pdfname),mods[1],"space" ,".pdf")
@@ -24,31 +24,31 @@ easyplot <- function(prefect, polygons, pdfname, res, mods, space=c("space", "sp
         message("RR Maps")
         switch(space, 
                space = {
-                   plotmap_S(prefect, polygons, pdf_qp.s, res, obs, sub = res$rrcolors$rrcolors.qp.s) 
-                   plotmap_S(prefect, polygons, pdf_p.s, res, obs, sub = res$rrcolors$rrcolors.p.s)},
+                   plotmap_S(prefect, polygons, pdf_qp.s, res, obs, sub = rescols$rrcolors.qp.s)
+                   plotmap_S(prefect, polygons, pdf_p.s, res, obs, sub = rescols$rrcolors.p.s)},
                spacetime = {
-                   plotmap_ST(prefect, polygons, pdf_qp.st, res, obs, sub = res$rrcolors$rrcolors.qp.st)
-                   plotmap_ST(prefect, polygons, pdf_p.st, res, obs, sub = res$rrcolors$rrcolors.p.st)},
+                   plotmap_ST(prefect, polygons, pdf_qp.st, res, obs, sub = rescols$rrcolors.qp.st)
+                   plotmap_ST(prefect, polygons, pdf_p.st, res, obs, sub = rescols$rrcolors.p.st)},
                both = {
-                   plotmap_S(prefect, polygons, pdf_qp.s, res, obs, sub = res$rrcolors$rrcolors.qp.s)
-                   plotmap_S(prefect, polygons, pdf_p.s, res, obs, sub = res$rrcolors$rrcolors.p.s)
-                   plotmap_ST(prefect, polygons, pdf_qp.st, res, obs, sub = res$rrcolors$rrcolors.qp.st)
-                   plotmap_ST(prefect, polygons, pdf_p.st, res, obs, sub = res$rrcolors$rrcolors.p.st)})
+                   plotmap_S(prefect, polygons, pdf_qp.s, rescols$rrcolors.qp.s, obs)
+                   plotmap_S(prefect, polygons, pdf_p.s, rescols$rrcolors.p.s, obs)
+                   plotmap_ST(prefect, polygons, pdf_qp.st, rescols$rrcolors.qp.st, obs)
+                   plotmap_ST(prefect, polygons, pdf_p.st, rescols$rrcolors.p.st, obs)})
     }
     if(probmap==TRUE & is.null(cv)){
         message("Probability Maps")
         switch(space, 
                space = {
-                   plotmap_S(prefect, polygons, pdf_qp.s, res, obs, sub = res$probcolors$probcolors.qp.s) 
-                   plotmap_S(prefect, polygons, pdf_p.s, res, obs, sub = res$probcolors$probcolors.p.s)},
+                   plotmap_S(prefect, polygons, pdf_qp.s, rescols$probcolors.qp.s, obs) 
+                   plotmap_S(prefect, polygons, pdf_p.s, rescols$probcolors.p.s, obs)},
                spacetime = {
-                   plotmap_ST(prefect, polygons, pdf_qp.st, res, obs, sub = res$probcolors$probcolors.qp.st)
-                   plotmap_ST(prefect, polygons, pdf_p.st, res, obs, sub = res$probcolors$probcolors.p.s)},
+                   plotmap_ST(prefect, polygons, pdf_qp.st, rescols$probcolors.qp.st, obs)
+                   plotmap_ST(prefect, polygons, pdf_p.st, rescols$probcolors.p.s, obs)},
                both = {
-                   plotmap_S(prefect, polygons, pdf_qp.s, res, obs, sub = res$probcolors$probcolors.qp.s)
-                   plotmap_S(prefect, polygons, pdf_p.s, res, obs, sub = res$probcolors$probcolors.p.s)
-                   plotmap_ST(prefect, polygons, pdf_qp.st, res, obs, sub = res$probcolors$probcolors.qp.st)
-                   plotmap_ST(prefect, polygons, pdf_p.st, res, obs, sub = res$probcolors$probcolors.qp.st)})
+                   plotmap_S(prefect, polygons, pdf_qp.s, rescols$probcolors.qp.s, obs)
+                   plotmap_S(prefect, polygons, pdf_p.s, rescols$probcolors.p.s, obs)
+                   plotmap_ST(prefect, polygons, pdf_qp.st, rescols$probcolors.qp.st, obs)
+                   plotmap_ST(prefect, polygons, pdf_p.st, rescols$probcolors.qp.st, obs)})
     }
     if(!is.null(cv)){
         message("CV Maps")
@@ -60,10 +60,10 @@ easyplot <- function(prefect, polygons, pdfname, res, mods, space=c("space", "sp
                #     plotmap_ST(prefect, polygons, pdf_qp.st, res, obs, sub = res$probcolors$probcolors.qp.st)
                #     plotmap_ST(prefect, polygons, pdf_p.st, res, obs, sub = res$probcolors$probcolors.p.s)},
                both = {
-                   plotmap_S_cv(prefect, polygons, pdf_qp.s, res, obs, sub = res$rrcolors$rrcolors.qp.s)
-                   plotmap_S_cv(prefect, polygons, pdf_p.s, res, obs, sub = res$rrrcolors$rrcolors.p.s)
-                   plotmap_ST_cv(prefect, polygons, pdf_qp.st, res, obs, sub = res$rrcolors$rrcolors.qp.st)
-                   plotmap_ST_cv(prefect, polygons, pdf_p.st, res, obs, sub = res$rrcolors$rrcolors.qp.st)})
+                   plotmap_S_cv(prefect, polygons, pdf_qp.s,  rescols$rrcolors.qp.s, obs,)
+                   plotmap_S_cv(prefect, polygons, pdf_p.s, rescols$rrcolors.p.s, obs)
+                   plotmap_ST_cv(prefect, polygons, pdf_qp.st, rescols$rrcolors.qp.st, obs)
+                   plotmap_ST_cv(prefect, polygons, pdf_p.st, rescols$rrcolors.p.st, obs)})
     }
     
 }
@@ -77,50 +77,50 @@ easyplot <- function(prefect, polygons, pdfname, res, mods, space=c("space", "sp
 #' @param obs if observed is to be plotted or oracle from simulation
 #' @param sub optional parameter if you want to just use the function for plotting different vectors
 #' 
-plotmap_ST_cv <- function(prefect, polygons, pdfname,res, obs, sub){
+plotmap_ST_cv <- function(prefect, polygons, pdfname,res, obs){
     if(!is.null(obs)){
         firstrow = "Obs"
     }
     else{
         firstrow="Oracle"
     }
-    if(!is.null(sub)){
-        rrcolors <- sub
-        
-    }
-    else {
-        rrcolors <- res$rrcolors
-    }
+    # if(!is.null(sub)){
+    #     rrcolors <- sub
+    #     
+    # }
+    # else {
+    #     rrcolors <- res$rrcolors
+    # }
 
     pdf(pdfname, height=11, width=10)
     #Maps of Observed Counts
     par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$colors.obs[,1],border=F)
+    polygon(polygons,col=res$colors.obs[,1],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,paste0("Period 1 - ", firstrow),cex=1.00)
     
     par(fig=c(0.2,.4,.6,1), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$colors.obs[,2],border=F)
+    polygon(polygons,col=res$colors.obs[,2],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,paste0("Period 2 - ", firstrow),cex=1.00)
     
     par(fig=c(0.4,.6,.6,1), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$colors.obs[,3],border=F)
+    polygon(polygons,col=res$colors.obs[,3],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,paste0("Period 3 - ", firstrow),cex=1.00)
     
     par(fig=c(0.6,.8,.6,1), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$colors.obs[,4],border=F)
+    polygon(polygons,col=res$colors.obs[,4],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,paste0("Period 4 - ", firstrow),cex=1.00)
     
     par(fig=c(0.8,1,.6,1), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$colors.obs[,5],border=F)
+    polygon(polygons,col=res$colors.obs[,5],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,paste0("Period 5 - ", firstrow),cex=1.00)
     
@@ -129,31 +129,31 @@ plotmap_ST_cv <- function(prefect, polygons, pdfname,res, obs, sub){
     
     par(fig=c(0,.2,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.cv[,1],border=F)
+    polygon(polygons,col=res$color.cv[,1],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 1 - CV',cex=1.00)
     
     par(fig=c(0.2,.4,.4,.8), mar=c(.5,0.5,0.5,0), new=T)   
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.cv[,2],border=F)
+    polygon(polygons,col=res$color.cv[,2],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 2 - CV',cex=1.00)
     
     par(fig=c(0.4,.6,.4,.8), mar=c(.5,0.5,0.5,0), new=T) 
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.cv[,3],border=F)
+    polygon(polygons,col=res$color.cv[,3],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 3 - CV',cex=1.00)
     
     par(fig=c(0.6,.8,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.cv[,4],border=F)
+    polygon(polygons,col=res$color.cv[,4],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 4 - CV',cex=1.00)
     
     par(fig=c(0.8,1,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.cv[,5],border=F)
+    polygon(polygons,col=res$color.cv[,5],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 5 - CV',cex=1.00)
     
@@ -169,25 +169,25 @@ plotmap_ST_cv <- function(prefect, polygons, pdfname,res, obs, sub){
 #' @param obs if observed is to be plotted or oracle from simulation
 #' @param sub optional parameter if you want to just use the function for plotting different vectors
 #' 
-plotmap_S_cv <- function(prefect, polygons, pdfname,res, obs, sub){
+plotmap_S_cv <- function(prefect, polygons, pdfname,res, obs){
     if(!is.null(obs)){
         firstrow = "Obs"
     }
     else{
         firstrow="Oracle"
     }
-    if(!is.null(sub)){
-        rrcolors <-  sub
-    }
-    else{
-        rrcolors <- res$rrcolors
-    }
+    # if(!is.null(sub)){
+    #     rrcolors <-  sub
+    # }
+    # else{
+    #     rrcolors <- res$rrcolors
+    # }
 
     pdf(pdfname, height=11, width=10)
     #Maps of Observed Counts
     par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$colors.obs[,1],border=F)
+    polygon(polygons,col=res$colors.obs[,1],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,paste0(firstrow),cex=1.00)
     
@@ -195,7 +195,7 @@ plotmap_S_cv <- function(prefect, polygons, pdfname,res, obs, sub){
     
     par(fig=c(0,.2,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.cv[,1],border=F)
+    polygon(polygons,col=res$color.cv[,1],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'CV',cex=1.00)
     
@@ -228,50 +228,50 @@ plotmap_S_cv <- function(prefect, polygons, pdfname,res, obs, sub){
 #' @param obs if observed is to be plotted or oracle from simulation
 #' @param sub optional parameter if you want to just use the function for plotting different vectors
 #' 
-plotmap_ST <- function(prefect, polygons, pdfname,res, obs, sub){
+plotmap_ST <- function(prefect, polygons, pdfname,res, obs){
     if(!is.null(obs)){
         firstrow = "Obs"
     }
     else{
         firstrow="Oracle"
     }
-    if(!is.null(sub)){
-        rrcolors <- sub
-       
-    }
-    else {
-        rrcolors <- res$rrcolors
-    }
-  
+    # if(!is.null(sub)){
+    #     rrcolors <- sub
+    #    
+    # }
+    # else {
+    #     rrcolors <- res$rrcolors
+    # }
+    # 
     pdf(pdfname, height=11, width=10)
     #Maps of Observed Counts
     par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$colors.obs[,1],border=F)
+    polygon(polygons,col=res$colors.obs[,1],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,paste0("Period 1 - ", firstrow),cex=1.00)
     
     par(fig=c(0.2,.4,.6,1), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$colors.obs[,2],border=F)
+    polygon(polygons,col=res$colors.obs[,2],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,paste0("Period 2 - ", firstrow),cex=1.00)
     
     par(fig=c(0.4,.6,.6,1), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$colors.obs[,3],border=F)
+    polygon(polygons,col=res$colors.obs[,3],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,paste0("Period 3 - ", firstrow),cex=1.00)
     
     par(fig=c(0.6,.8,.6,1), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$colors.obs[,4],border=F)
+    polygon(polygons,col=res$colors.obs[,4],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,paste0("Period 4 - ", firstrow),cex=1.00)
     
     par(fig=c(0.8,1,.6,1), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$colors.obs[,5],border=F)
+    polygon(polygons,col=res$colors.obs[,5],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,paste0("Period 5 - ", firstrow),cex=1.00)
     
@@ -280,31 +280,31 @@ plotmap_ST <- function(prefect, polygons, pdfname,res, obs, sub){
     
     par(fig=c(0,.2,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.qaic[,1],border=F)
+    polygon(polygons,col=res$color.qaic[,1],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 1 - QAIC',cex=1.00)
     
     par(fig=c(0.2,.4,.4,.8), mar=c(.5,0.5,0.5,0), new=T)   
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.qaic[,2],border=F)
+    polygon(polygons,col=res$color.qaic[,2],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 2 - QAIC',cex=1.00)
     
     par(fig=c(0.4,.6,.4,.8), mar=c(.5,0.5,0.5,0), new=T) 
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.qaic[,3],border=F)
+    polygon(polygons,col=res$color.qaic[,3],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 3 - QAIC',cex=1.00)
     
     par(fig=c(0.6,.8,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.qaic[,4],border=F)
+    polygon(polygons,col=res$color.qaic[,4],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 4 - QAIC',cex=1.00)
     
     par(fig=c(0.8,1,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.qaic[,5],border=F)
+    polygon(polygons,col=res$color.qaic[,5],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 5 - QAIC',cex=1.00)
     
@@ -313,31 +313,31 @@ plotmap_ST <- function(prefect, polygons, pdfname,res, obs, sub){
     
     par(fig=c(0,.2,.2,.6), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.qaicc[,1],border=F)
+    polygon(polygons,col=res$color.qaicc[,1],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 1 - QAICc',cex=1.00)
     
     par(fig=c(0.2,.4,.2,.6), mar=c(.5,0.5,0.5,0), new=T) 
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.qaicc[,2],border=F)
+    polygon(polygons,col=res$color.qaicc[,2],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 2 - QAICc',cex=1.00)
     
     par(fig=c(0.4,.6,.2,.6), mar=c(.5,0.5,0.5,0), new=T) 
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.qaicc[,3],border=F)
+    polygon(polygons,col=res$color.qaicc[,3],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 3 - QAICc',cex=1.00)
     
     par(fig=c(0.6,.8,.2,.6), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.qaicc[,4],border=F)
+    polygon(polygons,col=res$color.qaicc[,4],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 4 - QAICc',cex=1.00)
     
     par(fig=c(0.8,1,.2,.6), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.qaicc[,5],border=F)
+    polygon(polygons,col=res$color.qaicc[,5],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 5 - QAICc',cex=1.00)
     
@@ -346,33 +346,33 @@ plotmap_ST <- function(prefect, polygons, pdfname,res, obs, sub){
     
     par(fig=c(0,.2,0,.4), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.qbic[,1],border=F)
+    polygon(polygons,col=res$color.qbic[,1],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 1 - QBIC',cex=1.00)
     
     par(fig=c(0.2,.4,0,.4), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.qbic[,2],border=F)
+    polygon(polygons,col=res$color.qbic[,2],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 2 - QBIC',cex=1.00)
     
     par(fig=c(0.4,.6,0,.4), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.qbic[,3],border=F)
+    polygon(polygons,col=res$color.qbic[,3],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 3 - QBIC',cex=1.00)
     
     
     par(fig=c(0.6,.8,0,.4), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.qbic[,4],border=F)
+    polygon(polygons,col=res$color.qbic[,4],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 4 - QBIC',cex=1.00)
     
     
     par(fig=c(0.8,1,0,.4), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.qbic[,5],border=F)
+    polygon(polygons,col=res$color.qbic[,5],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 5 - QBIC',cex=1.00)
     
@@ -388,25 +388,25 @@ plotmap_ST <- function(prefect, polygons, pdfname,res, obs, sub){
 #' @param obs if observed is to be plotted or oracle from simulation
 #' @param sub optional parameter if you want to just use the function for plotting different vectors
 #' 
-plotmap_S <- function(prefect, polygons, pdfname,res, obs, sub){
+plotmap_S <- function(prefect, polygons, pdfname,res, obs){
     if(!is.null(obs)){
         firstrow = "Obs"
     }
     else{
         firstrow="Oracle"
     }
-    if(!is.null(sub)){
-        rrcolors <-  sub
-        }
-    else{
-        rrcolors <- res$rrcolors
-    }
+    # if(!is.null(sub)){
+    #     rrcolors <-  sub
+    #     }
+    # else{
+    #     rrcolors <- res$rrcolors
+    # }
 
     pdf(pdfname, height=11, width=10)
     #Maps of Observed Counts
     par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$colors.obs[,1],border=F)
+    polygon(polygons,col=res$colors.obs[,1],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,paste0(firstrow),cex=1.00)
     
@@ -414,7 +414,7 @@ plotmap_S <- function(prefect, polygons, pdfname,res, obs, sub){
     
     par(fig=c(0,.2,.4,.8), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.qaic[,1],border=F)
+    polygon(polygons,col=res$color.qaic[,1],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'QAIC',cex=1.00)
     
@@ -422,7 +422,7 @@ plotmap_S <- function(prefect, polygons, pdfname,res, obs, sub){
     
     par(fig=c(0,.2,.2,.6), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.qaicc[,1],border=F)
+    polygon(polygons,col=res$color.qaicc[,1],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'QAICc',cex=1.00)
     
@@ -431,7 +431,7 @@ plotmap_S <- function(prefect, polygons, pdfname,res, obs, sub){
     
     par(fig=c(0,.2,0,.4), mar=c(.5,0.5,0.5,0), new=T)
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
-    polygon(polygons,col=rrcolors$color.qbic[,1],border=F)
+    polygon(polygons,col=res$color.qbic[,1],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'QBIC',cex=1.00)
     

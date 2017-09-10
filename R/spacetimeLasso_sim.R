@@ -87,7 +87,7 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
         E.qbic <- select_muRR.qbic
         numclust.qbic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qbic[[i]]]))-1)
         ##find probability of being detected = number of times RR was elevated/nsim
-        probs.qbic <- prob_incluster(select_mu.qbic, numCenters, Time, nsim)
+        #probs.qbic <- prob_incluster(select_mu.qbic, numCenters, Time, nsim)
         
          #QAIC
         PLL.qaic <- lapply(1:nsim, function(i) 2*(K[[i]]) - 2*(loglike[[i]]/overdisp.est))
@@ -97,7 +97,7 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
         E.qaic <- select_muRR.qaic
         numclust.qaic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaic[[i]]]))-1)
         ##find probability of being detected = number of times RR was elevated/nsim
-        probs.qaic <- prob_incluster(select_mu.qaic, numCenters, Time, nsim)
+        #probs.qaic <- prob_incluster(select_mu.qaic, numCenters, Time, nsim)
         
 
 
@@ -110,7 +110,7 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
         E.qaicc <- select_muRR.qaicc
         numclust.qaicc <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaicc[[i]]]))-1)
         ##find probability of being detected = number of times RR was elevated/nsim
-        probs.qaicc <- prob_incluster(select_mu.qaicc, numCenters, Time, nsim)
+        #probs.qaicc <- prob_incluster(select_mu.qaicc, numCenters, Time, nsim)
     }
 
     #########################################################
@@ -127,7 +127,7 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
         E.qbic <- select_muRR.qbic
         numclust.qbic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qbic[[i]]]))-1)
         ##find probability of being detected = number of times RR was elevated/nsim
-        probs.qbic <- prob_incluster(select_mu.qbic, numCenters, Time, nsim)
+        #probs.qbic <- prob_incluster(select_mu.qbic, numCenters, Time, nsim)
         
       
         #QAIC
@@ -138,7 +138,7 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
         E.qaic <- select_muRR.qaic
         numclust.qaic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaic[[i]]]))-1)
         ##find probability of being detected = number of times RR was elevated/nsim
-        probs.qaic <- prob_incluster(select_mu.qaic, numCenters, Time, nsim)
+       # probs.qaic <- prob_incluster(select_mu.qaic, numCenters, Time, nsim)
         
         #QAICc
         PLL.qaicc <- lapply(1:nsim, function(i) 2*(K[[i]]) - 2*(loglike[[i]]) + 
@@ -149,7 +149,7 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
         E.qaicc <- select_muRR.qaicc
         numclust.qaicc <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaicc[[i]]]))-1)
         ##find probability of being detected = number of times RR was elevated/nsim
-        probs.qaicc <- prob_incluster(select_mu.qaicc, numCenters, Time, nsim)
+        #probs.qaicc <- prob_incluster(select_mu.qaicc, numCenters, Time, nsim)
         
     }
     
@@ -179,7 +179,7 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
         E.qbic <- select_muRR.qbic
         numclust.qbic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qbic[[i]]]))-1)
         ##find probability of being detected = number of times RR was elevated/nsim
-        probs.qbic <- prob_incluster(select_mu.qbic, numCenters, Time, nsim)
+        #probs.qbic <- prob_incluster(select_mu.qbic, numCenters, Time, nsim)
         
         
 
@@ -191,7 +191,7 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
         E.qaic <- select_muRR.qaic
         numclust.qaic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaic[[i]]]))-1)
         ##find probability of being detected = number of times RR was elevated/nsim
-        probs.qaic <- prob_incluster(select_mu.qaic, numCenters, Time, nsim)
+        #probs.qaic <- prob_incluster(select_mu.qaic, numCenters, Time, nsim)
     
 
 
@@ -204,7 +204,7 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
         E.qaicc <- select_muRR.qaicc
         numclust.qaicc <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaicc[[i]]]))-1)
         ##find probability of being detected = number of times RR was elevated/nsim
-        probs.qaicc <- prob_incluster(select_mu.qaicc, numCenters, Time, nsim)
+        #probs.qaicc <- prob_incluster(select_mu.qaicc, numCenters, Time, nsim)
      }
 
 
@@ -223,7 +223,7 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
         E.qbic <- select_muRR.qbic
         numclust.qbic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qbic[[i]]]))-1)
         ##find probability of being detected = number of times RR was elevated/nsim
-        probs.qbic <- prob_incluster(select_mu.qbic, numCenters, Time, nsim)
+        #probs.qbic <- prob_incluster(select_mu.qbic, numCenters, Time, nsim)
         
     
         #QAIC
@@ -234,7 +234,7 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
         E.qaic <- select_muRR.qaic
         numclust.qaic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaic[[i]]]))-1)
         ##find probability of being detected = number of times RR was elevated/nsim
-        probs.qaic <- prob_incluster(select_mu.qaic, numCenters, Time, nsim)
+        #probs.qaic <- prob_incluster(select_mu.qaic, numCenters, Time, nsim)
         
         
          
@@ -247,13 +247,12 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
         E.qaicc <- select_muRR.qaicc
         numclust.qaicc <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaicc[[i]]]))-1)
         ##find probability of being detected = number of times RR was elevated/nsim
-        probs.qaicc <- prob_incluster(select_mu.qaicc, numCenters, Time, nsim)
+        #probs.qaicc <- prob_incluster(select_mu.qaicc, numCenters, Time, nsim)
      }
     
     return(list(nsim = nsim, E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc,Ex = Ex,mu = mu, Yx = Yx, PLL.qbic = PLL.qbic, 
                 PLL.qaic = PLL.qaic, PLL.qaicc = PLL.qaicc, select.qbic = select.qbic, select.qaic = select.qaic, 
                 select.qaicc = select.qaicc, select_mu.qbic = select_mu.qbic, select_mu.qaic = select_mu.qaic, 
                 select_mu.qaicc = select_mu.qaicc, xbetaPath = xbetaPath, coefs.lasso.all = coefs.lasso.all,
-                numclust.qaic = numclust.qaic, numclust.qaicc = numclust.qaicc, numclust.qbic = numclust.qbic,
-                probs.qbic = probs.qbic, probs.qaic = probs.qaic, probs.qaicc = probs.qaicc))    
+                numclust.qaic = numclust.qaic, numclust.qaicc = numclust.qaicc, numclust.qbic = numclust.qbic))    
 }
