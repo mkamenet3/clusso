@@ -4,14 +4,16 @@
 \alias{colormapping}
 \title{colormapping}
 \usage{
-colormapping(riskratios, Time, cv)
+colormapping(rate, Time, cv, prob)
 }
 \arguments{
-\item{riskratios}{this will be the risk ratios shrunk to be on the scale of half risk to twice the risk as end points.}
+\item{rate}{this will be the risk ratios shrunk to be on the scale of half risk to twice the risk as end points.}
 
 \item{Time}{how many time periods are in the model? If this is only a spatial model, then time is set to 1}
 
 \item{cv}{triggered if cross-validation model run on real data}
+
+\item{prob}{TRUE or FALSE depending on if you want to map probabilities or not (default is to map RR)}
 }
 \value{
 returns vectors ofcolors for each time period, where risk ratios have been constrained to be between half risk and twice the risk

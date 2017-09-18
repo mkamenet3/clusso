@@ -60,12 +60,13 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init){
 #'@param theta default is 1000. Can add in overdispersion to simulated model by changing this value.
 #'@param nullmod default is NULL; otherwise will run null model
 #'@param overdispfloor overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
+#'@param collapsetime alternative definition for space-only model to instead collapse expected and observed counts across time. TODO
 #'@return returns list of lists
 #'@export
 
 clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio, 
                           timeperiod, utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"), 
-                      theta = NULL,nullmod=NULL, overdispfloor){
+                      theta = NULL,nullmod=NULL, overdispfloor,collapsetime=FALSE){
     expected <- clst$required_df$expected
     observed <- clst$required_df$observed
     period <- clst$required_df$timeperiod
@@ -120,7 +121,7 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
            # spacetime = clustAll_sim.spacetime(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
            #                                     timeperiod,colors=NULL,utm, byrow, threshold, space=FALSE),
            both = clustAll_sim(x, y, rMax,period, expected, observed, covars, Time, nsim, center, radius, risk.ratio,
-                                     timeperiod,utm, byrow, threshold, theta, nullmod, overdispfloor))
+                                     timeperiod,utm, byrow, threshold, theta, nullmod, overdispfloor, collapsetime))
 }
 
 
@@ -152,11 +153,13 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
 #'@param theta default is 1000. Can add in overdispersion to simulated model by changing this value.
 #'@param nullmod if TRUE, then null models will be run. Otherwise, default is null.
 #'@param overdispfloor overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
+#'@param collapsetime alternative definition for space-only model to instead collapse expected and observed counts across time. TODO
 #'@return returns list of lists
 #'@export
 
 clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, nsim, center, radius, risk.ratio, 
-                               timeperiod,utm, byrow, threshold, theta = theta, nullmod=nullmod,overdispfloor=overdispfloor){
+                               timeperiod,utm, byrow, threshold, theta = theta, nullmod=nullmod,
+                         overdispfloor=overdispfloor, collapsetime=FALSE){
     message("Running both Space and Space-Time Models")
     
     #set up clusters and fitted values
@@ -176,6 +179,9 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     }
     cluster <- tmp[(tmp$r <= radius),]
     rr = matrix(1, nrow=n, ncol=Time)
+    
+    ####
+    rr.s = matrix(1, nrow=n, ncol=Time)
     #TODO change this to be a function and not hard-coded
     if(length(timeperiod) == 3){
         rr[cluster$last, timeperiod[1]] = risk.ratio
@@ -190,14 +196,14 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
         rr[cluster$last, timeperiod[4]] = risk.ratio
         message(paste("Running model for periods",timeperiod[1],"through", timeperiod[4]))
     }
-    if(length(timeperiod) == 5){
-        rr[cluster$last, timeperiod[1]] = risk.ratio
-        rr[cluster$last, timeperiod[2]] = risk.ratio
-        rr[cluster$last, timeperiod[3]] = risk.ratio
-        rr[cluster$last, timeperiod[4]] = risk.ratio
-        rr[cluster$last, timeperiod[5]] = risk.ratio
-        message(paste("Running model for periods",timeperiod[1],"through", timeperiod[5]))
-    }
+    # if(length(timeperiod) == 5){
+    #     rr[cluster$last, timeperiod[1]] = risk.ratio
+    #     rr[cluster$last, timeperiod[2]] = risk.ratio
+    #     rr[cluster$last, timeperiod[3]] = risk.ratio
+    #     rr[cluster$last, timeperiod[4]] = risk.ratio
+    #     rr[cluster$last, timeperiod[5]] = risk.ratio
+    #     message(paste("Running model for periods",timeperiod[1],"through", timeperiod[5]))
+    # }
     if(length(timeperiod) == 2){
         rr[cluster$last, timeperiod[1]] = risk.ratio
         rr[cluster$last, timeperiod[2]] = risk.ratio
@@ -207,27 +213,40 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
         rr[cluster$last, timeperiod:Time] = risk.ratio
         message(paste("Running model for period",timeperiod[1]))
     }
-    E1 = as.vector(rr)*init$E0
+    allTime <- 1:Time
+    for(i in 1:length(allTime)){
+        rr.s[cluster$last, allTime[i]] = risk.ratio
+    }
+    E1 <- as.vector(rr)*init$E0
+    E1.s <- as.vector(rr.s)*init$E0
+    
     Period <- init$Year
     #Simulate observed as NB(Eit, theta)
     YSIM <- lapply(1:nsim, function(i) MASS::rnegbin(E1, theta = theta))
+    YSIM.s <- lapply(1:nsim, function(i) MASS::rnegbin(E1.s, theta = theta))
+    
     Ex <- scale_sim(YSIM, init, nsim, Time)
+    Ex.s <- scale_sim(YSIM.s, init, nsim, Time)
+    
+    
     #create vectors.sim for spacetime
     vectors.sim <- list(Period = Period, Ex = Ex , E0_0 = init$E0, 
                         Y.vec=init$Y.vec, covars = covars)
+    vectors.sim.s <- list(Period = Period, Ex = Ex.s , E0_0 = init$E0, 
+                        Y.vec=init$Y.vec, covars = covars)
     
     #create vectors.sim for space-only
-    spacevecs <- vectors_space_sim(x, Ex, YSIM, Time, init)
-    vectors.sim.s <- spacevecs$vectors.sim.s 
-    YSIM.s <- spacevecs$YSIM.s
+    # spacevecs <- vectors_space_sim(x, Ex, YSIM, Time, init)
+    # vectors.sim.s <- spacevecs$vectors.sim.s 
+    # YSIM.s <- spacevecs$YSIM.s
     
     # #SPACE-ONLY MODELS
     #set up and run simulation models
     message("RUNNING: SPACE-ONLY QUASI-POISSON")
-    lassoresult.qp.s <- spacetimeLasso_sim(clusters, vectors.sim.s, 1, spacetime=FALSE, pois=FALSE, nsim, YSIM.s, overdispfloor)
+    lassoresult.qp.s <- spacetimeLasso_sim(clusters, vectors.sim.s, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM.s, overdispfloor)
 
     message("RUNNING: SPACE-ONLY POISSON")
-    lassoresult.p.s <- spacetimeLasso_sim(clusters, vectors.sim.s, 1, spacetime=FALSE, pois=TRUE, nsim, YSIM.s, overdispfloor)
+    lassoresult.p.s <- spacetimeLasso_sim(clusters, vectors.sim.s, Time, spacetime=TRUE, pois=TRUE, nsim, YSIM.s, overdispfloor)
     
     #SPACE-TIME MODELS 
     #set up and run simulation models
@@ -241,37 +260,55 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     #RR and Colors for Plotting
     ##SPACE-ONLY
     initial.s <- list(E0 = unlist(vectors.sim.s$E0_0))
-    id <- rep(1:length(x), times=Time)
+    #id <- rep(1:length(x), times=Time)
     ################################################################
     ###Space - QP
     ####RR
+    # riskratios.qp.s <- get_rr(lassoresult.qp.s, vectors.sim.s,initial.s, 
+    #                            tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) sum(x)),
+    #                            1, sim=TRUE, cv= NULL)
     riskratios.qp.s <- get_rr(lassoresult.qp.s, vectors.sim.s,initial.s, 
-                               tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) sum(x)),
-                               1, sim=TRUE, cv= NULL)
-    rrcolors.qp.s <- colormapping(riskratios.qp.s, Time = 1, cv=NULL, prob=FALSE)
+                              E1.s,
+                              Time, sim=TRUE, cv= NULL)
+    rrcolors.qp.s <- colormapping(riskratios.qp.s, Time = 5, cv=NULL, prob=FALSE)
+    #rrcolors.qp.s <- colormapping(riskratios.qp.s, Time = 1, cv=NULL, prob=FALSE)
     
     ####Probs and threshold probs
-    pb.qp.s <- get_prob(lassoresult.qp.s, spacetime = FALSE, initial.s,
-                        as.vector(tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) sum(x))) ,n, 1, nsim, threshold)
-    probcolors.qp.s <- colormapping(pb.qp.s$probs, 1, cv = NULL, prob=TRUE)
-    probcolors.qp.s.thresh1 <- colormapping(pb.qp.s$probs.thresh1, 1, cv = NULL, prob=TRUE)
-    probcolors.qp.s.thresh2 <- colormapping(pb.qp.s$probs.thresh2, 1, cv = NULL, prob=TRUE)
+    # pb.qp.s <- get_prob(lassoresult.qp.s, spacetime = FALSE, initial.s,
+    #                     as.vector(tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) sum(x))) ,n, 1, nsim, threshold)
+    pb.qp.s <- get_prob(lassoresult.qp.s, initial.s,
+                        E1.s ,n, Time, nsim, threshold)
+    #probcolors.qp.s <- colormapping(pb.qp.s$probs, 1, cv = NULL, prob=TRUE)
+    # probcolors.qp.s.thresh1 <- colormapping(pb.qp.s$probs.thresh1, 1, cv = NULL, prob=TRUE)
+    # probcolors.qp.s.thresh2 <- colormapping(pb.qp.s$probs.thresh2, 1, cv = NULL, prob=TRUE)
+    probcolors.qp.s <- colormapping(pb.qp.s$probs, Time, cv = NULL, prob=TRUE)
+    probcolors.qp.s.thresh1 <- colormapping(pb.qp.s$probs.thresh1, Time, cv = NULL, prob=TRUE)
+    probcolors.qp.s.thresh2 <- colormapping(pb.qp.s$probs.thresh2, Time, cv = NULL, prob=TRUE)
     
     
     
     ###Space - P
     ####RR
+    # riskratios.p.s <- get_rr(lassoresult.p.s, vectors.sim.s, initial.s, 
+    #                           as.vector(tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) sum(x))),
+    #                           1, sim=TRUE, cv=NULL)
+    # rrcolors.p.s <- colormapping(riskratios.p.s,1, cv=NULL, prob=FALSE)
     riskratios.p.s <- get_rr(lassoresult.p.s, vectors.sim.s, initial.s, 
-                              as.vector(tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) sum(x))),
-                              1, sim=TRUE, cv=NULL)
-    rrcolors.p.s <- colormapping(riskratios.p.s,1, cv=NULL, prob=FALSE)
+                             E1.s,
+                             Time, sim=TRUE, cv=NULL)
+    rrcolors.p.s <- colormapping(riskratios.p.s,Time, cv=NULL, prob=FALSE)
     
     ####Probs and threshold probs
-    pb.p.s <- get_prob(lassoresult.p.s, spacetime = FALSE, initial.s,
-                       tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) sum(x)) ,n, 1, nsim,threshold)
-    probcolors.p.s <- colormapping(pb.p.s$probs, 1, cv = NULL, prob = TRUE)
-    probcolors.p.s.thresh1 <- colormapping(pb.p.s$probs.thresh1, 1, cv = NULL, prob=TRUE)
-    probcolors.p.s.thresh2 <- colormapping(pb.p.s$probs.thresh2, 1, cv = NULL, prob=TRUE)
+    # pb.p.s <- get_prob(lassoresult.p.s, spacetime = FALSE, initial.s,
+    #                    tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) sum(x)) ,n, 1, nsim,threshold)
+    # probcolors.p.s <- colormapping(pb.p.s$probs, 1, cv = NULL, prob = TRUE)
+    # probcolors.p.s.thresh1 <- colormapping(pb.p.s$probs.thresh1, 1, cv = NULL, prob=TRUE)
+    # probcolors.p.s.thresh2 <- colormapping(pb.p.s$probs.thresh2, 1, cv = NULL, prob=TRUE)
+    pb.p.s <- get_prob(lassoresult.p.s, initial.s,
+                       E1.s ,n, Time, nsim,threshold)
+    probcolors.p.s <- colormapping(pb.p.s$probs, Time, cv = NULL, prob = TRUE)
+    probcolors.p.s.thresh1 <- colormapping(pb.p.s$probs.thresh1, Time, cv = NULL, prob=TRUE)
+    probcolors.p.s.thresh2 <- colormapping(pb.p.s$probs.thresh2, Time, cv = NULL, prob=TRUE)
      
     ################################
     
@@ -281,7 +318,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     rrcolors.qp.st <- colormapping(riskratios.qp.st,Time, cv=NULL, prob = FALSE)
     
     ####Probs and threshold probs
-    pb.qp.st <- get_prob(lassoresult.qp.st, spacetime = TRUE, init, E1, n, Time, nsim,threshold)
+    pb.qp.st <- get_prob(lassoresult.qp.st,init, E1, n, Time, nsim,threshold)
     probcolors.qp.st <- colormapping(pb.qp.st$probs, Time, cv = NULL, prob = TRUE)
     probcolors.qp.st.thresh1 <- colormapping(pb.qp.st$probs.thresh1, Time, cv = NULL, prob = TRUE)
     probcolors.qp.st.thresh2 <- colormapping(pb.qp.st$probs.thresh2, Time, cv = NULL, prob = TRUE)
@@ -293,7 +330,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     rrcolors.p.st <- colormapping(riskratios.p.st,Time, cv=NULL, prob = FALSE)
     
     ####Probs and threshold probs
-    pb.p.st <- get_prob(lassoresult.p.st, spacetime=TRUE, init, E1, n, Time, nsim,threshold)
+    pb.p.st <- get_prob(lassoresult.p.st, init, E1, n, Time, nsim,threshold)
     probcolors.p.st <- colormapping(pb.p.st$probs, Time, cv = NULL, prob = TRUE)
     probcolors.p.st.thresh1 <- colormapping(pb.p.st$probs.thresh1, Time, cv = NULL, prob = TRUE)
     probcolors.p.st.thresh2 <- colormapping(pb.p.st$probs.thresh2, Time, cv = NULL, prob = TRUE)

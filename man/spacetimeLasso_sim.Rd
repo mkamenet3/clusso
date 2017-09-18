@@ -2,7 +2,7 @@
 % Please edit documentation in R/spacetimeLasso_sim.R
 \name{spacetimeLasso_sim}
 \alias{spacetimeLasso_sim}
-\title{Simulations forSpatial and Spatio-Temporal Lasso}
+\title{Simulations for Spatial and Spatio-Temporal Lasso}
 \usage{
 spacetimeLasso_sim(clusters, vectors.sim, Time, spacetime, pois, nsim, YSIM,
   overdispfloor)

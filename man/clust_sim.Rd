@@ -6,7 +6,8 @@
 \usage{
 clust_sim(clst, x, y, rMax, Time, nsim, center, radius, risk.ratio, timeperiod,
   utm = TRUE, byrow = TRUE, threshold, space = c("space", "spacetime",
-  "both"), theta = NULL, nullmod = NULL, overdispfloor)
+  "both"), theta = NULL, nullmod = NULL, overdispfloor,
+  collapsetime = FALSE)
 }
 \arguments{
 \item{clst}{list; output from toclust function. Must be of class clst.}
@@ -45,6 +46,8 @@ space = spacetime, or space = both.}
 \item{nullmod}{default is NULL; otherwise will run null model}
 
 \item{overdispfloor}{overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.}
+
+\item{collapsetime}{alternative definition for space-only model to instead collapse expected and observed counts across time. TODO}
 }
 \value{
 returns list of lists
