@@ -18,7 +18,7 @@ redblue=function(x) {
 #' @return colors
 reds <- function(x){
     ramp <- colorRamp(c("white","red"))(x)
-    rgb(ramp[,1],ramp[,2],ramp[,3], max = 255)
+    rgb(ramp[,1],ramp[,2],ramp[,3], maxColorValue = 255)
 }
 
 #' colormapping

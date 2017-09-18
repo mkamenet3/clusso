@@ -1,4 +1,4 @@
-#' Simulations forSpatial and Spatio-Temporal Lasso
+#' Simulations for Spatial and Spatio-Temporal Lasso
 #' 
 #' This function runs the Lasso regularization technique on our large sparse matric of potential space-time clusters.It is specifically created to use with simulations.
 #' @param clusters clusters dataframe from (cluster.df function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)
@@ -12,7 +12,6 @@
 #' @return This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
 #' a list of observed counts (Yx), the lasso object, a list of K values (number of unique values in each decision path), and n (length of unique centers in the clusters dataframe)
 #' @export
-
 spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim,YSIM,overdispfloor){
     n <- length(unique(clusters$center))
     potClus <- n

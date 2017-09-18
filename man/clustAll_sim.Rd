@@ -48,6 +48,8 @@ this would mean we look at periods 2, 3, 4, and 5.}
 \item{nullmod}{if TRUE, then null models will be run. Otherwise, default is null.}
 
 \item{overdispfloor}{overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.}
+
+\item{collapsetime}{alternative definition for space-only model to instead collapse expected and observed counts across time. TODO}
 }
 \value{
 returns list of lists

@@ -153,11 +153,13 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
 #'@param theta default is 1000. Can add in overdispersion to simulated model by changing this value.
 #'@param nullmod if TRUE, then null models will be run. Otherwise, default is null.
 #'@param overdispfloor overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
+#'@param collapsetime alternative definition for space-only model to instead collapse expected and observed counts across time. TODO
 #'@return returns list of lists
 #'@export
 
 clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, nsim, center, radius, risk.ratio, 
-                               timeperiod,utm, byrow, threshold, theta = theta, nullmod=nullmod,overdispfloor=overdispfloor, collapsetime=FALSE){
+                               timeperiod,utm, byrow, threshold, theta = theta, nullmod=nullmod,
+                         overdispfloor=overdispfloor, collapsetime=FALSE){
     message("Running both Space and Space-Time Models")
     
     #set up clusters and fitted values
