@@ -4,8 +4,8 @@
 \alias{easyplot}
 \title{Auxiliary Plotting Functions for Japanese Breast Cancer Data}
 \usage{
-easyplot(prefect, polygons, pdfname, res, mods, space = c("space",
-  "spacetime", "both"), obs = NULL)
+easyplot(prefect, polygons, pdfname, rescols, mods, space = c("space",
+  "spacetime", "both"), probmap, cv = NULL, obs = NULL)
 }
 \arguments{
 \item{prefect}{prefects dataframe}
@@ -14,12 +14,16 @@ easyplot(prefect, polygons, pdfname, res, mods, space = c("space",
 
 \item{pdfname}{pdfname of what the output pdf will be called}
 
-\item{res}{resultant list from clust_ function}
+\item{rescols}{result colors to plot}
 
 \item{mods}{string vector of which models you ran}
 
 \item{space}{If space="space", then the Quasi-Poisson and Poisson spatial only models will be run; if space="spacetime" then the Quasi-Poisson and Poisson
 spatio-temporal models will be run; if space="both" then all four models will be run}
+
+\item{probmap}{TRUE or FALSE if probabilities should be mapped or relative risks}
+
+\item{cv}{default is NULL. If not null, then results from cross-validation will be plotted (for real data example)}
 
 \item{obs}{default is NULL. If not null, then will add "observed" instead of "oracle" label to plot for comparison map.}
 }

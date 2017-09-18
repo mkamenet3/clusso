@@ -6,7 +6,7 @@
 \usage{
 clustAll_sim(x, y, rMax, period, expected, observed, covars, Time, nsim, center,
   radius, risk.ratio, timeperiod, utm, byrow, threshold, theta = theta,
-  nullmod = nullmod, overdispfloor = overdispfloor)
+  nullmod = nullmod, overdispfloor = overdispfloor, collapsetime = FALSE)
 }
 \arguments{
 \item{x}{x coordinates (easting/latitude); if utm coordinates, scale to km.}

@@ -13,9 +13,6 @@ redblue(x)
 colors
 }
 \description{
-redblue
-}
-\details{
 This function establishes the spread of reds and blues for the risk ratios to be mapped to. Higher risk ratios will be deeper red colors and lower risk ratios will be deeper blue colors.
 }
 

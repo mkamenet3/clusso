@@ -218,6 +218,131 @@ print(table.detection)
 
 ```
 
+## Running single simulation without covariates
+
+```{r}
+
+dframe.poly2 <- read.csv("../data/japan_poly2.csv")
+japan.poly2 <- dframe.poly2[,2:3]
+dframe.prefect2 <- read.csv("../data/japan_prefect2.csv")
+japan.prefect2 <- dframe.prefect2[,2:5]
+
+head(dframe.poly2)
+head(dframe.prefect2)
+
+
+```
+
+
+
+Import dataframe with covariates:
+
+```{r}
+#Set-up
+dframe1 <- read.csv("../data/jap.breast.F.9.10.11.csv")
+dframe2 <- read.csv("../data/utmJapan.csv")
+dframe3 <- aggregate(dframe1, by=list(as.factor(rep(1:(nrow(dframe1)/4),each=4))), FUN="sum")
+dframe=data.frame(id=as.factor(dframe3$id/4),period=as.factor(dframe3$year),death=dframe3$death,expdeath=dframe3$expdeath)
+levels(dframe$period) <- c("1","2","3","4","5")
+
+#add a couple of covariates to the dataframe
+covar1 <- rnorm(n = nrow(dframe),mean = 500, sd = 30)
+covar2 <- rpois(n = nrow(dframe), lambda = dframe$expdeath)
+covar3 <- rbinom(n = nrow(dframe), size = 50, prob = 0.7)
+covar4 <- rbinom(n = nrow(dframe), 1, 0.5)
+covar5 <- rbinom(n = nrow(dframe), 1, 0.2)
+
+#add new covariates to dataframe
+df <- cbind.data.frame(dframe[,-1], covar1, covar2, covar3, covar4, covar5)
+
+#check out the new dataframe
+head(df)
+
+#assume this is what you start with
+```
+
+```{r}
+#Initial inputs
+mods <- c("QuasiPoisson", "Poisson")
+x <- dframe2$utmx/1000
+y <- dframe2$utmy/1000
+rMax <- 20 
+Time <- 5
+overdispfloor <- TRUE
+nsim <- 100
+threshold <- c(0.9, 0.5)
+mods <- c("QuasiPoisson", "Poisson")
+
+```
+
+### Set conditions for cluster
+
+```{r}
+center <- 150 #can take values 1 - 208 because we have a total of 208 centroids
+radius <- 18
+timeperiod <- c(3:5)
+risk.ratio <- 2
+nullmod <- NULL #set to NULL if we want to run non-null model (model with a cluster we've created)
+theta <- 2 #with overdispersion. For no overdispersion, set theta = NULL
+table.detection <- NULL
+
+```
+
+
+
+```{r}
+dframe <- dframe[,-1]
+
+clst <- toclust(dframe, expected = dframe$expdeath, observed = dframe$death, timeperiod = dframe$period, covars=FALSE)
+
+system.time(res <- clust_sim(clst, x, y,rMax,Time, nsim,center, radius, risk.ratio, timeperiods, 
+                             utm=TRUE, byrow=TRUE, threshold, space= "both", theta, nullmod, overdispfloor))
+
+```
+
+### Diagnostics and Maps
+
+Save diagnostics into csv:
+
+```{r}
+
+#save results
+(sim.i <- paste0("sim","_","center","_",center,"radius",radius,"_", "start",
+                 "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio)))
+filename <- paste0("sampleoutput/",sim.i,"singlesim.RData")
+save(res, file = filename)
+
+#Print Detection for the Simulation
+(tabn <- rbind("******",cbind(radius,risk.ratio,center,time=as.numeric(paste(timeperiod, collapse = "")), mod = "ST",
+                              rbind("QuasiPois",res$detect.out.qp.st), rbind("Pois",res$detect.out.p.st)),
+               cbind(radius,risk.ratio,center,time=as.numeric(paste(timeperiod, collapse = "")), mod = "Space",
+                     rbind("QuasiPois",res$detect.out.qp.s), rbind("Pois",res$detect.out.p.s))))
+
+#WRITE TO CSV
+print(tabn)
+write.csv(tabn, file="sampleoutput/tabledetectionsinglesim.csv", row.names=TRUE)
+
+
+```
+
+
+Make maps!
+
+
+```{r}
+pdfname1 <- paste0("rrmaps.pdf")
+pdfname2 <- paste0("probabilitymaps.pdf")
+pdfname3 <- paste0("probmapsthresh1.pdf")
+pdfname4 <- paste0("probmapsthresh2.pdf")
+
+easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname1, res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL)
+easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname2, res$probcolors, mods, space="both", probmap=TRUE, obs = NULL)
+easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname3, res$probcolors.thresh1, mods, space="both", probmap=TRUE, obs = NULL)
+easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname4, res$probcolors.thresh2, mods, space="both", probmap=TRUE, obs = NULL)
+
+```
+
+
 
 
 
@@ -289,9 +414,6 @@ timeperiods <- c(3:5)
 risk.ratio <- 2
 nullmod <- NULL #set to NULL if we want to run non-null model (model with a cluster we've created)
 theta <- 2 #with overdispersion. For no overdispersion, set theta = NULL
-overdispfloor <- TRUE
-threshold <- c(0.9, 0.5)
-mods <- c("QuasiPoisson", "Poisson")
 
 
 table.detection <- NULL
@@ -302,10 +424,7 @@ table.detection <- NULL
 
 ```{r}
 
-#clst <- toclust(df, expected = df$expdeath, observed = df$death, timeperiod = df$period, covars=TRUE)
-dframe <- dframe[,-1]
-
-clst <- toclust(dframe, expected = dframe$expdeath, observed = dframe$death, timeperiod = dframe$period, covars=FALSE)
+clst <- toclust(dframe, expected = dframe$expdeath, observed = dframe$death, timeperiod = dframe$period, covars=TRUE)
 
 system.time(res <- clust_sim(clst, x, y,rMax,Time, nsim,center, radius, risk.ratio, timeperiods, 
                              utm=TRUE, byrow=TRUE, threshold, space= "both", theta, nullmod, overdispfloor))
@@ -321,7 +440,7 @@ Save diagnostics into csv:
 #save results
 (sim.i <- paste0("sim","_","center","_",center,"radius",radius,"_", "start",
                  "_",as.numeric(paste(timeperiod, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio), "NULLCOVARS"))
-filename <- paste0("sampleoutput/",sim.i,".RData")
+filename <- paste0("sampleoutput/",sim.i,"SPAT.RData")
 save(res, file = filename)
 
 #Print Detection for the Simulation
@@ -332,7 +451,7 @@ save(res, file = filename)
 
 #WRITE TO CSV
 print(tabn)
-write.csv(table.detection.null, file="sampleoutpuet/tabledetectionNULL.csv", row.names=TRUE)
+write.csv(tabn, file="sampleoutput/tabledetectioncovars.csv", row.names=TRUE)
 
 
 ```
@@ -347,13 +466,12 @@ pdfname2 <- paste0("probabilitymaps.pdf")
 pdfname3 <- paste0("probmapsthresh1.pdf")
 pdfname4 <- paste0("probmapsthresh2.pdf")
 
+
 easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname1, res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL)
 
 easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname2, res$probcolors, mods, space="both", probmap=TRUE, obs = NULL)
 easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname3, res$probcolors.thresh1, mods, space="both", probmap=TRUE, obs = NULL)
 easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname4, res$probcolors.thresh2, mods, space="both", probmap=TRUE, obs = NULL)
-
-
 
 ```
 

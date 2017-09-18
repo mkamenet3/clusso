@@ -4,7 +4,7 @@
 \alias{plotmap_ST}
 \title{Space-time plotting}
 \usage{
-plotmap_ST(prefect, polygons, pdfname, res, obs, sub)
+plotmap_ST(prefect, polygons, pdfname, res, obs)
 }
 \arguments{
 \item{prefect}{prefects dataframe}
@@ -16,8 +16,6 @@ plotmap_ST(prefect, polygons, pdfname, res, obs, sub)
 \item{res}{resultant list from clust_ function}
 
 \item{obs}{if observed is to be plotted or oracle from simulation}
-
-\item{sub}{optional parameter if you want to just use the function for plotting different vectors}
 }
 \description{
 Space-time plotting

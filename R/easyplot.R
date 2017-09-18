@@ -4,14 +4,14 @@
 #' @param prefect prefects dataframe
 #' @param polygons polygons dataframe
 #' @param pdfname pdfname of what the output pdf will be called
-#' @param res resultant list from clust_ function
+#' @param rescols result colors to plot
 #' @param mods string vector of which models you ran
 #' @param space If space="space", then the Quasi-Poisson and Poisson spatial only models will be run; if space="spacetime" then the Quasi-Poisson and Poisson
 #' spatio-temporal models will be run; if space="both" then all four models will be run
+#' @param probmap TRUE or FALSE if probabilities should be mapped or relative risks
+#' @param cv default is NULL. If not null, then results from cross-validation will be plotted (for real data example)
 #' @param obs default is NULL. If not null, then will add "observed" instead of "oracle" label to plot for comparison map.
 #' @export
-
-
 easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space", "spacetime", "both"), probmap, cv=NULL,obs=NULL){
     if(is.null(space)){ stop("You must specify `space`, `spacetime` or `both`")}
     space <- match.arg(space, several.ok = FALSE)
@@ -24,14 +24,14 @@ easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space",
         message("RR Maps")
         switch(space, 
                space = {
-                   plotmap_S(prefect, polygons, pdf_qp.s, res, obs, sub = rescols$rrcolors.qp.s)
-                   plotmap_S(prefect, polygons, pdf_p.s, res, obs, sub = rescols$rrcolors.p.s)},
-               spacetime = {
-                   plotmap_ST(prefect, polygons, pdf_qp.st, res, obs, sub = rescols$rrcolors.qp.st)
-                   plotmap_ST(prefect, polygons, pdf_p.st, res, obs, sub = rescols$rrcolors.p.st)},
-               both = {
                    plotmap_S(prefect, polygons, pdf_qp.s, rescols$rrcolors.qp.s, obs)
-                   plotmap_S(prefect, polygons, pdf_p.s, rescols$rrcolors.p.s, obs)
+                   plotmap_S(prefect, polygons, pdf_p.s, rescols$rrcolors.p.s, obs)},
+               spacetime = {
+                   plotmap_ST(prefect, polygons, pdf_qp.st, rescols$rrcolors.qp.st, obs)
+                   plotmap_ST(prefect, polygons, pdf_p.st, rescols$rrcolors.p.st, obs)},
+               both = {
+                   plotmap_ST(prefect, polygons, pdf_qp.s, rescols$rrcolors.qp.s, obs)
+                   plotmap_ST(prefect, polygons, pdf_p.s, rescols$rrcolors.p.s, obs)
                    plotmap_ST(prefect, polygons, pdf_qp.st, rescols$rrcolors.qp.st, obs)
                    plotmap_ST(prefect, polygons, pdf_p.st, rescols$rrcolors.p.st, obs)})
     }
@@ -45,8 +45,8 @@ easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space",
                    plotmap_ST(prefect, polygons, pdf_qp.st, rescols$probcolors.qp.st, obs)
                    plotmap_ST(prefect, polygons, pdf_p.st, rescols$probcolors.p.s, obs)},
                both = {
-                   plotmap_S(prefect, polygons, pdf_qp.s, rescols$probcolors.qp.s, obs)
-                   plotmap_S(prefect, polygons, pdf_p.s, rescols$probcolors.p.s, obs)
+                   plotmap_ST(prefect, polygons, pdf_qp.s, rescols$probcolors.qp.s, obs)
+                   plotmap_ST(prefect, polygons, pdf_p.s, rescols$probcolors.p.s, obs)
                    plotmap_ST(prefect, polygons, pdf_qp.st, rescols$probcolors.qp.st, obs)
                    plotmap_ST(prefect, polygons, pdf_p.st, rescols$probcolors.qp.st, obs)})
     }
@@ -60,7 +60,7 @@ easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space",
                #     plotmap_ST(prefect, polygons, pdf_qp.st, res, obs, sub = res$probcolors$probcolors.qp.st)
                #     plotmap_ST(prefect, polygons, pdf_p.st, res, obs, sub = res$probcolors$probcolors.p.s)},
                both = {
-                   plotmap_S_cv(prefect, polygons, pdf_qp.s,  rescols$rrcolors.qp.s, obs,)
+                   plotmap_S_cv(prefect, polygons, pdf_qp.s,  rescols$rrcolors.qp.s, obs)
                    plotmap_S_cv(prefect, polygons, pdf_p.s, rescols$rrcolors.p.s, obs)
                    plotmap_ST_cv(prefect, polygons, pdf_qp.st, rescols$rrcolors.qp.st, obs)
                    plotmap_ST_cv(prefect, polygons, pdf_p.st, rescols$rrcolors.p.st, obs)})
@@ -75,7 +75,6 @@ easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space",
 #' @param pdfname pdfname of what the output pdf will be called
 #' @param res resultant list from clust_ function
 #' @param obs if observed is to be plotted or oracle from simulation
-#' @param sub optional parameter if you want to just use the function for plotting different vectors
 #' 
 plotmap_ST_cv <- function(prefect, polygons, pdfname,res, obs){
     if(!is.null(obs)){
@@ -84,14 +83,6 @@ plotmap_ST_cv <- function(prefect, polygons, pdfname,res, obs){
     else{
         firstrow="Oracle"
     }
-    # if(!is.null(sub)){
-    #     rrcolors <- sub
-    #     
-    # }
-    # else {
-    #     rrcolors <- res$rrcolors
-    # }
-
     pdf(pdfname, height=11, width=10)
     #Maps of Observed Counts
     par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))
@@ -167,8 +158,6 @@ plotmap_ST_cv <- function(prefect, polygons, pdfname,res, obs){
 #' @param pdfname pdfname of what the output pdf will be called
 #' @param res resultant list from clust_ function
 #' @param obs if observed is to be plotted or oracle from simulation
-#' @param sub optional parameter if you want to just use the function for plotting different vectors
-#' 
 plotmap_S_cv <- function(prefect, polygons, pdfname,res, obs){
     if(!is.null(obs)){
         firstrow = "Obs"
@@ -176,13 +165,6 @@ plotmap_S_cv <- function(prefect, polygons, pdfname,res, obs){
     else{
         firstrow="Oracle"
     }
-    # if(!is.null(sub)){
-    #     rrcolors <-  sub
-    # }
-    # else{
-    #     rrcolors <- res$rrcolors
-    # }
-
     pdf(pdfname, height=11, width=10)
     #Maps of Observed Counts
     par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))
@@ -204,30 +186,12 @@ plotmap_S_cv <- function(prefect, polygons, pdfname,res, obs){
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #' Space-time plotting
 #' @param prefect prefects dataframe
 #' @param polygons polygons dataframe
 #' @param pdfname pdfname of what the output pdf will be called
 #' @param res resultant list from clust_ function
 #' @param obs if observed is to be plotted or oracle from simulation
-#' @param sub optional parameter if you want to just use the function for plotting different vectors
-#' 
 plotmap_ST <- function(prefect, polygons, pdfname,res, obs){
     if(!is.null(obs)){
         firstrow = "Obs"
@@ -235,14 +199,6 @@ plotmap_ST <- function(prefect, polygons, pdfname,res, obs){
     else{
         firstrow="Oracle"
     }
-    # if(!is.null(sub)){
-    #     rrcolors <- sub
-    #    
-    # }
-    # else {
-    #     rrcolors <- res$rrcolors
-    # }
-    # 
     pdf(pdfname, height=11, width=10)
     #Maps of Observed Counts
     par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))
@@ -386,8 +342,6 @@ plotmap_ST <- function(prefect, polygons, pdfname,res, obs){
 #' @param pdfname pdfname of what the output pdf will be called
 #' @param res resultant list from clust_ function
 #' @param obs if observed is to be plotted or oracle from simulation
-#' @param sub optional parameter if you want to just use the function for plotting different vectors
-#' 
 plotmap_S <- function(prefect, polygons, pdfname,res, obs){
     if(!is.null(obs)){
         firstrow = "Obs"
@@ -395,13 +349,6 @@ plotmap_S <- function(prefect, polygons, pdfname,res, obs){
     else{
         firstrow="Oracle"
     }
-    # if(!is.null(sub)){
-    #     rrcolors <-  sub
-    #     }
-    # else{
-    #     rrcolors <- res$rrcolors
-    # }
-
     pdf(pdfname, height=11, width=10)
     #Maps of Observed Counts
     par(fig=c(0,.2,.6,1), mar=c(.5,0.5,0.5,0))

@@ -3,22 +3,20 @@
 #' @description 
 #' Finds the probability of being in the cluster for BIC, AIC, and AICc based on the expected risk ratio
 #' @param lassoresult result of either space-time lasso simulation or space-only simulation
+#' @param init list of initial vector values
+#' @param E1 standardized expected counts
 #' @param ncentroids number of centroids or centers
 #' @param Time number of time periods
+#' @param nsim number of simulations
+#' @param threshold vector of two threshold values TODO: allow flexibility for number of threshold
 #' @return returns list of probabilities.
 #' 
-get_prob <- function(lassoresult, spacetime,init, E1, ncentroids, Time, nsim, threshold){
-    nsim <- nsim
-    #print(nsim)
-    prob.bic <- prob_incluster(lassoresult$xbetaPath, lassoresult$select.qbic, ncentroids, Time, nsim)
-    prob.aic <- prob_incluster(lassoresult$xbetaPath, lassoresult$select.qaic, ncentroids, Time, nsim)
-    prob.aicc <- prob_incluster(lassoresult$xbetaPath, lassoresult$select.qaicc, ncentroids, Time, nsim)
-    if(spacetime == FALSE){
-        obs <-as.vector(matrix(as.vector(E1)/as.vector(init$E0),ncol=Time))
-    }
-    else{
-         obs <- matrix(as.vector(E1)/as.vector(init$E0),ncol=Time)
-    }
+get_prob <- function(lassoresult,init, E1, ncentroids, Time, nsim, threshold){
+    #nsim <- nsim
+    prob.bic <- prob_incluster(lassoresult$select_mu.qbic, ncentroids, Time, nsim)
+    prob.aic <- prob_incluster(lassoresult$select_mu.qaic, ncentroids, Time, nsim)
+    prob.aicc <- prob_incluster(lassoresult$select_mu.qaicc, ncentroids, Time, nsim)
+    obs <- matrix(as.vector(E1)/as.vector(init$E0),ncol=Time)
     prob.obs <- ifelse(obs>1,1,0)
     #thresholding
     ##BIC
@@ -53,23 +51,19 @@ get_prob <- function(lassoresult, spacetime,init, E1, ncentroids, Time, nsim, th
 #' @title 
 #' prob_incluster
 #' @description
-#'Mapping colors to create a black/white probability map. This function will create a probability map based on simulation data. In each simulation, it identifies where a cluster was selected,
+#'Mapping colors to create a  probability map. This function will create a probability map based on simulation data. In each simulation, it identifies where a cluster was selected,
 #'compared to the background rate. It then average over the number of simulations, giving us a matrix which ranges from 0 to 1 in probability.
 #'To map this probabilities into a color scheme, please see the $colormapping$ function and select probmap=TRUE. TODO integrate all of this
 #'into a workflow and extend to observed data, not only simulated data.
-#'@param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso.sim function
-#'@param vectors.sim dataframe of initial vectors of the observed and expected counts that went into mylasso.sim function
-#'@param rr risk ratio matrix that was used in the simulation
-#'@param nsim number of simulations
+#'@param select_mu List of selected mu vectors selected by the respective information criteria.
+#'@param ncentroids number of centroids
 #'@param Time number of time period
-#'@param colormap default is FALSE. Signals whether the probabilities should directly be mapped to the red-blue color scheme. If this is false,
-#'only the probability values will be returned. If true, then the probability values and the mapped colors will be returned in a list.
+#'@param nsim number of simulations
 #'@return returns vector which calculated the number of time the cluster was correctly identified out of the simulations
-prob_incluster <- function(xbetaMat, select, ncentroids, Time, nsim){
+prob_incluster <- function(select_mu, ncentroids, Time, nsim){
     vec <- rep(0, ncentroids * Time)
     position <- list(vec)[rep(1, nsim)]
-    xbetaMat_select <- lapply(1:nsim, function(i) sapply(select[[i]], function(j) xbetaMat[[i]][,j]))
-    ix <- lapply(1:nsim, function(x) which(abs(xbetaMat_select[[x]]) > 0))
+    ix <- lapply(1:nsim, function(i) which(as.vector(select_mu[[i]]) > 1))
     #quick function to recode
     reval <- function(probs, ix){
         probs[ix] <-1
@@ -77,6 +71,9 @@ prob_incluster <- function(xbetaMat, select, ncentroids, Time, nsim){
     }
     simindicator <- mapply(reval, position, ix)
     probs <- Matrix::rowSums(simindicator)/nsim
-    
     return(probs)
 }    
+
+
+
+
