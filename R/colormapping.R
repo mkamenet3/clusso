@@ -11,15 +11,19 @@ redblue=function(x) {
 
 #' Color-mapping of probabilities to red scale
 #' 
-#' reds
+#' greys
 #' 
 #' This function establishes the spread of grey scale for probabilities to be mapped to. Higher probabilities will be darker and lower probabilities will be lighter colors.
 #' @param x this will be the risk ratios shrunk to be on the scale of half risk to twice the risk as end points.
 #' @return colors
-reds <- function(x){
-    ramp <- colorRamp(c("white","red"))(x)
-    rgb(ramp[,1],ramp[,2],ramp[,3], maxColorValue = 255)
-}
+greys=function(x) { y=colorRamp(brewer.pal(9,"Greys")[1:9])(x); rgb(y[,1],y[,2],y[,3],max=255) }
+# greys <- function(x){
+#     ramp <- colorRamp(c("white", "black"))
+#     colors <- rgb(ramp(x)/255)
+#     return(colors)
+#     #rgb(ramp[,1],ramp[,2],ramp[,3], maxColorValue = 255)
+# }
+
 
 #' colormapping
 #' 
@@ -52,10 +56,10 @@ colormapping <- function(rate,Time,cv, prob) {
             if(max(rbic)>1) {warning("Max probability from BIC greater than 1")}
             if(max(raic)>1) {warning("Max probability from AIC greater than 1")}
             if(max(raicc)>1) {warning("Max probability from AICc greater than 1")}
-            color.obs <- sapply(1:Time, function(i) reds(robs[,i]))
-            color.qbic <- sapply(1:Time, function(i) reds(rbic[,i]))
-            color.qaic <- sapply(1:Time, function(i) reds(raic[,i]))
-            color.qaicc <- sapply(1:Time, function(i) reds(raicc[,i]))
+            color.obs <- sapply(1:Time, function(i) greys(robs[,i]))
+            color.qbic <- sapply(1:Time, function(i) greys(rbic[,i]))
+            color.qaic <- sapply(1:Time, function(i) greys(raic[,i]))
+            color.qaicc <- sapply(1:Time, function(i) greys(raicc[,i]))
             res <- list(colors.obs = color.obs, color.qbic = color.qbic, color.qaic = color.qaic, color.qaicc = color.qaicc)
             
         }
