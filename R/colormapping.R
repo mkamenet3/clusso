@@ -9,20 +9,38 @@ redblue=function(x) {
 }
 
 
-#' Color-mapping of probabilities to red scale
+#' Color-mapping of probabilities to grey scale
 #' 
 #' greys
 #' 
 #' This function establishes the spread of grey scale for probabilities to be mapped to. Higher probabilities will be darker and lower probabilities will be lighter colors.
-#' @param x this will be the risk ratios shrunk to be on the scale of half risk to twice the risk as end points.
+#' @param x vectors of probabilities to be mapped
 #' @return colors
-greys=function(x) { y=colorRamp(brewer.pal(9,"Greys")[1:9])(x); rgb(y[,1],y[,2],y[,3],max=255) }
-# greys <- function(x){
-#     ramp <- colorRamp(c("white", "black"))
-#     colors <- rgb(ramp(x)/255)
-#     return(colors)
-#     #rgb(ramp[,1],ramp[,2],ramp[,3], maxColorValue = 255)
-# }
+greys=function(x) { 
+    y=colorRamp(brewer.pal(9,"Greys")[1:9])(x); rgb(y[,1],y[,2],y[,3],maxColorValue = 255) 
+}
+
+#' Color-mapping of red
+#' 
+#' reds
+#' 
+#' This function shows scale of red; used to create the legend for rr maps
+#' @param x vector to be mapped
+#' @return colors
+reds=function(x) { 
+    y=colorRamp(brewer.pal(9,"Reds")[1:9])(x); rgb(y[,1],y[,2],y[,3],maxColorValue = 255)
+}
+
+#' Color-mapping of blue
+#' 
+#' blues
+#' 
+#' This function shows scale of blue; used to create the legend for rr maps
+#' @param x vector to be mapped
+#' @return colors
+blues=function(x) { 
+    y=colorRamp(brewer.pal(9,"Blues")[1:9])(x); rgb(y[,1],y[,2],y[,3],maxColorValue = 255) 
+}
 
 
 #' colormapping

@@ -196,14 +196,14 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
         rr[cluster$last, timeperiod[4]] = risk.ratio
         message(paste("Running model for periods",timeperiod[1],"through", timeperiod[4]))
     }
-    # if(length(timeperiod) == 5){
-    #     rr[cluster$last, timeperiod[1]] = risk.ratio
-    #     rr[cluster$last, timeperiod[2]] = risk.ratio
-    #     rr[cluster$last, timeperiod[3]] = risk.ratio
-    #     rr[cluster$last, timeperiod[4]] = risk.ratio
-    #     rr[cluster$last, timeperiod[5]] = risk.ratio
-    #     message(paste("Running model for periods",timeperiod[1],"through", timeperiod[5]))
-    # }
+    if(length(timeperiod) == 5){
+        rr[cluster$last, timeperiod[1]] = risk.ratio
+        rr[cluster$last, timeperiod[2]] = risk.ratio
+        rr[cluster$last, timeperiod[3]] = risk.ratio
+        rr[cluster$last, timeperiod[4]] = risk.ratio
+        rr[cluster$last, timeperiod[5]] = risk.ratio
+        message(paste("Running model for periods",timeperiod[1],"through", timeperiod[5]))
+    }
     if(length(timeperiod) == 2){
         rr[cluster$last, timeperiod[1]] = risk.ratio
         rr[cluster$last, timeperiod[2]] = risk.ratio

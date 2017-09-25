@@ -12,7 +12,7 @@
 #' @param cv default is NULL. If not null, then results from cross-validation will be plotted (for real data example)
 #' @param obs default is NULL. If not null, then will add "observed" instead of "oracle" label to plot for comparison map.
 #' @export
-easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space", "spacetime", "both"), probmap, cv=NULL,obs=NULL){
+easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space", "spacetime", "both"), probmap, cv=NULL,obs=NULL,rr){
     if(is.null(space)){ stop("You must specify `space`, `spacetime` or `both`")}
     space <- match.arg(space, several.ok = FALSE)
     pdf_qp.s <- paste0(gsub(".pdf","", pdfname),mods[1],"space" ,".pdf")
@@ -30,10 +30,10 @@ easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space",
                    plotmap_ST(prefect, polygons, pdf_qp.st, rescols$rrcolors.qp.st, obs)
                    plotmap_ST(prefect, polygons, pdf_p.st, rescols$rrcolors.p.st, obs)},
                both = {
-                   plotmap_ST(prefect, polygons, pdf_qp.s, rescols$rrcolors.qp.s, obs)
-                   plotmap_ST(prefect, polygons, pdf_p.s, rescols$rrcolors.p.s, obs)
-                   plotmap_ST(prefect, polygons, pdf_qp.st, rescols$rrcolors.qp.st, obs)
-                   plotmap_ST(prefect, polygons, pdf_p.st, rescols$rrcolors.p.st, obs)})
+                   plotmap_ST(prefect, polygons, pdf_qp.s, rescols$rrcolors.qp.s, obs, rr)
+                   plotmap_ST(prefect, polygons, pdf_p.s, rescols$rrcolors.p.s, obs, rr)
+                   plotmap_ST(prefect, polygons, pdf_qp.st, rescols$rrcolors.qp.st, obs, rr)
+                   plotmap_ST(prefect, polygons, pdf_p.st, rescols$rrcolors.p.st, obs, rr)})
     }
     if(probmap==TRUE & is.null(cv)){
         message("Probability Maps")
@@ -45,10 +45,10 @@ easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space",
                    plotmap_ST(prefect, polygons, pdf_qp.st, rescols$probcolors.qp.st, obs)
                    plotmap_ST(prefect, polygons, pdf_p.st, rescols$probcolors.p.s, obs)},
                both = {
-                   plotmap_ST(prefect, polygons, pdf_qp.s, rescols$probcolors.qp.s, obs)
-                   plotmap_ST(prefect, polygons, pdf_p.s, rescols$probcolors.p.s, obs)
-                   plotmap_ST(prefect, polygons, pdf_qp.st, rescols$probcolors.qp.st, obs)
-                   plotmap_ST(prefect, polygons, pdf_p.st, rescols$probcolors.qp.st, obs)})
+                   plotmap_ST(prefect, polygons, pdf_qp.s, rescols$probcolors.qp.s, obs, rr)
+                   plotmap_ST(prefect, polygons, pdf_p.s, rescols$probcolors.p.s, obs, rr)
+                   plotmap_ST(prefect, polygons, pdf_qp.st, rescols$probcolors.qp.st, obs, rr)
+                   plotmap_ST(prefect, polygons, pdf_p.st, rescols$probcolors.qp.st, obs, rr)})
     }
     if(!is.null(cv)){
         message("CV Maps")
@@ -148,6 +148,17 @@ plotmap_ST_cv <- function(prefect, polygons, pdfname,res, obs){
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 5 - CV',cex=1.00)
     
+    #legend
+    par(fig=c(0.1,0.5,0,.1), new=T)
+    plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
+    rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=reds(0:50/50),border=F)
+    text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
+    
+    par(fig=c(.6,1,0,.1), new=T)
+    plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
+    rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=blues(0:50/50),border=F)
+    text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
+    
     #Turn off pdf development
     dev.off()
 }
@@ -181,6 +192,18 @@ plotmap_S_cv <- function(prefect, polygons, pdfname,res, obs){
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'CV',cex=1.00)
     
+    #legend
+    par(fig=c(0.1,0.5,0,.1), new=T)
+    plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
+    rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=reds(0:50/50),border=F)
+    text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
+    
+    par(fig=c(.6,1,0,.1), new=T)
+    plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
+    rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=blues(0:50/50),border=F)
+    
+    
+    
     #Turn off pdf development
     dev.off()
 }
@@ -192,7 +215,8 @@ plotmap_S_cv <- function(prefect, polygons, pdfname,res, obs){
 #' @param pdfname pdfname of what the output pdf will be called
 #' @param res resultant list from clust_ function
 #' @param obs if observed is to be plotted or oracle from simulation
-plotmap_ST <- function(prefect, polygons, pdfname,res, obs){
+#' @param rr default is FALSE, if true will print legend for risk ratios (redblue scheme)
+plotmap_ST <- function(prefect, polygons, pdfname,res, obs,rr){
     if(!is.null(obs)){
         firstrow = "Obs"
     }
@@ -332,6 +356,27 @@ plotmap_ST <- function(prefect, polygons, pdfname,res, obs){
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 5 - QBIC',cex=1.00)
     
+    
+    #legend
+    if(rr==TRUE) {
+        par(fig=c(0.1,0.5,0,.1), new=T)
+        plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
+        rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=reds(0:50/50),border=F)
+        text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
+        
+        par(fig=c(.6,1,0,.1), new=T)
+        plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
+        rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=blues(0:50/50),border=F)
+        text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
+        message("redbluecolors")
+    }
+    else{
+        par(fig=c(.35,.75,0,.1), new=T)
+        plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
+        rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=greys(0:50/50),border=F)
+        text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
+    }
+    
     #Turn off pdf development
     dev.off()
 }
@@ -342,7 +387,8 @@ plotmap_ST <- function(prefect, polygons, pdfname,res, obs){
 #' @param pdfname pdfname of what the output pdf will be called
 #' @param res resultant list from clust_ function
 #' @param obs if observed is to be plotted or oracle from simulation
-plotmap_S <- function(prefect, polygons, pdfname,res, obs){
+#' @param rr is TRUE, result in legend for redblue (risk ratios). Default is grey scale legend
+plotmap_S <- function(prefect, polygons, pdfname,res, obs, rr){
     if(!is.null(obs)){
         firstrow = "Obs"
     }
@@ -382,6 +428,24 @@ plotmap_S <- function(prefect, polygons, pdfname,res, obs){
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'QBIC',cex=1.00)
     
+    #legend
+    if(rr==TRUE) {
+        par(fig=c(0.1,0.5,0,.1), new=T)
+        plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
+        rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=reds(0:50/50),border=F)
+        text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
+        
+        par(fig=c(.6,1,0,.1), new=T)
+        plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
+        rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=blues(0:50/50),border=F)
+        text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
+    }
+    else{
+        par(fig=c(.35,.75,0,.1), new=T)
+        plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
+        rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=greys(0:50/50),border=F)
+        text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
+    }
     
     #Turn off pdf development
     dev.off()

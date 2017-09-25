@@ -63,12 +63,10 @@ get_prob <- function(lassoresult,init, E1, ncentroids, Time, nsim, threshold){
 prob_incluster <- function(select_mu, ncentroids, Time, nsim){
     vec <- rep(0, ncentroids * Time)
     position <- list(vec)[rep(1, nsim)]
-    bgRate = lapply(1:nsim, function(i) as.numeric(names(which.max(table(select_mu[[i]])))))
-    ix <- lapply(1:nsim, function(i) which(abs(select_mu[[i]] - bgRate[[i]])>=10^-6))
-    #apply(rate, 1, function(x) sum(abs(x-bgRate)>=10^-6)/ncol(rate))
-    
-    
-    #ix <- lapply(1:nsim, function(i) which(as.vector(select_mu[[i]]) > 1))
+    bgRate_i <- lapply(1:nsim, function(i) sapply(1:Time,
+                                                function(j) as.numeric(names(which.max(table(matrix(as.vector(select_mu[[i]]),ncol=Time)[,j]))))))
+    bgRate <- lapply(1:nsim, function(i) rep(bgRate_i[[i]], each = ncentroids))
+    ix <- lapply(1:nsim, function(i) which(abs(log(as.vector(select_mu[[i]])) - log(bgRate[[i]]))>=10^-3))
     #quick function to recode
     reval <- function(probs, ix){
         probs[ix] <-1
@@ -78,7 +76,3 @@ prob_incluster <- function(select_mu, ncentroids, Time, nsim){
     probs <- Matrix::rowSums(simindicator)/nsim
     return(probs)
 }    
-
-
-
-
