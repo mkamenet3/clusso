@@ -4,7 +4,7 @@
 \alias{plotmap_ST}
 \title{Space-time plotting}
 \usage{
-plotmap_ST(prefect, polygons, pdfname, res, obs)
+plotmap_ST(prefect, polygons, pdfname, res, obs, rr)
 }
 \arguments{
 \item{prefect}{prefects dataframe}
@@ -16,6 +16,8 @@ plotmap_ST(prefect, polygons, pdfname, res, obs)
 \item{res}{resultant list from clust_ function}
 
 \item{obs}{if observed is to be plotted or oracle from simulation}
+
+\item{rr}{default is FALSE, if true will print legend for risk ratios (redblue scheme)}
 }
 \description{
 Space-time plotting

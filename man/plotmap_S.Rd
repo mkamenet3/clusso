@@ -4,7 +4,7 @@
 \alias{plotmap_S}
 \title{Space-only plotting}
 \usage{
-plotmap_S(prefect, polygons, pdfname, res, obs)
+plotmap_S(prefect, polygons, pdfname, res, obs, rr)
 }
 \arguments{
 \item{prefect}{prefects dataframe}
@@ -16,6 +16,8 @@ plotmap_S(prefect, polygons, pdfname, res, obs)
 \item{res}{resultant list from clust_ function}
 
 \item{obs}{if observed is to be plotted or oracle from simulation}
+
+\item{rr}{is TRUE, result in legend for redblue (risk ratios). Default is grey scale legend}
 }
 \description{
 Space-only plotting
