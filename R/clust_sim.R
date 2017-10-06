@@ -359,7 +359,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     ##QP - Space
     #set <- detect_set(lassoresult.qp.s, vectors.sim.s, as.matrix(rr[,timeperiod[1]]), 1, x, y, rMax, center, radius, nullmod,nsim)
     set <- detect_set(lassoresult.qp.s, vectors.sim.s, rr.s, Time, x, y, rMax, center, radius, nullmod,nsim)
-    incluster.qp.s <- detect_incluster(lassoresult.qp.s, vectors.sim.s, rr.s, set, 1:Time Time, nsim, x, y, rMax, center, 
+    incluster.qp.s <- detect_incluster(lassoresult.qp.s, vectors.sim.s, rr.s, set, 1:Time, Time, nsim, x, y, rMax, center, 
                                        radius, IC = "ic", under=FALSE, nullmod)
     detect.qp.s <- list(clustDiagnostics(incluster.qp.s, threshold[1], nullmod, nsim), clustDiagnostics(incluster.qp.s , threshold[2], nullmod,nsim))
     if(!is.null(nullmod)){
@@ -420,7 +420,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     #                                   radius, IC = "ic", under=FALSE,nullmod)
     
     set <- detect_set(lassoresult.p.s, vectors.sim.s, rr.s, Time, x, y, rMax, center, radius, nullmod,nsim)
-    incluster.qp.s <- detect_incluster(lassoresult.p.s, vectors.sim.s, rr.s, set, 1:Time Time, nsim, x, y, rMax, center, 
+    incluster.p.s <- detect_incluster(lassoresult.p.s, vectors.sim.s, rr.s, set, 1:Time, Time, nsim, x, y, rMax, center, 
                                        radius, IC = "ic", under=FALSE, nullmod)
     detect.p.s <- list(clustDiagnostics(incluster.p.s, threshold[1], nullmod,nsim), clustDiagnostics(incluster.p.s, threshold[2], nullmod,nsim))
     if(!is.null(nullmod)){
