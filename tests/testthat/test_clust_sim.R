@@ -27,9 +27,16 @@ test_that("All parameters are correctly specified and trouble-shooted in clust_s
     df <- cbind.data.frame(expected = expected, observed = observed, timeperiods = period)
     clst <- toclust(df, expected = df$expected, observed = df$observed, timeperiod = df$timeperiods, covars = FALSE)
     
+    #testing error response if clst object not provided
     expect_error(clust_sim(x_utm, y_utm, r.Max, Time, nsim, center, radius, risk.ratio, timeperiod, utm=TRUE, byrow=TRUE,
                            threshold = 0.5,
                            space = "both", theta, nullmod = NULL, overdispfloor=FALSE))
+    #testing error response if clst object not of class clst
+    expect_error(clust_sim(df, x_utm, y_utm, r.Max, Time, nsim, center, radius, risk.ratio, timeperiod, utm=TRUE, byrow=TRUE,
+                           threshold = 0.5,
+                           space = "both", theta, nullmod = NULL, overdispfloor=FALSE))
+    #testing if our time clusters are accurate
+    
 })
 
 

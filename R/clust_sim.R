@@ -67,6 +67,7 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init){
 clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio, 
                           timeperiod, utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"), 
                       theta = NULL,nullmod=NULL, overdispfloor,collapsetime=FALSE){
+    if(is(clst, "clst")!=TRUE) stop("clst element not of class `clst`. This is required for the clust_sim function.")
     expected <- clst$required_df$expected
     observed <- clst$required_df$observed
     period <- clst$required_df$timeperiod
@@ -182,41 +183,57 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     
     ####
     rr.s = matrix(1, nrow=n, ncol=Time)
-    #TODO change this to be a function and not hard-coded
-    if(length(timeperiod) == 3){
-        rr[cluster$last, timeperiod[1]] = risk.ratio
-        rr[cluster$last, timeperiod[2]] = risk.ratio
-        rr[cluster$last, timeperiod[3]] = risk.ratio
-        message(paste("Running model for periods",timeperiod[1],"through", timeperiod[3]))
+    #Create cluster across the time periods
+    timelength <- length(timeperiod)
+    if(timelength > 1){
+        rr[cluster$last, timeperiod[1]:tail(timeperiod, n=1)] <- risk.ratio
+        message(paste("Running model for periods",timeperiod[1],"through", tail(timeperiod, n=1)))
     }
-    if(length(timeperiod) == 4){
-        rr[cluster$last, timeperiod[1]] = risk.ratio
-        rr[cluster$last, timeperiod[2]] = risk.ratio
-        rr[cluster$last, timeperiod[3]] = risk.ratio
-        rr[cluster$last, timeperiod[4]] = risk.ratio
-        message(paste("Running model for periods",timeperiod[1],"through", timeperiod[4]))
-    }
-    if(length(timeperiod) == 5){
-        rr[cluster$last, timeperiod[1]] = risk.ratio
-        rr[cluster$last, timeperiod[2]] = risk.ratio
-        rr[cluster$last, timeperiod[3]] = risk.ratio
-        rr[cluster$last, timeperiod[4]] = risk.ratio
-        rr[cluster$last, timeperiod[5]] = risk.ratio
-        message(paste("Running model for periods",timeperiod[1],"through", timeperiod[5]))
-    }
-    if(length(timeperiod) == 2){
-        rr[cluster$last, timeperiod[1]] = risk.ratio
-        rr[cluster$last, timeperiod[2]] = risk.ratio
-        message(paste("Running model for periods",timeperiod[1],"and", timeperiod[2]))
-    }
-    else if(length(timeperiod)==1){
+    else if(timelength==1){
         rr[cluster$last, timeperiod:Time] = risk.ratio
         message(paste("Running model for period",timeperiod[1]))
     }
+    #check for errors
+    if(isTRUE(all.equal(timeperiod,which(unique(rr, fromLast=TRUE)[1,]!=1)))==FALSE) stop("Timeperiods not equal to time elements in space-time rr matrix.")
+    
+    # 
+    # #
+    # if(length(timeperiod) == 3){
+    #     rr[cluster$last, timeperiod[1]] = risk.ratio
+    #     rr[cluster$last, timeperiod[2]] = risk.ratio
+    #     rr[cluster$last, timeperiod[3]] = risk.ratio
+    #     message(paste("Running model for periods",timeperiod[1],"through", timeperiod[3]))
+    # }
+    # if(length(timeperiod) == 4){
+    #     rr[cluster$last, timeperiod[1]] = risk.ratio
+    #     rr[cluster$last, timeperiod[2]] = risk.ratio
+    #     rr[cluster$last, timeperiod[3]] = risk.ratio
+    #     rr[cluster$last, timeperiod[4]] = risk.ratio
+    #     message(paste("Running model for periods",timeperiod[1],"through", timeperiod[4]))
+    # }
+    # if(length(timeperiod) == 5){
+    #     rr[cluster$last, timeperiod[1]] = risk.ratio
+    #     rr[cluster$last, timeperiod[2]] = risk.ratio
+    #     rr[cluster$last, timeperiod[3]] = risk.ratio
+    #     rr[cluster$last, timeperiod[4]] = risk.ratio
+    #     rr[cluster$last, timeperiod[5]] = risk.ratio
+    #     message(paste("Running model for periods",timeperiod[1],"through", timeperiod[5]))
+    # }
+    # if(length(timeperiod) == 2){
+    #     rr[cluster$last, timeperiod[1]] = risk.ratio
+    #     rr[cluster$last, timeperiod[2]] = risk.ratio
+    #     message(paste("Running model for periods",timeperiod[1],"and", timeperiod[2]))
+    # }
+    
     allTime <- 1:Time
-    for(i in 1:length(allTime)){
-        rr.s[cluster$last, allTime[i]] = risk.ratio
-    }
+    # for(i in 1:length(allTime)){
+    #     rr.s[cluster$last, allTime[i]] <- risk.ratio
+    # }
+    rr.s[cluster$last, allTime[1]:tail(allTime, n=1)] <- risk.ratio
+    #Check for errors
+    if(isTRUE(all.equal(allTime,which(unique(rr.s, fromLast=TRUE)[1,]!=1)))==FALSE) stop("Timeperiods not equal to time elements in space-only rr.s matrix.")
+    
+    #Expected matrices
     E1 <- as.vector(rr)*init$E0
     E1.s <- as.vector(rr.s)*init$E0
     
