@@ -604,6 +604,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                 probcolors.thresh1 = probcolors.thresh1,
                 probcolors.thresh2 = probcolors.thresh2,
                 rr.mat = rr,
+                rr.mat.s = rr.s,
                 init.vec = vectors.sim,
                 init.vec.s = vectors.sim.s ,
                 #return spacetime first
