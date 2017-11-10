@@ -1,5 +1,5 @@
 library("testthat")
-context("Simulation of cluster lasso")
+context("Simulation of cluster lasso - helper function")
 
 test_that("All parameters are correctly specified and trouble-shooted in clust_sim", {
     #set up
@@ -35,8 +35,6 @@ test_that("All parameters are correctly specified and trouble-shooted in clust_s
     expect_error(clust_sim(df, x_utm, y_utm, r.Max, Time, nsim, center, radius, risk.ratio, timeperiod, utm=TRUE, byrow=TRUE,
                            threshold = 0.5,
                            space = "both", theta, nullmod = NULL, overdispfloor=FALSE))
-    #testing if our time clusters are accurate
-    
 })
 
 
