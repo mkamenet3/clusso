@@ -1,6 +1,6 @@
 \name{clust-package}
 \alias{clust-package}
-\alias{clust}
+\alias{clust-package}
 \docType{package}
 \title{
 Efficient spatial and spatio-temporal cluster detection using the LASSO
@@ -34,8 +34,6 @@ Maintainer: Maria Kamenetsky <maria.kamenetsky@gmail.com>
 \references{
 ~~ Literature or other references for background information ~~
 }
-~~ Optionally other standard keywords, one per line, from file KEYWORDS in the R documentation ~~
-~~ directory ~~
 \keyword{ package }
 \seealso{
 ~~ Optional links to other man pages, e.g. ~~

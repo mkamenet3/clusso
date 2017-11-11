@@ -33,10 +33,13 @@ clustAll(x, y, rMax, period, expected, observed, covars, Time, utm, byrow,
 \item{cv}{option for cross-validation - numeric input specifies how many folds; default is 10}
 }
 \value{
-
+list of output from detection
 }
 \description{
 This function runs both the space and space-time Lasso model. This function is to be run on observed data. A separate function (clust) is the helper function which will have 
 flexibility to specify the space or spacetime or both models to be run (TODO).
+}
+\details{
+Detect a cluster in space or spacetime using Lasso on observed data
 }
 

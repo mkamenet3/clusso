@@ -30,10 +30,25 @@ space = spacetime, or space = both.}
 \item{cv}{option for cross-validation}
 }
 \value{
-returns list
+returns list of cluster detection results ready to plot
 }
 \description{
-This function is the helper function to run both the space and space-time Lasso models.
-runs both the space and space-time Lasso model. This function is to be run on observed data. A separate function (clust.sim) can be used for simulating data and running diagnostics on simulations.
+Runs helper function for both the space and space-time Lasso model on observed data. A separate function (clust_sim) can be used for simulating data and running diagnostics on simulations.
+}
+\details{
+Set up for clust
+}
+\examples{
+data(japanbreastcancer)
+#Set Some Initial Conditions
+x1=utmJapan$utmx/1000
+y1=utmJapan$utmy/1000
+rMax <- 20 
+Time=5
+japanbreastcancer <- japanbreastcancer[,-1] #get rid of indicator column
+clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, 
+ observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE)
+system.time(res <- clust(clst, x1,y1, rMax, Time, utm=TRUE, byrow=TRUE, 
+ space="both", overdispfloor=TRUE, cv=NULL))
 }
 

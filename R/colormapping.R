@@ -17,7 +17,7 @@ redblue=function(x) {
 #' @param x vectors of probabilities to be mapped
 #' @return colors
 greys=function(x) { 
-    y=colorRamp(brewer.pal(9,"Greys")[1:9])(x); rgb(y[,1],y[,2],y[,3],maxColorValue = 255) 
+    y=colorRamp(RColorBrewer::brewer.pal(9,"Greys")[1:9])(x); rgb(y[,1],y[,2],y[,3],maxColorValue = 255) 
 }
 
 #' Color-mapping of red
@@ -28,7 +28,7 @@ greys=function(x) {
 #' @param x vector to be mapped
 #' @return colors
 reds=function(x) { 
-    y=colorRamp(brewer.pal(9,"Reds")[1:9])(x); rgb(y[,1],y[,2],y[,3],maxColorValue = 255)
+    y=colorRamp(RColorBrewer::brewer.pal(9,"Reds")[1:9])(x); rgb(y[,1],y[,2],y[,3],maxColorValue = 255)
 }
 
 #' Color-mapping of blue
@@ -39,7 +39,7 @@ reds=function(x) {
 #' @param x vector to be mapped
 #' @return colors
 blues=function(x) { 
-    y=colorRamp(brewer.pal(9,"Blues")[1:9])(x); rgb(y[,1],y[,2],y[,3],maxColorValue = 255) 
+    y=colorRamp(RColorBrewer::brewer.pal(9,"Blues")[1:9])(x); rgb(y[,1],y[,2],y[,3],maxColorValue = 255) 
 }
 
 

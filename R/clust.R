@@ -37,12 +37,12 @@ vectors_space <- function(x,Ex, Yx,Time, init){
     return(res)
 }
 
-
+#' Set up for clust
+#'
 #'@title
 #'clust
 #' @description
-#'This function is the helper function to run both the space and space-time Lasso models.
-#'runs both the space and space-time Lasso model. This function is to be run on observed data. A separate function (clust.sim) can be used for simulating data and running diagnostics on simulations.
+#' Runs helper function for both the space and space-time Lasso model on observed data. A separate function (clust_sim) can be used for simulating data and running diagnostics on simulations.
 #'@param clst list; output from toclust function. Must be of class clst.
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
 #'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
@@ -54,7 +54,23 @@ vectors_space <- function(x,Ex, Yx,Time, init){
 #'space = spacetime, or space = both.
 #'@param overdispfloor overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
 #'@param cv option for cross-validation
-#'@return returns list
+#'@export
+#'@return returns list of cluster detection results ready to plot
+#'@examples
+#'\donttest{
+#'data(japanbreastcancer)
+#'#Set Some Initial Conditions
+#'x1=utmJapan$utmx/1000
+#'y1=utmJapan$utmy/1000
+#'rMax <- 20 
+#'Time=5
+#'japanbreastcancer <- japanbreastcancer[,-1] #get rid of indicator column
+#'clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, 
+#'  observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE)
+#'system.time(res <- clust(clst, x1,y1, rMax, Time, utm=TRUE, byrow=TRUE, 
+#'  space="both", overdispfloor=TRUE, cv=NULL))
+#'  }
+
 
 clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","spacetime", "both"),overdispfloor=NULL, cv = NULL){
     expected <- clst$required_df$expected
@@ -96,6 +112,7 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","
     if(length(space) > 1) stop("You must select either `space`, `spacetime`, or `both`")
     space <- match.arg(space, several.ok = FALSE)
     switch(space, 
+           #TODO
            # space = clust.sim.all.space(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
            #                             timeperiod,colors=NULL,utm, byrow, threshold, space=TRUE),
            # spacetime = clust.sim.all.spacetime(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
@@ -103,7 +120,7 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","
            both = clustAll(x, y, rMax,period, expected, observed, covars, Time, utm, byrow, overdispfloor, cv))
 }
     
-    
+#' Detect a cluster in space or spacetime using Lasso on observed data    
 #' @title
 #'clustAll
 #' @description 
@@ -121,8 +138,8 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","
 #'@param byrow default is True. If data should be imported by column then set to FALSE
 #'@param overdispfloor overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
 #'@param cv option for cross-validation - numeric input specifies how many folds; default is 10
-#'@return
-#'               
+#'@inheritParams clust
+#'@return list of output from detection
     
 clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byrow, overdispfloor, cv){    
     message("Running both Space and Space-Time Models")

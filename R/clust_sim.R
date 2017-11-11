@@ -63,6 +63,30 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init){
 #'@param collapsetime alternative definition for space-only model to instead collapse expected and observed counts across time. TODO
 #'@return returns list of lists
 #'@export
+#'@examples
+#'\donttest{
+#'data(japanbreastcancer)
+#'#Set Some Initial Conditions
+#'x1=utmJapan$utmx/1000
+#'y1=utmJapan$utmy/1000
+#'#Set initial parameters
+#'rMax <- 20 
+#'Time=5
+#'nsim=2 #number of simulations
+#'center=1
+#'radius=18
+#'timeperiods = c(1:3)
+#'risk.ratio=2
+#'theta = 10000
+#'overdispfloor = TRUE
+#'nullmod <- TRUE
+#'dframe <- dframe[,-1]
+#'clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, 
+#'  observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE)
+#'res <- clust_sim(clst, x1,y1,rMax, Time, nsim,center, radius, risk.ratio, 
+#'  timeperiod, utm=TRUE, byrow=TRUE, 
+#'threshold, space= "both",theta = theta, nullmod = TRUE, overdispfloor)
+#'}
 
 clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio, 
                           timeperiod, utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"), 
@@ -155,8 +179,9 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
 #'@param nullmod if TRUE, then null models will be run. Otherwise, default is null.
 #'@param overdispfloor overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
 #'@param collapsetime alternative definition for space-only model to instead collapse expected and observed counts across time. TODO
+#'@inheritParams clust_sim
 #'@return returns list of lists
-#'@export
+
 
 clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, nsim, center, radius, risk.ratio, 
                                timeperiod,utm, byrow, threshold, theta = theta, nullmod=nullmod,
