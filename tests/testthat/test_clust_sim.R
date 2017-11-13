@@ -1,5 +1,6 @@
 library("testthat")
-context("Simulation of cluster lasso")
+library("MASS")
+context("Simulation of cluster lasso - helper function")
 
 test_that("All parameters are correctly specified and trouble-shooted in clust_sim", {
     #set up
@@ -20,14 +21,19 @@ test_that("All parameters are correctly specified and trouble-shooted in clust_s
     theta <- 1000
     #expected <- lapply(1:nsim, function(i) rnegbin(n = 10,mu = 15,theta = 1000))
     #observed <- lapply(1:nsim, function(i) rnegbin(n = 10,mu = 20,theta = 1000))
-    expected <- rnegbin(n = 10,mu = 15,theta = 1000)
-    observed <- rnegbin(n = 10,mu = 20,theta = 1000)
+    expected <- MASS::rnegbin(n = 10,mu = 15,theta = 1000)
+    observed <- MASS::rnegbin(n = 10,mu = 20,theta = 1000)
     YSIM <- lapply(1:nsim, function(i) rnegbin(n = 10,mu = 15,theta = 1000))
     init <- setVectors(period, expected, observed, covars,  Time, byrow=TRUE)
     df <- cbind.data.frame(expected = expected, observed = observed, timeperiods = period)
     clst <- toclust(df, expected = df$expected, observed = df$observed, timeperiod = df$timeperiods, covars = FALSE)
     
+    #testing error response if clst object not provided
     expect_error(clust_sim(x_utm, y_utm, r.Max, Time, nsim, center, radius, risk.ratio, timeperiod, utm=TRUE, byrow=TRUE,
+                           threshold = 0.5,
+                           space = "both", theta, nullmod = NULL, overdispfloor=FALSE))
+    #testing error response if clst object not of class clst
+    expect_error(clust_sim(df, x_utm, y_utm, r.Max, Time, nsim, center, radius, risk.ratio, timeperiod, utm=TRUE, byrow=TRUE,
                            threshold = 0.5,
                            space = "both", theta, nullmod = NULL, overdispfloor=FALSE))
 })

@@ -11,7 +11,18 @@
 #' @param probmap TRUE or FALSE if probabilities should be mapped or relative risks
 #' @param cv default is NULL. If not null, then results from cross-validation will be plotted (for real data example)
 #' @param obs default is NULL. If not null, then will add "observed" instead of "oracle" label to plot for comparison map.
+#' @param rr TRUE or FALSE. TRUE indicates risk ratios should be plotted, FALSE indicates probabilities should be plotted.
 #' @export
+#' @examples 
+#' \donttest{
+#' pdfname1 <- paste0("rrmaps.pdf")
+#' pdfname2 <- paste0("probabilitymaps.pdf")
+#' easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname1,
+#'  res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL, rr=TRUE)
+#' easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname2, 
+#'  res$probcolors, mods, space="both", probmap=TRUE, obs = NULL,rr=FALSE)
+#' }
+
 easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space", "spacetime", "both"), probmap, cv=NULL,obs=NULL,rr){
     if(is.null(space)){ stop("You must specify `space`, `spacetime` or `both`")}
     space <- match.arg(space, several.ok = FALSE)
@@ -215,7 +226,7 @@ plotmap_S_cv <- function(prefect, polygons, pdfname,res, obs){
 #' @param pdfname pdfname of what the output pdf will be called
 #' @param res resultant list from clust_ function
 #' @param obs if observed is to be plotted or oracle from simulation
-#' @param rr default is FALSE, if true will print legend for risk ratios (redblue scheme)
+#' @param rr if FALSE, will print probability map legend, if TRUE will print legend for risk ratios (redblue scheme)
 plotmap_ST <- function(prefect, polygons, pdfname,res, obs,rr){
     if(!is.null(obs)){
         firstrow = "Obs"

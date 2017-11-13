@@ -14,8 +14,8 @@
 #'theta = 1000
 #'nsim = 2
 #'period <- rep(seq(1,2),5)
-#'expected <- rnegbin(n = 10,mu = 15,theta = 1000)
-#'observed <- rnegbin(expected, theta=1000)
+#'expected <- MASS::rnegbin(n = 10,mu = 15,theta = 1000)
+#'observed <- MASS::rnegbin(expected, theta=1000)
 #'covars <- NULL
 #'#set init
 #'init <- setVectors(period, expected, observed, covars, Time, byrow=TRUE)

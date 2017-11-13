@@ -37,12 +37,12 @@ vectors_space <- function(x,Ex, Yx,Time, init){
     return(res)
 }
 
-
+#' Set up for clust
+#'
 #'@title
 #'clust
 #' @description
-#'This function is the helper function to run both the space and space-time Lasso models.
-#'runs both the space and space-time Lasso model. This function is to be run on observed data. A separate function (clust.sim) can be used for simulating data and running diagnostics on simulations.
+#' Runs helper function for both the space and space-time Lasso model on observed data. A separate function (clust_sim) can be used for simulating data and running diagnostics on simulations.
 #'@param clst list; output from toclust function. Must be of class clst.
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
 #'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
@@ -54,12 +54,30 @@ vectors_space <- function(x,Ex, Yx,Time, init){
 #'space = spacetime, or space = both.
 #'@param overdispfloor overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
 #'@param cv option for cross-validation
-#'@return returns list
+#'@export
+#'@return returns list of cluster detection results ready to plot
+#'@examples
+#'\donttest{
+#'data(japanbreastcancer)
+#'#Set Some Initial Conditions
+#'x1=utmJapan$utmx/1000
+#'y1=utmJapan$utmy/1000
+#'rMax <- 20 
+#'Time=5
+#'japanbreastcancer <- japanbreastcancer[,-1] #get rid of indicator column
+#'clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, 
+#'  observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE)
+#'system.time(res <- clust(clst, x1,y1, rMax, Time, utm=TRUE, byrow=TRUE, 
+#'  space="both", overdispfloor=TRUE, cv=NULL))
+#'  }
+
 
 clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","spacetime", "both"),overdispfloor=NULL, cv = NULL){
+    if(is(clst, "clst")!=TRUE) stop("clst element not of class `clst`. This is required for the clust_sim function.")
     expected <- clst$required_df$expected
     observed <- clst$required_df$observed
     period <- clst$required_df$timeperiod
+    #initial user setting
     if(!is.null(clst$othercovariates_df)){
         covars <- clst$othercovariates_df
     }
@@ -88,6 +106,7 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","
         overdispfloor <- TRUE
     }
     if(!is.null(cv)){
+        message("Running cross-validation method for path selection. For AIC, AICc, and BIC, set `cv = NULL`")
         cv = cv
     }
     else{
@@ -96,14 +115,13 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","
     if(length(space) > 1) stop("You must select either `space`, `spacetime`, or `both`")
     space <- match.arg(space, several.ok = FALSE)
     switch(space, 
-           # space = clust.sim.all.space(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
-           #                             timeperiod,colors=NULL,utm, byrow, threshold, space=TRUE),
-           # spacetime = clust.sim.all.spacetime(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
-           #                                     timeperiod,colors=NULL,utm, byrow, threshold, space=FALSE),
+           #TODO
+           # space = 
+           # spacetime = 
            both = clustAll(x, y, rMax,period, expected, observed, covars, Time, utm, byrow, overdispfloor, cv))
 }
     
-    
+#' Detect a cluster in space or spacetime using Lasso on observed data    
 #' @title
 #'clustAll
 #' @description 
@@ -121,8 +139,8 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","
 #'@param byrow default is True. If data should be imported by column then set to FALSE
 #'@param overdispfloor overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
 #'@param cv option for cross-validation - numeric input specifies how many folds; default is 10
-#'@return
-#'               
+#'@inheritParams clust
+#'@return list of output from detection
     
 clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byrow, overdispfloor, cv){    
     message("Running both Space and Space-Time Models")
@@ -130,7 +148,6 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byr
     #set up clusters and fitted values
     clusters <- clusters2df(x,y,rMax, utm=utm, length(x))
     n <- length(x)
-    #init <- setVectors(period, expected, observed, Time, byrow)
     init <- setVectors(period, expected, observed, covars, Time, byrow)
     E1 <- init$E0
     Ex <- scale(init, Time)
@@ -138,14 +155,15 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byr
     #timeperiod <- 1:Time
     #set vectors
     vectors <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec, covars = covars)
-    spacevecs <- vectors_space(x, Ex, Yx, Time,init)
-    vectors.s <- spacevecs$vectors.s
+    vectors.s <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec, covars = covars)
+    #spacevecs <- vectors_space(x, Ex, Yx, Time,init)
+    #vectors.s <- spacevecs$vectors.s
     
     #run lasso
     lassoresult.p.st <- spacetimeLasso(clusters, vectors,Time, spacetime=TRUE,pois=TRUE, overdispfloor, cv)
     lassoresult.qp.st <- spacetimeLasso(clusters, vectors, Time, spacetime=TRUE,pois=FALSE, overdispfloor, cv)
-    lassoresult.p.s <- spacetimeLasso(clusters, vectors.s, 1, spacetime=FALSE,pois=TRUE, overdispfloor,cv)
-    lassoresult.qp.s <- spacetimeLasso(clusters, vectors.s, 1, spacetime=FALSE,pois=FALSE, overdispfloor,cv)
+    lassoresult.p.s <- spacetimeLasso(clusters, vectors.s, Time, spacetime=TRUE,pois=TRUE, overdispfloor,cv)
+    lassoresult.qp.s <- spacetimeLasso(clusters, vectors.s, Time, spacetime=TRUE,pois=FALSE, overdispfloor,cv)
     
     message("All models ran successfully")
     
@@ -155,22 +173,22 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byr
     riskratios.p.st <- get_rr(lassoresult.p.st, vectors,init,E1,Time, sim=FALSE, cv)
     riskratios.qp.st <- get_rr(lassoresult.qp.st, vectors,init,E1,Time, sim=FALSE, cv)
     ##color mapping
-    rrcolors.p.st <- colormapping(riskratios.p.st,Time, cv)
-    rrcolors.qp.st <- colormapping(riskratios.qp.st,Time, cv)
+    rrcolors.p.st <- colormapping(riskratios.p.st,Time, cv, prob=FALSE)
+    rrcolors.qp.st <- colormapping(riskratios.qp.st,Time, cv, prob = FALSE)
     
     #space only
     ##risk ratios
     initial.s <- list(E0 = unlist(vectors.s$E0_0))
-    id <- rep(1:length(x), times=Time)
+    #id <- rep(1:length(x), times=Time)
     riskratios.p.s <- get_rr(lassoresult.p.s, vectors.s,initial.s,
-                              tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x)),
-                              1,sim=FALSE, cv)
+                              as.vector(matrix(E1, ncol=Time)),
+                              Time,sim=FALSE, cv)
     riskratios.qp.s <- get_rr(lassoresult.qp.s,vectors.s,initial.s,
-                               tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x)),
-                               1,sim=FALSE, cv)
+                              as.vector(matrix(E1, ncol=Time)),
+                               Time,sim=FALSE, cv)
     ##color mapping
-    rrcolors.p.s <- colormapping(riskratios.p.s,1, cv)
-    rrcolors.qp.s <- colormapping(riskratios.qp.s,1, cv)
+    rrcolors.p.s <- colormapping(riskratios.p.s,Time, cv, prob=FALSE)
+    rrcolors.qp.s <- colormapping(riskratios.qp.s,Time, cv, prob=FALSE)
     
     #COMBINE RISKRATIOS INTO LISTS
     riskratios <- list(riskratios.qp.s = riskratios.qp.s, riskratios.p.s = riskratios.p.s, 

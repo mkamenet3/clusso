@@ -17,7 +17,7 @@ plotmap_ST(prefect, polygons, pdfname, res, obs, rr)
 
 \item{obs}{if observed is to be plotted or oracle from simulation}
 
-\item{rr}{default is FALSE, if true will print legend for risk ratios (redblue scheme)}
+\item{rr}{if FALSE, will print probability map legend, if TRUE will print legend for risk ratios (redblue scheme)}
 }
 \description{
 Space-time plotting

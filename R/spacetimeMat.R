@@ -25,10 +25,18 @@ spacetimeMat <- function(clusters, numCenters, Time){
 timeMat <-function(Time){
     block <- Matrix::Matrix(diag(1,Time),sparse=TRUE)
     master <- block
-    for(i in 1:(Time-2)){
-        diag(block[(i+1):Time,])<-1
-        master <- Matrix::cBind(master, block[,1:(Time-i)])        
+    if(Time==2){
+        master <- Matrix::cBind(master, Matrix::Matrix(rep(1,Time), sparse=TRUE))
     }
-    master <- Matrix::cBind(master, Matrix::Matrix(rep(1,Time)))
+    else if(Time==1){
+       master <- Matrix::Matrix(diag(1,Time),sparse=TRUE)
+    }
+    else{
+        for(i in 1:(Time-2)){
+            diag(block[(i+1):Time,]) <-1
+            master <- Matrix::cBind(master, block[,1:(Time-i)])        
+        }
+        master <- Matrix::cBind(master, Matrix::Matrix(rep(1,Time), sparse=TRUE))
+    }
     return(master)
 }

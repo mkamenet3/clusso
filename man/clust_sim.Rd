@@ -57,4 +57,29 @@ This helper function runs both the space and space-time Lasso model simulations 
 This function is to be run on simulated data and all four models are run on the same simulated set. 
 A separate function (clust.sim) can be used for running simulations on individual models and (clust) can be used for observed data.
 }
+\examples{
+\donttest{
+data(japanbreastcancer)
+#Set Some Initial Conditions
+x1=utmJapan$utmx/1000
+y1=utmJapan$utmy/1000
+#Set initial parameters
+rMax <- 20 
+Time=5
+nsim=2 #number of simulations
+center=1
+radius=18
+timeperiods = c(1:3)
+risk.ratio=2
+theta = 10000
+overdispfloor = TRUE
+nullmod <- TRUE
+dframe <- dframe[,-1]
+clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, 
+ observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE)
+res <- clust_sim(clst, x1,y1,rMax, Time, nsim,center, radius, risk.ratio, 
+ timeperiod, utm=TRUE, byrow=TRUE, 
+threshold, space= "both",theta = theta, nullmod = TRUE, overdispfloor)
+}
+}
 

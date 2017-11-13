@@ -13,7 +13,9 @@ vignette: >
 Load *clust*
 
 ```{r, message=FALSE, warning=FALSE}
+#load package
 library("clust")
+
 ```
 
 
@@ -25,20 +27,18 @@ library("clust")
 ```{r}
 set.seed(8202017)
 
-dframe1 <- read.csv("../data/jap.breast.F.9.10.11.csv")
-dframe2 <- read.csv("../data/utmJapan.csv")
-dframe3 <- aggregate(dframe1, by=list(as.factor(rep(1:(nrow(dframe1)/4),each=4))), FUN="sum")
-dframe=data.frame(id=as.factor(dframe3$id/4),period=as.factor(dframe3$year),death=dframe3$death,expdeath=dframe3$expdeath)
-levels(dframe$period) <- c("1","2","3","4","5")
+#load data
+data("japanbreastcancer")
 
-dframe.poly2 <- read.csv("../data/japan_poly2.csv")
-japan.poly2 <- dframe.poly2[,2:3]
-dframe.prefect2 <- read.csv("../data/japan_prefect2.csv")
-japan.prefect2 <- dframe.prefect2[,2:5]
-
-head(dframe)
+#inspect
+head(utmJapan)
 head(dframe.poly2)
 head(dframe.prefect2)
+head(japanbreastcancer)
+
+#take what we need
+japan.poly2 <- dframe.poly2[,2:3]
+japan.prefect2 <- dframe.prefect2[,2:5]
 ```
 
 
@@ -56,8 +56,8 @@ mods <- c("QuasiPoisson", "Poisson")
 Set the easting and northing coordinates:
 
 ```{r}
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
+x=utmJapan$utmx/1000
+y=utmJapan$utmy/1000
 
 ```
 
@@ -88,9 +88,9 @@ table.detection.null <- NULL
 Run the null model and store results into object $res$.
 
 ```{r}
-dframe <- dframe[,-1]
+japanbreastcancer<- japanbreastcancer[,-1] #get rid of id column to use clst function
 
-clst <- toclust(dframe, expected = dframe$expdeath, observed = dframe$death,timeperiod = dframe$period, covars = FALSE)
+clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE)
 
 system.time(res <- clust_sim(clst, x,y,rMax, Time,
                                  nsim,center, radius, risk.ratio, timeperiod,
@@ -139,10 +139,10 @@ pdfname4 <- paste0("probmapsthresh2NULLtest2mult.pdf")
 
 
 
-easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname1, res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL, rr=TRUE)
-easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname2, res$probcolors, mods, space="both", probmap=TRUE, obs = NULL,rr=FALSE)
-easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname3, res$probcolors.thresh1, mods, space="both", probmap=TRUE, obs = NULL,rr=FALSE)
-easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname4, res$probcolors.thresh2, mods, space="both", probmap=TRUE, obs = NULL, rr=FALSE)
+easyplot(japan.prefect2, japan.poly2 ,pdfname1, res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL, rr=TRUE)
+easyplot(japan.prefect2, japan.poly2 , pdfname2, res$probcolors, mods, space="both", probmap=TRUE, obs = NULL,rr=FALSE)
+easyplot(japan.prefect2, japan.poly2 ,pdfname3, res$probcolors.thresh1, mods, space="both", probmap=TRUE, obs = NULL,rr=FALSE)
+easyplot(japan.prefect2, japan.poly2 ,pdfname4, res$probcolors.thresh2, mods, space="both", probmap=TRUE, obs = NULL, rr=FALSE)
 
 
 
@@ -161,8 +161,8 @@ Set initial conditions:
 
 ```{r}
 #Set Some Initial Conditions
-x=dframe2$utmx/1000
-y=dframe2$utmy/1000
+x=utmJapan$utmx/1000
+y=utmJapan$utmy/1000
 rMax=20
 Time=5
 #nsim=100
@@ -219,10 +219,10 @@ for(cent in centers){
                 pdfnamethresh2 <- paste0("OUT/sim","_","center","_",cent,"radius",rad,"_", "start",
                                          "_",as.numeric(paste(tim, collapse = "")),"_","rr","_",gsub("[.]","",risk),"thr2.pdf")
                 ##maps
-                easyplot(prefect = japan.prefect2 , polygons = japan.poly2, pdfnamerr, res$rrcolors, mods, space="both",probmap=FALSE, obs=NULL, rr=TRUE)
-                easyplot(prefect = japan.prefect2 , polygons = japan.poly2, pdfnameprob, res$probcolors, mods, space="both",probmap=TRUE, obs=NULL, rr=FALSE)
-                easyplot(prefect = japan.prefect2 , polygons = japan.poly2, pdfnamethresh1, res$probcolors.thresh1, mods, space="both",probmap=TRUE, obs=NULL, rr=FALSE)
-                easyplot(prefect = japan.prefect2 , polygons = japan.poly2, pdfnamethresh2, res$probcolors.thresh2, mods, space="both",probmap=TRUE, obs=NULL, rr=FALSE)
+                easyplot(japan.prefect2, japan.poly2 ,pdfnamerr, res$rrcolors, mods, space="both",probmap=FALSE, obs=NULL, rr=TRUE)
+                easyplot(japan.prefect2, japan.poly2 , pdfnameprob, res$probcolors, mods, space="both",probmap=TRUE, obs=NULL, rr=FALSE)
+                easyplot(japan.prefect2, japan.poly2 ,pdfnamethresh1, res$probcolors.thresh1, mods, space="both",probmap=TRUE, obs=NULL, rr=FALSE)
+                easyplot(japan.prefect2, japan.poly2 , pdfnamethresh2, res$probcolors.thresh2, mods, space="both",probmap=TRUE, obs=NULL, rr=FALSE)
 
             }
         }
@@ -248,14 +248,18 @@ print(table.detection)
 ## Running single simulation without covariates
 
 ```{r}
+#load data
+data("japanbreastcancer")
 
-dframe.poly2 <- read.csv("../data/japan_poly2.csv")
-japan.poly2 <- dframe.poly2[,2:3]
-dframe.prefect2 <- read.csv("../data/japan_prefect2.csv")
-japan.prefect2 <- dframe.prefect2[,2:5]
-
+#inspect
+head(utmJapan)
 head(dframe.poly2)
 head(dframe.prefect2)
+head(japanbreastcancer)
+
+#take what we need
+japan.poly2 <- dframe.poly2[,2:3]
+japan.prefect2 <- dframe.prefect2[,2:5]
 
 
 ```
@@ -266,19 +270,14 @@ Import dataframe with covariates:
 
 ```{r}
 #Set-up
-dframe1 <- read.csv("../data/jap.breast.F.9.10.11.csv")
-dframe2 <- read.csv("../data/utmJapan.csv")
-dframe3 <- aggregate(dframe1, by=list(as.factor(rep(1:(nrow(dframe1)/4),each=4))), FUN="sum")
-dframe=data.frame(id=as.factor(dframe3$id/4),period=as.factor(dframe3$year),death=dframe3$death,expdeath=dframe3$expdeath)
-levels(dframe$period) <- c("1","2","3","4","5")
-#assume this is what you start with
+data(japanbreastcancer)
 ```
 
 ```{r}
 #Initial inputs
 mods <- c("QuasiPoisson", "Poisson")
-x <- dframe2$utmx/1000
-y <- dframe2$utmy/1000
+x <- utmJapan$utmx/1000
+y <- utmJapan$utmy/1000
 rMax <- 20 
 Time <- 5
 overdispfloor <- TRUE
@@ -306,9 +305,9 @@ table.detection <- NULL
 
 
 ```{r}
-dframe <- dframe[,-1]
+japanbreastcancer <- japanbreastcancer[,-1]
 
-clst <- toclust(dframe, expected = dframe$expdeath, observed = dframe$death, timeperiod = dframe$period, covars=FALSE)
+clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, observed = japanbreastcancer$death, timeperiod = japanbreastcancer$period, covars=FALSE)
 
 system.time(res <- clust_sim(clst, x, y,rMax,Time, nsim,center, radius, risk.ratio, timeperiods, 
                              utm=TRUE, byrow=TRUE, threshold, space= "both", theta, nullmod, overdispfloor))
@@ -361,10 +360,10 @@ pdfname4 <- paste0("probmapsthresh2.pdf")
 # pdfname4 <- paste0("probmapsthresh2_test.pdf")
 
 
-easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname1, res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL)
-easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname2, res$probcolors, mods, space="both", probmap=TRUE, obs = NULL)
-easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname3, res$probcolors.thresh1, mods, space="both", probmap=TRUE, obs = NULL)
-easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname4, res$probcolors.thresh2, mods, space="both", probmap=TRUE, obs = NULL)
+easyplot(japan.prefect2, japan.poly2 ,pdfname1, res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL)
+easyplot(japan.prefect2, japan.poly2 ,pdfname2, res$probcolors, mods, space="both", probmap=TRUE, obs = NULL)
+easyplot(japan.prefect2, japan.poly2 ,pdfname3, res$probcolors.thresh1, mods, space="both", probmap=TRUE, obs = NULL)
+easyplot(japan.prefect2, japan.poly2 ,pdfname4, res$probcolors.thresh2, mods, space="both", probmap=TRUE, obs = NULL)
 
 ```
 
@@ -377,14 +376,18 @@ easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname4, res$probco
 Import geography data:
 
 ```{r}
+#load data
+data("japanbreastcancer")
 
-dframe.poly2 <- read.csv("../data/japan_poly2.csv")
-japan.poly2 <- dframe.poly2[,2:3]
-dframe.prefect2 <- read.csv("../data/japan_prefect2.csv")
-japan.prefect2 <- dframe.prefect2[,2:5]
-
+#inspect
+head(utmJapan)
 head(dframe.poly2)
 head(dframe.prefect2)
+head(japanbreastcancer)
+
+#take what we need
+japan.poly2 <- dframe.poly2[,2:3]
+japan.prefect2 <- dframe.prefect2[,2:5]
 
 
 ```
@@ -395,21 +398,28 @@ Import dataframe with covariates:
 
 ```{r}
 #Set-up
-dframe1 <- read.csv("../data/jap.breast.F.9.10.11.csv")
-dframe2 <- read.csv("../data/utmJapan.csv")
-dframe3 <- aggregate(dframe1, by=list(as.factor(rep(1:(nrow(dframe1)/4),each=4))), FUN="sum")
-dframe=data.frame(id=as.factor(dframe3$id/4),period=as.factor(dframe3$year),death=dframe3$death,expdeath=dframe3$expdeath)
-levels(dframe$period) <- c("1","2","3","4","5")
+#load data
+data("japanbreastcancer")
+
+#inspect
+head(utmJapan)
+head(dframe.poly2)
+head(dframe.prefect2)
+head(japanbreastcancer)
+
+#take what we need
+japan.poly2 <- dframe.poly2[,2:3]
+japan.prefect2 <- dframe.prefect2[,2:5]
 
 #add a couple of covariates to the dataframe
-covar1 <- rnorm(n = nrow(dframe),mean = 500, sd = 30)
-covar2 <- rpois(n = nrow(dframe), lambda = dframe$expdeath)
-covar3 <- rbinom(n = nrow(dframe), size = 50, prob = 0.7)
-covar4 <- rbinom(n = nrow(dframe), 1, 0.5)
-covar5 <- rbinom(n = nrow(dframe), 1, 0.2)
+covar1 <- rnorm(n = nrow(japanbreastcancer),mean = 500, sd = 30)
+covar2 <- rpois(n = nrow(japanbreastcancer), lambda = japanbreastcancer$expdeath)
+covar3 <- rbinom(n = nrow(japanbreastcancer), size = 50, prob = 0.7)
+covar4 <- rbinom(n = nrow(japanbreastcancer), 1, 0.5)
+covar5 <- rbinom(n = nrow(japanbreastcancer), 1, 0.2)
 
 #add new covariates to dataframe
-df <- cbind.data.frame(dframe[,-1], covar1, covar2, covar3, covar4, covar5)
+df <- cbind.data.frame(japanbreastcancer[,-1], covar1, covar2, covar3, covar4, covar5)
 
 #check out the new dataframe
 head(df)
@@ -420,8 +430,8 @@ head(df)
 ```{r}
 #Initial inputs
 mods <- c("QuasiPoisson", "Poisson")
-x <- dframe2$utmx/1000
-y <- dframe2$utmy/1000
+x <- utmJapan$utmx/1000
+y <- utmJapan$utmy/1000
 rMax <- 20 
 Time <- 5
 overdispfloor <- TRUE
@@ -450,7 +460,7 @@ table.detection <- NULL
 
 ```{r}
 
-clst <- toclust(df, expected = dframe$expdeath, observed = dframe$death, timeperiod = dframe$period, covars=TRUE)
+clst <- toclust(df, expected = japanbreastcancer$expdeath, observed = japanbreastcancer$death, timeperiod = japanbreastcancer$period, covars=TRUE)
 
 system.time(res <- clust_sim(clst, x, y,rMax,Time, nsim,center, radius, risk.ratio, timeperiods, 
                              utm=TRUE, byrow=TRUE, threshold, space= "both", theta, nullmod, overdispfloor))
@@ -493,11 +503,10 @@ pdfname3 <- paste0("probmapsthresh1.pdf")
 pdfname4 <- paste0("probmapsthresh2.pdf")
 
 
-easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname1, res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL)
-
-easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname2, res$probcolors, mods, space="both", probmap=TRUE, obs = NULL)
-easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname3, res$probcolors.thresh1, mods, space="both", probmap=TRUE, obs = NULL)
-easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname4, res$probcolors.thresh2, mods, space="both", probmap=TRUE, obs = NULL)
+easyplot(japan.prefect2, japan.poly2 ,pdfname1, res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL)
+easyplot(japan.prefect2, japan.poly2 ,pdfname2, res$probcolors, mods, space="both", probmap=TRUE, obs = NULL)
+easyplot(japan.prefect2, japan.poly2 ,pdfname3, res$probcolors.thresh1, mods, space="both", probmap=TRUE, obs = NULL)
+easyplot(japan.prefect2, japan.poly2 ,pdfname4, res$probcolors.thresh2, mods, space="both", probmap=TRUE, obs = NULL)
 
 ```
 
