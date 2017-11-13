@@ -173,22 +173,22 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byr
     riskratios.p.st <- get_rr(lassoresult.p.st, vectors,init,E1,Time, sim=FALSE, cv)
     riskratios.qp.st <- get_rr(lassoresult.qp.st, vectors,init,E1,Time, sim=FALSE, cv)
     ##color mapping
-    rrcolors.p.st <- colormapping(riskratios.p.st,Time, cv)
-    rrcolors.qp.st <- colormapping(riskratios.qp.st,Time, cv)
+    rrcolors.p.st <- colormapping(riskratios.p.st,Time, cv, prob=FALSE)
+    rrcolors.qp.st <- colormapping(riskratios.qp.st,Time, cv, prob = FALSE)
     
     #space only
     ##risk ratios
     initial.s <- list(E0 = unlist(vectors.s$E0_0))
-    id <- rep(1:length(x), times=Time)
+    #id <- rep(1:length(x), times=Time)
     riskratios.p.s <- get_rr(lassoresult.p.s, vectors.s,initial.s,
-                              tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x)),
-                              1,sim=FALSE, cv)
+                              as.vector(matrix(E1, ncol=Time)),
+                              Time,sim=FALSE, cv)
     riskratios.qp.s <- get_rr(lassoresult.qp.s,vectors.s,initial.s,
-                               tapply(as.vector(matrix(E1, ncol=Time)), id, function(x) mean(x)),
-                               1,sim=FALSE, cv)
+                              as.vector(matrix(E1, ncol=Time)),
+                               Time,sim=FALSE, cv)
     ##color mapping
-    rrcolors.p.s <- colormapping(riskratios.p.s,1, cv)
-    rrcolors.qp.s <- colormapping(riskratios.qp.s,1, cv)
+    rrcolors.p.s <- colormapping(riskratios.p.s,Time, cv, prob=FALSE)
+    rrcolors.qp.s <- colormapping(riskratios.qp.s,Time, cv, prob=FALSE)
     
     #COMBINE RISKRATIOS INTO LISTS
     riskratios <- list(riskratios.qp.s = riskratios.qp.s, riskratios.p.s = riskratios.p.s, 

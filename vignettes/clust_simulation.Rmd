@@ -16,8 +16,6 @@ Load *clust*
 #load package
 library("clust")
 
-#load data
-data("japanbreastcancer")
 ```
 
 
@@ -29,10 +27,18 @@ data("japanbreastcancer")
 ```{r}
 set.seed(8202017)
 
-head(japanbreastcancer)
+#load data
+data("japanbreastcancer")
+
+#inspect
+head(utmJapan)
 head(dframe.poly2)
 head(dframe.prefect2)
-head(utmJapan)
+head(japanbreastcancer)
+
+#take what we need
+japan.poly2 <- dframe.poly2[,2:3]
+japan.prefect2 <- dframe.prefect2[,2:5]
 ```
 
 
@@ -133,10 +139,10 @@ pdfname4 <- paste0("probmapsthresh2NULLtest2mult.pdf")
 
 
 
-easyplot(prefect = dframe.prefect2 , polygons = dframe.poly2 ,pdfname1, res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL, rr=TRUE)
-easyplot(prefect = dframe.prefect2 , polygons = dframe.poly2 ,pdfname2, res$probcolors, mods, space="both", probmap=TRUE, obs = NULL,rr=FALSE)
-easyplot(prefect = dframe.prefect2 , polygons = dframe.poly2 ,pdfname3, res$probcolors.thresh1, mods, space="both", probmap=TRUE, obs = NULL,rr=FALSE)
-easyplot(prefect = dframe.prefect2 , polygons = dframe.poly2 ,pdfname4, res$probcolors.thresh2, mods, space="both", probmap=TRUE, obs = NULL, rr=FALSE)
+easyplot(japan.prefect2, japan.poly2 ,pdfname1, res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL, rr=TRUE)
+easyplot(japan.prefect2, japan.poly2 , pdfname2, res$probcolors, mods, space="both", probmap=TRUE, obs = NULL,rr=FALSE)
+easyplot(japan.prefect2, japan.poly2 ,pdfname3, res$probcolors.thresh1, mods, space="both", probmap=TRUE, obs = NULL,rr=FALSE)
+easyplot(japan.prefect2, japan.poly2 ,pdfname4, res$probcolors.thresh2, mods, space="both", probmap=TRUE, obs = NULL, rr=FALSE)
 
 
 
@@ -213,10 +219,10 @@ for(cent in centers){
                 pdfnamethresh2 <- paste0("OUT/sim","_","center","_",cent,"radius",rad,"_", "start",
                                          "_",as.numeric(paste(tim, collapse = "")),"_","rr","_",gsub("[.]","",risk),"thr2.pdf")
                 ##maps
-                easyplot(prefect = dframe.prefect2 , polygons = dframe.poly2, pdfnamerr, res$rrcolors, mods, space="both",probmap=FALSE, obs=NULL, rr=TRUE)
-                easyplot(prefect = dframe.prefect2 , polygons = dframe.poly2, pdfnameprob, res$probcolors, mods, space="both",probmap=TRUE, obs=NULL, rr=FALSE)
-                easyplot(prefect = dframe.prefect2 , polygons = dframe.poly2, pdfnamethresh1, res$probcolors.thresh1, mods, space="both",probmap=TRUE, obs=NULL, rr=FALSE)
-                easyplot(prefect = dframe.prefect2 , polygons = dframe.poly2, pdfnamethresh2, res$probcolors.thresh2, mods, space="both",probmap=TRUE, obs=NULL, rr=FALSE)
+                easyplot(japan.prefect2, japan.poly2 ,pdfnamerr, res$rrcolors, mods, space="both",probmap=FALSE, obs=NULL, rr=TRUE)
+                easyplot(japan.prefect2, japan.poly2 , pdfnameprob, res$probcolors, mods, space="both",probmap=TRUE, obs=NULL, rr=FALSE)
+                easyplot(japan.prefect2, japan.poly2 ,pdfnamethresh1, res$probcolors.thresh1, mods, space="both",probmap=TRUE, obs=NULL, rr=FALSE)
+                easyplot(japan.prefect2, japan.poly2 , pdfnamethresh2, res$probcolors.thresh2, mods, space="both",probmap=TRUE, obs=NULL, rr=FALSE)
 
             }
         }
@@ -242,12 +248,18 @@ print(table.detection)
 ## Running single simulation without covariates
 
 ```{r}
+#load data
 data("japanbreastcancer")
 
+#inspect
+head(utmJapan)
 head(dframe.poly2)
 head(dframe.prefect2)
 head(japanbreastcancer)
-head(utmJapan)
+
+#take what we need
+japan.poly2 <- dframe.poly2[,2:3]
+japan.prefect2 <- dframe.prefect2[,2:5]
 
 
 ```
@@ -348,10 +360,10 @@ pdfname4 <- paste0("probmapsthresh2.pdf")
 # pdfname4 <- paste0("probmapsthresh2_test.pdf")
 
 
-easyplot(prefect = dframe.prefect2 , polygons = dframe.poly2 ,pdfname1, res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL)
-easyplot(prefect = dframe.prefect2 , polygons = dframe.poly2 ,pdfname2, res$probcolors, mods, space="both", probmap=TRUE, obs = NULL)
-easyplot(prefect = dframe.prefect2 , polygons = dframe.poly2 ,pdfname3, res$probcolors.thresh1, mods, space="both", probmap=TRUE, obs = NULL)
-easyplot(prefect = dframe.prefect2 , polygons = dframe.poly2 ,pdfname4, res$probcolors.thresh2, mods, space="both", probmap=TRUE, obs = NULL)
+easyplot(japan.prefect2, japan.poly2 ,pdfname1, res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL)
+easyplot(japan.prefect2, japan.poly2 ,pdfname2, res$probcolors, mods, space="both", probmap=TRUE, obs = NULL)
+easyplot(japan.prefect2, japan.poly2 ,pdfname3, res$probcolors.thresh1, mods, space="both", probmap=TRUE, obs = NULL)
+easyplot(japan.prefect2, japan.poly2 ,pdfname4, res$probcolors.thresh2, mods, space="both", probmap=TRUE, obs = NULL)
 
 ```
 
@@ -364,12 +376,18 @@ easyplot(prefect = dframe.prefect2 , polygons = dframe.poly2 ,pdfname4, res$prob
 Import geography data:
 
 ```{r}
+#load data
 data("japanbreastcancer")
 
+#inspect
+head(utmJapan)
 head(dframe.poly2)
 head(dframe.prefect2)
 head(japanbreastcancer)
-head(utmJapan)
+
+#take what we need
+japan.poly2 <- dframe.poly2[,2:3]
+japan.prefect2 <- dframe.prefect2[,2:5]
 
 
 ```
@@ -380,7 +398,18 @@ Import dataframe with covariates:
 
 ```{r}
 #Set-up
+#load data
 data("japanbreastcancer")
+
+#inspect
+head(utmJapan)
+head(dframe.poly2)
+head(dframe.prefect2)
+head(japanbreastcancer)
+
+#take what we need
+japan.poly2 <- dframe.poly2[,2:3]
+japan.prefect2 <- dframe.prefect2[,2:5]
 
 #add a couple of covariates to the dataframe
 covar1 <- rnorm(n = nrow(japanbreastcancer),mean = 500, sd = 30)
@@ -474,11 +503,10 @@ pdfname3 <- paste0("probmapsthresh1.pdf")
 pdfname4 <- paste0("probmapsthresh2.pdf")
 
 
-easyplot(prefect = dframe.prefect2 , polygons = dframe.poly2 ,pdfname1, res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL)
-
-easyplot(prefect = dframe.prefect2 , polygons = dframe.poly2 ,pdfname2, res$probcolors, mods, space="both", probmap=TRUE, obs = NULL)
-easyplot(prefect = dframe.prefect2 , polygons = dframe.poly2 ,pdfname3, res$probcolors.thresh1, mods, space="both", probmap=TRUE, obs = NULL)
-easyplot(prefect = dframe.prefect2 , polygons = dframe.poly2 ,pdfname4, res$probcolors.thresh2, mods, space="both", probmap=TRUE, obs = NULL)
+easyplot(japan.prefect2, japan.poly2 ,pdfname1, res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL)
+easyplot(japan.prefect2, japan.poly2 ,pdfname2, res$probcolors, mods, space="both", probmap=TRUE, obs = NULL)
+easyplot(japan.prefect2, japan.poly2 ,pdfname3, res$probcolors.thresh1, mods, space="both", probmap=TRUE, obs = NULL)
+easyplot(japan.prefect2, japan.poly2 ,pdfname4, res$probcolors.thresh2, mods, space="both", probmap=TRUE, obs = NULL)
 
 ```
 

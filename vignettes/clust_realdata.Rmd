@@ -25,13 +25,18 @@ library("clust")
 ```{r}
 set.seed(8282017)
 
+#load data
 data("japanbreastcancer")
 
+#inspect
 head(utmJapan)
 head(dframe.poly2)
 head(dframe.prefect2)
 head(japanbreastcancer)
 
+#take what we need
+japan.poly2 <- dframe.poly2[,2:3]
+japan.prefect2 <- dframe.prefect2[,2:5]
 
 ```
 
@@ -65,14 +70,14 @@ Save diagnostics into csv:
 
 ```{r}
 #save results
-filename <- paste0("jbc_analysis",".RData")
+filename <- paste0("jbc_analysis_test",".RData")
 save(res, file = filename)
 
 
 #Create Empty PDF to Map Onto
-pdfname <- paste0("jbc_analysis",".pdf")
+pdfname <- paste0("jbc_analysis_test",".pdf")
 
-easyplot(dframe.prefect2, dframe.poly2 ,pdfname, res, mods, space="both", obs=TRUE)
+easyplot(japan.prefect2, japan.poly2 ,pdfname, res$rrcolors, mods, space="both", probmap=FALSE, rr=TRUE)
 ```
 
 
@@ -105,13 +110,18 @@ write.csv(table.clusters, file="sampleoutput/tableclusters.csv", row.names=TRUE)
 
 
 ```{r}
-#Set-up
+#load data
 data("japanbreastcancer")
 
+#inspect
 head(utmJapan)
 head(dframe.poly2)
 head(dframe.prefect2)
 head(japanbreastcancer)
+
+#take what we need
+japan.poly2 <- dframe.poly2[,2:3]
+japan.prefect2 <- dframe.prefect2[,2:5]
 
 ```
 
@@ -169,9 +179,18 @@ easyplot(dframe.prefect2, dframe.poly2 ,pdfname, res, mods, space="both", probma
 Import geography data:
 
 ```{r}
+#load data
 data("japanbreastcancer")
+
+#inspect
+head(utmJapan)
 head(dframe.poly2)
 head(dframe.prefect2)
+head(japanbreastcancer)
+
+#take what we need
+japan.poly2 <- dframe.poly2[,2:3]
+japan.prefect2 <- dframe.prefect2[,2:5]
 
 
 ```
