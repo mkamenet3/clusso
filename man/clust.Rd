@@ -39,6 +39,7 @@ Runs helper function for both the space and space-time Lasso model on observed d
 Set up for clust
 }
 \examples{
+\donttest{
 data(japanbreastcancer)
 #Set Some Initial Conditions
 x1=utmJapan$utmx/1000
@@ -50,5 +51,6 @@ clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath,
  observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE)
 system.time(res <- clust(clst, x1,y1, rMax, Time, utm=TRUE, byrow=TRUE, 
  space="both", overdispfloor=TRUE, cv=NULL))
+ }
 }
 

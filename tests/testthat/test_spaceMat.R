@@ -1,4 +1,5 @@
 library("testthat")
+library("Matrix")
 context("Creating sparse spatial matrix")
 
 test_that("Input is actually a matrix", {

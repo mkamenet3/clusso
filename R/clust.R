@@ -73,9 +73,11 @@ vectors_space <- function(x,Ex, Yx,Time, init){
 
 
 clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","spacetime", "both"),overdispfloor=NULL, cv = NULL){
+    if(is(clst, "clst")!=TRUE) stop("clst element not of class `clst`. This is required for the clust_sim function.")
     expected <- clst$required_df$expected
     observed <- clst$required_df$observed
     period <- clst$required_df$timeperiod
+    #initial user setting
     if(!is.null(clst$othercovariates_df)){
         covars <- clst$othercovariates_df
     }
@@ -104,6 +106,7 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","
         overdispfloor <- TRUE
     }
     if(!is.null(cv)){
+        message("Running cross-validation method for path selection. For AIC, AICc, and BIC, set `cv = NULL`")
         cv = cv
     }
     else{
@@ -113,10 +116,8 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","
     space <- match.arg(space, several.ok = FALSE)
     switch(space, 
            #TODO
-           # space = clust.sim.all.space(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
-           #                             timeperiod,colors=NULL,utm, byrow, threshold, space=TRUE),
-           # spacetime = clust.sim.all.spacetime(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
-           #                                     timeperiod,colors=NULL,utm, byrow, threshold, space=FALSE),
+           # space = 
+           # spacetime = 
            both = clustAll(x, y, rMax,period, expected, observed, covars, Time, utm, byrow, overdispfloor, cv))
 }
     
@@ -147,7 +148,6 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byr
     #set up clusters and fitted values
     clusters <- clusters2df(x,y,rMax, utm=utm, length(x))
     n <- length(x)
-    #init <- setVectors(period, expected, observed, Time, byrow)
     init <- setVectors(period, expected, observed, covars, Time, byrow)
     E1 <- init$E0
     Ex <- scale(init, Time)
@@ -155,14 +155,15 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byr
     #timeperiod <- 1:Time
     #set vectors
     vectors <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec, covars = covars)
-    spacevecs <- vectors_space(x, Ex, Yx, Time,init)
-    vectors.s <- spacevecs$vectors.s
+    vectors.s <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec, covars = covars)
+    #spacevecs <- vectors_space(x, Ex, Yx, Time,init)
+    #vectors.s <- spacevecs$vectors.s
     
     #run lasso
     lassoresult.p.st <- spacetimeLasso(clusters, vectors,Time, spacetime=TRUE,pois=TRUE, overdispfloor, cv)
     lassoresult.qp.st <- spacetimeLasso(clusters, vectors, Time, spacetime=TRUE,pois=FALSE, overdispfloor, cv)
-    lassoresult.p.s <- spacetimeLasso(clusters, vectors.s, 1, spacetime=FALSE,pois=TRUE, overdispfloor,cv)
-    lassoresult.qp.s <- spacetimeLasso(clusters, vectors.s, 1, spacetime=FALSE,pois=FALSE, overdispfloor,cv)
+    lassoresult.p.s <- spacetimeLasso(clusters, vectors.s, Time, spacetime=TRUE,pois=TRUE, overdispfloor,cv)
+    lassoresult.qp.s <- spacetimeLasso(clusters, vectors.s, Time, spacetime=TRUE,pois=FALSE, overdispfloor,cv)
     
     message("All models ran successfully")
     

@@ -7,7 +7,7 @@
 #' @usage data(japanbreastcancer)
 #' 
 #' 
-#' @format An object of class \code("data.frame"). Includes four separate dataframes: 
+#' @format An object of class "data.frame". Includes four separate dataframes: 
 #' \itemize{
 #'  \item 1) dframe.poly2 - coordinates for plotting polygons
 #'  \item 2) dframe.prefect2 - coordinates for plotting prefect boundaries
@@ -18,6 +18,7 @@
 #' @keywords datasets
 #' 
 #' @references 
+#' @aliases dframe.poly2 dframe.prefect2 utmJapan
 #' 
 #' @examples 
 #' data(japanbreastcancer)

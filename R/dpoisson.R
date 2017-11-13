@@ -8,9 +8,9 @@
 #' 
 #' @examples 
 #' set.seed(1)
-#' E <- rnegbin(n = 20,mu = 15,theta = 1000)
+#' E <- MASS::rnegbin(n = 20,mu = 15,theta = 1000)
 #' theta = 1000
-#' y <- rnegbin(E, theta=theta)
+#' y <- MASS::rnegbin(E, theta=theta)
 #' E0 <- E*(sum(y)/sum(E))
 #' lambda <- exp(c(rep(0,15),rep(0.4,5)))
 #' dpoisson(y, lambda, E0)

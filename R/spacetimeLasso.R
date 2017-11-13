@@ -19,15 +19,16 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
     n <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
-    if(spacetime == FALSE && nrow(vectors$covars) ==0){
-        covars<- NULL
-    }
-    else{
-        covars <- vectors$covars    
-    }
+    covars <- vectors$covars
+    # if(spacetime == FALSE && nrow(vectors$covars) ==0){
+    #     covars<- NULL
+    # }
+    # else{
+    #     covars <- vectors$covars    
+    # }
     if(spacetime==TRUE){
-        message("Creating space-time matrix")
         sparseMAT <- spacetimeMat(clusters, numCenters, Time)
+        message("Creating space-time matrix")
         
         #set initial
         Ex <- vectors$Ex
@@ -35,25 +36,34 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
         Period <- vectors$Period
     }
     else{
-        message("Creating space-only matrix")
+        
         sparseMAT <- spaceMat(clusters, numCenters)
-        #set initial
-        Ex <- as.vector(vectors$Ex)
-        Yx <- as.vector(vectors$Y.vec)
-        Period <- as.factor(as.vector(vectors$Period))
+        # #set initial
+        # Ex <- as.vector(vectors$Ex)
+        # Yx <- as.vector(vectors$Y.vec)
+        # Period <- as.factor(as.vector(vectors$Period))
+        message("Creating space-only matrix")
+        if(nrow(covars)==0){
+            covars <- NULL
+        }
     }
     if(!is.null(covars)){
-        str(covars)
+        #str(covars)
         
         message("Running with covariates")
         covarMAT <- Matrix::Matrix(data.matrix(covars), sparse=TRUE)
-        dim(sparseMAT)
+       # dim(sparseMAT)
         sparseMat <- Matrix::cBind(sparseMAT, covarMAT)
     }
     else{
         message("No covariates found")
     }
     message(paste("Number of potential clusters to scan through: ", dim(sparseMAT)[2]))
+    #Set conditions
+    Ex <- vectors$Ex
+    Yx <- vectors$Y.vec
+    Period <- vectors$Period
+    #Run
     message("Running Lasso - stay tuned")
     if(!is.null(cv)){
         message("Path selection: cross-validation")
@@ -78,6 +88,7 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
         mu <- sapply(1:length(lasso$lambda), function(i) exp(xbetaPath[,i]))
         loglike <- sapply(1:length(lasso$lambda), function(i) sum(dpoisson(Yx, mu[,i],Ex)))
         K <- lasso$df
+        message("Selecting best paths")
         
         #########################################################
         #Space-Time, Quasi-Poisson only (yes overdispersion)
@@ -94,8 +105,8 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
             }
             overdisp.est <- overdisp(offset_reg, sim = FALSE, overdispfloor = overdispfloor)
             message(paste("Overdispersion estimate:", overdisp.est))
-            #overdisp.est <- max(unlist(deviance(offset_reg)/df.residual(offset_reg)))
-            message("Selecting best paths")
+            if(pois == FALSE & is.null(overdisp.est)) warning("No overdispersion for quasi-Poisson model. Please check.")
+            
             
             #QBIC
             PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(n*Time))
@@ -147,18 +158,16 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
         #Space-Only, Quasi-Poisson
         #########################################################
         else if(spacetime==FALSE & pois==FALSE){
-            message("Returning results for space-only  Quasi-Poisson model")
+            message("Returning results for space-only Quasi-Poisson model")
             if(!is.null(covars)){
-                offset_reg <- glm(Yx ~ . + as.factor(vectors$Period) + offset(log(Ex)),data = covars,family=quasipoisson)
+                offset_reg <- glm(Yx ~ . + offset(log(Ex)),data = covars,family=quasipoisson)
             }
             else{
-                offset_reg <- glm(Yx ~ 1 + as.factor(vectors$Period) + offset(log(Ex)),family=quasipoisson)
+                offset_reg <- glm(Yx ~ 1 + offset(log(Ex)),family=quasipoisson)
             }
             offset_reg <- glm(Yx ~ 1 + offset(log(Ex)),family=poisson)
-            #overdisp.est <- max(unlist(deviance(offset_reg)/df.residual(offset_reg)))
             overdisp.est <- overdisp(offset_reg, sim = FALSE, overdispfloor = overdispfloor)
             message(paste("Overdispersion estimate:", overdisp.est))
-            message("Selecting best paths")
             if(pois==FALSE & is.null(overdisp.est)) warning("No overdispersion for quasi-Poisson model. Please check.")
             
             #QBIC

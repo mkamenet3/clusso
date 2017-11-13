@@ -141,10 +141,9 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
     if(length(space) > 1) stop("You must select either `space`, `spacetime`, or `both`")
     space <- match.arg(space, several.ok = FALSE)
     switch(space, 
-           # space = clustAll_sim.space(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
-           #                             timeperiod,colors=NULL,utm, byrow, threshold, space=TRUE),
-           # spacetime = clustAll_sim.spacetime(x, y, rMax,period, expected, observed, Time, nsim, center, radius, risk.ratio,
-           #                                     timeperiod,colors=NULL,utm, byrow, threshold, space=FALSE),
+           #TODO
+           # space = 
+           # spacetime = 
            both = clustAll_sim(x, y, rMax,period, expected, observed, covars, Time, nsim, center, radius, risk.ratio,
                                      timeperiod,utm, byrow, threshold, theta, nullmod, overdispfloor, collapsetime))
 }
