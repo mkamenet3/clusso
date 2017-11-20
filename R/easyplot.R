@@ -71,10 +71,10 @@ easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space",
                #     plotmap_ST(prefect, polygons, pdf_qp.st, res, obs, sub = res$probcolors$probcolors.qp.st)
                #     plotmap_ST(prefect, polygons, pdf_p.st, res, obs, sub = res$probcolors$probcolors.p.s)},
                both = {
-                   plotmap_S_cv(prefect, polygons, pdf_qp.s,  rescols$rrcolors.qp.s, obs)
-                   plotmap_S_cv(prefect, polygons, pdf_p.s, rescols$rrcolors.p.s, obs)
-                   plotmap_ST_cv(prefect, polygons, pdf_qp.st, rescols$rrcolors.qp.st, obs)
-                   plotmap_ST_cv(prefect, polygons, pdf_p.st, rescols$rrcolors.p.st, obs)})
+                   plotmap_ST_cv(prefect, polygons, pdf_qp.s,  rescols$rrcolors.qp.s, obs,rr)
+                   plotmap_ST_cv(prefect, polygons, pdf_p.s, rescols$rrcolors.p.s, obs,rr)
+                   plotmap_ST_cv(prefect, polygons, pdf_qp.st, rescols$rrcolors.qp.st, obs,rr)
+                   plotmap_ST_cv(prefect, polygons, pdf_p.st, rescols$rrcolors.p.st, obs,rr)})
     }
     
 }
@@ -87,7 +87,7 @@ easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space",
 #' @param res resultant list from clust_ function
 #' @param obs if observed is to be plotted or oracle from simulation
 #' 
-plotmap_ST_cv <- function(prefect, polygons, pdfname,res, obs){
+plotmap_ST_cv <- function(prefect, polygons, pdfname,res, obs,rr){
     if(!is.null(obs)){
         firstrow = "Obs"
     }
@@ -180,7 +180,7 @@ plotmap_ST_cv <- function(prefect, polygons, pdfname,res, obs){
 #' @param pdfname pdfname of what the output pdf will be called
 #' @param res resultant list from clust_ function
 #' @param obs if observed is to be plotted or oracle from simulation
-plotmap_S_cv <- function(prefect, polygons, pdfname,res, obs){
+plotmap_S_cv <- function(prefect, polygons, pdfname,res, obs,rr){
     if(!is.null(obs)){
         firstrow = "Obs"
     }
