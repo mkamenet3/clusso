@@ -76,8 +76,13 @@ save(res, file = filename)
 
 #Create Empty PDF to Map Onto
 pdfname <- paste0("jbc_analysis",".pdf")
+easyplot(japan.prefect2, japan.poly2 ,pdfname, res$rrcolors, mods, space="both", probmap=FALSE, obs=TRUE,rr=TRUE)
 
-easyplot(japan.prefect2, japan.poly2 ,pdfname, res$rrcolors, mods, space="both", probmap=FALSE, rr=TRUE)
+#BIC map
+pdfname <- paste0("jbc_analysisBIC",".pdf")
+easyplot(japan.prefect2, japan.poly2 ,pdfname, res, mods, space="BIC", probmap=FALSE,rr=TRUE)
+
+
 ```
 
 
@@ -169,7 +174,7 @@ save(res, file = filename)
 #Create Empty PDF to Map Onto
 pdfname <- paste0("jbc_analysis_cv",".pdf")
 
-easyplot(dframe.prefect2, dframe.poly2 ,pdfname, res$rrcolors, mods, space="both", probmap=FALSE, cv=10, rr=TRUE)
+easyplot(japan.prefect2, japan.poly2 ,pdfname, res$rrcolors, mods, space="both", probmap=FALSE, cv=10, obs=TRUE, rr=TRUE)
 
 ```
 
@@ -245,6 +250,6 @@ save(res, file = filename)
 #Create Empty PDF to Map Onto
 pdfname <- paste0("jbc_analysis_covars",".pdf")
 
-easyplot(dframe.prefect2, dframe.poly2 ,pdfname, res$rrcolors, mods, space="both", obs=TRUE)
+easyplot(japan.prefect2, japan.poly2 ,pdfname, res$rrcolors, mods, space="both", obs=TRUE, obs=TRUE, obs=TRUE,rr=TRUE)
 ```
 

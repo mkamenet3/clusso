@@ -23,7 +23,7 @@
 #'  res$probcolors, mods, space="both", probmap=TRUE, obs = NULL,rr=FALSE)
 #' }
 
-easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space", "spacetime", "both"), probmap, cv=NULL,obs=NULL,rr){
+easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space", "spacetime", "both", "BIC"), probmap, cv=NULL,obs=NULL,rr){
     if(is.null(space)){ stop("You must specify `space`, `spacetime` or `both`")}
     space <- match.arg(space, several.ok = FALSE)
     pdf_qp.s <- paste0(gsub(".pdf","", pdfname),mods[1],"space" ,".pdf")
@@ -44,7 +44,10 @@ easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space",
                    plotmap_ST(prefect, polygons, pdf_qp.s, rescols$rrcolors.qp.s, obs, rr)
                    plotmap_ST(prefect, polygons, pdf_p.s, rescols$rrcolors.p.s, obs, rr)
                    plotmap_ST(prefect, polygons, pdf_qp.st, rescols$rrcolors.qp.st, obs, rr)
-                   plotmap_ST(prefect, polygons, pdf_p.st, rescols$rrcolors.p.st, obs, rr)})
+                   plotmap_ST(prefect, polygons, pdf_p.st, rescols$rrcolors.p.st, obs, rr)},
+               BIC = {
+                   plotmap_bic(prefect, polygons, pdfname, rescols, rr)
+               })
     }
     if(probmap==TRUE & is.null(cv)){
         message("Probability Maps")
@@ -71,10 +74,10 @@ easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space",
                #     plotmap_ST(prefect, polygons, pdf_qp.st, res, obs, sub = res$probcolors$probcolors.qp.st)
                #     plotmap_ST(prefect, polygons, pdf_p.st, res, obs, sub = res$probcolors$probcolors.p.s)},
                both = {
-                   plotmap_S_cv(prefect, polygons, pdf_qp.s,  rescols$rrcolors.qp.s, obs)
-                   plotmap_S_cv(prefect, polygons, pdf_p.s, rescols$rrcolors.p.s, obs)
-                   plotmap_ST_cv(prefect, polygons, pdf_qp.st, rescols$rrcolors.qp.st, obs)
-                   plotmap_ST_cv(prefect, polygons, pdf_p.st, rescols$rrcolors.p.st, obs)})
+                   plotmap_ST_cv(prefect, polygons, pdf_qp.s,  rescols$rrcolors.qp.s, obs,rr)
+                   plotmap_ST_cv(prefect, polygons, pdf_p.s, rescols$rrcolors.p.s, obs,rr)
+                   plotmap_ST_cv(prefect, polygons, pdf_qp.st, rescols$rrcolors.qp.st, obs,rr)
+                   plotmap_ST_cv(prefect, polygons, pdf_p.st, rescols$rrcolors.p.st, obs,rr)})
     }
     
 }
@@ -87,9 +90,9 @@ easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space",
 #' @param res resultant list from clust_ function
 #' @param obs if observed is to be plotted or oracle from simulation
 #' 
-plotmap_ST_cv <- function(prefect, polygons, pdfname,res, obs){
+plotmap_ST_cv <- function(prefect, polygons, pdfname,res, obs,rr){
     if(!is.null(obs)){
-        firstrow = "Obs"
+        firstrow = "Observed"
     }
     else{
         firstrow="Oracle"
@@ -180,9 +183,9 @@ plotmap_ST_cv <- function(prefect, polygons, pdfname,res, obs){
 #' @param pdfname pdfname of what the output pdf will be called
 #' @param res resultant list from clust_ function
 #' @param obs if observed is to be plotted or oracle from simulation
-plotmap_S_cv <- function(prefect, polygons, pdfname,res, obs){
+plotmap_S_cv <- function(prefect, polygons, pdfname,res, obs,rr){
     if(!is.null(obs)){
-        firstrow = "Obs"
+        firstrow = "Observed"
     }
     else{
         firstrow="Oracle"
@@ -229,7 +232,7 @@ plotmap_S_cv <- function(prefect, polygons, pdfname,res, obs){
 #' @param rr if FALSE, will print probability map legend, if TRUE will print legend for risk ratios (redblue scheme)
 plotmap_ST <- function(prefect, polygons, pdfname,res, obs,rr){
     if(!is.null(obs)){
-        firstrow = "Obs"
+        firstrow = "Observed"
     }
     else{
         firstrow="Oracle"
@@ -401,7 +404,7 @@ plotmap_ST <- function(prefect, polygons, pdfname,res, obs,rr){
 #' @param rr is TRUE, result in legend for redblue (risk ratios). Default is grey scale legend
 plotmap_S <- function(prefect, polygons, pdfname,res, obs, rr){
     if(!is.null(obs)){
-        firstrow = "Obs"
+        firstrow = "Observed"
     }
     else{
         firstrow="Oracle"
@@ -457,6 +460,210 @@ plotmap_S <- function(prefect, polygons, pdfname,res, obs, rr){
         rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=greys(0:50/50),border=F)
         text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
     }
+    
+    #Turn off pdf development
+    dev.off()
+}
+
+
+######################################################################
+#' Space-time plotting
+#' @param prefect prefects dataframe
+#' @param polygons polygons dataframe
+#' @param pdfname pdfname of what the output pdf will be called
+#' @param res resultant list from clust_ function
+#' @param obs if observed is to be plotted or oracle from simulation
+#' @param rr if FALSE, will print probability map legend, if TRUE will print legend for risk ratios (redblue scheme)
+plotmap_bic <- function(prefect, polygons, pdfname,res,rr){
+    firstrow = "Observed"
+    #Observed
+    pdf(pdfname, height=11, width=10)
+    #Maps of Observed Counts
+    par(fig=c(0,.2,0.668,1), mar=c(.5,0.5,0.5,0))
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.qp.st$colors.obs[,1],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,paste0("Period 1 - ", firstrow),cex=0.75)
+    
+    par(fig=c(0.2,.4,0.668,1), mar=c(.5,0.5,0.5,0), new=T)
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.qp.st$colors.obs[,2],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,paste0("Period 2 - ", firstrow),cex=0.75)
+    
+    par(fig=c(0.4,.6,0.668,1), mar=c(.5,0.5,0.5,0), new=T)
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.qp.st$colors.obs[,3],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,paste0("Period 3 - ", firstrow),cex=0.75)
+    
+    par(fig=c(0.6,.8,0.668,1), mar=c(.5,0.5,0.5,0), new=T)
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.qp.st$colors.obs[,4],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,paste0("Period 4 - ", firstrow),cex=0.75)
+    
+    par(fig=c(0.8,1,0.668,1), mar=c(.5,0.5,0.5,0), new=T)
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.qp.st$colors.obs[,5],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,paste0("Period 5 - ", firstrow),cex=0.75)
+    
+    
+    #Map QP-ST
+    
+    par(fig=c(0,.2,0.501,0.835), mar=c(.5,0.5,0.5,0), new=T)
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.qp.st$color.qbic[,1],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,'Period 1',cex=0.75)
+    
+    par(fig=c(0.2,.4,0.501,0.835), mar=c(.5,0.5,0.5,0), new=T)   
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.qp.st$color.qbic[,2],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,'Period 2',cex=0.75)
+    
+    par(fig=c(0.4,.6,0.501,0.835), mar=c(.5,0.5,0.5,0), new=T) 
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.qp.st$color.qbic[,3],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,'Period 3: Quasi-Poisson, Space-Time',cex=0.75)
+    
+    par(fig=c(0.6,.8,0.501,0.835), mar=c(.5,0.5,0.5,0), new=T)
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.qp.st$color.qbic[,4],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,'Period 4',cex=0.75)
+    
+    par(fig=c(0.8,1,0.501,0.835), mar=c(.5,0.5,0.5,0), new=T)
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.qp.st$color.qbic[,5],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,'Period 5',cex=0.75)
+    
+    
+    #Maps of P,ST
+    
+    par(fig=c(0,.2,0.334,0.668), mar=c(.5,0.5,0.5,0), new=T)
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.p.st$color.qbic[,1],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,'Period 1',cex=0.75)
+    
+    par(fig=c(0.2,.4,0.334,0.668), mar=c(.5,0.5,0.5,0), new=T) 
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.p.st$color.qbic[,2],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,'Period 2',cex=0.75)
+    
+    par(fig=c(0.4,.6,0.334,0.668), mar=c(.5,0.5,0.5,0), new=T) 
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.p.st$color.qbic[,3],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,'Period 3: Poisson, Space-Time',cex=0.75)
+    
+    par(fig=c(0.6,.8,0.334,0.668), mar=c(.5,0.5,0.5,0), new=T)
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.p.st$color.qbic[,4],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,'Period 4',cex=0.75)
+    
+    par(fig=c(0.8,1,0.334,0.668), mar=c(.5,0.5,0.5,0), new=T)
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.p.st$color.qbic[,5],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,'Period 5',cex=0.75)
+    
+    
+    #Maps of QP,S
+    
+    par(fig=c(0,.2,0.167,0.501), mar=c(.5,0.5,0.5,0), new=T)
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.qp.s$color.qbic[,1],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,'Period 1',cex=0.75)
+    
+    par(fig=c(0.2,.4,0.167,0.501), mar=c(.5,0.5,0.5,0), new=T)
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.qp.s$color.qbic[,2],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,'Period 2',cex=0.75)
+    
+    par(fig=c(0.4,.6,0.167,0.501), mar=c(.5,0.5,0.5,0), new=T)
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.qp.s$color.qbic[,3],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,'Period 3: Quasi-Poisson, Space',cex=0.75)
+    
+    
+    par(fig=c(0.6,.8,0.167,0.501), mar=c(.5,0.5,0.5,0), new=T)
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.qp.s$color.qbic[,4],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,'Period 4',cex=0.75)
+    
+    
+    par(fig=c(0.8,1,0.167,0.501), mar=c(.5,0.5,0.5,0), new=T)
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.qp.s$color.qbic[,5],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,'Period 5',cex=0.75)
+    
+    
+    #Maps of P,S
+    
+    par(fig=c(0,.2,0,0.334), mar=c(.5,0.5,0.5,0), new=T)
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.p.s$color.qbic[,1],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,'Period 1',cex=0.75)
+    
+    par(fig=c(0.2,.4,0,0.334), mar=c(.5,0.5,0.5,0), new=T)
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.p.s$color.qbic[,2],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,'Period 2',cex=0.75)
+    
+    par(fig=c(0.4,.6,0,0.334), mar=c(.5,0.5,0.5,0), new=T)
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.p.s$color.qbic[,3],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,'Period 3: Poisson, Space',cex=0.75)
+    
+    
+    par(fig=c(0.6,.8,0,0.334), mar=c(.5,0.5,0.5,0), new=T)
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.p.s$color.qbic[,4],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,'Period 4',cex=0.75)
+    
+    
+    par(fig=c(0.8,1,0,0.334), mar=c(.5,0.5,0.5,0), new=T)
+    plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
+    polygon(polygons,col=res$rrcolors$rrcolors.p.s$color.qbic[,5],border=F)
+    segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
+    text(355,4120,'Period 5',cex=0.75)
+    
+    #legend
+    #if(rr==TRUE) {
+        par(fig=c(0.1,0.5,0,.1), new=T)
+        plot(1, xlim=c(0.6,1.5), ylim=c(0.1,1), axes=F, type='n',  xlab="", ylab="")
+        rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=reds(0:50/50),border=F)
+        text(seq(.6,1.4,length=5),rep(.45,6),c('1.0','1.25','1.5','1.75','2.0'),srt=330,adj=0)
+        
+        par(fig=c(.6,1,0,.1), new=T)
+        plot(1, xlim=c(0.6,1.5), ylim=c(0.1,1), axes=F, type='n',  xlab="", ylab="")
+        rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=blues(0:50/50),border=F)
+        text(seq(.6,1.4,length=6),rep(.45,6),c('1.0','0.9','0.8','0.7','0.6','0.5'),srt=330,adj=0)
+        message("redbluecolors")
+   # }
+   # else{
+        # par(fig=c(.35,.75,0,.1), new=T)
+        # plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
+        # rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=greys(0:50/50),border=F)
+        # text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
+   # }
     
     #Turn off pdf development
     dev.off()
