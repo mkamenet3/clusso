@@ -4,7 +4,7 @@
 \alias{plotmap_ST_cv}
 \title{Space-time plotting}
 \usage{
-plotmap_ST_cv(prefect, polygons, pdfname, res, obs)
+plotmap_ST_cv(prefect, polygons, pdfname, res, obs, rr)
 }
 \arguments{
 \item{prefect}{prefects dataframe}

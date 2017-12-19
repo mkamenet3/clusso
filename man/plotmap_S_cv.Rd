@@ -4,7 +4,7 @@
 \alias{plotmap_S_cv}
 \title{Space-only plotting}
 \usage{
-plotmap_S_cv(prefect, polygons, pdfname, res, obs)
+plotmap_S_cv(prefect, polygons, pdfname, res, obs, rr)
 }
 \arguments{
 \item{prefect}{prefects dataframe}

@@ -76,3 +76,5 @@ prob_incluster <- function(select_mu, ncentroids, Time, nsim){
     probs <- Matrix::rowSums(simindicator)/nsim
     return(probs)
 }    
+
+

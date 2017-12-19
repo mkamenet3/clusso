@@ -5,7 +5,7 @@
 \title{Auxiliary Plotting Functions for Japanese Breast Cancer Data}
 \usage{
 easyplot(prefect, polygons, pdfname, rescols, mods, space = c("space",
-  "spacetime", "both"), probmap, cv = NULL, obs = NULL, rr)
+  "spacetime", "both", "BIC"), probmap, cv = NULL, obs = NULL, rr)
 }
 \arguments{
 \item{prefect}{prefects dataframe}
