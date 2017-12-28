@@ -143,7 +143,7 @@ clustDiagnostics <- function(incluster, threshold, nullmod,nsim){
 #'clusters to be identified where the estimated values are less than the background rate, not more than the background rate as is the case in the 
 #'elevated relative risk models.
 #'@param nullmod Default is NULL. If TRUE, then it will estimate detection based on the null model where there is no cluster. 
-detect_incluster_ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE,nullmod){
+detect_incluster_ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE,nullmod, risk.ratio,x,y,rMax){
     if(is.null(nullmod)){
         message("Returning results for risk model")
         #(Q)AIC
@@ -286,6 +286,12 @@ detect_incluster_ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, T
         prop.shoulddetect.bic <- lapply(1:nsim, function(i) AandB[[i]]/B)
         
         
+        #####################################################
+        #In out detections
+        #####################################################
+        
+        clusterdetectionrates <- prob_inoutcluster(lassoresult,rr,risk.ratio,x,y,rMax,nsim)
+
     }
     
     #ONLY FOR NULL MODEL - DID IT FIND ANYTHING?
@@ -374,9 +380,11 @@ detect_incluster_ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, T
         return(list(
             incluster.any.aic = incluster.any.aic, incluster.any.aicc = incluster.any.aicc,incluster.any.bic = incluster.any.bic,
             outcluster.any.aic = outcluster.any.aic, outcluster.any.aicc = outcluster.any.aicc, outcluster.any.bic = outcluster.any.bic,
-            prop.alldetect.aic = prop.alldetect.aic, prop.alldetect.aicc = prop.alldetect.aicc, prop.alldetect.bic = prop.alldetect.bic,
-            prop.wasdetect.aic = prop.wasdetect.aic, prop.wasdetect.aicc = prop.wasdetect.aicc, prop.wasdetect.bic = prop.wasdetect.bic,
-            prop.shoulddetect.aic = prop.shoulddetect.aic, prop.shoulddetect.aicc = prop.shoulddetect.aicc, prop.shoulddetect.bic = prop.shoulddetect.bic))
+            #prop.alldetect.aic = prop.alldetect.aic, prop.alldetect.aicc = prop.alldetect.aicc, prop.alldetect.bic = prop.alldetect.bic,
+            #prop.wasdetect.aic = prop.wasdetect.aic, prop.wasdetect.aicc = prop.wasdetect.aicc, prop.wasdetect.bic = prop.wasdetect.bic,
+            #prop.shoulddetect.aic = prop.shoulddetect.aic, prop.shoulddetect.aicc = prop.shoulddetect.aicc, prop.shoulddetect.bic = prop.shoulddetect.bic,
+            notinperc.aic = clusterdetectionrates$notinperc.aic, notinperc.aicc = clusterdetectionrates$notinperc.aicc, notinperc.bic = clusterdetectionrates$notinperc.bic,
+            inperc.aic = clusterdetectionrates$inperc.aic, inperc.aicc = clusterdetectionrates$inperc.aicc, inperc.bic = clusterdetectionrates$inperc.bic))
     }
 }
     
@@ -407,7 +415,7 @@ detect_incluster_ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, T
 #'@param nullmod default is NULL. If not null, then null model results will be estimated and returned.
 #'@return returns
 detect_incluster <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
-                             radius, IC = c("aic","aicc","bic","ic"),under=FALSE, nullmod){
+                             radius, IC = c("aic","aicc","bic","ic"),under=FALSE, nullmod, risk.ratio){
     #period = timeperiod
     message("Detection Results for:\n"
             , "\t Time Period: ", timeperiod,
@@ -420,7 +428,7 @@ detect_incluster <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time
            #aic = detect_incluster.aic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE),
            #aicc = detect_incluster.aicc(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE),
            #bic = detect_incluster.bic(lassoresult, vectors.sim, rr, set, period, Time, nsim, under=FALSE),
-           ic = detect_incluster_ic(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE, nullmod))
+           ic = detect_incluster_ic(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE, nullmod, risk.ratio,x,y,rMax))
 } 
 
 

@@ -354,8 +354,8 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     #set <- detect_set(lassoresult.qp.s, vectors.sim.s, as.matrix(rr[,timeperiod[1]]), 1, x, y, rMax, center, radius, nullmod,nsim)
     set <- detect_set(lassoresult.qp.s, vectors.sim.s, rr.s, Time, x, y, rMax, center, radius, nullmod,nsim)
     incluster.qp.s <- detect_incluster(lassoresult.qp.s, vectors.sim.s, rr.s, set, 1:Time, Time, nsim, x, y, rMax, center, 
-                                       radius, IC = "ic", under=FALSE, nullmod)
-    detect.qp.s <- list(clustDiagnostics(incluster.qp.s, threshold[1], nullmod, nsim), clustDiagnostics(incluster.qp.s , threshold[2], nullmod,nsim))
+                                       radius, IC = "ic", under=FALSE, nullmod, risk.ratio)
+    #detect.qp.s <- list(clustDiagnostics(incluster.qp.s, threshold[1], nullmod, nsim), clustDiagnostics(incluster.qp.s , threshold[2], nullmod,nsim))
     if(!is.null(nullmod)){
         detect.out.qp.s <- (matrix(unlist(detect.qp.s), ncol=3, byrow=TRUE,
                                    dimnames = list(c(
@@ -372,44 +372,33 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                                    )))
     }
     else {
-        detect.out.qp.s <- (matrix(unlist(detect.qp.s),ncol=3, byrow=TRUE,
+        detect.out.qp.s <- (matrix(unlist(incluster.qp.s),ncol=3, byrow=TRUE,
                                                        dimnames = list(c(
-                                                           paste0("incluster.any.", threshold[1]),
-                                                           paste0("outcluster.", threshold[1]),
-                                                           paste0("alldetect.",threshold[1]),
-                                                           paste0("potentialclusterdetect.",threshold[1]),
-                                                           paste0("trueclusterdetect.",threshold[1]),
-                                                           #paste0("alldetect.summary.mean.", threshold[1]),
-                                                           #paste0("alldetect.summary.median.", threshold[1]),
-                                                           #paste0("alldetect.summary.sd", threshold[1]),
-                                                           #paste0("potentialdetect.summary.mean.", threshold[1]),
-                                                           #paste0("potentialdetect.summary.median.", threshold[1]),
-                                                           #paste0("potentialdetect.summary.sd.", threshold[1]),
-                                                           #paste0("truedetect.summary.mean.", threshold[1]),
-                                                           #paste0("truedetect.summary.median.", threshold[1]),
-                                                           #paste0("truedetect.summary.sd.", threshold[1]),
+                                                           # paste0("incluster.centroid.", threshold[1]),
+                                                           # paste0("outcluster.centroid.", threshold[1]),
+                                                           # # paste0("alldetect.",threshold[1]),
+                                                           # # paste0("wasdetect.",threshold[1]),
+                                                           # # paste0("shoulddetect.",threshold[1]),
+                                                           # paste0("notinperc.",threshold[1]),
+                                                           # paste0("inperc.",threshold[1]),
+                                                           # 
+                                                           # 
+                                                           paste0("incluster.centroid.", threshold[2]),
+                                                           paste0("outcluster.centroid.", threshold[2]),
+                                                           # paste0("alldetect.",threshold[2]),
+                                                           # paste0("wasdetect.",threshold[2]),
+                                                           # paste0("shoulddetect.",threshold[2]),
+                                                           paste0("notinpotclus.",threshold[2]),
+                                                           paste0("inpotclus.",threshold[2])),
                                                            
-                                                           paste0("incluster.any.", threshold[2]),
-                                                           paste0("outcluster.", threshold[2]),
-                                                           paste0("alldetect.",threshold[2]),
-                                                           paste0("potentialclusterdetect.",threshold[2]),
-                                                           paste0("trueclusterdetect.",threshold[2])),
-                                                           #paste0("alldetect.summary.mean.", threshold[2]),
-                                                           #paste0("alldetect.summary.median.", threshold[2]),
-                                                           #paste0("alldetect.summary.sd", threshold[2]),
-                                                           #paste0("potentialdetect.summary.mean.", threshold[2]),
-                                                           #paste0("potentialdetect.summary.median.", threshold[2]),
-                                                           #paste0("potentialdetect.summary.sd.", threshold[2]),
-                                                           #paste0("truedetect.summary.mean.", threshold[2]),
-                                                           #paste0("truedetect.summary.median.", threshold[2]),
-                                                           #paste0("truedetect.summary.sd.", threshold[2])),
+                                                           
                                                            c("aic","aicc","bic"))))
     }
     ################################################################
     ##P - Space
     set <- detect_set(lassoresult.p.s, vectors.sim.s, rr.s, Time, x, y, rMax, center, radius, nullmod,nsim)
     incluster.p.s <- detect_incluster(lassoresult.p.s, vectors.sim.s, rr.s, set, 1:Time, Time, nsim, x, y, rMax, center, 
-                                       radius, IC = "ic", under=FALSE, nullmod)
+                                       radius, IC = "ic", under=FALSE, nullmod,risk.ratio)
     detect.p.s <- list(clustDiagnostics(incluster.p.s, threshold[1], nullmod,nsim), clustDiagnostics(incluster.p.s, threshold[2], nullmod,nsim))
     if(!is.null(nullmod)){
         detect.out.p.s <- (matrix(unlist(detect.p.s), ncol=3, byrow=TRUE,
@@ -429,44 +418,34 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                                   )))
     }
     else {
-        detect.out.p.s <- (matrix(unlist(detect.p.s),ncol=3, byrow=TRUE,
+        detect.out.p.s <- (matrix(unlist(incluster.p.s),ncol=3, byrow=TRUE,
                                   dimnames = list(c(
-                                      paste0("incluster.any.", threshold[1]),
-                                      paste0("outcluster.", threshold[1]),
-                                      paste0("alldetect.",threshold[1]),
-                                      paste0("potentialclusterdetect.",threshold[1]),
-                                      paste0("trueclusterdetect.",threshold[1]),
-                                      # paste0("alldetect.summary.mean.", threshold[1]),
-                                      # paste0("alldetect.summary.median.", threshold[1]),
-                                      # paste0("alldetect.summary.sd", threshold[1]),
-                                      # paste0("potentialdetect.summary.mean.", threshold[1]),
-                                      # paste0("potentialdetect.summary.median.", threshold[1]),
-                                      # paste0("potentialdetect.summary.sd.", threshold[1]),
-                                      # paste0("truedetect.summary.mean.", threshold[1]),
-                                      # paste0("truedetect.summary.median.", threshold[1]),
-                                      # paste0("truedetect.summary.sd.", threshold[1]),
+                                      # paste0("incluster.centroid.", threshold[1]),
+                                      # paste0("outcluster.centroid.", threshold[1]),
+                                      # # paste0("alldetect.",threshold[1]),
+                                      # # paste0("wasdetect.",threshold[1]),
+                                      # # paste0("shoulddetect.",threshold[1]),
+                                      # paste0("notinperc.",threshold[1]),
+                                      # paste0("inperc.",threshold[1]),
+                                      # 
+                                      # 
+                                      paste0("incluster.centroid.", threshold[2]),
+                                      paste0("outcluster.centroid.", threshold[2]),
+                                      # paste0("alldetect.",threshold[2]),
+                                      # paste0("wasdetect.",threshold[2]),
+                                      # paste0("shoulddetect.",threshold[2]),
+                                      paste0("notinpotclus.",threshold[2]),
+                                      paste0("inpotclus.",threshold[2])),
                                       
-                                      paste0("incluster.any.", threshold[2]),
-                                      paste0("outcluster.", threshold[2]),
-                                      paste0("alldetect.",threshold[2]),
-                                      paste0("potentialclusterdetect.",threshold[2]),
-                                      paste0("trueclusterdetect.",threshold[2])),
-                                      # paste0("alldetect.summary.mean.", threshold[2]),
-                                      # paste0("alldetect.summary.median.", threshold[2]),
-                                      # paste0("alldetect.summary.sd", threshold[2]),
-                                      # paste0("potentialdetect.summary.mean.", threshold[2]),
-                                      # paste0("potentialdetect.summary.median.", threshold[2]),
-                                      # paste0("potentialdetect.summary.sd.", threshold[2]),
-                                      # paste0("truedetect.summary.mean.", threshold[2]),
-                                      # paste0("truedetect.summary.median.", threshold[2]),
-                                      # paste0("truedetect.summary.sd.", threshold[2])),
+                                      
                                       c("aic","aicc","bic"))))
+                                      
     }
     ################################################################
     ##QP - SPACETIME
     set <- detect_set(lassoresult.qp.st, vectors.sim, rr, Time, x, y, rMax, center, radius, nullmod,nsim)
     incluster.qp.st <- detect_incluster(lassoresult.qp.st, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
-                                        radius, IC = "ic", under=FALSE, nullmod)
+                                        radius, IC = "ic", under=FALSE, nullmod,risk.ratio)
     detect.qp.st <- list(clustDiagnostics(incluster.qp.st , threshold[1], nullmod,nsim), clustDiagnostics(incluster.qp.st , threshold[2], nullmod,nsim))
     
     if(!is.null(nullmod)){
@@ -487,44 +466,33 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                                    )))
     }
     else{
-        detect.out.qp.st <- (matrix(unlist(detect.qp.st),ncol=3, byrow=TRUE,
+        detect.out.qp.st <- (matrix(unlist(incluster.qp.st),ncol=3, byrow=TRUE,
                                    dimnames = list(c(
-                                       paste0("incluster.any.", threshold[1]),
-                                       paste0("outcluster.", threshold[1]),
-                                       paste0("alldetect.",threshold[1]),
-                                       paste0("potentialclusterdetect.",threshold[1]),
-                                       paste0("trueclusterdetect.",threshold[1]),
-                                       # paste0("alldetect.summary.mean.", threshold[1]),
-                                       # paste0("alldetect.summary.median.", threshold[1]),
-                                       # paste0("alldetect.summary.sd", threshold[1]),
-                                       # paste0("potentialdetect.summary.mean.", threshold[1]),
-                                       # paste0("potentialdetect.summary.median.", threshold[1]),
-                                       # paste0("potentialdetect.summary.sd.", threshold[1]),
-                                       # paste0("truedetect.summary.mean.", threshold[1]),
-                                       # paste0("truedetect.summary.median.", threshold[1]),
-                                       # paste0("truedetect.summary.sd.", threshold[1]),
+                                       # paste0("incluster.centroid.", threshold[1]),
+                                       # paste0("outcluster.centroid.", threshold[1]),
+                                       # # paste0("alldetect.",threshold[1]),
+                                       # # paste0("wasdetect.",threshold[1]),
+                                       # # paste0("shoulddetect.",threshold[1]),
+                                       # paste0("notinperc.",threshold[1]),
+                                       # paste0("inperc.",threshold[1]),
+                                       # 
+                                       # 
+                                       paste0("incluster.centroid.", threshold[2]),
+                                       paste0("outcluster.centroid.", threshold[2]),
+                                       # paste0("alldetect.",threshold[2]),
+                                       # paste0("wasdetect.",threshold[2]),
+                                       # paste0("shoulddetect.",threshold[2]),
+                                       paste0("notinpotclus.",threshold[2]),
+                                       paste0("inpotclus.",threshold[2])),
                                        
-                                       paste0("incluster.any.", threshold[2]),
-                                       paste0("outcluster.", threshold[2]),
-                                       paste0("alldetect.",threshold[2]),
-                                       paste0("potentialclusterdetect.",threshold[2]),
-                                       paste0("trueclusterdetect.",threshold[2])),
-                                       # paste0("alldetect.summary.mean.", threshold[2]),
-                                       # paste0("alldetect.summary.median.", threshold[2]),
-                                       # paste0("alldetect.summary.sd", threshold[2]),
-                                       # paste0("potentialdetect.summary.mean.", threshold[2]),
-                                       # paste0("potentialdetect.summary.median.", threshold[2]),
-                                       # paste0("potentialdetect.summary.sd.", threshold[2]),
-                                       # paste0("truedetect.summary.mean.", threshold[2]),
-                                       # paste0("truedetect.summary.median.", threshold[2]),
-                                       # paste0("truedetect.summary.sd.", threshold[2])),
+                                       
                                        c("aic","aicc","bic"))))
     }
     ################################################################
     ##P - SPACETIME
     set <- detect_set(lassoresult.p.st, vectors.sim, rr, Time, x, y, rMax, center, radius, nullmod,nsim)
     incluster.p.st <- detect_incluster(lassoresult.p.st, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
-                                       radius, IC = "ic", under=FALSE, nullmod)
+                                       radius, IC = "ic", under=FALSE, nullmod,risk.ratio)
     detect.p.st <- list(clustDiagnostics(incluster.p.st, threshold[1], nullmod,nsim), clustDiagnostics(incluster.p.st, threshold[2], nullmod,nsim))
     
     if(!is.null(nullmod)){
@@ -545,37 +513,26 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                                    )))
     }
     else {
-        detect.out.p.st <- (matrix(unlist(detect.p.st),ncol=3, byrow=TRUE,
+        detect.out.p.st <- (matrix(unlist(incluster.p.st),ncol=3, byrow=TRUE,
                                    dimnames = list(c(
-                                       paste0("incluster.any.", threshold[1]),
-                                       paste0("outcluster.", threshold[1]),
-                                       paste0("alldetect.",threshold[1]),
-                                       paste0("potentialclusterdetect.",threshold[1]),
-                                       paste0("trueclusterdetect.",threshold[1]),
-                                       # paste0("alldetect.summary.mean.", threshold[1]),
-                                       # paste0("alldetect.summary.median.", threshold[1]),
-                                       # paste0("alldetect.summary.sd", threshold[1]),
-                                       # paste0("potentialdetect.summary.mean.", threshold[1]),
-                                       # paste0("potentialdetect.summary.median.", threshold[1]),
-                                       # paste0("potentialdetect.summary.sd.", threshold[1]),
-                                       # paste0("truedetect.summary.mean.", threshold[1]),
-                                       # paste0("truedetect.summary.median.", threshold[1]),
-                                       # paste0("truedetect.summary.sd.", threshold[1]),
+                                       # paste0("incluster.centroid.", threshold[1]),
+                                       # paste0("outcluster.centroid.", threshold[1]),
+                                       # # paste0("alldetect.",threshold[1]),
+                                       # # paste0("wasdetect.",threshold[1]),
+                                       # # paste0("shoulddetect.",threshold[1]),
+                                       # paste0("notinperc.",threshold[1]),
+                                       # paste0("inperc.",threshold[1]),
+                                       # 
+                                       # 
+                                       paste0("incluster.centroid.", threshold[2]),
+                                       paste0("outcluster.centroid.", threshold[2]),
+                                       # paste0("alldetect.",threshold[2]),
+                                       # paste0("wasdetect.",threshold[2]),
+                                       # paste0("shoulddetect.",threshold[2]),
+                                       paste0("notinpotclus.",threshold[2]),
+                                       paste0("inpotclus.",threshold[2])),
                                        
-                                       paste0("incluster.any.", threshold[2]),
-                                       paste0("outcluster.", threshold[2]),
-                                       paste0("alldetect.",threshold[2]),
-                                       paste0("potentialclusterdetect.",threshold[2]),
-                                       paste0("trueclusterdetect.",threshold[2])),
-                                       # paste0("alldetect.summary.mean.", threshold[2]),
-                                       # paste0("alldetect.summary.median.", threshold[2]),
-                                       # paste0("alldetect.summary.sd", threshold[2]),
-                                       # paste0("potentialdetect.summary.mean.", threshold[2]),
-                                       # paste0("potentialdetect.summary.median.", threshold[2]),
-                                       # paste0("potentialdetect.summary.sd.", threshold[2]),
-                                       # paste0("truedetect.summary.mean.", threshold[2]),
-                                       # paste0("truedetect.summary.median.", threshold[2]),
-                                       # paste0("truedetect.summary.sd.", threshold[2])),
+                                       
                                        c("aic","aicc","bic"))))
     }
     ################################################################
