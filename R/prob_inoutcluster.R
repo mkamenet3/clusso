@@ -223,3 +223,32 @@ get_prob <- function(lassoresult,init, E1, ncentroids, Time, nsim, threshold){
 }
 
 
+#' @title 
+#' prob_incluster
+#' @description
+#'Mapping colors to create a  probability map. This function will create a probability map based on simulation data. In each simulation, it identifies where a cluster was selected,
+#'compared to the background rate. It then average over the number of simulations, giving us a matrix which ranges from 0 to 1 in probability.
+#'To map this probabilities into a color scheme, please see the $colormapping$ function and select probmap=TRUE. TODO integrate all of this
+#'into a workflow and extend to observed data, not only simulated data.
+#'@param select_mu List of selected mu vectors selected by the respective information criteria.
+#'@param ncentroids number of centroids
+#'@param Time number of time period
+#'@param nsim number of simulations
+#'@return returns vector which calculated the number of time the cluster was correctly identified out of the simulations
+prob_incluster <- function(select_mu, ncentroids, Time, nsim){
+    vec <- rep(0, ncentroids * Time)
+    position <- list(vec)[rep(1, nsim)]
+    bgRate_i <- lapply(1:nsim, function(i) sapply(1:Time,
+                                                  function(j) as.numeric(names(which.max(table(matrix(as.vector(select_mu[[i]]),ncol=Time)[,j]))))))
+    bgRate <- lapply(1:nsim, function(i) rep(bgRate_i[[i]], each = ncentroids))
+    ix <- lapply(1:nsim, function(i) which(abs(log(as.vector(select_mu[[i]])) - log(bgRate[[i]]))>=10^-3))
+    #quick function to recode
+    reval <- function(probs, ix){
+        probs[ix] <-1
+        return(probs)
+    }
+    simindicator <- mapply(reval, position, ix)
+    probs <- Matrix::rowSums(simindicator)/nsim
+    return(probs)
+}  
+

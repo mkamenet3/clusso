@@ -1,4 +1,5 @@
 library("testthat")
+library("Matrix")
 context("In/out cluster detection works correctly")
 
 
@@ -36,10 +37,10 @@ test_that("All parameters are correctly specified and trouble-shooted in clust_s
     sparseMatrix(i = c(rep(51893,154),rep(51894,40), rep(66870,446)),
                          j = seq(1:640),
                          x = rnorm(640, mean = 0.03, sd = 0.04))
-    a <- list(beta = sparseMatrix(i = c(rep(51893,154),rep(51894,40), rep(potcl,446)),
+    a <- list(beta = Matrix::sparseMatrix(i = c(rep(51893,154),rep(51894,40), rep(potcl,446)),
                                            j = seq(1:640),
                                            x = rnorm(640, mean = 0.03, sd = 0.04)))
-    b <- list(beta = sparseMatrix(i = c(rep(51893,154),rep(51894,40), rep(potcl,446)),
+    b <- list(beta = Matrix::sparseMatrix(i = c(rep(51893,154),rep(51894,40), rep(potcl,446)),
                                   j = seq(1:640),
                                   x = rnorm(640, mean = 0.03, sd = 0.04)))
     lasso <- list(a,b)

@@ -74,10 +74,10 @@ easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space",
                #     plotmap_ST(prefect, polygons, pdf_qp.st, res, obs, sub = res$probcolors$probcolors.qp.st)
                #     plotmap_ST(prefect, polygons, pdf_p.st, res, obs, sub = res$probcolors$probcolors.p.s)},
                both = {
-                   plotmap_ST_cv(prefect, polygons, pdf_qp.s,  rescols$rrcolors.qp.s, obs,rr)
-                   plotmap_ST_cv(prefect, polygons, pdf_p.s, rescols$rrcolors.p.s, obs,rr)
-                   plotmap_ST_cv(prefect, polygons, pdf_qp.st, rescols$rrcolors.qp.st, obs,rr)
-                   plotmap_ST_cv(prefect, polygons, pdf_p.st, rescols$rrcolors.p.st, obs,rr)})
+                   plotmap_ST_cv(prefect, polygons, pdf_qp.s,  rescols$rrcolors.qp.s, obs)
+                   plotmap_ST_cv(prefect, polygons, pdf_p.s, rescols$rrcolors.p.s, obs)
+                   plotmap_ST_cv(prefect, polygons, pdf_qp.st, rescols$rrcolors.qp.st, obs)
+                   plotmap_ST_cv(prefect, polygons, pdf_p.st, rescols$rrcolors.p.st, obs)})
     }
     
 }
