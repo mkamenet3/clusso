@@ -90,7 +90,7 @@ easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space",
 #' @param res resultant list from clust_ function
 #' @param obs if observed is to be plotted or oracle from simulation
 #' 
-plotmap_ST_cv <- function(prefect, polygons, pdfname,res, obs,rr){
+plotmap_ST_cv <- function(prefect, polygons, pdfname,res, obs){
     if(!is.null(obs)){
         firstrow = "Observed"
     }
@@ -183,7 +183,7 @@ plotmap_ST_cv <- function(prefect, polygons, pdfname,res, obs,rr){
 #' @param pdfname pdfname of what the output pdf will be called
 #' @param res resultant list from clust_ function
 #' @param obs if observed is to be plotted or oracle from simulation
-plotmap_S_cv <- function(prefect, polygons, pdfname,res, obs,rr){
+plotmap_S_cv <- function(prefect, polygons, pdfname,res, obs){
     if(!is.null(obs)){
         firstrow = "Observed"
     }
@@ -472,7 +472,6 @@ plotmap_S <- function(prefect, polygons, pdfname,res, obs, rr){
 #' @param polygons polygons dataframe
 #' @param pdfname pdfname of what the output pdf will be called
 #' @param res resultant list from clust_ function
-#' @param obs if observed is to be plotted or oracle from simulation
 #' @param rr if FALSE, will print probability map legend, if TRUE will print legend for risk ratios (redblue scheme)
 plotmap_bic <- function(prefect, polygons, pdfname,res,rr){
     #Observed plot

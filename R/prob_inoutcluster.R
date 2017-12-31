@@ -4,6 +4,7 @@
 #' Finds the probability of being in the cluster for BIC, AIC, and AICc based on the expected risk ratio
 #'@param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso.sim function
 #'@param rr risk ratio matrix that was used in the simulation
+#'@param risk.ratio Risk ratio that was set for cluster in simulation
 #'@param x x-coordinates
 #'@param y y-coordinates
 #'@param rMax Maximum radius for threshold in simulation
@@ -13,7 +14,13 @@
 #'@return returns vector which calculated the number of time the cluster was correctly identified out of the simulations
 prob_inoutcluster <- function(lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, thresh){
     #DEFINE TRUTH
-    rrmatvec <- ifelse(as.vector(rr)!=risk.ratio,0,1)
+    if(risk.ratio==1){
+     warning("Risk.ratio was set to 1")
+        rrmatvec <- rep(0,length(rr))
+    }
+    else{
+        rrmatvec <- ifelse(as.vector(rr)==risk.ratio,1,0)    
+    }
     clusters <- clusters2df(x,y,rMax, utm=TRUE, length(x))
     n <- length(unique(clusters$center))
     potClus <- n
@@ -165,6 +172,54 @@ prob_inoutcluster <- function(lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, thr
         }
 }    
 
-
+#' @title
+#' get_prob
+#' @description 
+#' Finds the probability of being in the cluster for BIC, AIC, and AICc based on the expected risk ratio
+#' @param lassoresult result of either space-time lasso simulation or space-only simulation
+#' @param init list of initial vector values
+#' @param E1 standardized expected counts
+#' @param ncentroids number of centroids or centers
+#' @param Time number of time periods
+#' @param nsim number of simulations
+#' @param threshold vector of two threshold values TODO: allow flexibility for number of threshold
+#' @return returns list of probabilities.
+#' 
+get_prob <- function(lassoresult,init, E1, ncentroids, Time, nsim, threshold){
+    #nsim <- nsim
+    prob.bic <- prob_incluster(lassoresult$select_mu.qbic, ncentroids, Time, nsim)
+    prob.aic <- prob_incluster(lassoresult$select_mu.qaic, ncentroids, Time, nsim)
+    prob.aicc <- prob_incluster(lassoresult$select_mu.qaicc, ncentroids, Time, nsim)
+    obs <- matrix(as.vector(E1)/as.vector(init$E0),ncol=Time)
+    prob.obs <- ifelse(obs>1,1,0)
+    #thresholding
+    ##BIC
+    bic_thresh1 <- ifelse(prob.bic>threshold[1],1,0)
+    attr(bic_thresh1, 'thresh') <- threshold[1]
+    bic_thresh2 <- ifelse(prob.bic>threshold[2],1,0)
+    attr(bic_thresh2, 'thresh') <- threshold[2]
+    
+    ##AIC
+    aic_thresh1 <- ifelse(prob.aic>threshold[1],1,0)
+    attr(aic_thresh1, 'thresh') <- threshold[1]
+    aic_thresh2 <- ifelse(prob.aic>threshold[2],1,0)
+    attr(aic_thresh2, 'thresh') <- threshold[2]
+    
+    ##AICc
+    aicc_thresh1 <- ifelse(prob.aicc>threshold[1],1,0)
+    attr(aicc_thresh1, 'thresh') <- threshold[1]
+    aicc_thresh2 <- ifelse(prob.aicc>threshold[2],1,0)
+    attr(aicc_thresh2, 'thresh') <- threshold[2]
+    
+    probs <- list(prob.bic = prob.bic, prob.aic = prob.aic, prob.aicc = prob.aicc, prob.obs = prob.obs)
+    probs.thresh1 <- list( prob.bic.thresh1 = bic_thresh1,  prob.aic.thresh1 = aic_thresh1, 
+                           prob.aicc.thresh1 = aicc_thresh1, prob.obs = prob.obs) 
+    probs.thresh2  <- list(prob.bic.thresh2 = bic_thresh2, prob.aic.thresh2 = aic_thresh2,
+                           prob.aicc.thresh2 = aicc_thresh2, prob.obs = prob.obs)                         
+    
+    
+    res <- list(probs = probs, probs.thresh1 = probs.thresh1, probs.thresh2 = probs.thresh2)
+    return(res)
+}
 
 

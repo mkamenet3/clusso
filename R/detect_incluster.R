@@ -1,4 +1,3 @@
-
 #'@title
 #'detect_incluster_ic
 #'@description
@@ -17,12 +16,11 @@
 #'clusters to be identified where the estimated values are less than the background rate, not more than the background rate as is the case in the 
 #'elevated relative risk models.
 #'@param nullmod Default is NULL. If TRUE, then it will estimate detection based on the null model where there is no cluster. 
-#'@param risk.ratio Risk ratio that was sest for cluster in simulation
+#'@param risk.ratio Risk ratio that was set for cluster in simulation
 #'@param x x-coordinates 
 #'@param y y-coordinates
 #'@param rMax Maximum radius for threshold in simulation
 #'@param thresh Default is NULL. Vector of thresholds for additional diagnostic criteria for cluster detection.
-#'@param 
 detect_incluster_ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE,nullmod, risk.ratio,x,y,rMax,thresh){
     if(is.null(nullmod)){
         message("Returning results for simulation model")
@@ -209,11 +207,10 @@ detect_incluster_ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, T
 #'@param radius radius of the cluster
 #'@param under default is FALSE. If risk.ratio is less than one (under-risk)
 #'@param nullmod default is NULL. If not null, then null model results will be estimated and returned.
-#'@param rMax Maximum radius for threshold in simulation
+#'@param risk.ratio Risk ratio that was sest for cluster in simulation
 #'@param thresh Default is NULL. Vector of thresholds for additional diagnostic criteria for cluster detection.
 detect_incluster <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
                              radius, under=FALSE, nullmod, risk.ratio,thresh){
-    #period = timeperiod
     message("Detection Results for:\n"
             , "\t Time Period: ", timeperiod,
             "\n \t Num. simulations: ", nsim,
@@ -222,7 +219,6 @@ detect_incluster <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time
             "\n \t Cluster rel.risk: ",ifelse(length(unique(as.vector(rr)))==1,unique(as.vector(rr))[1],unique(as.vector(rr))[2]))
     ic <- detect_incluster_ic(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE, nullmod, risk.ratio,x,y,rMax,thresh)
     return(ic)
-
 } 
 
 

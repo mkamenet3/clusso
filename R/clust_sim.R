@@ -1,4 +1,3 @@
-#'
 #' @title
 #' vectors_space_sim
 #' @description 
@@ -35,7 +34,6 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init){
 
 #'@title
 #'clust_sim
-#'
 #'@description 
 #'This helper function runs both the space and space-time Lasso model simulations for all 4 models simulataneously: Quasi-Poisson vs. Poisson in both space and space-time.
 #' This function is to be run on simulated data and all four models are run on the same simulated set. 
@@ -87,7 +85,6 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init){
 #'  timeperiod, utm=TRUE, byrow=TRUE, 
 #'threshold, space= "both",theta = theta, nullmod = TRUE, overdispfloor)
 #'}
-
 clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio, 
                           timeperiod, utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"), 
                       theta = NULL,nullmod=NULL, overdispfloor,collapsetime=FALSE){
@@ -152,7 +149,7 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
            # space = 
            # spacetime = 
            both = clustAll_sim(x, y, rMax,period, expected, observed, covars, Time, nsim, center, radius, risk.ratio,
-                                     timeperiod,utm, byrow, threshold, theta, nullmod, overdispfloor, collapsetime))
+                                     timeperiod,utm, byrow, thresh, theta, nullmod, overdispfloor, collapsetime))
 }
 
 
@@ -180,7 +177,7 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
 #'this would mean we look at periods 2, 3, 4, and 5.
 #'@param utm utm TRUE/FALSE as to whether or not the x and y coordinates are in UTM (TRUE) or LAT/LONG(FALSE)
 #'@param byrow  byrow default is True. If data should be imported by column then set to FALSE
-#'@param threshold  vector or value as threshold for cluster detection
+#'@param thresh  vector or value as threshold for cluster detection
 #'@param theta default is 1000. Can add in overdispersion to simulated model by changing this value.
 #'@param nullmod if TRUE, then null models will be run. Otherwise, default is null.
 #'@param overdispfloor overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
@@ -190,7 +187,7 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
 
 
 clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, nsim, center, radius, risk.ratio, 
-                               timeperiod,utm, byrow, threshold, theta = theta, nullmod=nullmod,
+                               timeperiod,utm, byrow, thresh, theta = theta, nullmod=nullmod,
                          overdispfloor=overdispfloor, collapsetime=FALSE){
     message("Running both Space and Space-Time Models")
     
@@ -409,7 +406,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
  
     
     if(!is.null(nullmod)){
-        detect.out.qp.st <- (matrix(unlist(detect.qp.st), ncol=3, byrow=TRUE,
+        detect.out.qp.st <- (matrix(unlist(incluster.qp.st), ncol=3, byrow=TRUE,
                                     dimnames = list(c(
                                         paste0("prop.null.")),
                                         c("aic", "aicc", "bic")
@@ -433,7 +430,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     
     
     if(!is.null(nullmod)){
-        detect.out.p.st <- (matrix(unlist(detect.p.st), ncol=3, byrow=TRUE,
+        detect.out.p.st <- (matrix(unlist(incluster.p.st), ncol=3, byrow=TRUE,
                                    dimnames = list(c(
                                        paste0("prop.null.")),
                                        c("aic", "aicc", "bic")

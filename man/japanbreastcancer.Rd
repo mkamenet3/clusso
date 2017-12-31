@@ -6,7 +6,9 @@
 \alias{dframe.prefect2}
 \alias{japanbreastcancer}
 \alias{utmJapan}
-\title{Japanese Breast Cancer Data}
+\title{Japanese Breast Cancer Data
+
+Data on breast cancer incidence in prefects in Japan. UTM coordinates and polygon data included.}
 \format{An object of class "data.frame". Includes four separate dataframes: 
 \itemize{
  \item 1) dframe.poly2 - coordinates for plotting polygons
@@ -16,9 +18,6 @@
 }}
 \usage{
 data(japanbreastcancer)
-}
-\description{
-Data on breast cancer incidence in prefects in Japan. UTM coordinates and polygon data included.
 }
 \examples{
 data(japanbreastcancer)
