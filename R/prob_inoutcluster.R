@@ -2,10 +2,14 @@
 #' prob_inoutcluster
 #' @description
 #' Finds the probability of being in the cluster for BIC, AIC, and AICc based on the expected risk ratio
-#'@param select_mu List of selected mu vectors selected by the respective information criteria.
-#'@param ncentroids number of centroids
-#'@param Time number of time period
+#'@param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso.sim function
+#'@param rr risk ratio matrix that was used in the simulation
+#'@param x x-coordinates
+#'@param y y-coordinates
+#'@param rMax Maximum radius for threshold in simulation
 #'@param nsim number of simulations
+#'@param Time number of time period
+#'@param thresh Default is NULL; vector or value as threshold for cluster detection
 #'@return returns vector which calculated the number of time the cluster was correctly identified out of the simulations
 prob_inoutcluster <- function(lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, thresh){
     #DEFINE TRUTH
@@ -18,7 +22,6 @@ prob_inoutcluster <- function(lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, thr
     #GO through what was detected 
     #Let A = true cluster (clusteroverlap), B = detected cluster (betaSelect_bin)
     
-
     ###################################
     #BIC
     ###################################
@@ -63,7 +66,6 @@ prob_inoutcluster <- function(lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, thr
     else{
         message("No threshold diagnostics - BIC")
     }
-    
     
     ###################################
     #AIC

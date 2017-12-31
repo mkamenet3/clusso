@@ -3,8 +3,9 @@
 #'detect_incluster_ic
 #'@description
 #'This function will calculate detection based on the three information criterion. You can run detection on a null model (no cluster),
-#'a model with an under-estimated cluster (artificial cluster <1), and on an elevated relative risk cluster. This is called by the more general
-#'function *detect_incluster* which will switch to this function (TODO - Allow for detection options for AIC, AICc, and BIC only). 
+#'a model with an under-estimated cluster (artificial cluster <1), and on an elevated relative risk cluster. Standard detection criteria include percent of 
+#'cells detected that are inside/outside the true cluster and percent of total potential clusters that are at least partially inside/outside the true cluster
+#'that are detected. Additional criteria with threshold options can also be specified.
 #'@param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso.sim function
 #'@param vectors.sim  dataframe of initial vectors of the observed and expected counts that went into simulation function
 #'@param rr risk ratio matrix that was used in the simulation
@@ -16,10 +17,15 @@
 #'clusters to be identified where the estimated values are less than the background rate, not more than the background rate as is the case in the 
 #'elevated relative risk models.
 #'@param nullmod Default is NULL. If TRUE, then it will estimate detection based on the null model where there is no cluster. 
+#'@param risk.ratio Risk ratio that was sest for cluster in simulation
+#'@param x x-coordinates 
+#'@param y y-coordinates
+#'@param rMax Maximum radius for threshold in simulation
+#'@param thresh Default is NULL. Vector of thresholds for additional diagnostic criteria for cluster detection.
+#'@param 
 detect_incluster_ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE,nullmod, risk.ratio,x,y,rMax,thresh){
     if(is.null(nullmod)){
         message("Returning results for simulation model")
-        print(thresh)
         ############################
         ##Prob in/out cluster function as function of all potential clusters
         if(is.null(thresh)){
@@ -27,16 +33,13 @@ detect_incluster_ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, T
         }
         else{
             if(length(thresh)>1){
-                print("yah1")
                 clusterdetectionrates <- lapply(1:length(thresh), function(i) prob_inoutcluster(lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh[[i]]))
             }
             else{
-                print("yah2")
                 clusterdetectionrates <- prob_inoutcluster(lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh)    
             }
             
         }
-        
         
         #Prob in/out for individual cells
         ############################
@@ -105,18 +108,7 @@ detect_incluster_ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, T
         out.clust.any <- lapply(1:nsim, function(i) if(isTRUE(length(setdiff(ix[[i]],set$indx.clust.truth))==0) == FALSE) out.clust.any=1 else out.clust.any = 0)
         outcluster.any.bic <- paste0((sum(unlist(out.clust.any))/nsim)*100,"%")    
           
-        # if(is.null(thresh)){
-        #     print("yapppe")
-        #     return(list(
-        #     
-        #         incluster.any.aic = incluster.any.aic, incluster.any.aicc = incluster.any.aicc,incluster.any.bic = incluster.any.bic,
-        #         outcluster.any.aic = outcluster.any.aic, outcluster.any.aicc = outcluster.any.aicc, outcluster.any.bic = outcluster.any.bic,
-        #         notinperc.aic = clusterdetectionrates$notinperc.aic, notinperc.aicc = clusterdetectionrates$notinperc.aicc, notinperc.bic = clusterdetectionrates$notinperc.bic,
-        #         inperc.aic = clusterdetectionrates$inperc.aic, inperc.aicc = clusterdetectionrates$inperc.aicc, inperc.bic = clusterdetectionrates$inperc.bic))    
-        # }
-        print(length(thresh))
         if (length(thresh) == 1){
-            print("yeck")
             return(list(
                 incluster.any.aic = incluster.any.aic, incluster.any.aicc = incluster.any.aicc,incluster.any.bic = incluster.any.bic,
                 outcluster.any.aic = outcluster.any.aic, outcluster.any.aicc = outcluster.any.aicc, outcluster.any.bic = outcluster.any.bic,
@@ -125,7 +117,6 @@ detect_incluster_ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, T
                 threshresults = clusterdetectionrates$thresh)) 
         }
         else if (length(thresh)>1){
-            print("yeppers")
             return(list(
                 incluster.any.aic = incluster.any.aic, incluster.any.aicc = incluster.any.aicc,incluster.any.bic = incluster.any.bic,
                 outcluster.any.aic = outcluster.any.aic, outcluster.any.aicc = outcluster.any.aicc, outcluster.any.bic = outcluster.any.bic,
@@ -134,9 +125,7 @@ detect_incluster_ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, T
                 threshresults = matrix(unlist(lapply(1:length(thresh), function(i) clusterdetectionrates[[i]]$thresh)),nrow=length(thresh),byrow=TRUE)))
         }
         else{
-            print("yapppe")
             return(list(
-                
                 incluster.any.aic = incluster.any.aic, incluster.any.aicc = incluster.any.aicc,incluster.any.bic = incluster.any.bic,
                 outcluster.any.aic = outcluster.any.aic, outcluster.any.aicc = outcluster.any.aicc, outcluster.any.bic = outcluster.any.bic,
                 notinperc.aic = clusterdetectionrates$notinperc.aic, notinperc.aicc = clusterdetectionrates$notinperc.aicc, notinperc.bic = clusterdetectionrates$notinperc.bic,
@@ -205,8 +194,7 @@ detect_incluster_ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, T
     
 #'detect_incluster
 #'
-#'This function will calculate the percent of simulations which correctly identify elements in cluster based on (Q)AIC, (Q)AICc, and (Q)BIC. The user can specify
-#'if they want to only return one of these criterion or all three for further analysis.
+#'Wrapper function for detect_incluster_ic.
 #'@param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso.sim function
 #'@param vectors.sim  dataframe of initial vectors of the observed and expected counts that went into simulation function
 #'@param rr risk ratio matrix that was used in the simulation
@@ -219,11 +207,10 @@ detect_incluster_ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, T
 #'@param rMax max radius
 #'@param center center of centroid for cluster
 #'@param radius radius of the cluster
-#'@param IC the information criteria you would like to be returned. Options are: IC = aic or IC = qaic; IC = aicc or IC = qaicc; IC = bic or IC = qbic; IC = ic or IC = qic 
-#'(for aic/aicc/bic and qaic/qaicc/qbic, respectively).
 #'@param under default is FALSE. If risk.ratio is less than one (under-risk)
 #'@param nullmod default is NULL. If not null, then null model results will be estimated and returned.
-#'@return returns
+#'@param rMax Maximum radius for threshold in simulation
+#'@param thresh Default is NULL. Vector of thresholds for additional diagnostic criteria for cluster detection.
 detect_incluster <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
                              radius, under=FALSE, nullmod, risk.ratio,thresh){
     #period = timeperiod

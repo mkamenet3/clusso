@@ -361,7 +361,6 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     incluster.qp.s <- detect_incluster(lassoresult.qp.s, vectors.sim.s, rr.s, set, 1:Time, Time, nsim, x, y, rMax, center, 
                                        radius, under=FALSE, nullmod, risk.ratio,thresh)
     if(!is.null(nullmod)){
-        print("what")
         detect.out.qp.s <- (matrix(unlist(incluster.qp.s), ncol=3, byrow=TRUE,
                                    dimnames = list(c(
                                        paste0("prop.null.")),
@@ -369,7 +368,6 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                                    )))
     }
     else {
-        print("heya")
         detect.out.qp.s <- (matrix(unlist(incluster.qp.s[1:12]),ncol=3, byrow=TRUE,
                                                        dimnames = list(c(
                                                            paste0("incluster.centroid.", "nothresh"),
@@ -393,7 +391,6 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                                    )))
     }
     else {
-        print("heya")
         detect.out.p.s <- (matrix(unlist(incluster.p.s[1:12]),ncol=3, byrow=TRUE,
                                    dimnames = list(c(
                                        paste0("incluster.centroid.", "nothresh"),
@@ -412,7 +409,6 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
  
     
     if(!is.null(nullmod)){
-        print("what")
         detect.out.qp.st <- (matrix(unlist(detect.qp.st), ncol=3, byrow=TRUE,
                                     dimnames = list(c(
                                         paste0("prop.null.")),
@@ -420,7 +416,6 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                                     )))
     }
     else{
-        print("yeha23")
         detect.out.qp.st <- (matrix(unlist(incluster.qp.st[1:12]),ncol=3, byrow=TRUE,
                                    dimnames = list(c(
                                        paste0("incluster.centroid.", "nothresh"),
@@ -433,13 +428,11 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     ################################################################
     ##P - SPACETIME
     set <- detect_set(lassoresult.p.st, vectors.sim, rr, Time, x, y, rMax, center, radius, nullmod,nsim)
-    print(nullmod)
     incluster.p.st <- detect_incluster(lassoresult.p.st, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
                                        radius, under=FALSE, nullmod,risk.ratio,thresh)
     
     
     if(!is.null(nullmod)){
-        print("what")
         detect.out.p.st <- (matrix(unlist(detect.p.st), ncol=3, byrow=TRUE,
                                    dimnames = list(c(
                                        paste0("prop.null.")),
