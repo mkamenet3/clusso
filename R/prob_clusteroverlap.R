@@ -53,20 +53,15 @@ prob_clusteroverlap <- function(lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, t
     ##|(A and B)|/|A U B|? 
     ##AandB = clustin_sim
     ##AUB = truth_and_detected
-    print(str(rrmatvec))
     truth <- which(rrmatvec!=0) #this is true location of cluster
     detected <- sapply(1:nsim, function(i) sparseMAT %*% betaSelect_bin[,i]) 
-    print(str(detected))
-    print(str(truth))
-    print(str(detected[[1]]))
+    
     truth_and_detected <- sapply(1:nsim, function(i) union(which(as.vector(detected[[i]])!=0), truth))
-    print("a")
     intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(truth_and_detected[[i]])>thresh,1,0))
     percintersect_AandB.bic <- paste0(mean(unlist(intersect_AandB)), "%")
     
     ##|(A and B)|/|B|?
     intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(which(as.vector(detected[[i]])!=0))>thresh,1,0))
-    print("b")
     percintersect_B.bic <- paste0(mean(unlist(intersect_AandB)), "%")
     
     ##|(A and B)|/|A|?
@@ -106,14 +101,11 @@ prob_clusteroverlap <- function(lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, t
         truth <- which(rrmatvec!=0) #this is true location of cluster
         detected <- sapply(1:nsim, function(i) sparseMAT %*% betaSelect_bin[,i]) 
         truth_and_detected <- sapply(1:nsim, function(i) union(which(as.vector(detected[[i]])!=0), truth))
-        print("c")
         intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(truth_and_detected[[i]])>thresh,1,0))
-        print("d")
         percintersect_AandB.aic <- paste0(mean(unlist(intersect_AandB)), "%")
         
         ##|(A and B)|/|B|?
         intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(which(as.vector(detected[[i]])!=0))>thresh,1,0))
-        print("e")
         percintersect_B.aic <- paste0(mean(unlist(intersect_AandB)), "%")
         
         ##|(A and B)|/|A|?
@@ -151,14 +143,11 @@ prob_clusteroverlap <- function(lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, t
         truth <- which(rrmatvec!=0) #this is true location of cluster
         detected <- sapply(1:nsim, function(i) sparseMAT %*% betaSelect_bin[,i]) 
         truth_and_detected <- sapply(1:nsim, function(i) union(which(as.vector(detected[[i]])!=0), truth))
-        print("f")
         intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(truth_and_detected[[i]])>thresh,1,0))
-        print("g")
         percintersect_AandB.aicc <- paste0(mean(unlist(intersect_AandB)), "%")
         
         ##|(A and B)|/|B|?
         intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(which(as.vector(detected[[i]])!=0))>thresh,1,0))
-        print("h")
         percintersect_B.aicc <- paste0(mean(unlist(intersect_AandB)), "%")
         
         ##|(A and B)|/|A|?

@@ -36,19 +36,15 @@ detect_incluster <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time
         message("Returning results for simulation model")
         ############################
         ##Prob in/out cluster function as function of all potential clusters
-        print("ok")
         if(is.null(thresh)){
             clusterdetectionrates <- prob_clusteroverlap(lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh)
-            print("ok2")
         }
         else{
             if(length(thresh)>1){
                 clusterdetectionrates <- lapply(1:length(thresh), function(i) prob_clusteroverlap(lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh[[i]]))
-            print("ok3")
                 }
             else{
                 clusterdetectionrates <- prob_clusteroverlap(lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh)    
-                print("ok4")
             }
             
         }
