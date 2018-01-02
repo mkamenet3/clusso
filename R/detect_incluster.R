@@ -1,11 +1,11 @@
-#'@title
-#'detect_incluster_ic
-#'@description
+#' @title
+#'detect_incluster
+#' @description
 #'This function will calculate detection based on the three information criterion. You can run detection on a null model (no cluster),
 #'a model with an under-estimated cluster (artificial cluster <1), and on an elevated relative risk cluster. Standard detection criteria include percent of 
 #'cells detected that are inside/outside the true cluster and percent of total potential clusters that are at least partially inside/outside the true cluster
 #'that are detected. Additional criteria with threshold options can also be specified.
-#'@param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso.sim function
+#'@param lassoresult List of QBIC, QAIC, QAICc estimates from the lasso results
 #'@param vectors.sim  dataframe of initial vectors of the observed and expected counts that went into simulation function
 #'@param rr risk ratio matrix that was used in the simulation
 #'@param set output from detet_set function
@@ -17,27 +17,42 @@
 #'elevated relative risk models.
 #'@param nullmod Default is NULL. If TRUE, then it will estimate detection based on the null model where there is no cluster. 
 #'@param risk.ratio Risk ratio that was set for cluster in simulation
+#'@param center center of cluster
+#'@param radius radius of cluster
 #'@param x x-coordinates 
 #'@param y y-coordinates
 #'@param rMax Maximum radius for threshold in simulation
 #'@param thresh Default is NULL. Vector of thresholds for additional diagnostic criteria for cluster detection.
-detect_incluster_ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE,nullmod, risk.ratio,x,y,rMax,thresh){
+detect_incluster <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE,nullmod, 
+                             risk.ratio,center,radius,x,y,rMax,thresh){
+    message("Detection Results for:\n"
+            , "\t Time Period: ", timeperiod,
+            "\n \t Num. simulations: ", nsim,
+            "\n \t Cluster center: ", center,
+            "\n \t Cluster radius: ", radius,
+            "\n \t Cluster rel.risk: ",ifelse(length(unique(as.vector(rr)))==1,unique(as.vector(rr))[1],unique(as.vector(rr))[2]))
+    
     if(is.null(nullmod)){
         message("Returning results for simulation model")
         ############################
         ##Prob in/out cluster function as function of all potential clusters
+        print("ok")
         if(is.null(thresh)){
-            clusterdetectionrates <- prob_inoutcluster(lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh)
+            clusterdetectionrates <- prob_clusteroverlap(lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh)
+            print("ok2")
         }
         else{
             if(length(thresh)>1){
-                clusterdetectionrates <- lapply(1:length(thresh), function(i) prob_inoutcluster(lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh[[i]]))
-            }
+                clusterdetectionrates <- lapply(1:length(thresh), function(i) prob_clusteroverlap(lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh[[i]]))
+            print("ok3")
+                }
             else{
-                clusterdetectionrates <- prob_inoutcluster(lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh)    
+                clusterdetectionrates <- prob_clusteroverlap(lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh)    
+                print("ok4")
             }
             
         }
+        
         
         #Prob in/out for individual cells
         ############################
@@ -187,38 +202,7 @@ detect_incluster_ic <- function(lassoresult, vectors.sim, rr, set, timeperiod, T
     }
     
 }
-    
-    
-    
-#'detect_incluster
-#'
-#'Wrapper function for detect_incluster_ic.
-#'@param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso.sim function
-#'@param vectors.sim  dataframe of initial vectors of the observed and expected counts that went into simulation function
-#'@param rr risk ratio matrix that was used in the simulation
-#'@param set result of detect_set function
-#'@param timeperiod span of timeperiods in simulation
-#'@param Time total number of time periods
-#'@param nsim number of simulations
-#'@param x x coordinates
-#'@param y y coordinates
-#'@param rMax max radius
-#'@param center center of centroid for cluster
-#'@param radius radius of the cluster
-#'@param under default is FALSE. If risk.ratio is less than one (under-risk)
-#'@param nullmod default is NULL. If not null, then null model results will be estimated and returned.
-#'@param risk.ratio Risk ratio that was sest for cluster in simulation
-#'@param thresh Default is NULL. Vector of thresholds for additional diagnostic criteria for cluster detection.
-detect_incluster <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, x, y, rMax, center, 
-                             radius, under=FALSE, nullmod, risk.ratio,thresh){
-    message("Detection Results for:\n"
-            , "\t Time Period: ", timeperiod,
-            "\n \t Num. simulations: ", nsim,
-            "\n \t Cluster center: ", center,
-            "\n \t Cluster radius: ", radius,
-            "\n \t Cluster rel.risk: ",ifelse(length(unique(as.vector(rr)))==1,unique(as.vector(rr))[1],unique(as.vector(rr))[2]))
-    ic <- detect_incluster_ic(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE, nullmod, risk.ratio,x,y,rMax,thresh)
-    return(ic)
-} 
+
+
 
 

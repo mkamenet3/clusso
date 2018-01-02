@@ -1,7 +1,7 @@
 #' @title 
-#' prob_inoutcluster
+#' prob_clusteroverlap
 #' @description
-#' Finds the probability of being in the cluster for BIC, AIC, and AICc based on the expected risk ratio
+#' Finds the probability of any overlap with true cluster based on BIC, AIC, and AICc based on the expected risk ratio
 #'@param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso.sim function
 #'@param rr risk ratio matrix that was used in the simulation
 #'@param risk.ratio Risk ratio that was set for cluster in simulation
@@ -12,7 +12,7 @@
 #'@param Time number of time period
 #'@param thresh Default is NULL; vector or value as threshold for cluster detection
 #'@return returns vector which calculated the number of time the cluster was correctly identified out of the simulations
-prob_inoutcluster <- function(lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, thresh){
+prob_clusteroverlap <- function(lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, thresh){
     #DEFINE TRUTH
     if(risk.ratio==1){
      warning("Risk.ratio was set to 1")
@@ -53,15 +53,20 @@ prob_inoutcluster <- function(lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, thr
     ##|(A and B)|/|A U B|? 
     ##AandB = clustin_sim
     ##AUB = truth_and_detected
-
+    print(str(rrmatvec))
     truth <- which(rrmatvec!=0) #this is true location of cluster
     detected <- sapply(1:nsim, function(i) sparseMAT %*% betaSelect_bin[,i]) 
-    truth_and_detected <- sapply(1:nsim, function(i) union(which(detected[[i]]!=0), truth))
+    print(str(detected))
+    print(str(truth))
+    print(str(detected[[1]]))
+    truth_and_detected <- sapply(1:nsim, function(i) union(which(as.vector(detected[[i]])!=0), truth))
+    print("a")
     intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(truth_and_detected[[i]])>thresh,1,0))
     percintersect_AandB.bic <- paste0(mean(unlist(intersect_AandB)), "%")
     
     ##|(A and B)|/|B|?
-    intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(which(detected[[i]]!=0))>thresh,1,0))
+    intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(which(as.vector(detected[[i]])!=0))>thresh,1,0))
+    print("b")
     percintersect_B.bic <- paste0(mean(unlist(intersect_AandB)), "%")
     
     ##|(A and B)|/|A|?
@@ -100,12 +105,15 @@ prob_inoutcluster <- function(lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, thr
         ##AUB = truth_and_detected
         truth <- which(rrmatvec!=0) #this is true location of cluster
         detected <- sapply(1:nsim, function(i) sparseMAT %*% betaSelect_bin[,i]) 
-        truth_and_detected <- sapply(1:nsim, function(i) union(which(detected[[i]]!=0), truth))
+        truth_and_detected <- sapply(1:nsim, function(i) union(which(as.vector(detected[[i]])!=0), truth))
+        print("c")
         intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(truth_and_detected[[i]])>thresh,1,0))
+        print("d")
         percintersect_AandB.aic <- paste0(mean(unlist(intersect_AandB)), "%")
         
         ##|(A and B)|/|B|?
-        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(which(detected[[i]]!=0))>thresh,1,0))
+        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(which(as.vector(detected[[i]])!=0))>thresh,1,0))
+        print("e")
         percintersect_B.aic <- paste0(mean(unlist(intersect_AandB)), "%")
         
         ##|(A and B)|/|A|?
@@ -142,12 +150,15 @@ prob_inoutcluster <- function(lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, thr
         ##AUB = truth_and_detected
         truth <- which(rrmatvec!=0) #this is true location of cluster
         detected <- sapply(1:nsim, function(i) sparseMAT %*% betaSelect_bin[,i]) 
-        truth_and_detected <- sapply(1:nsim, function(i) union(which(detected[[i]]!=0), truth))
+        truth_and_detected <- sapply(1:nsim, function(i) union(which(as.vector(detected[[i]])!=0), truth))
+        print("f")
         intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(truth_and_detected[[i]])>thresh,1,0))
+        print("g")
         percintersect_AandB.aicc <- paste0(mean(unlist(intersect_AandB)), "%")
         
         ##|(A and B)|/|B|?
-        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(which(detected[[i]]!=0))>thresh,1,0))
+        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(which(as.vector(detected[[i]])!=0))>thresh,1,0))
+        print("h")
         percintersect_B.aicc <- paste0(mean(unlist(intersect_AandB)), "%")
         
         ##|(A and B)|/|A|?
@@ -171,7 +182,6 @@ prob_inoutcluster <- function(lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, thr
                     c("AandB.bic","AandB.aic","AandB.aicc","A.bic","A.aic","A.aicc","B.bic","B.aic", "B.aicc"))))
         }
 }    
-
 #' @title
 #' get_prob
 #' @description 
@@ -186,7 +196,6 @@ prob_inoutcluster <- function(lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, thr
 #' @return returns list of probabilities.
 #' 
 get_prob <- function(lassoresult,init, E1, ncentroids, Time, nsim, threshold){
-    #nsim <- nsim
     prob.bic <- prob_incluster(lassoresult$select_mu.qbic, ncentroids, Time, nsim)
     prob.aic <- prob_incluster(lassoresult$select_mu.qaic, ncentroids, Time, nsim)
     prob.aicc <- prob_incluster(lassoresult$select_mu.qaicc, ncentroids, Time, nsim)
@@ -221,8 +230,6 @@ get_prob <- function(lassoresult,init, E1, ncentroids, Time, nsim, threshold){
     res <- list(probs = probs, probs.thresh1 = probs.thresh1, probs.thresh2 = probs.thresh2)
     return(res)
 }
-
-
 #' @title 
 #' prob_incluster
 #' @description
