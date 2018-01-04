@@ -76,7 +76,7 @@ timeperiods = c(1:5)
 risk.ratio=1
 theta = 10000
 overdispfloor = TRUE
-nullmod <- TRUE
+nullmod <- NULL
 table.detection.null <- NULL
 
 ```
@@ -281,8 +281,8 @@ y <- utmJapan$utmy/1000
 rMax <- 20 
 Time <- 5
 overdispfloor <- TRUE
-nsim <- 100
-#nsim <- 10
+#nsim <- 100
+nsim <- 2
 threshold <- c(0.9, 0.5)
 mods <- c("QuasiPoisson", "Poisson")
 
@@ -323,7 +323,7 @@ Save diagnostics into csv:
 #save results
 (sim.i <- paste0("sim","_","center","_",center,"radius",radius,"_", "start",
                  "_",as.numeric(paste(timeperiods, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio)))
-filename <- paste0("sampleoutput/",sim.i,"singlesim300.RData")
+filename <- paste0(sim.i,"singlesim300.RData")
 save(res, file = filename)
 
 #Print Detection for the Simulation
@@ -337,6 +337,27 @@ print(tabn)
 write.csv(tabn, file="sampleoutput/tabledetectionsinglesim35_300.csv", row.names=TRUE)
 
 
+```
+
+
+```{r}
+#threshold results
+
+(thresh.i <- paste0("sim","_","center","_",center,"radius",radius,"_", "start",
+                 "_",as.numeric(paste(timeperiods, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio)))
+filename <- paste0(sim.i,"thresh.RData")
+save(res, file = filename)
+
+titles <- res$detect.out.thresh.qp.s$threshresults[1,10:18]
+(tabn.thresh <- rbind(c("thresh",titles,"Mod"), 
+                     rbind(cbind(threshold, res$detect.out.thresh.p.s$threshresults[,1:9], "PS"),
+                           cbind(threshold, res$detect.out.thresh.qp.s$threshresults[,1:9],"QPS"),
+                           cbind(threshold, res$detect.out.thresh.p.st$threshresults[,1:9],"PST"),
+                           cbind(threshold, res$detect.out.thresh.qp.st$threshresults[,1:9],"QPST"))))
+
+#WRITE TO CSV
+print(tabn.thresh)
+write.csv(tabn.thresh, file="tabledetectionsinglesim35_300_thresh.csv", row.names=TRUE)
 ```
 
 

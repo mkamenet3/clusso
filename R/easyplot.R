@@ -478,7 +478,6 @@ plotmap_bic <- function(prefect, polygons, pdfname,res,rr){
     firstrow = "Observed"
     #Observed
     pdf(paste0("observed",pdfname), height=11, width=10)
-    print("pk1")
     #Maps of Observed Counts
     par(fig=c(0,.2,0.668,1), mar=c(.5,0.5,0.5,0))
     plot(polygons,type='n',asp=1,axes=F,xlab='',ylab='')
@@ -653,7 +652,6 @@ plotmap_bic <- function(prefect, polygons, pdfname,res,rr){
     polygon(polygons,col=res$rrcolors$rrcolors.p.st$color.qaic[,5],border=F)
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 5: AIC, Poisson',cex=0.75)
-    print("ok2")
     #legend
     #if(rr==TRUE) {
         # par(fig=c(0.1,0.5,0,.1), new=T)
