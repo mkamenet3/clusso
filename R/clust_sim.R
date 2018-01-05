@@ -225,13 +225,13 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
         message(paste("Running model for period",timeperiod[1]))
     }
     #check for errors
-    if(isTRUE(all.equal(timeperiod,which(unique(rr, fromLast=TRUE)[1,]!=1)))==FALSE) stop("Timeperiods not equal to time elements in space-time rr matrix.")
+    #if(isTRUE(all.equal(timeperiod,which(unique(rr, fromLast=TRUE)[1,]!=1)))==FALSE) stop("Timeperiods not equal to time elements in space-time rr matrix.")
     
     ##Space-only
     allTime <- 1:Time
     rr.s[cluster$last, allTime[1]:tail(allTime, n=1)] <- risk.ratio
     #Check for errors
-    if(isTRUE(all.equal(allTime,which(unique(rr.s, fromLast=TRUE)[1,]!=1)))==FALSE) stop("Timeperiods not equal to time elements in space-only rr.s matrix.")
+    #if(isTRUE(all.equal(allTime,which(unique(rr.s, fromLast=TRUE)[1,]!=1)))==FALSE) stop("Timeperiods not equal to time elements in space-only rr.s matrix.")
     
     ##Expected Counts and simulations
     #Expected matrices
@@ -363,6 +363,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                                        paste0("prop.null.")),
                                        c("aic", "aicc", "bic")
                                    )))
+        detect.out.thresh.qp.s <- NULL
     }
     else {
         detect.out.qp.s <- (matrix(unlist(incluster.qp.s[1:12]),ncol=3, byrow=TRUE,
@@ -386,6 +387,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                                        paste0("prop.null.")),
                                        c("aic", "aicc", "bic")
                                    )))
+        detect.out.thresh.p.s <- NULL
     }
     else {
         detect.out.p.s <- (matrix(unlist(incluster.p.s[1:12]),ncol=3, byrow=TRUE,
@@ -411,6 +413,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                                         paste0("prop.null.")),
                                         c("aic", "aicc", "bic")
                                     )))
+        detect.out.thresh.qp.st <- NULL
     }
     else{
         detect.out.qp.st <- (matrix(unlist(incluster.qp.st[1:12]),ncol=3, byrow=TRUE,
@@ -435,6 +438,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                                        paste0("prop.null.")),
                                        c("aic", "aicc", "bic")
                                    )))
+        detect.out.thresh.p.st <- NULL
     }
     else {
         detect.out.p.st <- (matrix(unlist(incluster.p.st[1:12]),ncol=3, byrow=TRUE,
