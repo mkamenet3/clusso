@@ -21,8 +21,8 @@ vectors_space <- function(x,Ex, Yx,Time, init){
     }
     if(!is.null(init$covars)){
         covars.s <- sapply(1:ncol(init$covars), 
-                       function(i) tapply(as.vector(matrix(init$covars[,i], ncol=Time)),id, 
-                                          function(x) sum(x)))
+                           function(i) tapply(as.vector(matrix(init$covars[,i], ncol=Time)),id, 
+                                              function(x) sum(x)))
     }
     else{
         covars.s <- NULL
@@ -120,7 +120,7 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","
            # spacetime = 
            both = clustAll(x, y, rMax,period, expected, observed, covars, Time, utm, byrow, overdispfloor, cv))
 }
-    
+
 #' Detect a cluster in space or spacetime using Lasso on observed data    
 #' @title
 #'clustAll
@@ -141,7 +141,7 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","
 #'@param cv option for cross-validation - numeric input specifies how many folds; default is 10
 #'@inheritParams clust
 #'@return list of output from detection
-    
+
 clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byrow, overdispfloor, cv){    
     message("Running both Space and Space-Time Models")
     
@@ -181,11 +181,11 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byr
     initial.s <- list(E0 = unlist(vectors.s$E0_0))
     #id <- rep(1:length(x), times=Time)
     riskratios.p.s <- get_rr(lassoresult.p.s, vectors.s,initial.s,
-                              as.vector(matrix(E1, ncol=Time)),
-                              Time,sim=FALSE, cv)
+                             as.vector(matrix(E1, ncol=Time)),
+                             Time,sim=FALSE, cv)
     riskratios.qp.s <- get_rr(lassoresult.qp.s,vectors.s,initial.s,
                               as.vector(matrix(E1, ncol=Time)),
-                               Time,sim=FALSE, cv)
+                              Time,sim=FALSE, cv)
     ##color mapping
     rrcolors.p.s <- colormapping(riskratios.p.s,Time, cv, prob=FALSE)
     rrcolors.qp.s <- colormapping(riskratios.qp.s,Time, cv, prob=FALSE)
