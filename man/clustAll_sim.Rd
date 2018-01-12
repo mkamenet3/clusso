@@ -5,7 +5,7 @@
 \title{clustAll_sim}
 \usage{
 clustAll_sim(x, y, rMax, period, expected, observed, covars, Time, nsim, center,
-  radius, risk.ratio, timeperiod, utm, byrow, threshold, theta = theta,
+  radius, risk.ratio, timeperiod, utm, byrow, thresh, theta = theta,
   nullmod = nullmod, overdispfloor = overdispfloor, collapsetime = FALSE)
 }
 \arguments{
@@ -41,7 +41,7 @@ this would mean we look at periods 2, 3, 4, and 5.}
 
 \item{byrow}{byrow default is True. If data should be imported by column then set to FALSE}
 
-\item{threshold}{vector or value as threshold for cluster detection}
+\item{thresh}{vector or value as threshold for cluster detection}
 
 \item{theta}{default is 1000. Can add in overdispersion to simulated model by changing this value.}
 

@@ -1,6 +1,7 @@
+#' @title 
 #' Japanese Breast Cancer Data
-#' 
-#' Data on breast cancer incidence in prefects in Japan. UTM coordinates and polygon data included.
+#' @description 
+#' Data on breast cancer incidence in prefects in Japan across 5 time periods. UTM coordinates and polygon data included.
 #' 
 #' @docType data
 #' 
@@ -17,7 +18,6 @@
 #' 
 #' @keywords datasets
 #' 
-#' @references 
 #' @aliases dframe.poly2 dframe.prefect2 utmJapan
 #' 
 #' @examples 

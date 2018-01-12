@@ -18,7 +18,7 @@
 data(japanbreastcancer)
 }
 \description{
-Data on breast cancer incidence in prefects in Japan. UTM coordinates and polygon data included.
+Data on breast cancer incidence in prefects in Japan across 5 time periods. UTM coordinates and polygon data included.
 }
 \examples{
 data(japanbreastcancer)
