@@ -12,24 +12,24 @@
 #' @return This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
 #' a list of observed counts (Yx), the lasso object, a list of K values (number of unique values in each decision path), and n (length of unique centers in the clusters dataframe)
 #' @export
-spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim,YSIM,overdispfloor){
-    n <- length(unique(clusters$center))
-    potClus <- n
-    numCenters <- n
+spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,pois, nsim,YSIM,overdispfloor){
+    #n <- length(unique(clusters$center))
+    #potClus <- n
+    #numCenters <- n
     covars <- vectors.sim$covars
     
-    if(spacetime==TRUE){
-        sparseMAT <- spacetimeMat(clusters, numCenters, Time)
-        message("Space-time matrix created")
-        
-    }
-    else{
-        sparseMAT <- spaceMat(clusters, numCenters)
-        message("Spatial matrix created")
-        if(nrow(covars)==0){
-            covars<- NULL
-        }
-    }
+    # if(spacetime==TRUE){
+    #     sparseMAT <- spacetimeMat(clusters, numCenters, Time)
+    #     message("Space-time matrix created")
+    #     
+    # }
+    # else{
+    #     sparseMAT <- spaceMat(clusters, numCenters)
+    #     message("Spatial matrix created")
+    #     if(nrow(covars)==0){
+    #         covars<- NULL
+    #     }
+    # }
 
     if(!is.null(covars)){
         
@@ -79,7 +79,7 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
         if(pois == FALSE & is.null(overdisp.est)) warning("No overdispersion for quasi-Poisson model. Please check.")
 
         #QBIC
-        PLL.qbic <- lapply(1:nsim, function(i) -2*(loglike[[i]]/overdisp.est) + ((K[[i]])*log(n*Time)))
+        PLL.qbic <- lapply(1:nsim, function(i) -2*(loglike[[i]]/overdisp.est) + ((K[[i]])*log(n_uniq*Time)))
         select.qbic <- lapply(1:nsim, function(i) which.min(unlist(PLL.qbic[[i]])))
         select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))
         select_muRR.qbic <- Reduce("+", select_mu.qbic)/nsim
@@ -102,7 +102,7 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
 
          #QAICc
         PLL.qaicc <- lapply(1:nsim, function(i) 2*(K[[i]]) - 2*(loglike[[i]]/overdisp.est) + 
-                                ((2*K[[i]]*(K[[i]] + 1))/(n*Time - K[[i]] - 1)))
+                                ((2*K[[i]]*(K[[i]] + 1))/(n_uniq*Time - K[[i]] - 1)))
         select.qaicc <- lapply(1:nsim, function(i) which.min(unlist(PLL.qaicc[[i]])))
         select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
         select_muRR.qaicc <- Reduce("+", select_mu.qaicc)/nsim
@@ -119,7 +119,7 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
         message("returning results for space-time Poisson model")
         #if(pois == FALSE & !is.null(overdisp.est)) stop("Overdispersion parameter estimated - model is no longer Poisson")
         #QBIC
-        PLL.qbic <- lapply(1:nsim, function(i) -2*(loglike[[i]]) + ((K[[i]])*log(n*Time)))
+        PLL.qbic <- lapply(1:nsim, function(i) -2*(loglike[[i]]) + ((K[[i]])*log(n_uniq*Time)))
         select.qbic <- lapply(1:nsim, function(i) which.min(unlist(PLL.qbic[[i]])))
         select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))
         select_muRR.qbic <- Reduce("+", select_mu.qbic)/nsim
@@ -141,7 +141,7 @@ spacetimeLasso_sim <- function(clusters, vectors.sim, Time, spacetime,pois, nsim
         
         #QAICc
         PLL.qaicc <- lapply(1:nsim, function(i) 2*(K[[i]]) - 2*(loglike[[i]]) + 
-                                ((2*K[[i]]*(K[[i]] + 1))/(n*Time - K[[i]] - 1)))
+                                ((2*K[[i]]*(K[[i]] + 1))/(n_uniq*Time - K[[i]] - 1)))
         select.qaicc <- lapply(1:nsim, function(i) which.min(unlist(PLL.qaicc[[i]])))
         select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
         select_muRR.qaicc <- Reduce("+", select_mu.qaicc)/nsim

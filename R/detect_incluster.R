@@ -23,7 +23,7 @@
 #'@param y y-coordinates
 #'@param rMax Maximum radius for threshold in simulation
 #'@param thresh Default is NULL. Vector of thresholds for additional diagnostic criteria for cluster detection.
-detect_incluster <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE,nullmod, 
+detect_incluster <- function(sparseMAT,lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE,nullmod, 
                              risk.ratio,center,radius,x,y,rMax,thresh){
     message("Detection Results for:\n"
             , "\t Time Period: ", timeperiod,
@@ -37,14 +37,14 @@ detect_incluster <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time
         ############################
         ##Prob in/out cluster function as function of all potential clusters
         if(is.null(thresh)){
-            clusterdetectionrates <- prob_clusteroverlap(lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh)
+            clusterdetectionrates <- prob_clusteroverlap(sparseMAT,lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh)
         }
         else{
             if(length(thresh)>1){
-                clusterdetectionrates <- lapply(1:length(thresh), function(i) prob_clusteroverlap(lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh[[i]]))
+                clusterdetectionrates <- lapply(1:length(thresh), function(i) prob_clusteroverlap(sparseMAT,lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh[[i]]))
                 }
             else{
-                clusterdetectionrates <- prob_clusteroverlap(lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh)    
+                clusterdetectionrates <- prob_clusteroverlap(sparseMAT,lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh)    
             }
             
         }
