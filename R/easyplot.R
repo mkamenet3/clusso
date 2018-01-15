@@ -169,15 +169,7 @@ plotmap_ST_cv <- function(prefect, polygons, pdfname,res, obs){
     plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
     rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=redblue(0:50/50),border=F)
     text(seq(.6,1.4,length=5),rep(.45,5),seq(0,2,length.out=5),srt=330,adj=0)
-    # par(fig=c(0.1,0.5,0,.1), new=T)
-    # plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
-    # rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=reds(0:50/50),border=F)
-    # text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
-    # 
-    # par(fig=c(.6,1,0,.1), new=T)
-    # plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
-    # rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=blues(0:50/50),border=F)
-    # text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
+    
     
     #Turn off pdf development
     dev.off()
@@ -217,17 +209,7 @@ plotmap_S_cv <- function(prefect, polygons, pdfname,res, obs){
     plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
     rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=redblue(0:50/50),border=F)
     text(seq(.6,1.4,length=5),rep(.45,5),seq(0,2,length.out=5),srt=330,adj=0)
-    # par(fig=c(0.1,0.5,0,.1), new=T)
-    # plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
-    # rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=reds(0:50/50),border=F)
-    # text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
-    # 
-    # par(fig=c(.6,1,0,.1), new=T)
-    # plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
-    # rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=blues(0:50/50),border=F)
-    # 
-    
-    
+   
     #Turn off pdf development
     dev.off()
 }
@@ -387,16 +369,6 @@ plotmap_ST <- function(prefect, polygons, pdfname,res, obs,rr){
         plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
         rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=redblue(0:50/50),border=F)
         text(seq(.6,1.4,length=5),rep(.45,5),seq(0,2,length.out=5),srt=330,adj=0)
-        # par(fig=c(0.1,0.5,0,.1), new=T)
-        # plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
-        # rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=reds(0:50/50),border=F)
-        # text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
-        # 
-        # par(fig=c(.6,1,0,.1), new=T)
-        # plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
-        # rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=blues(0:50/50),border=F)
-        # text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
-        # message("redbluecolors")
     }
     else{
         par(fig=c(.35,.75,0,.1), new=T)
@@ -462,15 +434,6 @@ plotmap_S <- function(prefect, polygons, pdfname,res, obs, rr){
         plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
         rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=redblue(0:50/50),border=F)
         text(seq(.6,1.4,length=5),rep(.45,5),seq(0,2,length.out=5),srt=330,adj=0)
-        # par(fig=c(0.1,0.5,0,.1), new=T)
-        # plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
-        # rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=reds(0:50/50),border=F)
-        # text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
-        # 
-        # par(fig=c(.6,1,0,.1), new=T)
-        # plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
-        # rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=blues(0:50/50),border=F)
-        # text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
     }
     else{
         par(fig=c(.35,.75,0,.1), new=T)
@@ -671,24 +634,10 @@ plotmap_bic <- function(prefect, polygons, pdfname,res,rr){
     segments(prefect$x1,prefect$y1,prefect$x2,prefect$y2)
     text(355,4120,'Period 5: AIC, Poisson',cex=0.75)
     #legend
-    #if(rr==TRUE) {
-        # par(fig=c(0.1,0.5,0,.1), new=T)
-        # plot(1, xlim=c(0.6,1.5), ylim=c(0.1,1), axes=F, type='n',  xlab="", ylab="")
-        # rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=reds(0:50/50),border=F)
-        # text(seq(.6,1.4,length=5),rep(.45,6),c('1.0','1.25','1.5','1.75','2.0'),srt=330,adj=0)
-        #  par(fig=c(0.2,.4,0.668,1), mar=c(.5,0.5,0.5,0), new=T)
     par(fig=c(.35,.75,0,.1), new=T)
     plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
     rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=redblue(0:50/50),border=F)
     text(seq(.6,1.4,length=5),rep(.45,5),seq(0,2,length.out=5),srt=330,adj=0)
-       # message("redbluecolors")
-   # }
-   # else{
-        # par(fig=c(.35,.75,0,.1), new=T)
-        # plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
-        # rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=greys(0:50/50),border=F)
-        # text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
-   # }
     
     #Turn off pdf development
     dev.off()
