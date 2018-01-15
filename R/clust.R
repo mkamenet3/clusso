@@ -161,17 +161,11 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byr
     E1 <- init$E0
     Ex <- scale(init, Time)
     Yx <- init$Y.vec
-    #timeperiod <- 1:Time
     #set vectors
     vectors <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec, covars = covars)
     vectors.s <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec, covars = covars)
-    #spacevecs <- vectors_space(x, Ex, Yx, Time,init)
-    #vectors.s <- spacevecs$vectors.s
     
-    ####################################################################################
-    ####################################################################################
-    ####################################################################################    
-    #TEST THIS CHUNK    
+    #create sparseMAT once and cache it   
     n_uniq <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
@@ -190,12 +184,6 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byr
             covars <- NULL
         }
     }
-    
-    #TEST THIS CHUNK        
-    ####################################################################################
-    ####################################################################################
-    ####################################################################################  
-    
     #run lasso
     lassoresult.p.st <- spacetimeLasso(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=TRUE, overdispfloor, cv)
     lassoresult.qp.st <- spacetimeLasso(sparseMAT, n_uniq, vectors, Time, spacetime=TRUE,pois=FALSE, overdispfloor, cv)
@@ -203,7 +191,6 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byr
     lassoresult.qp.s <- spacetimeLasso(sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,pois=FALSE, overdispfloor,cv)
     
     message("All models ran successfully")
-    
     
     #space time
     ##risk ratios
@@ -216,7 +203,6 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byr
     #space only
     ##risk ratios
     initial.s <- list(E0 = unlist(vectors.s$E0_0))
-    #id <- rep(1:length(x), times=Time)
     riskratios.p.s <- get_rr(lassoresult.p.s, vectors.s,initial.s,
                              as.vector(matrix(E1, ncol=Time)),
                              Time,sim=FALSE, cv)

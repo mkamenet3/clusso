@@ -17,54 +17,18 @@
 #' @export
  
 spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=FALSE,overdispfloor, cv){
-    # n <- length(unique(clusters$center))
-    # potClus <- n
-    # numCenters <- n
-    #set initial
-    Ex <- vectors$Ex
-    Yx <- vectors$Y.vec
-    Period <- vectors$Period
+    #check for covariates
     covars <- vectors$covars
-    # if(spacetime == FALSE && nrow(vectors$covars) ==0){
-    #     covars<- NULL
-    # }
-    # else{
-    #     covars <- vectors$covars    
-    # }
-    # if(spacetime==TRUE){
-    #     sparseMAT <- spacetimeMat(clusters, numCenters, Time)
-    #     message("Creating space-time matrix")
-    #     
-    #     #set initial
-    #     Ex <- vectors$Ex
-    #     Yx <- vectors$Y.vec
-    #     Period <- vectors$Period
-    # }
-    # else{
-    #     
-    #     sparseMAT <- spaceMat(clusters, numCenters)
-    #     # #set initial
-    #     # Ex <- as.vector(vectors$Ex)
-    #     # Yx <- as.vector(vectors$Y.vec)
-    #     # Period <- as.factor(as.vector(vectors$Period))
-    #     message("Creating space-only matrix")
-    #     if(nrow(covars)==0){
-    #         covars <- NULL
-    #     }
-    # }
     if(!is.null(covars)){
-        #str(covars)
-        
         message("Running with covariates")
         covarMAT <- Matrix::Matrix(data.matrix(covars), sparse=TRUE)
-       # dim(sparseMAT)
         sparseMat <- Matrix::cBind(sparseMAT, covarMAT)
     }
     else{
         message("No covariates found")
     }
     message(paste("Number of potential clusters to scan through: ", dim(sparseMAT)[2]))
-    #Set conditions
+    #Set initial
     Ex <- vectors$Ex
     Yx <- vectors$Y.vec
     Period <- vectors$Period
@@ -109,9 +73,8 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
                                   family=quasipoisson)
             }
             overdisp.est <- overdisp(offset_reg, sim = FALSE, overdispfloor = overdispfloor)
-            message(paste("Overdispersion estimate:", overdisp.est))
+            message(paste("Overdispersion estimate:", round(overdisp.est,4)))
             if(pois == FALSE & is.null(overdisp.est)) warning("No overdispersion for quasi-Poisson model. Please check.")
-            
             
             #QBIC
             PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(n_uniq*Time))
@@ -172,7 +135,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
             }
             offset_reg <- glm(Yx ~ 1 + offset(log(Ex)),family=poisson)
             overdisp.est <- overdisp(offset_reg, sim = FALSE, overdispfloor = overdispfloor)
-            message(paste("Overdispersion estimate:", overdisp.est))
+            message(paste("Overdispersion estimate:", round(overdisp.est,4)))
             if(pois==FALSE & is.null(overdisp.est)) warning("No overdispersion for quasi-Poisson model. Please check.")
             
             #QBIC
@@ -211,7 +174,6 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
             select.qaic <- which.min(PLL.qaic)
             E.qaic <- mu[,select.qaic]
             numclust.qaic <- length(unique(coefs.lasso.all[,select.qaic]))-1
-            
             
             #QAICc
             PLL.qaicc <- 2*(K) - 2*(loglike) +

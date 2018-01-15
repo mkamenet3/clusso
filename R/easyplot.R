@@ -15,6 +15,7 @@
 #' @export
 #' @examples 
 #' \donttest{
+#' mods <- c("QuasiPoisson", "Poisson")
 #' pdfname1 <- paste0("rrmaps.pdf")
 #' pdfname2 <- paste0("probabilitymaps.pdf")
 #' easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname1,
@@ -67,6 +68,7 @@ easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space",
     if(!is.null(cv)){
         message("CV Maps")
         switch(space, 
+               # TODO
                # space = {
                #    # plotmap_S(prefect, polygons, pdf_qp.s, res, obs, sub = res$probcolors$probcolors.qp.s) 
                #     plotmap_S(prefect, polygons, pdf_p.s, res, obs, sub = res$probcolors$probcolors.p.s)},

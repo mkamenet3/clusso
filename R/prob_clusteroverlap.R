@@ -22,11 +22,6 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
     else{
         rrmatvec <- ifelse(as.vector(rr)==risk.ratio,1,0)    
     }
-    # clusters <- clusters2df(x,y,rMax, utm=TRUE, length(x))
-    # n <- length(unique(clusters$center))
-    # potClus <- n
-    # numCenters <- n
-    # sparseMAT <- spacetimeMat(clusters, numCenters, Time)
     #GO through what was detected 
     #Let A = true cluster (clusteroverlap), B = detected cluster (betaSelect_bin)
     
