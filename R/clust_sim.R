@@ -258,20 +258,50 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     # vectors.sim.s <- spacevecs$vectors.sim.s 
     # YSIM.s <- spacevecs$YSIM.s
     
+####################################################################################
+####################################################################################
+####################################################################################    
+#TEST THIS CHUNK    
+    n_uniq <- length(unique(clusters$center))
+    potClus <- n_uniq
+    numCenters <- n_uniq
+    #CREATE sparseMAT and cache it for use throughout this function
+    if(collapsetime==FALSE){
+        sparseMAT <- spacetimeMat(clusters, numCenters, Time)
+        SOAR::Store(sparseMAT)
+        message("Space-time matrix created")
+        
+    }
+    else{
+        sparseMAT <- spaceMat(clusters, numCenters)
+        SOAR::Store(sparseMAT)
+        message("Spatial matrix created")
+        if(nrow(covars)==0){
+            covars<- NULL
+        }
+    }
+#TEST THIS CHUNK        
+####################################################################################
+####################################################################################
+####################################################################################    
+    
+
+    
+    
     # #SPACE-ONLY MODELS
     #set up and run simulation models
     message("RUNNING: SPACE-ONLY QUASI-POISSON")
-    lassoresult.qp.s <- spacetimeLasso_sim(clusters, vectors.sim.s, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM.s, overdispfloor)
+    lassoresult.qp.s <- spacetimeLasso_sim(sparseMAT, n_uniq, vectors.sim.s, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM.s, overdispfloor)
 
     message("RUNNING: SPACE-ONLY POISSON")
-    lassoresult.p.s <- spacetimeLasso_sim(clusters, vectors.sim.s, Time, spacetime=TRUE, pois=TRUE, nsim, YSIM.s, overdispfloor)
+    lassoresult.p.s <- spacetimeLasso_sim(sparseMAT, n_uniq, vectors.sim.s, Time, spacetime=TRUE, pois=TRUE, nsim, YSIM.s, overdispfloor)
     
     #SPACE-TIME MODELS 
     #set up and run simulation models
     message("RUNNING: SPACE-TIME QUASI-POISSON")
-    lassoresult.qp.st <- spacetimeLasso_sim(clusters, vectors.sim, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM, overdispfloor)
+    lassoresult.qp.st <- spacetimeLasso_sim(sparseMAT,n_uniq,  vectors.sim, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM, overdispfloor)
     message("RUNNING: SPACE-TIME POISSON")
-    lassoresult.p.st <- spacetimeLasso_sim(clusters, vectors.sim, Time, spacetime=TRUE, pois=TRUE, nsim, YSIM, overdispfloor)
+    lassoresult.p.st <- spacetimeLasso_sim(sparseMAT, n_uniq, vectors.sim, Time, spacetime=TRUE, pois=TRUE, nsim, YSIM, overdispfloor)
     
     message("All models ran successfully")
     
@@ -355,7 +385,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     ################################################################
     ##QP - Space
     set <- detect_set(lassoresult.qp.s, vectors.sim.s, rr.s, Time, x, y, rMax, center, radius, nullmod,nsim)
-    incluster.qp.s <- detect_incluster(lassoresult.qp.s, vectors.sim.s, rr.s, set, 1:Time, Time, nsim, under=FALSE, nullmod,risk.ratio,
+    incluster.qp.s <- detect_incluster(sparseMAT,lassoresult.qp.s, vectors.sim.s, rr.s, set, 1:Time, Time, nsim, under=FALSE, nullmod,risk.ratio,
                                        center, radius,x,y,rMax,thresh)
     if(!is.null(nullmod)){
         detect.out.qp.s <- (matrix(unlist(incluster.qp.s), ncol=3, byrow=TRUE,
@@ -378,7 +408,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     ################################################################
     ##P - Space
     set <- detect_set(lassoresult.p.s, vectors.sim.s, rr.s, Time, x, y, rMax, center, radius, nullmod,nsim)
-    incluster.p.s <- detect_incluster(lassoresult.p.s, vectors.sim.s, rr.s, set, 1:Time, Time, nsim, under=FALSE, nullmod,risk.ratio,
+    incluster.p.s <- detect_incluster(sparseMAT,lassoresult.p.s, vectors.sim.s, rr.s, set, 1:Time, Time, nsim, under=FALSE, nullmod,risk.ratio,
                                       center, radius,x,y,rMax,thresh)
     
     if(!is.null(nullmod)){
@@ -403,7 +433,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     ################################################################
     ##QP - SPACETIME
     set <- detect_set(lassoresult.qp.st, vectors.sim, rr, Time, x, y, rMax, center, radius, nullmod,nsim)
-    incluster.qp.st <- detect_incluster(lassoresult.qp.st, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE, nullmod,risk.ratio,
+    incluster.qp.st <- detect_incluster(sparseMAT,lassoresult.qp.st, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE, nullmod,risk.ratio,
                                         center, radius,x,y,rMax,thresh)
  
     
@@ -428,7 +458,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     ################################################################
     ##P - SPACETIME
     set <- detect_set(lassoresult.p.st, vectors.sim, rr, Time, x, y, rMax, center, radius, nullmod,nsim)
-    incluster.p.st <- detect_incluster(lassoresult.p.st, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE, nullmod,risk.ratio,
+    incluster.p.st <- detect_incluster(sparseMAT,lassoresult.p.st, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE, nullmod,risk.ratio,
                                        center, radius,x,y,rMax,thresh)
     
     
@@ -451,6 +481,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
         detect.out.thresh.p.st <- incluster.p.st[13]
     }
     ################################################################
+    SOAR::Remove(sparseMAT)
     
     #RETURN
     return(list(lassoresult.qp.st = lassoresult.qp.st,

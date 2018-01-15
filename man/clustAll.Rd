@@ -5,7 +5,7 @@
 \title{clustAll}
 \usage{
 clustAll(x, y, rMax, period, expected, observed, covars, Time, utm, byrow,
-  overdispfloor, cv)
+  overdispfloor, cv, collapsetime)
 }
 \arguments{
 \item{x}{x coordinates (easting/latitude); if utm coordinates, scale to km.}
@@ -31,6 +31,8 @@ clustAll(x, y, rMax, period, expected, observed, covars, Time, utm, byrow,
 \item{overdispfloor}{overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.}
 
 \item{cv}{option for cross-validation - numeric input specifies how many folds; default is 10}
+
+\item{collapsetime}{alternative definition for space-only model to instead collapse expected and observed counts across time. TODO}
 }
 \value{
 list of output from detection

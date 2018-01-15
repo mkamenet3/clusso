@@ -2,6 +2,7 @@
 #' prob_clusteroverlap
 #' @description
 #' Finds the probability of any overlap with true cluster based on BIC, AIC, and AICc based on the expected risk ratio
+#'@param sparseMAT large sparse matrix created in \code{clust_sim} function.
 #'@param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso.sim function
 #'@param rr risk ratio matrix that was used in the simulation
 #'@param risk.ratio Risk ratio that was set for cluster in simulation
@@ -12,7 +13,7 @@
 #'@param Time number of time period
 #'@param thresh Default is NULL; vector or value as threshold for cluster detection
 #'@return returns vector which calculated the number of time the cluster was correctly identified out of the simulations
-prob_clusteroverlap <- function(lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, thresh){
+prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, thresh){
     #DEFINE TRUTH
     if(risk.ratio==1){
      warning("Risk.ratio was set to 1")
@@ -21,11 +22,6 @@ prob_clusteroverlap <- function(lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, t
     else{
         rrmatvec <- ifelse(as.vector(rr)==risk.ratio,1,0)    
     }
-    clusters <- clusters2df(x,y,rMax, utm=TRUE, length(x))
-    n <- length(unique(clusters$center))
-    potClus <- n
-    numCenters <- n
-    sparseMAT <- spacetimeMat(clusters, numCenters, Time)
     #GO through what was detected 
     #Let A = true cluster (clusteroverlap), B = detected cluster (betaSelect_bin)
     

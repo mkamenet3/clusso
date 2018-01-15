@@ -54,6 +54,7 @@ vectors_space <- function(x,Ex, Yx,Time, init){
 #'space = spacetime, or space = both.
 #'@param overdispfloor overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
 #'@param cv option for cross-validation
+#'@param collapsetime Default is FALSE. Alternative definition for space-only model to instead collapse expected and observed counts across time. TODO
 #'@export
 #'@return returns list of cluster detection results ready to plot
 #'@examples
@@ -72,7 +73,7 @@ vectors_space <- function(x,Ex, Yx,Time, init){
 #'  }
 
 
-clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","spacetime", "both"),overdispfloor=NULL, cv = NULL){
+clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","spacetime", "both"),overdispfloor=NULL, cv = NULL, collapsetime=FALSE){
     if(is(clst, "clst")!=TRUE) stop("clst element not of class `clst`. This is required for the clust_sim function.")
     expected <- clst$required_df$expected
     observed <- clst$required_df$observed
@@ -112,13 +113,20 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","
     else{
         cv = NULL
     }
+    if(collapsetime==TRUE){
+        warning("You've selected to collapse time periods on space. This will results in averaging of counts by geographic unit.
+                To allow time to vary across geographic unit, select `collapsetime=FALSE` (DEFAULT).")
+    }
+    else{
+        collapsetime=FALSE
+    }
     if(length(space) > 1) stop("You must select either `space`, `spacetime`, or `both`")
     space <- match.arg(space, several.ok = FALSE)
     switch(space, 
            #TODO
            # space = 
            # spacetime = 
-           both = clustAll(x, y, rMax,period, expected, observed, covars, Time, utm, byrow, overdispfloor, cv))
+           both = clustAll(x, y, rMax,period, expected, observed, covars, Time, utm, byrow, overdispfloor, cv, collapsetime))
 }
 
 #' Detect a cluster in space or spacetime using Lasso on observed data    
@@ -139,10 +147,11 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, byrow=TRUE,space = c("space","
 #'@param byrow default is True. If data should be imported by column then set to FALSE
 #'@param overdispfloor overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
 #'@param cv option for cross-validation - numeric input specifies how many folds; default is 10
+#'@param collapsetime alternative definition for space-only model to instead collapse expected and observed counts across time. TODO
 #'@inheritParams clust
 #'@return list of output from detection
 
-clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byrow, overdispfloor, cv){    
+clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byrow, overdispfloor, cv, collapsetime){    
     message("Running both Space and Space-Time Models")
     
     #set up clusters and fitted values
@@ -152,21 +161,36 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byr
     E1 <- init$E0
     Ex <- scale(init, Time)
     Yx <- init$Y.vec
-    #timeperiod <- 1:Time
     #set vectors
     vectors <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec, covars = covars)
     vectors.s <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec, covars = covars)
-    #spacevecs <- vectors_space(x, Ex, Yx, Time,init)
-    #vectors.s <- spacevecs$vectors.s
     
+    #create sparseMAT once and cache it   
+    n_uniq <- length(unique(clusters$center))
+    potClus <- n
+    numCenters <- n
+    #CREATE sparseMAT and cache it for use throughout this function
+    if(collapsetime==FALSE){
+        sparseMAT <- spacetimeMat(clusters, numCenters, Time)
+        SOAR::Store(sparseMAT)
+        message("Creating space-time matrix")
+       
+    }
+    else{
+        sparseMAT <- spaceMat(clusters, numCenters)
+        SOAR::Store(sparseMAT)
+        message("Creating space-only matrix")
+        if(nrow(covars)==0){
+            covars <- NULL
+        }
+    }
     #run lasso
-    lassoresult.p.st <- spacetimeLasso(clusters, vectors,Time, spacetime=TRUE,pois=TRUE, overdispfloor, cv)
-    lassoresult.qp.st <- spacetimeLasso(clusters, vectors, Time, spacetime=TRUE,pois=FALSE, overdispfloor, cv)
-    lassoresult.p.s <- spacetimeLasso(clusters, vectors.s, Time, spacetime=TRUE,pois=TRUE, overdispfloor,cv)
-    lassoresult.qp.s <- spacetimeLasso(clusters, vectors.s, Time, spacetime=TRUE,pois=FALSE, overdispfloor,cv)
+    lassoresult.p.st <- spacetimeLasso(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=TRUE, overdispfloor, cv)
+    lassoresult.qp.st <- spacetimeLasso(sparseMAT, n_uniq, vectors, Time, spacetime=TRUE,pois=FALSE, overdispfloor, cv)
+    lassoresult.p.s <- spacetimeLasso(sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,pois=TRUE, overdispfloor,cv)
+    lassoresult.qp.s <- spacetimeLasso(sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,pois=FALSE, overdispfloor,cv)
     
     message("All models ran successfully")
-    
     
     #space time
     ##risk ratios
@@ -179,7 +203,6 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byr
     #space only
     ##risk ratios
     initial.s <- list(E0 = unlist(vectors.s$E0_0))
-    #id <- rep(1:length(x), times=Time)
     riskratios.p.s <- get_rr(lassoresult.p.s, vectors.s,initial.s,
                              as.vector(matrix(E1, ncol=Time)),
                              Time,sim=FALSE, cv)
@@ -195,6 +218,8 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byr
                        riskratios.qp.st = riskratios.qp.st, riskratios.p.st = riskratios.p.st)
     rrcolors <- list(rrcolors.qp.s = rrcolors.qp.s, rrcolors.p.s = rrcolors.p.s,
                      rrcolors.qp.st = rrcolors.qp.st, rrcolors.p.st = rrcolors.p.st)
+    
+    SOAR::Remove(sparseMAT)
     
     return(list(lassoresult.p.st = lassoresult.p.st,
                 lassoresult.qp.st = lassoresult.qp.st,

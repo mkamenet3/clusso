@@ -4,9 +4,12 @@
 \alias{prob_clusteroverlap}
 \title{prob_clusteroverlap}
 \usage{
-prob_clusteroverlap(lassoresult, rr, risk.ratio, x, y, rMax, nsim, Time, thresh)
+prob_clusteroverlap(sparseMAT, lassoresult, rr, risk.ratio, x, y, rMax, nsim,
+  Time, thresh)
 }
 \arguments{
+\item{sparseMAT}{large sparse matrix created in \code{clust_sim} function.}
+
 \item{lassoresult}{List of QBIC, QAIC, QAICc estimates from the mylasso.sim function}
 
 \item{rr}{risk ratio matrix that was used in the simulation}

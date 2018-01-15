@@ -4,7 +4,8 @@
 #' 
 #' @description 
 #' This function runs the Lasso regularization technique on our large sparse matric of potential space or space-time clusters.
-#' @param clusters clusters dataframe from (cluster.df function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)
+#' @param sparseMAT large sparse matrix created in \code{clust} function.
+#' @param n_uniq number of unique polygons (ex: counties, zip code, etc). Inherited from \code{clust}.
 #' @param vectors takes in the list of expected and observed counts from setVectors function
 #' @param Time number of time periods in the dataset
 #' @param spacetime indicator of whether the cluster detection method should be run on all space-time clusters(default) or on only the potential space clusters.
@@ -15,51 +16,19 @@
 #' a list of observed counts (Yx), the lasso object, a list of K values (number of unique values in each decision path), and n (length of unique centers in the clusters dataframe)
 #' @export
  
-spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,overdispfloor, cv){
-    n <- length(unique(clusters$center))
-    potClus <- n
-    numCenters <- n
+spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=FALSE,overdispfloor, cv){
+    #check for covariates
     covars <- vectors$covars
-    # if(spacetime == FALSE && nrow(vectors$covars) ==0){
-    #     covars<- NULL
-    # }
-    # else{
-    #     covars <- vectors$covars    
-    # }
-    if(spacetime==TRUE){
-        sparseMAT <- spacetimeMat(clusters, numCenters, Time)
-        message("Creating space-time matrix")
-        
-        #set initial
-        Ex <- vectors$Ex
-        Yx <- vectors$Y.vec
-        Period <- vectors$Period
-    }
-    else{
-        
-        sparseMAT <- spaceMat(clusters, numCenters)
-        # #set initial
-        # Ex <- as.vector(vectors$Ex)
-        # Yx <- as.vector(vectors$Y.vec)
-        # Period <- as.factor(as.vector(vectors$Period))
-        message("Creating space-only matrix")
-        if(nrow(covars)==0){
-            covars <- NULL
-        }
-    }
     if(!is.null(covars)){
-        #str(covars)
-        
         message("Running with covariates")
         covarMAT <- Matrix::Matrix(data.matrix(covars), sparse=TRUE)
-       # dim(sparseMAT)
         sparseMat <- Matrix::cBind(sparseMAT, covarMAT)
     }
     else{
         message("No covariates found")
     }
     message(paste("Number of potential clusters to scan through: ", dim(sparseMAT)[2]))
-    #Set conditions
+    #Set initial
     Ex <- vectors$Ex
     Yx <- vectors$Y.vec
     Period <- vectors$Period
@@ -104,12 +73,11 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
                                   family=quasipoisson)
             }
             overdisp.est <- overdisp(offset_reg, sim = FALSE, overdispfloor = overdispfloor)
-            message(paste("Overdispersion estimate:", overdisp.est))
+            message(paste("Overdispersion estimate:", round(overdisp.est,4)))
             if(pois == FALSE & is.null(overdisp.est)) warning("No overdispersion for quasi-Poisson model. Please check.")
             
-            
             #QBIC
-            PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(n*Time))
+            PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(n_uniq*Time))
             select.qbic <- which.min(PLL.qbic)
             E.qbic <- mu[,select.qbic]
             numclust.qbic <- length(unique(coefs.lasso.all[,select.qbic]))-1
@@ -123,7 +91,7 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
             
             #QAICc
             PLL.qaicc <- 2*(K) - 2*(loglike/overdisp.est) +
-                ((2*K*(K + 1))/(n*Time - K - 1))
+                ((2*K*(K + 1))/(n_uniq*Time - K - 1))
             select.qaicc <- which.min(PLL.qaicc)
             E.qaicc <- mu[,select.qaic]
             numclust.qaicc <- length(unique(coefs.lasso.all[,select.qaicc]))-1
@@ -135,7 +103,7 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
         else if(spacetime==TRUE & pois==TRUE){
             message("returning results for space-time Poisson model")
             #QBIC
-            PLL.qbic  <- -2*(loglike) + ((K)*log(n*Time))
+            PLL.qbic  <- -2*(loglike) + ((K)*log(n_uniq*Time))
             select.qbic <- which.min(PLL.qbic)
             E.qbic <- mu[,select.qbic]
             numclust.qbic <- length(unique(coefs.lasso.all[,select.qbic]))-1
@@ -149,7 +117,7 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
             
             #QAICc
             PLL.qaicc <- 2*(K) - 2*(loglike) +
-                ((2*K*(K + 1))/(n*Time - K - 1))
+                ((2*K*(K + 1))/(n_uniq*Time - K - 1))
             select.qaicc <- which.min(PLL.qaicc)
             E.qaicc <- mu[,select.qaic]
             numclust.qaicc <- length(unique(coefs.lasso.all[,select.qaicc]))-1
@@ -167,11 +135,11 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
             }
             offset_reg <- glm(Yx ~ 1 + offset(log(Ex)),family=poisson)
             overdisp.est <- overdisp(offset_reg, sim = FALSE, overdispfloor = overdispfloor)
-            message(paste("Overdispersion estimate:", overdisp.est))
+            message(paste("Overdispersion estimate:", round(overdisp.est,4)))
             if(pois==FALSE & is.null(overdisp.est)) warning("No overdispersion for quasi-Poisson model. Please check.")
             
             #QBIC
-            PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(n*Time))
+            PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(n_uniq*Time))
             select.qbic <- which.min(PLL.qbic)
             E.qbic <- mu[,select.qbic]
             numclust.qbic <- length(unique(coefs.lasso.all[,select.qbic]))-1
@@ -185,7 +153,7 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
             
             #QAICc
             PLL.qaicc <- 2*(K) - 2*(loglike/overdisp.est) +
-                ((2*K*(K + 1))/(n*Time - K - 1))
+                ((2*K*(K + 1))/(n_uniq*Time - K - 1))
             select.qaicc <- which.min(PLL.qaicc)
             E.qaicc <- mu[,select.qaic]
             numclust.qaicc <- length(unique(coefs.lasso.all[,select.qaicc]))-1
@@ -196,7 +164,7 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
         else if(spacetime==FALSE & pois == TRUE){
             message("Returning results for space-only  Poisson model")
             #QBIC
-            PLL.qbic  <- -2*(loglike) + ((K)*log(n*Time))
+            PLL.qbic  <- -2*(loglike) + ((K)*log(n_uniq*Time))
             select.qbic <- which.min(PLL.qbic)
             E.qbic <- mu[,select.qbic]
             numclust.qbic <- length(unique(coefs.lasso.all[,select.qbic]))-1
@@ -207,10 +175,9 @@ spacetimeLasso<- function(clusters, vectors,Time, spacetime=TRUE,pois=FALSE,over
             E.qaic <- mu[,select.qaic]
             numclust.qaic <- length(unique(coefs.lasso.all[,select.qaic]))-1
             
-            
             #QAICc
             PLL.qaicc <- 2*(K) - 2*(loglike) +
-                ((2*K*(K + 1))/(n*Time - K - 1))
+                ((2*K*(K + 1))/(n_uniq*Time - K - 1))
             select.qaicc <- which.min(PLL.qaicc)
             E.qaicc <- mu[,select.qaic]
             numclust.qaicc <- length(unique(coefs.lasso.all[,select.qaicc]))-1

@@ -4,11 +4,13 @@
 \alias{spacetimeLasso}
 \title{spacetimeLasso}
 \usage{
-spacetimeLasso(clusters, vectors, Time, spacetime = TRUE, pois = FALSE,
-  overdispfloor, cv)
+spacetimeLasso(sparseMAT, n_uniq, vectors, Time, spacetime = TRUE,
+  pois = FALSE, overdispfloor, cv)
 }
 \arguments{
-\item{clusters}{clusters dataframe from (cluster.df function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)}
+\item{sparseMAT}{large sparse matrix created in \code{clust} function.}
+
+\item{n_uniq}{number of unique polygons (ex: counties, zip code, etc). Inherited from \code{clust}.}
 
 \item{vectors}{takes in the list of expected and observed counts from setVectors function}
 

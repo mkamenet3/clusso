@@ -4,11 +4,13 @@
 \alias{spacetimeLasso_sim}
 \title{Simulations for Spatial and Spatio-Temporal Lasso}
 \usage{
-spacetimeLasso_sim(clusters, vectors.sim, Time, spacetime, pois, nsim, YSIM,
-  overdispfloor)
+spacetimeLasso_sim(sparseMAT, n_uniq, vectors.sim, Time, spacetime, pois, nsim,
+  YSIM, overdispfloor)
 }
 \arguments{
-\item{clusters}{clusters dataframe from (cluster.df function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)}
+\item{sparseMAT}{large sparse matrix created in \code{clust_sim} function.}
+
+\item{n_uniq}{number of unique polygons (ex: counties, zip code, etc). Inherited from \code{clust_sim}.}
 
 \item{vectors.sim}{takes in the list of expected and observed counts from setVectors function}
 

@@ -5,6 +5,7 @@
 #'a model with an under-estimated cluster (artificial cluster <1), and on an elevated relative risk cluster. Standard detection criteria include percent of 
 #'cells detected that are inside/outside the true cluster and percent of total potential clusters that are at least partially inside/outside the true cluster
 #'that are detected. Additional criteria with threshold options can also be specified.
+#'@param sparseMAT large sparse matrix created in \code{clust_sim} function.
 #'@param lassoresult List of QBIC, QAIC, QAICc estimates from the lasso results
 #'@param vectors.sim  dataframe of initial vectors of the observed and expected counts that went into simulation function
 #'@param rr risk ratio matrix that was used in the simulation
@@ -23,7 +24,7 @@
 #'@param y y-coordinates
 #'@param rMax Maximum radius for threshold in simulation
 #'@param thresh Default is NULL. Vector of thresholds for additional diagnostic criteria for cluster detection.
-detect_incluster <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE,nullmod, 
+detect_incluster <- function(sparseMAT,lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE,nullmod, 
                              risk.ratio,center,radius,x,y,rMax,thresh){
     message("Detection Results for:\n"
             , "\t Time Period: ", timeperiod,
@@ -37,14 +38,14 @@ detect_incluster <- function(lassoresult, vectors.sim, rr, set, timeperiod, Time
         ############################
         ##Prob in/out cluster function as function of all potential clusters
         if(is.null(thresh)){
-            clusterdetectionrates <- prob_clusteroverlap(lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh)
+            clusterdetectionrates <- prob_clusteroverlap(sparseMAT,lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh)
         }
         else{
             if(length(thresh)>1){
-                clusterdetectionrates <- lapply(1:length(thresh), function(i) prob_clusteroverlap(lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh[[i]]))
+                clusterdetectionrates <- lapply(1:length(thresh), function(i) prob_clusteroverlap(sparseMAT,lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh[[i]]))
                 }
             else{
-                clusterdetectionrates <- prob_clusteroverlap(lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh)    
+                clusterdetectionrates <- prob_clusteroverlap(sparseMAT,lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh)    
             }
             
         }
