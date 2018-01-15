@@ -34,6 +34,7 @@ Wrapper function easyplot
 }
 \examples{
 \donttest{
+mods <- c("QuasiPoisson", "Poisson")
 pdfname1 <- paste0("rrmaps.pdf")
 pdfname2 <- paste0("probabilitymaps.pdf")
 easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname1,
