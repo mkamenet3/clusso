@@ -4,10 +4,13 @@
 \alias{detect_incluster}
 \title{detect_incluster}
 \usage{
-detect_incluster(lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim,
-  under = FALSE, nullmod, risk.ratio, center, radius, x, y, rMax, thresh)
+detect_incluster(sparseMAT, lassoresult, vectors.sim, rr, set, timeperiod, Time,
+  nsim, under = FALSE, nullmod, risk.ratio, center, radius, x, y, rMax,
+  thresh)
 }
 \arguments{
+\item{sparseMAT}{large sparse matrix created in \code{clust_sim} function.}
+
 \item{lassoresult}{List of QBIC, QAIC, QAICc estimates from the lasso results}
 
 \item{vectors.sim}{dataframe of initial vectors of the observed and expected counts that went into simulation function}

@@ -5,7 +5,8 @@
 \title{clust}
 \usage{
 clust(clst, x, y, rMax, Time, utm = TRUE, byrow = TRUE, space = c("space",
-  "spacetime", "both"), overdispfloor = NULL, cv = NULL)
+  "spacetime", "both"), overdispfloor = NULL, cv = NULL,
+  collapsetime = FALSE)
 }
 \arguments{
 \item{clst}{list; output from toclust function. Must be of class clst.}
@@ -28,6 +29,8 @@ space = spacetime, or space = both.}
 \item{overdispfloor}{overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.}
 
 \item{cv}{option for cross-validation}
+
+\item{collapsetime}{Default is FALSE. Alternative definition for space-only model to instead collapse expected and observed counts across time. TODO}
 }
 \value{
 returns list of cluster detection results ready to plot
