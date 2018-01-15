@@ -1,7 +1,8 @@
 #' Simulations for Spatial and Spatio-Temporal Lasso
 #' 
 #' This function runs the Lasso regularization technique on our large sparse matric of potential space-time clusters.It is specifically created to use with simulations.
-#' @param clusters clusters dataframe from (cluster.df function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)
+#' @param sparseMAT large sparse matrix created in \code{clust_sim} function.
+#' @param n_uniq number of unique polygons (ex: counties, zip code, etc). Inherited from \code{clust_sim}.
 #' @param vectors.sim takes in the list of expected and observed counts from setVectors function
 #' @param Time number of time periods in the dataset
 #' @param spacetime indicator of whether the cluster detection method should be run on all space-time clusters(default) or on only the potential space clusters.

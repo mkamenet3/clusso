@@ -70,16 +70,16 @@ Save diagnostics into csv:
 
 ```{r}
 #save results
-filename <- paste0("jbc_analysis",".RData")
+filename <- paste0("jbc_analysis_new",".RData")
 save(res, file = filename)
 
 
 #Create Empty PDF to Map Onto
-pdfname <- paste0("jbc_analysis",".pdf")
+pdfname <- paste0("jbc_analysis_new",".pdf")
 easyplot(japan.prefect2, japan.poly2 ,pdfname, res$rrcolors, mods, space="both", probmap=FALSE, obs=TRUE,rr=TRUE)
 
 #BIC map
-pdfname <- paste0("jbc_analysisBIC",".pdf")
+pdfname <- paste0("jbc_analysisBIC_new",".pdf")
 easyplot(japan.prefect2, japan.poly2 ,pdfname, res, mods, space="BIC", probmap=FALSE,rr=TRUE)
 
 
@@ -104,7 +104,7 @@ numclust.BIC <- c(res$lassoresult.p.s$numclust.qbic, res$lassoresult.p.st$numclu
 
 #WRITE TO CSV
 print(table.clusters)
-write.csv(table.clusters, file="sampleoutput/tableclusters.csv", row.names=TRUE)
+write.csv(table.clusters, file="tableclusters_codechange.csv", row.names=TRUE)
 
 ```
 

@@ -5,6 +5,7 @@
 #'a model with an under-estimated cluster (artificial cluster <1), and on an elevated relative risk cluster. Standard detection criteria include percent of 
 #'cells detected that are inside/outside the true cluster and percent of total potential clusters that are at least partially inside/outside the true cluster
 #'that are detected. Additional criteria with threshold options can also be specified.
+#'@param sparseMAT large sparse matrix created in \code{clust_sim} function.
 #'@param lassoresult List of QBIC, QAIC, QAICc estimates from the lasso results
 #'@param vectors.sim  dataframe of initial vectors of the observed and expected counts that went into simulation function
 #'@param rr risk ratio matrix that was used in the simulation

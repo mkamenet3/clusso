@@ -67,12 +67,12 @@ Set other conditions. Right now, the null model requires to still input a center
 rMax=20
 Time=5
 #nsim=100 #number of simulations
-nsim = 20
+nsim = 2
 
 #need inputs for model to run
 center=1
 radius=18
-timeperiods = c(1:5)
+timeperiod = c(1:5)
 risk.ratio=1
 theta = 10000
 overdispfloor = TRUE
