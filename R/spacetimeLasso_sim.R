@@ -172,7 +172,7 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
         if(pois == FALSE & is.null(overdisp.est)) warning("No overdispersion for quasi-Poisson model. Please check.")
 
         #QBIC
-        PLL.qbic <- lapply(1:nsim, function(i) -2*(loglike[[i]]/overdisp.est) + ((K[[i]])*log(n)))
+        PLL.qbic <- lapply(1:nsim, function(i) -2*(loglike[[i]]/overdisp.est) + ((K[[i]])*log(n_uniq)))
         select.qbic <- lapply(1:nsim, function(i) which.min(unlist(PLL.qbic[[i]])))
         select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))
         select_muRR.qbic <- Reduce("+", select_mu.qbic)/nsim
@@ -197,7 +197,7 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
 
         #QAICc
         PLL.qaicc <- lapply(1:nsim, function(i) 2*(K[[i]]) - 2*(loglike[[i]]/overdisp.est) + 
-                                ((2*K[[i]]*(K[[i]] + 1))/(n - K[[i]] - 1)))
+                                ((2*K[[i]]*(K[[i]] + 1))/(n_uniq - K[[i]] - 1)))
         select.qaicc <- lapply(1:nsim, function(i) which.min(unlist(PLL.qaicc[[i]])))
         select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
         select_muRR.qaicc <- Reduce("+", select_mu.qaicc)/nsim
@@ -216,7 +216,7 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
         message("Returning results for space-only  Poisson model")
         #if(pois == FALSE & !is.null(overdisp.est)) stop("Overdispersion parameter estimated - model is no longer Poisson")
         #QBIC
-        PLL.qbic <- lapply(1:nsim, function(i) -2*(loglike[[i]]) + ((K[[i]])*log(n)))
+        PLL.qbic <- lapply(1:nsim, function(i) -2*(loglike[[i]]) + ((K[[i]])*log(n_uniq)))
         select.qbic <- lapply(1:nsim, function(i) which.min(unlist(PLL.qbic[[i]])))
         select_mu.qbic <- lapply(1:nsim, function(i) sapply(select.qbic[[i]], function(j) mu[[i]][,j]))
         select_muRR.qbic <- Reduce("+", select_mu.qbic)/nsim
@@ -240,7 +240,7 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
          
         #QAICc
         PLL.qaicc <- lapply(1:nsim, function(i) 2*(K[[i]]) - 2*(loglike[[i]]) + 
-                                ((2*K[[i]]*(K[[i]] + 1))/(n - K[[i]] - 1)))
+                                ((2*K[[i]]*(K[[i]] + 1))/(n_uniq - K[[i]] - 1)))
         select.qaicc <- lapply(1:nsim, function(i) which.min(unlist(PLL.qaicc[[i]])))
         select_mu.qaicc <- lapply(1:nsim, function(i) sapply(select.qaicc[[i]], function(j) mu[[i]][,j]))
         select_muRR.qaicc <- Reduce("+", select_mu.qaicc)/nsim

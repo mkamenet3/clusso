@@ -2,7 +2,6 @@ library("testthat")
 library("Matrix")
 context("In/out cluster detection works correctly")
 
-
 test_that("All parameters are correctly specified and trouble-shooted in clust_sim", {
     ##################
     #Set- up for test 
@@ -52,7 +51,7 @@ test_that("All parameters are correctly specified and trouble-shooted in clust_s
     )
     
     #test the function - should not find anything inside and finds everything outside
-    moo <- prob_clusteroverlap(lassoresult, rr, risk.ratio, x, y, rMax, nsim,Time,thresh)
+    moo <- prob_clusteroverlap(sparseMAT,lassoresult, rr, risk.ratio, x, y, rMax, nsim,Time,thresh)
     expect_equal(moo$notinperc.bic, as.character(paste0(100,"%")))
     expect_equal(moo$notinperc.aic, as.character(paste0(100,"%")))
     expect_equal(moo$inperc.bic, as.character(paste0(0,"%")))
