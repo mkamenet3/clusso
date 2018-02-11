@@ -127,17 +127,17 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
     else{
         nullmod<-NULL
     }
-    if(is.infinite(theta)){
+    if(is.null(theta)){
+        theta <- 1000
+        message("Running model with default theta value of 1000")
+    }
+    else if(is.infinite(theta)){
         theta <- theta
         message("Running model with no overdispersion (pure Poisson model)")
     }
     else if(!is.null(theta) & !is.infinite(theta)){
         theta <- theta
         message("Running model with user-specified theta value")
-    }
-    else{
-        theta <- 1000
-        message("Running model with default theta value of 1000")
     }
     if(!is.null(threshold)){
         thresh <- threshold
