@@ -22,7 +22,7 @@ library("clust")
 ```
 
 
-## Running the Null Model (no cluster to detect)
+## Running the Null Model (no cluster to detect) with minimal overdispersion
 
 For speed, I set $nsim=2$, but you should feel free to ramp this up to 100. No covariates are shown here.
 
@@ -66,7 +66,7 @@ y=utmJapan$utmy/1000
 
 ```
 
-Set other conditions. Right now, the null model requires to still input a center and radius even for the null case, but this will be adjusted in future versions.
+Set other conditions. Right now, the null model requires to still input a center and radius even for the null case, but this will be adjusted in future versions. For poisson model with no overdispersion, set ```theta=Inf```.
 
 ```{r}
 rMax=20
@@ -79,7 +79,8 @@ center=1
 radius=18
 timeperiod = c(1:5)
 risk.ratio=1
-theta = 1000
+#theta = 1000
+theta = Inf
 overdispfloor = TRUE
 nullmod <- NULL
 table.detection.null <- NULL

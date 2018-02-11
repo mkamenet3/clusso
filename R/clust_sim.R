@@ -127,7 +127,11 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
     else{
         nullmod<-NULL
     }
-    if(!is.null(theta)){
+    if(is.infinite(theta)){
+        theta <- theta
+        message("Running model with no overdispersion (pure Poisson model)")
+    }
+    else if(!is.null(theta) & !is.infinite(theta)){
         theta <- theta
         message("Running model with user-specified theta value")
     }
@@ -240,8 +244,14 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     Period <- init$Year
     
     #Simulate observed as NB(Eit, theta)
-    YSIM <- lapply(1:nsim, function(i) MASS::rnegbin(E1, theta = theta))
-    YSIM.s <- lapply(1:nsim, function(i) MASS::rnegbin(E1.s, theta = theta))
+    if(is.infinite(theta)){
+        YSIM <- lapply(1:nsim, function(i) rpois(length(E1), lambda = E1))
+        YSIM.s <- lapply(1:nsim, function(i) rpois(length(E1.s), lambda = E1.s))
+    }
+    else{
+        YSIM <- lapply(1:nsim, function(i) MASS::rnegbin(E1, theta = theta))
+        YSIM.s <- lapply(1:nsim, function(i) MASS::rnegbin(E1.s, theta = theta))
+    }
     
     #Scale
     Ex <- scale_sim(YSIM, init, nsim, Time)
