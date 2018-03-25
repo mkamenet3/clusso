@@ -578,3 +578,108 @@ print(table.detection)
 
 ```
 
+
+## Running Simulation Varying the Background Rate
+
+Instead of varying the relative risk inside the cluster we can instead vary the background risk rate and explore how well our method does if the background rate is larger or smaller. The initial set-up will be similar.
+
+
+```{r}
+#load data
+data("japanbreastcancer")
+
+#inspect
+head(utmJapan)
+head(dframe.poly2)
+head(dframe.prefect2)
+head(japanbreastcancer)
+
+#take what we need
+japan.poly2 <- dframe.poly2[,2:3]
+japan.prefect2 <- dframe.prefect2[,2:5]
+```
+
+Set-up initial inputs:
+
+```{r}
+#Initial inputs
+mods <- c("QuasiPoisson", "Poisson")
+x <- utmJapan$utmx/1000
+y <- utmJapan$utmy/1000
+rMax <- 20 
+Time <- 5
+overdispfloor <- TRUE
+#nsim <- 100
+nsim <- 2 #again, nsim is limited to 100 here for illustration only. For an actual simulation, nsim=100 is recommended
+threshold <- c(0.9, 0.5)
+mods <- c("QuasiPoisson", "Poisson")
+```
+
+```{r}
+center <- 150 #can take values 1 - 208 because we have a total of 208 centroids
+radius <- 18
+timeperiod <- c(3:5)
+
+#Change in syntax here:
+background.rate <- 0.5
+risk.ratio <- 1
+
+#as before
+nullmod <- NULL #set to NULL if we want to run non-null model (model with a cluster we've created)
+theta <- NULL #with minimal overdispersion (default is 1000). No option for absolutely no overdispersion (yet) TODO
+table.detection <- NULL
+
+```
+
+
+Run the model with varying background rate:
+
+```{r}
+japanbreastcancer <- japanbreastcancer[,-1] #need to get rid of id's
+
+clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, observed = japanbreastcancer$death, timeperiod = japanbreastcancer$period, covars=FALSE)
+
+system.time(res <- clust_sim(clst, x, y,rMax,Time, nsim,center, radius, risk.ratio, timeperiods, 
+                             utm=TRUE, byrow=TRUE, threshold, space= "both", theta, nullmod, overdispfloor,
+                             background.rate=background.rate))
+```
+
+###Diagnostics and Maps
+
+```{r}
+#save results
+(sim.i <- paste0("sim","_","center","_",center,"radius",radius,"_", "start",
+                 "_",as.numeric(paste(timeperiods, collapse = "")),"_","rr","_",gsub("[.]","",risk.ratio)))
+(filename <- paste0(sim.i,"_bkgrndratesimexample.RData"))
+save(res, file = filename)
+
+#Print Detection for the Simulation
+(tabn <- rbind("******",cbind(radius,risk.ratio,center,time=as.numeric(paste(timeperiods, collapse = "")), mod = "ST",
+                              rbind("QuasiPois",res$detect.out.qp.st), rbind("Pois",res$detect.out.p.st)),
+               cbind(radius,risk.ratio,center,time=as.numeric(paste(timeperiods, collapse = "")), mod = "Space",
+                     rbind("QuasiPois",res$detect.out.qp.s), rbind("Pois",res$detect.out.p.s))))
+
+#WRITE TO CSV
+print(tabn)
+write.csv(tabn, file="tabledetection_bkgrndratesimexample.csv", row.names=TRUE)
+
+
+```
+
+
+Making more maps!
+
+
+```{r}
+pdfname1 <- paste0("rrmaps_bkgrndratesimexample.pdf")
+pdfname2 <- paste0("probabilitymaps_bkgrndratesimexample.pdf")
+pdfname3 <- paste0("probmapsthresh1_bkgrndratesimexample.pdf")
+pdfname4 <- paste0("probmapsthresh2_bkgrndratesimexample.pdf")
+
+
+easyplot(japan.prefect2, japan.poly2 ,pdfname1, res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL, rr=TRUE)
+easyplot(japan.prefect2, japan.poly2 ,pdfname2, res$probcolors, mods, space="both", probmap=TRUE, obs = NULL, rr=FALSE)
+
+
+```
+
