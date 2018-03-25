@@ -24,7 +24,7 @@ library("clust")
 
 ## Running the Null Model (no cluster to detect) with minimal overdispersion
 
-For speed, I set $nsim=2$, but you should feel free to ramp this up to 100. No covariates are shown here.
+For speed, I set *nsim=2*, but you should feel free to ramp this up to 100. No covariates are shown here.
 
 ### Prepare Data
 
@@ -79,8 +79,8 @@ center=1
 radius=18
 timeperiod = c(1:5)
 risk.ratio=1
-#theta = 1000
-theta = Inf
+theta = 1000
+#theta = Inf #if theta=Inf, this will run the pure Poisson model with no overdispersion at all.
 overdispfloor = TRUE
 nullmod <- NULL
 table.detection.null <- NULL
@@ -91,7 +91,7 @@ table.detection.null <- NULL
 ### Running the models
 
 
-Run the null model and store results into object $res$.
+Run the null model and store results into object *res*.
 
 ```{r}
 japanbreastcancer<- japanbreastcancer[,-1] #get rid of id column to use clst function
@@ -108,7 +108,7 @@ system.time(res <- clust_sim(clst, x,y,rMax, Time,
 
 ### Diagnostics and Maps
 
-Save diagnostics into csv. The csv will save into the \textit{vignettes} folder. To save somewhere else, change the file path where I set $filename$.
+Save diagnostics into csv. The csv will save into the \textit{vignettes} folder. To save somewhere else, change the file path where I set *filename*.
 
 ```{r}
 
@@ -152,7 +152,7 @@ Make some maps!
     - "QuasiPoissonspace.pdf"
     - "QuasiPoissonST.pdf"
 
-- It is the responsibility of the user to keep track of which are the probability results (% of $nsim$) versus relative risk maps.
+- It is the responsibility of the user to keep track of which are the probability results (% of *nsim*) versus relative risk maps.
 
 ```{r}
 #set file names for the maps - you can change these to be whatever you want.
@@ -168,7 +168,7 @@ easyplot(japan.prefect2, japan.poly2 , pdfname2, res$probcolors, mods, space="bo
 #make the threshold maps too!
 ```
 
-In the code above, I also specify a parameter called ```threshold <- c(0.9, 0.5)```. This is an additional diagnostic that you can plot, but is not automatic. This will plot the percent of $nsim$ simulations where coverage of the detected cluster is at least 90%/50% of the true cluster. This is mostly used for the parameter sweep (below) as an additional visualization and is still in development (as of 1-15-2018).
+In the code above, I also specify a parameter called ```threshold <- c(0.9, 0.5)```. This is an additional diagnostic that you can plot, but is not automatic. This will plot the percent of *nsim* simulations where coverage of the detected cluster is at least 90%/50% of the true cluster. This is mostly used for the parameter sweep (below) as an additional visualization and is still in development (as of 1-15-2018).
 
 ```{r}
 #set threshold pdf names
@@ -489,14 +489,14 @@ nsim=2 #change number of simulations. nsim set to 2 here for illustration
 ```
 
 - The parameters you can explore in the model are:
-    - $centers$ - different centroids across the model that can serve as the cluster center
-    - $radii$ - various radii distances the cluster can take
-    - $timeperiods$ - the cluster can exist across different time periods. Currently (as of 1-15-2018), the time periods do need to be sequential. For example, if there are a total of 5 time periods, the cluster cannot exist in period 1 and then period 4. TODO.
-    - $risk.ratios$ - the relative risk of the cluster compared to the background rate of the area.
+    - *centers* - different centroids across the model that can serve as the cluster center
+    - *radii* - various radii distances the cluster can take
+    - *timeperiods* - the cluster can exist across different time periods. Currently (as of 1-15-2018), the time periods do need to be sequential. For example, if there are a total of 5 time periods, the cluster cannot exist in period 1 and then period 4. TODO.
+    - *risk.ratios* - the relative risk of the cluster compared to the background rate of the area.
 
 - Additional modifications you can include:
-    - $theta$ - default is 1000 (minimal overdispersion). Our simulations explore both this case and the case when ```theta=2``` which includes a lot of overdispersion. This was to illustrate how our model performs under various schemes and the user can also set this various values, especially depending on the subject area.
-    - $overdispfloor$ - default is TRUE (we do not allow for underdispersion). However, the user can set ```overdispfloor <- FALSE``` to allow for it
+    - *theta* - default is 1000 (minimal overdispersion). Our simulations explore both this case and the case when ```theta=2``` which includes a lot of overdispersion. This was to illustrate how our model performs under various schemes and the user can also set this various values, especially depending on the subject area.
+    - *overdispfloor* - default is TRUE (we do not allow for underdispersion). However, the user can set ```overdispfloor <- FALSE``` to allow for it
 
 
 ```{r}
