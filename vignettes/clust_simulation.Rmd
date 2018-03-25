@@ -609,8 +609,8 @@ y <- utmJapan$utmy/1000
 rMax <- 20 
 Time <- 5
 overdispfloor <- TRUE
-#nsim <- 100
-nsim <- 2 #again, nsim is limited to 100 here for illustration only. For an actual simulation, nsim=100 is recommended
+nsim <- 100
+#nsim <- 2 #again, nsim is limited to 100 here for illustration only. For an actual simulation, nsim=100 is recommended
 threshold <- c(0.9, 0.5)
 mods <- c("QuasiPoisson", "Poisson")
 ```
@@ -679,6 +679,148 @@ pdfname4 <- paste0("probmapsthresh2_bkgrndratesimexample.pdf")
 
 easyplot(japan.prefect2, japan.poly2 ,pdfname1, res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL, rr=TRUE)
 easyplot(japan.prefect2, japan.poly2 ,pdfname2, res$probcolors, mods, space="both", probmap=TRUE, obs = NULL, rr=FALSE)
+
+
+```
+
+
+## Running Background Rate Model with Multiple Background Rates
+
+To explore how detection works when the background rate is varied, we can perform a similar large-scale simulation varying our multiple parameters.
+
+
+```{r}
+#load data
+data("japanbreastcancer")
+
+#inspect
+head(utmJapan)
+head(dframe.poly2)
+head(dframe.prefect2)
+head(japanbreastcancer)
+
+#take what we need
+japan.poly2 <- dframe.poly2[,2:3]
+japan.prefect2 <- dframe.prefect2[,2:5]
+```
+
+
+```{r}
+#Set initial
+#Set Some Initial Conditions
+x=utmJapan$utmx/1000
+y=utmJapan$utmy/1000
+rMax=20
+Time=5
+#nsim=100
+nsim=2 #change number of simulations. nsim set to 2 here for illustration
+
+```
+
+
+```{r}
+#set different combinations of parameters.
+centers <- c(150)
+radii <- c(9,18)
+timeperiods <- list(c(3:5))
+risk.ratios <- c(1.5, 2)
+background.rates <- c(0.5,2)
+nullmod = NULL
+thetas = c(Inf, 2, 1000) #with lots overdispersion. For no overdispersion, set theta = NULL
+overdispfloor <- TRUE
+
+table.detection <- NULL
+```
+
+Run the huge model:
+
+
+```{r}
+#tester
+for(cent in centers){
+    for(rad in radii){
+        for(tim in timeperiods){
+            for(risk in risk.ratios){
+                for(thet in thetas){
+                    for(back in background.rates){
+                        #print(c(cent, rad, tim, risk,back,theta))
+                        print(paste0("sim","_","bkgrd","_",back,"radius",rad,"_", "theta",
+                                         "_",as.character(thet),"_",
+                                         "rr","_",gsub("[.]","",risk)))
+                    }
+                    
+                }
+            }
+        }
+    }
+}
+
+```
+
+
+
+```{r}
+for(cent in centers){
+    for(rad in radii){
+        for(tim in timeperiods){
+            for(risk in risk.ratios){
+                for(thet in thetas){
+                    for(back in background.rates){
+                        print(c(cent, rad, tim, risk,back,thet))
+                        system.time(res <- clust_sim(clst,x, y,rMax,Time,
+                                                     nsim,cent, rad, risk, tim, utm=TRUE, byrow=TRUE, threshold, 
+                                                     space= "both", thet, nullmod, overdispfloor,
+                                                     background.rate = back))
+                        #save results
+                        (sim.i <- paste0("sim","_","bkgrd","_",back,"radius",rad,"_", "theta",
+                                         "_",as.character(thet),"_",
+                                         "rr","_",gsub("[.]","",risk)))
+                        filename <- paste0(sim.i,".RData")
+                        save(res, file = filename)
+                        
+                        #Print Detection for the Simulation
+                        (tabn <- rbind("******",cbind(rad,risk,cent,back,thet,
+                                                      time=as.numeric(paste(tim, collapse = "")),
+                                                      mod = "ST", rbind("QuasiPois",res$detect.out.qp.st),
+                                                      rbind("Pois",res$detect.out.p.st)),
+                                       cbind(rad,risk,cent,back,thet,time=as.numeric(paste(tim, collapse = "")),
+                                             mod = "Space",
+                                             rbind("QuasiPois",res$detect.out.qp.s),
+                                             rbind("Pois",res$detect.out.p.s))))
+                        table.detection <- rbind(table.detection, tabn)
+                        
+                        #Print Descriptives
+                        
+                        #make maps
+                        ##pdfnames
+                        pdfnamerr <- paste0("OUT/sim","_","bkgrd","_",back,"radius",rad,"_", "theta",
+                                            "_",as.character(thet),
+                                            "_","rr","_",gsub("[.]","",risk),"RR.pdf")
+                        pdfnameprob <- paste0("OUT/sim","_","bkgrd","_",back,"radius",rad,"_", "theta",
+                                              "_",as.character(thet),
+                                              "_","rr","_",gsub("[.]","",risk),"prob.pdf")
+                        pdfnamethresh1 <- paste0("OUT/sim","_","bkgrd","_",back,"radius",rad,"_", "theta",
+                                                 "_",as.character(thet),
+                                                 "_","rr","_",gsub("[.]","",risk),"thr1.pdf")
+                        pdfnamethresh2 <- paste0("OUT/sim","_","bkgrd","_",back,"radius",rad,"_", "theta",
+                                                 "_",as.character(thet),
+                                                 "_","rr","_",gsub("[.]","",risk),"thr2.pdf")
+                        ##maps
+                        easyplot(japan.prefect2, japan.poly2 ,pdfnamerr, res$rrcolors, mods,
+                                 space="both",probmap=FALSE, obs=NULL, rr=TRUE)
+                        easyplot(japan.prefect2, japan.poly2 , pdfnameprob, res$probcolors, mods,
+                                 space="both",probmap=TRUE, obs=NULL, rr=FALSE)
+                        easyplot(japan.prefect2, japan.poly2 ,pdfnamethresh1, res$probcolors.thresh1, mods,
+                                 space="both",probmap=TRUE, obs=NULL, rr=FALSE)
+                        easyplot(japan.prefect2, japan.poly2 , pdfnamethresh2, res$probcolors.thresh2, mods,
+                                 space="both",probmap=TRUE, obs=NULL, rr=FALSE)
+                        
+                    }
+                }
+            }
+        }
+    }
+}
 
 
 ```
