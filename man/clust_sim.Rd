@@ -7,7 +7,7 @@
 clust_sim(clst, x, y, rMax, Time, nsim, center, radius, risk.ratio, timeperiod,
   utm = TRUE, byrow = TRUE, threshold, space = c("space", "spacetime",
   "both"), theta = NULL, nullmod = NULL, overdispfloor,
-  collapsetime = FALSE)
+  collapsetime = FALSE, background.rate = NULL)
 }
 \arguments{
 \item{clst}{list; output from toclust function. Must be of class clst.}
@@ -48,6 +48,8 @@ space = spacetime, or space = both.}
 \item{overdispfloor}{overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.}
 
 \item{collapsetime}{alternative definition for space-only model to instead collapse expected and observed counts across time. TODO}
+
+\item{background.rate}{option to specify varying background rate instead of varying cluster rate for simulation. Default is null. If this option is specified, risk.ratio must be set to "background".}
 }
 \value{
 returns list of lists

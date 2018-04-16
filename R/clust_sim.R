@@ -59,6 +59,7 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init){
 #'@param nullmod default is NULL; otherwise will run null model
 #'@param overdispfloor overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
 #'@param collapsetime alternative definition for space-only model to instead collapse expected and observed counts across time. TODO
+#'@param background.rate option to specify varying background rate instead of varying cluster rate for simulation. Default is null. If this option is specified, risk.ratio must be set to "background".
 #'@return returns list of lists
 #'@export
 #'@examples
@@ -87,7 +88,7 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init){
 #'}
 clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio, 
                           timeperiod, utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"), 
-                      theta = NULL,nullmod=NULL, overdispfloor,collapsetime=FALSE){
+                      theta = NULL,nullmod=NULL, overdispfloor,collapsetime=FALSE, background.rate=NULL){
     if(is(clst, "clst")!=TRUE) stop("clst element not of class `clst`. This is required for the clust_sim function.")
     expected <- clst$required_df$expected
     observed <- clst$required_df$observed
@@ -127,6 +128,19 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
     else{
         nullmod<-NULL
     }
+    
+    #####
+    message(paste0("Background rate: ", background.rate))
+    if(isTRUE(!is.null(background.rate))){
+        background.rate <- background.rate
+        message("Running model with varying background rate.")
+    }
+    else{
+        background.rate <- NULL
+        message("Running model with varying rate inside cluster.")
+    }
+    
+    #####
     if(is.null(theta)){
         theta <- 1000
         message("Running model with default theta value of 1000")
@@ -153,7 +167,7 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
            # space = 
            # spacetime = 
            both = clustAll_sim(x, y, rMax,period, expected, observed, covars, Time, nsim, center, radius, risk.ratio,
-                                     timeperiod,utm, byrow, thresh, theta, nullmod, overdispfloor, collapsetime))
+                                     timeperiod,utm, byrow, thresh, theta, nullmod, overdispfloor, collapsetime,background.rate))
 }
 
 
@@ -186,13 +200,14 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
 #'@param nullmod if TRUE, then null models will be run. Otherwise, default is null.
 #'@param overdispfloor overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
 #'@param collapsetime alternative definition for space-only model to instead collapse expected and observed counts across time. TODO
+#'@param background.rate option to specify varying background rate instead of varying cluster rate for simulation. Default is null. If this option is specified, risk.ratio must be set to "background".
 #'@inheritParams clust_sim
 #'@return returns list of lists
 
 
 clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, nsim, center, radius, risk.ratio, 
                                timeperiod,utm, byrow, thresh, theta = theta, nullmod=nullmod,
-                         overdispfloor=overdispfloor, collapsetime=FALSE){
+                         overdispfloor=overdispfloor, collapsetime=FALSE, background.rate){
     message("Running both Space and Space-Time Models")
     
     #set up clusters and fitted values
@@ -212,13 +227,11 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
         tmp <- clusters[clusters$center==center,]
     }
     cluster <- tmp[(tmp$r <= radius),]
-    
     #create rr (space-time) and rr.s (space-only) matrices of 1's
     rr = matrix(1, nrow=n, ncol=Time)
     rr.s = matrix(1, nrow=n, ncol=Time)
-    
     ##Space-time
-    #Create cluster across the time periods
+    #Create cluster across the time periods either inside cluster or background
     timelength <- length(timeperiod)
     if(timelength > 1){
         rr[cluster$last, timeperiod[1]:tail(timeperiod, n=1)] <- risk.ratio
@@ -228,20 +241,25 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
         rr[cluster$last, timeperiod:Time] = risk.ratio
         message(paste("Running model for period",timeperiod[1]))
     }
-    #check for errors
-    #if(isTRUE(all.equal(timeperiod,which(unique(rr, fromLast=TRUE)[1,]!=1)))==FALSE) stop("Timeperiods not equal to time elements in space-time rr matrix.")
-    
     ##Space-only
-    allTime <- 1:Time
-    rr.s[cluster$last, allTime[1]:tail(allTime, n=1)] <- risk.ratio
-    #Check for errors
-    #if(isTRUE(all.equal(allTime,which(unique(rr.s, fromLast=TRUE)[1,]!=1)))==FALSE) stop("Timeperiods not equal to time elements in space-only rr.s matrix.")
-    
+    else{
+        allTime <- 1:Time
+        rr.s[cluster$last, allTime[1]:tail(allTime, n=1)] <- risk.ratio    
+    }
     ##Expected Counts and simulations
     #Expected matrices
-    E1 <- as.vector(rr)*init$E0
-    E1.s <- as.vector(rr.s)*init$E0
+    if(isTRUE(!is.null(background.rate))){
+        message("BACKGROUND RATE")
+        ###########TODO
+        E1 <- background.rate*as.vector(rr)*init$E0
+        E1.s <- background.rate*as.vector(rr)*init$E0
+    }
+    else{
+        E1 <- as.vector(rr)*init$E0
+        E1.s <- as.vector(rr.s)*init$E0
+    }
     Period <- init$Year
+    
     
     #Simulate observed as NB(Eit, theta)
     if(is.infinite(theta)){
@@ -271,7 +289,6 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
 ####################################################################################
 ####################################################################################
 ####################################################################################    
-#TEST THIS CHUNK    
     n_uniq <- length(unique(clusters$center))
     potClus <- n_uniq
     numCenters <- n_uniq
@@ -290,14 +307,10 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
             covars<- NULL
         }
     }
-#TEST THIS CHUNK        
 ####################################################################################
 ####################################################################################
 ####################################################################################    
-    
-
-    
-    
+     
     # #SPACE-ONLY MODELS
     #set up and run simulation models
     message("RUNNING: SPACE-ONLY QUASI-POISSON")
