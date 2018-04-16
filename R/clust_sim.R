@@ -507,10 +507,10 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     SOAR::Remove(sparseMAT)
     
     #RETURN
-    return(list(lassoresult.qp.st = lassoresult.qp.st,
-                lassoresult.p.st = lassoresult.p.st,
-                lassoresult.qp.s = lassoresult.qp.s,
-                lassoresult.p.s = lassoresult.p.s,
+    return(list(lassoresult.qp.st = lassoresult.qp.st$lasso_out,
+                lassoresult.p.st = lassoresult.p.st$lasso_out,
+                lassoresult.qp.s = lassoresult.qp.s$lasso_out,
+                lassoresult.p.s = lassoresult.p.s$lasso_out,
                 riskratios = riskratios,
                 rrcolors = rrcolors,
                 probrates = probrates,

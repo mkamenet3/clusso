@@ -61,27 +61,7 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
     message("Selecting best paths")
     
     ############################################
-    #Find lambda where new coef introduced
-    changepoints_ix <- lapply(1:nsim, function(k) which(diff(K[[k]])!=0))
-    #check no oscillation
-    K_changepoints <- lapply(1:nsim, function(k) K[[k]][changepoints_ix[[k]]])
-    # if(isTRUE(all.equal(test, unique(test)))!=TRUE){
-    #     #CODE to take latest change point
-    # }
-    lambda_changepoint <- lapply(1:nsim, function(k) lasso[[k]]$lambda[changepoints_ix[[k]]])
-    coefs <- coefs.lasso.all[[1]][which(coefs.lasso.all[[1]][,select.qbic[[1]]]!=0), changepoints_ix[[1]]]
-    # coefs_changepoint <- lapply(1:nsim, function(k) xbetaPath[[k]][,changepoints_ix[[k]]])
-    # coefs_changepoint_nonzero_ix <- which(coefs_changepoint[[1]]!=0, arr.ind=TRUE)[,1]
-    #test plotting
     
-    # #####THIS PLOTTING WORKS! FIgure out better way to extract this
-    # plot(log(lambda_changepoint[[1]]),coefs[7,], type="b", pch=19, ylim=c(-0.1,0.35));
-    # lines(log(lambda_changepoint[[1]]),coefs[6,],type="b", pch=19, col="red");
-    # lines(log(lambda_changepoint[[1]]),coefs[5,],type="b", pch=19, col="blue");
-    # lines(log(lambda_changepoint[[1]]),coefs[4,],type="b", pch=19, col="green");
-    # lines(log(lambda_changepoint[[1]]),coefs[3,],type="b", pch=19, col="purple");
-    # lines(log(lambda_changepoint[[1]]),coefs[2,],type="b", pch=19, col="orange");
-    # lines(log(lambda_changepoint[[1]]),coefs[1,],type="b", pch=19, col="yellow")
     # ############################################
     
     
@@ -235,9 +215,61 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
         select_muRR.qaicc <- Reduce("+", select_mu.qaicc)/nsim
         E.qaicc <- select_muRR.qaicc
         numclust.qaicc <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaicc[[i]]]))-1)
-     }
+    }
     
-    return(list(lasso = lasso, nsim = nsim, E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc,Ex = Ex,mu = mu, Yx = Yx, PLL.qbic = PLL.qbic, 
+    #Return only changepoints from lasso
+    changepoints_ix <- lapply(1:nsim, function(k) which(diff(K[[k]])!=0)) #Find lambda where new coef introduced
+    #check no oscillation
+    K_changepoints <- lapply(1:nsim, function(k) K[[k]][changepoints_ix[[k]]])
+    K_lambda <- lapply(1:nsim, function(k) lasso[[k]]$lambda)
+    #K_changepoints_unique <- lapply(1:nsim, function(k) unique(K[[k]][changepoints_ix[[k]]]))
+    
+    
+    # if(isTRUE(all.equal(K_changepoints, K_changepoints_unique))!=TRUE){
+    #     oscill_ix <- which(!K_changepoints %in% K_changepoints_unique)
+    #     keep <- array(NA, length(K_changepoints_unique[[oscill_ix]]))
+    #     for (i in length(K_changepoints[[oscill_ix]])-1:1){
+    #         print(i)
+    #          if(K_changepoints[[i]]==K_changepoints[[i]]+1){
+    #             keep[i] <- 
+    #          }
+    #         # else{
+    #         #     
+    #         # }
+    #     }
+    # 
+    # }
+    lambda_changepoint <- lapply(1:nsim, function(k) lasso[[k]]$lambda[changepoints_ix[[k]]])
+    #QIC
+    coefs_qbic <- lapply(1:nsim, 
+                         function(k) coefs.lasso.all[[k]][which(coefs.lasso.all[[k]][,select.qbic[[k]]]!=0), changepoints_ix[[k]]])
+    coefs_qaic <- lapply(1:nsim, 
+                         function(k) coefs.lasso.all[[k]][which(coefs.lasso.all[[k]][,select.qaic[[k]]]!=0), changepoints_ix[[k]]])
+    coefs_qaicc <- lapply(1:nsim, 
+                         function(k) coefs.lasso.all[[k]][which(coefs.lasso.all[[k]][,select.qaicc[[k]]]!=0), changepoints_ix[[k]]])
+
+    #coefs_qbic <- coefs.lasso.all[[1]][which(coefs.lasso.all[[1]][,select.qbic[[1]]]!=0), changepoints_ix[[1]]]
+    #coefs_qbic <- coefs.lasso.all[[1]][which(coefs.lasso.all[[1]][,select.qbic[[1]]]!=0), changepoints_ix[[1]]]
+    # coefs_changepoint <- lapply(1:nsim, function(k) xbetaPath[[k]][,changepoints_ix[[k]]])
+    # coefs_changepoint_nonzero_ix <- which(coefs_changepoint[[1]]!=0, arr.ind=TRUE)[,1]
+    #test plotting
+    # #####THIS PLOTTING WORKS! FIgure out better way to extract this
+    # plot(log(lambda_changepoint[[1]]),coefs[7,], type="b", pch=19, ylim=c(-0.1,0.35));
+    # lines(log(lambda_changepoint[[1]]),coefs[6,],type="b", pch=19, col="red");
+    # lines(log(lambda_changepoint[[1]]),coefs[5,],type="b", pch=19, col="blue");
+    # lines(log(lambda_changepoint[[1]]),coefs[4,],type="b", pch=19, col="green");
+    # lines(log(lambda_changepoint[[1]]),coefs[3,],type="b", pch=19, col="purple");
+    # lines(log(lambda_changepoint[[1]]),coefs[2,],type="b", pch=19, col="orange");
+    # lines(log(lambda_changepoint[[1]]),coefs[1,],type="b", pch=19, col="yellow")
+    lasso_out <- list(
+        lambdas = lambda_changepoint,
+        coefs_bic = coefs_qbic,
+        coefs_aic = coefs_qaic,
+        coefs_aicc = coefs_qaicc
+    )
+    
+    
+    return(list(lasso = lasso, lasso_out=lasso_out, nsim = nsim, E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc,Ex = Ex,mu = mu, Yx = Yx, PLL.qbic = PLL.qbic, 
                 PLL.qaic = PLL.qaic, PLL.qaicc = PLL.qaicc, select.qbic = select.qbic, select.qaic = select.qaic, 
                 select.qaicc = select.qaicc, select_mu.qbic = select_mu.qbic, select_mu.qaic = select_mu.qaic, 
                 select_mu.qaicc = select_mu.qaicc, xbetaPath = xbetaPath, coefs.lasso.all = coefs.lasso.all,
