@@ -221,10 +221,10 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byr
     
     SOAR::Remove(sparseMAT)
     
-    return(list(lassoresult.p.st = lassoresult.p.st,
-                lassoresult.qp.st = lassoresult.qp.st,
-                lassoresult.p.s = lassoresult.p.s,
-                lassoresult.qp.s = lassoresult.qp.s,
+    return(list(lassoresult.p.st = lassoresult.p.st$lasso_out,
+                lassoresult.qp.st = lassoresult.qp.st$lasso_out,
+                lassoresult.p.s = lassoresult.p.s$lasso_out,
+                lassoresult.qp.s = lassoresult.qp.s$lasso_out,
                 riskratios = riskratios,
                 rrcolors = rrcolors,
                 init.vec = vectors,

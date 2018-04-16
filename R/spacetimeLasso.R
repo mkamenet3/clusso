@@ -39,10 +39,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
     timeMat <- Matrix(model.matrix(~ time_period - 1), sparse=TRUE)
     #add this to sparsemat
     sparseMAT <- cBind(sparseMAT, timeMat)
-    
-    
     ############################################
-    
     #Run
     message("Running Lasso - stay tuned")
     if(!is.null(cv)){
@@ -195,8 +192,24 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
             E.qaicc <- mu[,select.qaic]
             numclust.qaicc <- length(unique(coefs.lasso.all[,select.qaicc]))-1
         }
+        #Return only changepoints from lasso
+        changepoints_ix <- which(diff(K)!=0) #Find lambda where new coef introduced
+        lambda_changepoint <- lasso$lambda[changepoints_ix]
+        #QIC
+        coefs_qbic <- coefs.lasso.all[which(coefs.lasso.all[,select.qbic]!=0), changepoints_ix]
+        coefs_qaic <-  coefs.lasso.all[which(coefs.lasso.all[,select.qaic]!=0), changepoints_ix]
+        coefs_qaicc <- coefs.lasso.all[which(coefs.lasso.all[,select.qaicc]!=0), changepoints_ix]
+        
+        lasso_out <- list(
+            lambdas = lambda_changepoint,
+            coefs_bic = coefs_qbic,
+            coefs_aic = coefs_qaic,
+            coefs_aicc = coefs_qaicc
+        )
+        
         res <- list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, numclust.qaic = numclust.qaic,
-                    numclust.qaicc = numclust.qaicc, numclust.qbic= numclust.qbic, Ex = Ex, Yx = Yx, lasso = lasso, K = K)
+                    numclust.qaicc = numclust.qaicc, numclust.qbic= numclust.qbic, Ex = Ex, Yx = Yx, 
+                    lasso = lasso, lasso_out=lasso_out,K = K)
     }
     return(res)
 }
