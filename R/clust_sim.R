@@ -130,7 +130,7 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
     }
     
     #####
-    message(paste0("Background rate: ", background.rate))
+    #message(paste0("Background rate: ", background.rate))
     if(isTRUE(!is.null(background.rate))){
         background.rate <- background.rate
         message("Running model with varying background rate.")

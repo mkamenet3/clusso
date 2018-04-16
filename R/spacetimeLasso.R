@@ -32,17 +32,30 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
     Ex <- vectors$Ex
     Yx <- vectors$Y.vec
     Period <- vectors$Period
+    
+    ############################################
+    ####Create time matrix - not lasso'd
+    time_period <- factor(rep(1:Time, each=n_uniq))
+    timeMat <- Matrix(model.matrix(~ time_period - 1), sparse=TRUE)
+    #add this to sparsemat
+    sparseMAT <- cBind(sparseMAT, timeMat)
+    
+    
+    ############################################
+    
     #Run
     message("Running Lasso - stay tuned")
     if(!is.null(cv)){
         message("Path selection: cross-validation")
         lasso <- glmnet::cv.glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex), nlambda = 2000, 
-                                   standardize = FALSE, intercept=FALSE,dfmax = 10, nfolds = cv) 
+                                   standardize = FALSE, intercept=FALSE,dfmax = 10, 
+                                   nfolds = cv, exclude=(ncol(sparseMAT)-(Time-1)):ncol(sparseMAT)) 
     }
     else{
         message("Path selection: information criteria")
         lasso <- glmnet::glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex), nlambda = 2000, 
-                                standardize = FALSE, intercept=FALSE,dfmax = 10) 
+                                standardize = FALSE, intercept=FALSE,dfmax = 10, 
+                                exclude=(ncol(sparseMAT)-(Time-1)):ncol(sparseMAT)) 
     }
     message("Lasso complete - extracting estimates and paths")
     coefs.lasso.all <- coef(lasso)[-1,]

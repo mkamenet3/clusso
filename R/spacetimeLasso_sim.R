@@ -29,18 +29,61 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
     Ex <- vectors.sim$Ex
     Yx <- YSIM
     Period <- vectors.sim$Period
+    ############################################
+    ####Create time matrix - not lasso'd
+    time_period <- factor(rep(1:Time, each=n_uniq))
+    timeMat <- Matrix(model.matrix(~ time_period - 1), sparse=TRUE)
+    #add this to sparsemat
+    sparseMAT <- cBind(sparseMAT, timeMat)
+    
+    
+    ############################################
     message("Running Lasso - stay tuned")
     lasso <- lapply(1:nsim, function(i) glmnet::glmnet(sparseMAT, Yx[[i]], family=("poisson"), alpha=1, offset=log(Ex[[i]]), 
-                                               nlambda = 2000, standardize = FALSE, intercept = FALSE, dfmax = 10))
+                                               nlambda = 2000, standardize = FALSE, intercept = FALSE, dfmax = 10,
+                                               exclude=(ncol(sparseMAT)-(Time-1)):ncol(sparseMAT)))
     message("Lasso complete - extracting estimates and paths")
+    # coefs.lasso.all <- lapply(1:nsim,
+    #                           function(i) coef(lasso[[i]])[-c(1,(ncol(sparseMAT_time)-(Time-1)):ncol(sparseMAT_time)+1),]) #do not take intercept
+    # xbetaPath<- lapply(1:nsim, function(i) sparseMAT%*%coefs.lasso.all[[i]])
+    # mu <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), 
+    #                                         function(i) exp(xbetaPath[[j]][,i])))    
+    # loglike <- lapply(1:nsim, function(k) sapply(1:length(lasso[[k]]$lambda), 
+    #                                              function(i) sum(dpoisson(Yx[[k]], mu[[k]][,i],Ex[[k]]))))
+    
     coefs.lasso.all <- lapply(1:nsim, function(i) coef(lasso[[i]])[-1,]) #do not take intercept
     xbetaPath<- lapply(1:nsim, function(i) sparseMAT%*%coefs.lasso.all[[i]])
-    mu <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), 
-                                            function(i) exp(xbetaPath[[j]][,i])))    
-    loglike <- lapply(1:nsim, function(k) sapply(1:length(lasso[[k]]$lambda), 
+    mu <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda),
+                                            function(i) exp(xbetaPath[[j]][,i])))
+    loglike <- lapply(1:nsim, function(k) sapply(1:length(lasso[[k]]$lambda),
                                                  function(i) sum(dpoisson(Yx[[k]], mu[[k]][,i],Ex[[k]]))))
     K <- lapply(1:nsim, function(i) lasso[[i]]$df)   
     message("Selecting best paths")
+    
+    ############################################
+    #Find lambda where new coef introduced
+    changepoints_ix <- lapply(1:nsim, function(k) which(diff(K[[k]])!=0))
+    #check no oscillation
+    K_changepoints <- lapply(1:nsim, function(k) K[[k]][changepoints_ix[[k]]])
+    # if(isTRUE(all.equal(test, unique(test)))!=TRUE){
+    #     #CODE to take latest change point
+    # }
+    lambda_changepoint <- lapply(1:nsim, function(k) lasso[[k]]$lambda[changepoints_ix[[k]]])
+    coefs <- coefs.lasso.all[[1]][which(coefs.lasso.all[[1]][,select.qbic[[1]]]!=0), changepoints_ix[[1]]]
+    # coefs_changepoint <- lapply(1:nsim, function(k) xbetaPath[[k]][,changepoints_ix[[k]]])
+    # coefs_changepoint_nonzero_ix <- which(coefs_changepoint[[1]]!=0, arr.ind=TRUE)[,1]
+    #test plotting
+    
+    # #####THIS PLOTTING WORKS! FIgure out better way to extract this
+    # plot(log(lambda_changepoint[[1]]),coefs[7,], type="b", pch=19, ylim=c(-0.1,0.35));
+    # lines(log(lambda_changepoint[[1]]),coefs[6,],type="b", pch=19, col="red");
+    # lines(log(lambda_changepoint[[1]]),coefs[5,],type="b", pch=19, col="blue");
+    # lines(log(lambda_changepoint[[1]]),coefs[4,],type="b", pch=19, col="green");
+    # lines(log(lambda_changepoint[[1]]),coefs[3,],type="b", pch=19, col="purple");
+    # lines(log(lambda_changepoint[[1]]),coefs[2,],type="b", pch=19, col="orange");
+    # lines(log(lambda_changepoint[[1]]),coefs[1,],type="b", pch=19, col="yellow")
+    # ############################################
+    
     
     #########################################################
     #Space-Time, Quasi-Poisson only (yes overdispersion)
