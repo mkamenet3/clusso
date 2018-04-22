@@ -244,8 +244,10 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     ##Space-only
     else{
         allTime <- 1:Time
-        rr.s[cluster$last, allTime[1]:tail(allTime, n=1)] <- risk.ratio    
+        rr[cluster$last, allTime[1]:tail(allTime, n=1)] <- risk.ratio    
     }
+    allTime <- 1:Time
+    rr.s[cluster$last, allTime[1]:tail(allTime, n=1)] <- risk.ratio 
     ##Expected Counts and simulations
     #Expected matrices
     if(isTRUE(!is.null(background.rate))){
@@ -294,7 +296,15 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     numCenters <- n_uniq
     #CREATE sparseMAT and cache it for use throughout this function
     if(collapsetime==FALSE){
+        #message("Collapse time false")
         sparseMAT <- spacetimeMat(clusters, numCenters, Time)
+        ############################################
+        #Create time matrix - not lasso'd
+        time_period <- factor(rep(1:Time, each=n_uniq))
+        timeMat <- Matrix::Matrix(model.matrix(~ time_period - 1), sparse=TRUE)
+        #add this to sparsemat
+        sparseMAT <- cBind(sparseMAT, timeMat)
+        ############################################
         SOAR::Store(sparseMAT)
         message("Space-time matrix created")
         
@@ -403,12 +413,13 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     probcolors.thresh2 <- list(probcolors.qp.s = probcolors.qp.s.thresh2, probcolors.p.s = probcolors.p.s.thresh2,
                                probcolors.qp.st = probcolors.qp.st.thresh2, probcolors.p.st = probcolors.p.st.thresh2)
     
-    
+    #print(paste0())
     #DETECTION
     ################################################################
     ##QP - Space
     set <- detect_set(lassoresult.qp.s, vectors.sim.s, rr.s, Time, x, y, rMax, center, radius, nullmod,nsim)
-    incluster.qp.s <- detect_incluster(sparseMAT,lassoresult.qp.s, vectors.sim.s, rr.s, set, 1:Time, Time, nsim, under=FALSE, nullmod,risk.ratio,
+    incluster.qp.s <- detect_incluster(sparseMAT,lassoresult.qp.s, vectors.sim.s, rr.s, set, 1:Time, Time, 
+                                       nsim, under=FALSE, nullmod,risk.ratio,
                                        center, radius,x,y,rMax,thresh)
     if(!is.null(nullmod)){
         detect.out.qp.s <- (matrix(unlist(incluster.qp.s), ncol=3, byrow=TRUE,
@@ -507,10 +518,10 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     SOAR::Remove(sparseMAT)
     
     #RETURN
-    return(list(lassoresult.qp.st = lassoresult.qp.st$lasso_out,
-                lassoresult.p.st = lassoresult.p.st$lasso_out,
-                lassoresult.qp.s = lassoresult.qp.s$lasso_out,
-                lassoresult.p.s = lassoresult.p.s$lasso_out,
+    return(list(lassoresult.qp.st = lassoresult.qp.st,
+                lassoresult.p.st = lassoresult.p.st,
+                lassoresult.qp.s = lassoresult.qp.s,
+                lassoresult.p.s = lassoresult.p.s,
                 riskratios = riskratios,
                 rrcolors = rrcolors,
                 probrates = probrates,

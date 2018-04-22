@@ -29,13 +29,7 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
     Ex <- vectors.sim$Ex
     Yx <- YSIM
     Period <- vectors.sim$Period
-    ############################################
-    #Create time matrix - not lasso'd
-    time_period <- factor(rep(1:Time, each=n_uniq))
-    timeMat <- Matrix(model.matrix(~ time_period - 1), sparse=TRUE)
-    #add this to sparsemat
-    sparseMAT <- cBind(sparseMAT, timeMat)
-    ############################################
+    
     message("Running Lasso - stay tuned")
     lasso <- lapply(1:nsim, function(i) glmnet::glmnet(sparseMAT, Yx[[i]], family=("poisson"), alpha=1, offset=log(Ex[[i]]), 
                                                nlambda = 2000, standardize = FALSE, intercept = FALSE, dfmax = 10,
