@@ -37,7 +37,7 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
     ##########################
     clusteroverlap <- rrmatvec %*% sparseMAT #non-zeros are good - those touch the cluster
     clusteroverlap_bin <- ifelse(clusteroverlap !=0,1,0) #1= incluster, 0=not in cluster
-    notincluster <- ifelse(clusteroverlap!=0,0,1)
+    notincluster <- ifelse(clusteroverlap_bin==1,0,1)
     notinclust_sim <- lapply(1:nsim, function(i) notincluster %*% betaSelect_bin[[i]])
     notinclust_sim_bin <- ifelse(notinclust_sim!=0,1,0)
     #notinclust
@@ -90,29 +90,45 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
     # 
     if(!is.null(thresh)){
     ##Diagnostics with thresh
+        
+        truth <- which(rrmatvec!=0) #this is true location of cluster
+        detected <- sapply(1:nsim, function(i) sparseMAT %*% betaSelect_bin[[i]]) 
+        
+        truth_and_detected <- sapply(1:nsim, function(i) union(which(as.vector(detected[[i]])!=0), truth))
+        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(truth_and_detected[[i]])>thresh,1,0))
+        percintersect_AandB.bic <- paste0(mean(unlist(intersect_AandB)), "%")
+        
+        ##|(A and B)|/|B|?
+        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(which(as.vector(detected[[i]])!=0))>thresh,1,0))
+        percintersect_B.bic <- paste0(mean(unlist(intersect_AandB)), "%")
+        
+        ##|(A and B)|/|A|?
+        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(truth)>thresh,1,0))
+        percintersect_A.bic <- paste0(mean(unlist(intersect_AandB)), "%")
+        
     ##|(A and B)|/|A U B|? 
     ##AandB = clustin_sim
     ##AUB = truth_and_detected
     #truth <- which(rrmatvec!=0) #this is true location of cluster
     #detected <- sapply(1:nsim, function(i) sparseMAT %*% betaSelect_bin[[i]]) 
     
-    truth_and_detected <- lapply(1:nsim, function(i) union(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
-    intersect_truth_detected <-  lapply(1:nsim, function(i) intersect(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
-    passthresh <- lapply(1:nsim, function(i) which((length(intersect_truth_detected[[i]])/length(truth_and_detected[[i]]))>=thresh))
-    percintersect_AandB.bic <- paste0((sum(unlist(passthresh), na.rm=TRUE)/nsim)*100, "%")   
-    
-    ##|(A and B)|/|B|?
-    detected <- lapply(1:nsim, function(i) length(which(selected_clusters_bin[[i]]!=0)))
-    intersect_truth_detected <-  lapply(1:nsim, function(i) intersect(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
-    passthresh <- lapply(1:nsim, function(i) which((length(intersect_truth_detected[[i]])/detected[[i]])>=thresh))
-    percintersect_B.bic <- paste0(sum(unlist(passthresh), na.rm=TRUE)/nsim*100, "%")   
-
-    ##|(A and B)|/|A|?
-    truth <- length(which(rrmatvec!=0))
-    intersect_truth_detected <-  lapply(1:nsim, function(i) intersect(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
-    passthresh <- lapply(1:nsim, function(i) which((length(intersect_truth_detected[[i]])/truth)>=thresh))
-    percintersect_A.bic <- paste0(sum(unlist(passthresh), na.rm=TRUE)/nsim*100, "%")   
-    
+    # truth_and_detected <- lapply(1:nsim, function(i) union(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
+    # intersect_truth_detected <-  lapply(1:nsim, function(i) intersect(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
+    # passthresh <- lapply(1:nsim, function(i) which((length(intersect_truth_detected[[i]])/length(truth_and_detected[[i]]))>=thresh))
+    # percintersect_AandB.bic <- paste0((sum(unlist(passthresh), na.rm=TRUE)/nsim)*100, "%")   
+    # 
+    # ##|(A and B)|/|B|?
+    # detected <- lapply(1:nsim, function(i) length(which(selected_clusters_bin[[i]]!=0)))
+    # intersect_truth_detected <-  lapply(1:nsim, function(i) intersect(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
+    # passthresh <- lapply(1:nsim, function(i) which((length(intersect_truth_detected[[i]])/detected[[i]])>=thresh))
+    # percintersect_B.bic <- paste0(sum(unlist(passthresh), na.rm=TRUE)/nsim*100, "%")   
+    # 
+    # ##|(A and B)|/|A|?
+    # truth <- length(which(rrmatvec!=0))
+    # intersect_truth_detected <-  lapply(1:nsim, function(i) intersect(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
+    # passthresh <- lapply(1:nsim, function(i) which((length(intersect_truth_detected[[i]])/truth)>=thresh))
+    # percintersect_A.bic <- paste0(sum(unlist(passthresh), na.rm=TRUE)/nsim*100, "%")   
+    # 
     #truth_and_detected <- sapply(1:nsim, function(i) union(which(as.vector(detected[[i]])!=0), truth))
     #intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(truth_and_detected[[i]])>thresh,1,0))
     #percintersect_AandB.bic <- paste0(mean(unlist(intersect_AandB)*100), "%")
@@ -140,14 +156,15 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
     
     clusteroverlap <- rrmatvec %*% sparseMAT #non-zeros are good - those touch the cluster
     clusteroverlap_bin <- ifelse(clusteroverlap !=0,1,0) #1= incluster, 0=not in cluster
-    notincluster <- ifelse(clusteroverlap!=0,0,1)
+    notincluster <- ifelse(clusteroverlap_bin==1,0,1)
+    #notincluster <- ifelse(clusteroverlap!=0,0,1)
     notinclust_sim <- lapply(1:nsim, function(i) notincluster %*% betaSelect_bin[[i]])
     notinclust_sim_bin <- ifelse(notinclust_sim!=0,1,0)
     #notinclust
     notinperc.aic<- paste0((sum(unlist(notinclust_sim_bin))/nsim)*100,"%")
     #inclust
     #clustin_sim <- clusteroverlap %*% betaSelect
-    clustin_sim <- lapply(1:nsim, function(i) clusteroverlap %*% betaSelect_bin[[i]])
+    clustin_sim <- lapply(1:nsim, function(i) clusteroverlap_bin %*% betaSelect_bin[[i]])
     #clustin_sim_bin <- ifelse(clustin_sim>0,1,0)
     clustin_sim_bin <- lapply(1:nsim, function(i) ifelse(clustin_sim[[i]]>0,1,0))
     inperc.aic <- paste0((sum(unlist(clustin_sim_bin))/nsim)*100,"%")
@@ -200,22 +217,44 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
     # inperc.aic <- paste0((sum(unlist(clustin_sim_bin))/nsim)*100,"%")
     # 
     if(!is.null(thresh)){
-        truth_and_detected <- lapply(1:nsim, function(i) union(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
-        intersect_truth_detected <-  lapply(1:nsim, function(i) intersect(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
-        passthresh <- lapply(1:nsim, function(i) which((length(intersect_truth_detected[[i]])/length(truth_and_detected[[i]]))>=thresh))
-        percintersect_AandB.aic <- paste0((sum(unlist(passthresh), na.rm=TRUE)/nsim)*100, "%")   
+        
+        
+        ##Diagnostics with thresh
+        ##|(A and B)|/|A U B|? 
+        ##AandB = clustin_sim
+        ##AUB = truth_and_detected
+        truth <- which(rrmatvec!=0) #this is true location of cluster
+        detected <- sapply(1:nsim, function(i) sparseMAT %*% betaSelect_bin[[i]]) 
+        truth_and_detected <- sapply(1:nsim, function(i) union(which(as.vector(detected[[i]])!=0), truth))
+        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(truth_and_detected[[i]])>thresh,1,0))
+        percintersect_AandB.aic <- paste0(mean(unlist(intersect_AandB)), "%")
         
         ##|(A and B)|/|B|?
-        detected <- lapply(1:nsim, function(i) length(which(selected_clusters_bin[[i]]!=0)))
-        intersect_truth_detected <-  lapply(1:nsim, function(i) intersect(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
-        passthresh <- lapply(1:nsim, function(i) which((length(intersect_truth_detected[[i]])/detected[[i]])>=thresh))
-        percintersect_B.aic <- paste0(sum(unlist(passthresh), na.rm=TRUE)/nsim*100, "%")   
+        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(which(as.vector(detected[[i]])!=0))>thresh,1,0))
+        percintersect_B.aic <- paste0(mean(unlist(intersect_AandB)), "%")
         
         ##|(A and B)|/|A|?
-        truth <- length(which(rrmatvec!=0))
-        intersect_truth_detected <-  lapply(1:nsim, function(i) intersect(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
-        passthresh <- lapply(1:nsim, function(i) which((length(intersect_truth_detected[[i]])/truth)>=thresh))
-        percintersect_A.aic <- paste0(sum(unlist(passthresh), na.rm=TRUE)/nsim*100, "%")   
+        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(truth)>thresh,1,0))
+        percintersect_A.aic <- paste0(mean(unlist(intersect_AandB)), "%")
+        # truth <- which(rrmatvec!=0) #this is true location of cluster
+        # detected <- sapply(1:nsim, function(i) sparseMAT %*% betaSelect_bin[,i]) 
+        # 
+        # truth_and_detected <- lapply(1:nsim, function(i) union(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
+        # intersect_truth_detected <-  lapply(1:nsim, function(i) intersect(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
+        # passthresh <- lapply(1:nsim, function(i) which((length(intersect_truth_detected[[i]])/length(truth_and_detected[[i]]))>=thresh))
+        # percintersect_AandB.aic <- paste0((sum(unlist(passthresh), na.rm=TRUE)/nsim)*100, "%")   
+        # 
+        # ##|(A and B)|/|B|?
+        # detected <- lapply(1:nsim, function(i) length(which(selected_clusters_bin[[i]]!=0)))
+        # intersect_truth_detected <-  lapply(1:nsim, function(i) intersect(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
+        # passthresh <- lapply(1:nsim, function(i) which((length(intersect_truth_detected[[i]])/detected[[i]])>=thresh))
+        # percintersect_B.aic <- paste0(sum(unlist(passthresh), na.rm=TRUE)/nsim*100, "%")   
+        # 
+        # ##|(A and B)|/|A|?
+        # truth <- length(which(rrmatvec!=0))
+        # intersect_truth_detected <-  lapply(1:nsim, function(i) intersect(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
+        # passthresh <- lapply(1:nsim, function(i) which((length(intersect_truth_detected[[i]])/truth)>=thresh))
+        # percintersect_A.aic <- paste0(sum(unlist(passthresh), na.rm=TRUE)/nsim*100, "%")   
         
         # ##Diagnostics with thresh
         # ##|(A and B)|/|A U B|? 
@@ -277,7 +316,7 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
     
     clusteroverlap <- rrmatvec %*% sparseMAT #non-zeros are good - those touch the cluster
     clusteroverlap_bin <- ifelse(clusteroverlap !=0,1,0) #1= incluster, 0=not in cluster
-    notincluster <- ifelse(clusteroverlap!=0,0,1)
+    notincluster <- ifelse(clusteroverlap_bin==1,0,1)
     notinclust_sim <- lapply(1:nsim, function(i) notincluster %*% betaSelect_bin[[i]])
     notinclust_sim_bin <- ifelse(notinclust_sim!=0,1,0)
     #notinclust
@@ -314,23 +353,39 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
     # inperc.aicc <- paste0((sum(unlist(clustin_sim_bin))/nsim)*100,"%")
     # 
     if(!is.null(thresh)){
-        
-        truth_and_detected <- lapply(1:nsim, function(i) union(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
-        intersect_truth_detected <-  lapply(1:nsim, function(i) intersect(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
-        passthresh <- lapply(1:nsim, function(i) which((length(intersect_truth_detected[[i]])/length(truth_and_detected[[i]]))>=thresh))
-        percintersect_AandB.aicc <- paste0((sum(unlist(passthresh), na.rm=TRUE)/nsim)*100, "%")   
+        ##Diagnostics with thresh
+        ##|(A and B)|/|A U B|? 
+        ##AandB = clustin_sim
+        ##AUB = truth_and_detected
+        truth <- which(rrmatvec!=0) #this is true location of cluster
+        detected <- sapply(1:nsim, function(i) sparseMAT %*% betaSelect_bin[[i]]) 
+        truth_and_detected <- sapply(1:nsim, function(i) union(which(as.vector(detected[[i]])!=0), truth))
+        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(truth_and_detected[[i]])>thresh,1,0))
+        percintersect_AandB.aicc <- paste0(mean(unlist(intersect_AandB)), "%")
         
         ##|(A and B)|/|B|?
-        detected <- lapply(1:nsim, function(i) length(which(selected_clusters_bin[[i]]!=0)))
-        intersect_truth_detected <-  lapply(1:nsim, function(i) intersect(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
-        passthresh <- lapply(1:nsim, function(i) which((length(intersect_truth_detected[[i]])/detected[[i]])>=thresh))
-        percintersect_B.aicc <- paste0(sum(unlist(passthresh), na.rm=TRUE)/nsim*100, "%")   
+        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(which(as.vector(detected[[i]])!=0))>thresh,1,0))
+        percintersect_B.aicc <- paste0(mean(unlist(intersect_AandB)), "%")
         
         ##|(A and B)|/|A|?
-        truth <- length(which(rrmatvec!=0))
-        intersect_truth_detected <-  lapply(1:nsim, function(i) intersect(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
-        passthresh <- lapply(1:nsim, function(i) which((length(intersect_truth_detected[[i]])/truth)>=thresh))
-        percintersect_A.aicc <- paste0(sum(unlist(passthresh), na.rm=TRUE)/nsim*100, "%")   
+        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(truth)>thresh,1,0))
+        percintersect_A.aicc <- paste0(mean(unlist(intersect_AandB)), "%")
+        # truth_and_detected <- lapply(1:nsim, function(i) union(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
+        # intersect_truth_detected <-  lapply(1:nsim, function(i) intersect(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
+        # passthresh <- lapply(1:nsim, function(i) which((length(intersect_truth_detected[[i]])/length(truth_and_detected[[i]]))>=thresh))
+        # percintersect_AandB.aicc <- paste0((sum(unlist(passthresh), na.rm=TRUE)/nsim)*100, "%")   
+        # 
+        # ##|(A and B)|/|B|?
+        # detected <- lapply(1:nsim, function(i) length(which(selected_clusters_bin[[i]]!=0)))
+        # intersect_truth_detected <-  lapply(1:nsim, function(i) intersect(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
+        # passthresh <- lapply(1:nsim, function(i) which((length(intersect_truth_detected[[i]])/detected[[i]])>=thresh))
+        # percintersect_B.aicc <- paste0(sum(unlist(passthresh), na.rm=TRUE)/nsim*100, "%")   
+        # 
+        # ##|(A and B)|/|A|?
+        # truth <- length(which(rrmatvec!=0))
+        # intersect_truth_detected <-  lapply(1:nsim, function(i) intersect(which(selected_clusters_bin[[i]]!=0),which(rrmatvec!=0)))    
+        # passthresh <- lapply(1:nsim, function(i) which((length(intersect_truth_detected[[i]])/truth)>=thresh))
+        # percintersect_A.aicc <- paste0(sum(unlist(passthresh), na.rm=TRUE)/nsim*100, "%")   
         ##Diagnostics with thresh
         ##|(A and B)|/|A U B|? 
         ##AandB = clustin_sim
