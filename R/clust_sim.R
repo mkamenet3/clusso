@@ -303,7 +303,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
         time_period <- factor(rep(1:Time, each=n_uniq))
         timeMat <- Matrix::Matrix(model.matrix(~ time_period - 1), sparse=TRUE)
         #add this to sparsemat
-        sparseMAT <- cBind(sparseMAT, timeMat)
+        sparseMAT <- cbind(sparseMAT, timeMat)
         ############################################
         SOAR::Store(sparseMAT)
         message("Space-time matrix created")
