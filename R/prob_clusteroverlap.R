@@ -12,8 +12,9 @@
 #'@param nsim number of simulations
 #'@param Time number of time period
 #'@param thresh Default is NULL; vector or value as threshold for cluster detection
+#'@param ncentroids number of centroids
 #'@return returns vector which calculated the number of time the cluster was correctly identified out of the simulations
-prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, thresh){
+prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, thresh, ncentroids){
     #DEFINE TRUTH
     if(risk.ratio==1){
      warning("Risk.ratio was set to 1")
@@ -25,37 +26,36 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
     
     
     ##############################################
-    bgRate_i
+
     
-    
-    
-    ##############################################
-    vec <- rep(0, ncentroids * Time) #ncentroids <- 208
-    position <- list(vec)[rep(1, nsim)]
-    select_mu <- lassoresult$select_mu.qaic
-    
-    bgRate_i <- lapply(1:nsim, 
-                       function(i) sapply(1:Time,
-                                                  function(j) as.numeric(names(which.max(table(matrix(as.vector(select_mu[[i]]),ncol=Time)[,j]))))))
-    bgRate <- lapply(1:nsim, function(i) rep(bgRate_i[[i]], each = ncentroids))
-    ix <- lapply(1:nsim, function(i) which(abs(log(as.vector(select_mu[[i]])) - log(bgRate[[i]]))>=10^-3))
-    #quick function to recode
-    reval <- function(probs, ix){
-        probs[ix] <-1
-        return(probs)
-    }
-    simindicator <- mapply(reval, position, ix)
-    probs <- Matrix::rowSums(simindicator)/nsim
-    
+    # ##############################################
+    # vec <- rep(0, ncentroids * Time) #ncentroids <- 208
+    # position <- list(vec)[rep(1, nsim)]
+    # select_mu <- lassoresult$select_mu.qaic
+    # 
+    # bgRate_i <- lapply(1:nsim, 
+    #                    function(i) sapply(1:Time,
+    #                                               function(j) as.numeric(names(which.max(table(matrix(as.vector(select_mu[[i]]),ncol=Time)[,j]))))))
+    # bgRate <- lapply(1:nsim, function(i) rep(bgRate_i[[i]], each = ncentroids))
+    # ix <- lapply(1:nsim, function(i) which(abs(log(as.vector(select_mu[[i]])) - log(bgRate[[i]]))>=10^-3))
+    # #quick function to recode
+    # reval <- function(probs, ix){
+    #     probs[ix] <-1
+    #     return(probs)
+    # }
+    # simindicator <- mapply(reval, position, ix)
+    # probs <- Matrix::rowSums(simindicator)/nsim
+    # 
 
     ###################################
     #BIC
     ###################################
     select_mu <- as.vector(lassoresult$select.qbic)
+    bgRate_i <- prob_incluster(lassoresult$select_mu.qbic, ncentroids, Time, nsim, background = TRUE)
     betaMat <- sapply(1:nsim, function(i) lassoresult$lasso[[i]]$beta)
     betaSelect <- sapply(1:nsim, function(i) betaMat[[i]][,select_mu[[i]]])
     #select what's not in the background
-    betaSelect_bin <- lapply(1:nsim, function(i) ifelse(is.element(betaSelect[,i],log(bgRate_i[[i]])),0,1))
+    betaSelect_bin <- lapply(1:nsim, function(i) ifelse(is.element(betaSelect[,i],log(bgRate_i$bgRate[[i]])),0,1))
     clusteroverlap <- rrmatvec %*% sparseMAT #non-zeros are good - those touch the cluster
     clusteroverlap_bin <- ifelse(clusteroverlap !=0,1,0) #1= incluster, 0=not in cluster
     #select incluster
@@ -98,20 +98,23 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
 
     if(!is.null(thresh)){
     ##Diagnostics with thresh
+        
         truth <- which(rrmatvec!=0) #this is true location of cluster
         detected <- sapply(1:nsim, function(i) sparseMAT %*% betaSelect_bin[[i]]) 
+        detectedincluster <- lapply(1:nsim, function(i) rrmatvec %*% ifelse(detected[[i]]@x!=0,1,0))
         
-        truth_and_detected <- sapply(1:nsim, function(i) union(which(as.vector(detected[[i]])!=0), truth))
-        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(truth_and_detected[[i]])>thresh,1,0))
-        percintersect_AandB.bic <- paste0(mean(unlist(intersect_AandB)), "%")
+        ##|(A and B)|/|A U B|?
+        truth_and_detected <- sapply(1:nsim, function(i) union(which(as.vector(detected[[i]]@x)!=0), truth))
+        intersect_AandB <- sapply(1:nsim, function(i) ifelse(detectedincluster[[i]]/length(truth_and_detected[[i]])>thresh,1,0))
+        percintersect_AandB.bic <- paste0(mean(unlist(intersect_AandB))*100, "%")
         
         ##|(A and B)|/|B|?
-        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(which(as.vector(detected[[i]])!=0))>thresh,1,0))
-        percintersect_B.bic <- paste0(mean(unlist(intersect_AandB)), "%")
+        intersect_AandB <- sapply(1:nsim, function(i) ifelse((detectedincluster[[i]]/length(which(detected[[i]]@x!=0)))>thresh,1,0))
+        percintersect_B.bic <- paste0(mean(unlist(intersect_AandB))*100, "%")
         
         ##|(A and B)|/|A|?
-        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(truth)>thresh,1,0))
-        percintersect_A.bic <- paste0(mean(unlist(intersect_AandB)), "%")
+        intersect_AandB <- sapply(1:nsim, function(i) ifelse((detectedincluster[[i]]/length(truth))>thresh,1,0))
+        percintersect_A.bic <- paste0(mean(unlist(intersect_AandB))*100, "%")
     }
     else{
         message("No threshold diagnostics - BIC")
@@ -121,10 +124,11 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
     #AIC
     ###################################
     select_mu <- as.vector(lassoresult$select.qaic)
+    bgRate_i <- prob_incluster(lassoresult$select_mu.qaic, ncentroids, Time, nsim, background = TRUE)
     betaMat <- sapply(1:nsim, function(i) lassoresult$lasso[[i]]$beta)
     betaSelect <- sapply(1:nsim, function(i) betaMat[[i]][,select_mu[[i]]])
     #select what's not in the background
-    betaSelect_bin <- lapply(1:nsim, function(i) ifelse(is.element(betaSelect[,i],log(bgRate_i[[i]])),0,1))
+    betaSelect_bin <- lapply(1:nsim, function(i) ifelse(is.element(betaSelect[,i],log(bgRate_i$bgRate[[i]])),0,1))
     clusteroverlap <- rrmatvec %*% sparseMAT #non-zeros are good - those touch the cluster
     clusteroverlap_bin <- ifelse(clusteroverlap !=0,1,0) #1= incluster, 0=not in cluster
     #select incluster
@@ -158,23 +162,23 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
     
     ###########################
     if(!is.null(thresh)){
-        ##Diagnostics with thresh
-        ##|(A and B)|/|A U B|? 
-        ##AandB = clustin_sim
-        ##AUB = truth_and_detected
+        
         truth <- which(rrmatvec!=0) #this is true location of cluster
         detected <- sapply(1:nsim, function(i) sparseMAT %*% betaSelect_bin[[i]]) 
-        truth_and_detected <- sapply(1:nsim, function(i) union(which(as.vector(detected[[i]])!=0), truth))
-        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(truth_and_detected[[i]])>thresh,1,0))
-        percintersect_AandB.aic <- paste0(mean(unlist(intersect_AandB)), "%")
+        detectedincluster <- lapply(1:nsim, function(i) rrmatvec %*% ifelse(detected[[i]]@x!=0,1,0))
+        
+        ##|(A and B)|/|A U B|?
+        truth_and_detected <- sapply(1:nsim, function(i) union(which(as.vector(detected[[i]]@x)!=0), truth))
+        intersect_AandB <- sapply(1:nsim, function(i) ifelse(detectedincluster[[i]]/length(truth_and_detected[[i]])>thresh,1,0))
+        percintersect_AandB.aic <- paste0(mean(unlist(intersect_AandB))*100, "%")
         
         ##|(A and B)|/|B|?
-        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(which(as.vector(detected[[i]])!=0))>thresh,1,0))
-        percintersect_B.aic <- paste0(mean(unlist(intersect_AandB)), "%")
+        intersect_AandB <- sapply(1:nsim, function(i) ifelse((detectedincluster[[i]]/length(which(detected[[i]]@x!=0)))>thresh,1,0))
+        percintersect_B.aic <- paste0(mean(unlist(intersect_AandB))*100, "%")
         
         ##|(A and B)|/|A|?
-        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(truth)>thresh,1,0))
-        percintersect_A.aic <- paste0(mean(unlist(intersect_AandB)), "%")
+        intersect_AandB <- sapply(1:nsim, function(i) ifelse((detectedincluster[[i]]/length(truth))>thresh,1,0))
+        percintersect_A.aic <- paste0(mean(unlist(intersect_AandB))*100, "%")
     }
     else{
         message("No threshold diagnostics - AIC")
@@ -184,10 +188,11 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
     #AICc
     ###################################
     select_mu <- as.vector(lassoresult$select.qaicc)
+    bgRate_i <- prob_incluster(lassoresult$select_mu.qaicc, ncentroids, Time, nsim, background = TRUE)
     betaMat <- sapply(1:nsim, function(i) lassoresult$lasso[[i]]$beta)
     betaSelect <- sapply(1:nsim, function(i) betaMat[[i]][,select_mu[[i]]])
     #select what's not in the background
-    betaSelect_bin <- lapply(1:nsim, function(i) ifelse(is.element(betaSelect[,i],log(bgRate_i[[i]])),0,1))
+    betaSelect_bin <- lapply(1:nsim, function(i) ifelse(is.element(betaSelect[,i],log(bgRate_i$bgRate[[i]])),0,1))
     clusteroverlap <- rrmatvec %*% sparseMAT #non-zeros are good - those touch the cluster
     clusteroverlap_bin <- ifelse(clusteroverlap !=0,1,0) #1= incluster, 0=not in cluster
     #select incluster
@@ -223,22 +228,23 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
    
     if(!is.null(thresh)){
         ##Diagnostics with thresh
-        ##|(A and B)|/|A U B|? 
-        ##AandB = clustin_sim
-        ##AUB = truth_and_detected
+        
         truth <- which(rrmatvec!=0) #this is true location of cluster
         detected <- sapply(1:nsim, function(i) sparseMAT %*% betaSelect_bin[[i]]) 
-        truth_and_detected <- sapply(1:nsim, function(i) union(which(as.vector(detected[[i]])!=0), truth))
-        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(truth_and_detected[[i]])>thresh,1,0))
-        percintersect_AandB.aicc <- paste0(mean(unlist(intersect_AandB)), "%")
+        detectedincluster <- lapply(1:nsim, function(i) rrmatvec %*% ifelse(detected[[i]]@x!=0,1,0))
+        
+        ##|(A and B)|/|A U B|?
+        truth_and_detected <- sapply(1:nsim, function(i) union(which(as.vector(detected[[i]]@x)!=0), truth))
+        intersect_AandB <- sapply(1:nsim, function(i) ifelse(detectedincluster[[i]]/length(truth_and_detected[[i]])>thresh,1,0))
+        percintersect_AandB.aicc <- paste0(mean(unlist(intersect_AandB))*100, "%")
         
         ##|(A and B)|/|B|?
-        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(which(as.vector(detected[[i]])!=0))>thresh,1,0))
-        percintersect_B.aicc <- paste0(mean(unlist(intersect_AandB)), "%")
+        intersect_AandB <- sapply(1:nsim, function(i) ifelse((detectedincluster[[i]]/length(which(detected[[i]]@x!=0)))>thresh,1,0))
+        percintersect_B.aicc <- paste0(mean(unlist(intersect_AandB))*100, "%")
         
         ##|(A and B)|/|A|?
-        intersect_AandB <- sapply(1:nsim, function(i) ifelse(length(clustin_sim)/length(truth)>thresh,1,0))
-        percintersect_A.aicc <- paste0(mean(unlist(intersect_AandB)), "%")
+        intersect_AandB <- sapply(1:nsim, function(i) ifelse((detectedincluster[[i]]/length(truth))>thresh,1,0))
+        percintersect_A.aicc <- paste0(mean(unlist(intersect_AandB))*100, "%")
     }
     else{
         message("No threshold diagnostics - AICc")
@@ -333,7 +339,7 @@ prob_incluster <- function(select_mu, ncentroids, Time, nsim, background=NULL){
     simindicator <- mapply(reval, position, ix)
     probs <- Matrix::rowSums(simindicator)/nsim
     if(!is.null(background)){
-        out <- list(probs = probs, bgRate = bgRate_i)
+        out <- list(bgRate = bgRate_i)
        return(out) 
     }
     else{
