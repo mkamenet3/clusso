@@ -413,7 +413,6 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     probcolors.thresh2 <- list(probcolors.qp.s = probcolors.qp.s.thresh2, probcolors.p.s = probcolors.p.s.thresh2,
                                probcolors.qp.st = probcolors.qp.st.thresh2, probcolors.p.st = probcolors.p.st.thresh2)
     
-    #print(paste0())
     #DETECTION
     ################################################################
     ##QP - Space

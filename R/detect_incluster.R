@@ -42,12 +42,9 @@ detect_incluster <- function(sparseMAT,lassoresult, vectors.sim, rr, set, timepe
         }
         else{
             if(length(thresh)>1){
-                print("thresh>1")
                 clusterdetectionrates <- lapply(1:length(thresh), function(i) prob_clusteroverlap(sparseMAT,lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh[[i]], ncentroids))
-                print(clusterdetectionrates)
                 }
             else{
-                print("oops")
                 clusterdetectionrates <- prob_clusteroverlap(sparseMAT,lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh, ncentroids)    
             sh }
             

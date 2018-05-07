@@ -23,29 +23,6 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
     else{
         rrmatvec <- ifelse(as.vector(rr)==risk.ratio,1,0)    
     }
-    
-    
-    ##############################################
-
-    
-    # ##############################################
-    # vec <- rep(0, ncentroids * Time) #ncentroids <- 208
-    # position <- list(vec)[rep(1, nsim)]
-    # select_mu <- lassoresult$select_mu.qaic
-    # 
-    # bgRate_i <- lapply(1:nsim, 
-    #                    function(i) sapply(1:Time,
-    #                                               function(j) as.numeric(names(which.max(table(matrix(as.vector(select_mu[[i]]),ncol=Time)[,j]))))))
-    # bgRate <- lapply(1:nsim, function(i) rep(bgRate_i[[i]], each = ncentroids))
-    # ix <- lapply(1:nsim, function(i) which(abs(log(as.vector(select_mu[[i]])) - log(bgRate[[i]]))>=10^-3))
-    # #quick function to recode
-    # reval <- function(probs, ix){
-    #     probs[ix] <-1
-    #     return(probs)
-    # }
-    # simindicator <- mapply(reval, position, ix)
-    # probs <- Matrix::rowSums(simindicator)/nsim
-    # 
 
     ###################################
     #BIC
@@ -69,32 +46,6 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
     #notinclust
     notinperc.bic<- paste0((sum(unlist(notinclust_sim_bin))/nsim)*100,"%")
 
-    
-    # ################################################
-    # #print(table(rrmatvec))
-    # #GO through what was detected 
-    # #Let A = true cluster (clusteroverlap), B = detected cluster (betaSelect_bin)
-    # ###################################
-    # #BIC
-    # ###################################
-    # select_mu <- as.vector(lassoresult$select.qbic)
-    # betaMat <- sapply(1:nsim, function(i) lassoresult$lasso[[i]]$beta)
-    # betaSelect <- sapply(1:nsim, function(i) betaMat[[i]][,select_mu[[i]]])
-    # betaSelect_bin <- lapply(1:nsim, function(i) ifelse(betaSelect[,i]>0,1,0))
-    # 
-    # ##########################
-    # clusteroverlap <- rrmatvec %*% sparseMAT #non-zeros are good - those touch the cluster
-    # clusteroverlap_bin <- ifelse(clusteroverlap !=0,1,0) #1= incluster, 0=not in cluster
-    # notincluster <- ifelse(clusteroverlap_bin==1,0,1)
-    # notinclust_sim <- lapply(1:nsim, function(i) notincluster %*% betaSelect_bin[[i]])
-    # notinclust_sim_bin <- ifelse(notinclust_sim!=0,1,0)
-    # #notinclust
-    # notinperc.bic<- paste0((sum(unlist(notinclust_sim_bin))/nsim)*100,"%")
-    # #inclust
-    # #clustin_sim <- clusteroverlap %*% betaSelect
-    # clustin_sim <- lapply(1:nsim, function(i) clusteroverlap %*% betaSelect_bin[[i]])
-    # clustin_sim_bin <- lapply(1:nsim, function(i) ifelse(clustin_sim[[i]]>0,1,0))
-    # inperc.bic <- paste0((sum(unlist(clustin_sim_bin))/nsim)*100,"%")
 
     if(!is.null(thresh)){
     ##Diagnostics with thresh
@@ -142,23 +93,7 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
     #notinclust
     notinperc.aic<- paste0((sum(unlist(notinclust_sim_bin))/nsim)*100,"%")
     
-    # select_mu <- lassoresult$select.qaic
-    # betaMat <- sapply(1:nsim, function(i) lassoresult$lasso[[i]]$beta)
-    # betaSelect <- sapply(1:nsim, function(i) betaMat[[i]][,select_mu[[i]]])
-    # betaSelect_bin <- lapply(1:nsim, function(i) ifelse(betaSelect[,i]>0,1,0))
-    # 
-    # ##########################
-    # clusteroverlap <- rrmatvec %*% sparseMAT #non-zeros are good - those touch the cluster
-    # clusteroverlap_bin <- ifelse(clusteroverlap !=0,1,0) #1= incluster, 0=not in cluster
-    # notincluster <- ifelse(clusteroverlap_bin==1,0,1)
-    # notinclust_sim <- lapply(1:nsim, function(i) notincluster %*% betaSelect_bin[[i]])
-    # notinclust_sim_bin <- ifelse(notinclust_sim!=0,1,0)
-    # #notinclust
-    # notinperc.aic<- paste0((sum(unlist(notinclust_sim_bin))/nsim)*100,"%")
-    # #inclust
-    # clustin_sim <- lapply(1:nsim, function(i) clusteroverlap_bin %*% betaSelect_bin[[i]])
-    # clustin_sim_bin <- lapply(1:nsim, function(i) ifelse(clustin_sim[[i]]>0,1,0))
-    # inperc.aic <- paste0((sum(unlist(clustin_sim_bin))/nsim)*100,"%")
+   
     
     ###########################
     if(!is.null(thresh)){
@@ -205,26 +140,7 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
     notinclust_sim_bin <- ifelse(notinclust_sim!=0,1,0)
     #notinclust
     notinperc.aicc<- paste0((sum(unlist(notinclust_sim_bin))/nsim)*100,"%")
-    # select_mu <- lassoresult$select.qaicc
-    # betaMat <- sapply(1:nsim, function(i) lassoresult$lasso[[i]]$beta)
-    # betaSelect <- sapply(1:nsim, function(i) betaMat[[i]][,select_mu[[i]]])
-    # betaSelect_bin <- lapply(1:nsim, function(i) ifelse(betaSelect[,i]>0,1,0))
-    # 
-    # ##########################
-    # 
-    # clusteroverlap <- rrmatvec %*% sparseMAT #non-zeros are good - those touch the cluster
-    # clusteroverlap_bin <- ifelse(clusteroverlap !=0,1,0) #1= incluster, 0=not in cluster
-    # notincluster <- ifelse(clusteroverlap_bin==1,0,1)
-    # notinclust_sim <- lapply(1:nsim, function(i) notincluster %*% betaSelect_bin[[i]])
-    # notinclust_sim_bin <- ifelse(notinclust_sim!=0,1,0)
-    # #notinclust
-    # notinperc.aicc<- paste0((sum(unlist(notinclust_sim_bin))/nsim)*100,"%")
-    # #inclust
-    # #clustin_sim <- clusteroverlap %*% betaSelect
-    # clustin_sim <- lapply(1:nsim, function(i) clusteroverlap %*% betaSelect_bin[[i]])
-    # #clustin_sim_bin <- ifelse(clustin_sim>0,1,0)
-    # clustin_sim_bin <- lapply(1:nsim, function(i) ifelse(clustin_sim[[i]]>0,1,0))
-    # inperc.aicc <- paste0((sum(unlist(clustin_sim_bin))/nsim)*100,"%")
+    
    
     if(!is.null(thresh)){
         ##Diagnostics with thresh
