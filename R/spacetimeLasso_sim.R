@@ -19,7 +19,7 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
     if(!is.null(covars)){
         message("Running with covariates")
         covarMAT <- Matrix::Matrix(data.matrix(covars), sparse=TRUE)
-        sparseMAT <- Matrix::cBind(sparseMAT, covarMAT)
+        sparseMAT <- cbind(sparseMAT, covarMAT)
     }
     else{
         message("No covariates found")

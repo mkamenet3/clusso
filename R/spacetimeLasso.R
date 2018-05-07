@@ -22,7 +22,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
     if(!is.null(covars)){
         message("Running with covariates")
         covarMAT <- Matrix::Matrix(data.matrix(covars), sparse=TRUE)
-        sparseMat <- Matrix::cBind(sparseMAT, covarMAT)
+        sparseMat <- cbind(sparseMAT, covarMAT)
     }
     else{
         message("No covariates found")
@@ -38,7 +38,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
     time_period <- factor(rep(1:Time, each=n_uniq))
     timeMat <- Matrix(model.matrix(~ time_period - 1), sparse=TRUE)
     #add this to sparsemat
-    sparseMAT <- cBind(sparseMAT, timeMat)
+    sparseMAT <- cbind(sparseMAT, timeMat)
     ############################################
     #Run
     message("Running Lasso - stay tuned")
