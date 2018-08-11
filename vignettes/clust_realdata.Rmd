@@ -60,7 +60,7 @@ overdispfloor <- TRUE
 
 clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE)
 
-system.time(res <- clust(clst, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor=TRUE, cv=NULL))
+system.time(resreal <- clust(clst, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor=TRUE, cv=NULL))
 
 ```
 
@@ -70,17 +70,20 @@ Save diagnostics into csv:
 
 ```{r}
 #save results
-filename <- paste0("jbc_analysis_new",".RData")
-save(res, file = filename)
+#filename <- paste0("jbc_analysis_5_7_18",".RData")
+filename <- paste0("jbc_analysis_7_11_18",".RData")
+save(resreal, file = filename)
 
 
 #Create Empty PDF to Map Onto
-pdfname <- paste0("jbc_analysis_new",".pdf")
-easyplot(japan.prefect2, japan.poly2 ,pdfname, res$rrcolors, mods, space="both", probmap=FALSE, obs=TRUE,rr=TRUE)
+#pdfname <- paste0("jbc_analysis_5_7_18",".pdf")
+pdfname <- paste0("jbc_analysis_7_11_18",".pdf")
+easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal$rrcolors, mods, space="both", probmap=FALSE, obs=TRUE,rr=TRUE)
 
 #BIC map
-pdfname <- paste0("jbc_analysisBIC_new",".pdf")
-easyplot(japan.prefect2, japan.poly2 ,pdfname, res, mods, space="BIC", probmap=FALSE,rr=TRUE)
+#pdfname <- paste0("jbc_analysisBIC_5_7_18",".pdf")
+pdfname <- paste0("jbc_analysisBIC_7_11_18",".pdf")
+easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal, mods, space="BIC", probmap=FALSE,rr=TRUE)
 
 
 ```
@@ -104,7 +107,7 @@ numclust.BIC <- c(res$lassoresult.p.s$numclust.qbic, res$lassoresult.p.st$numclu
 
 #WRITE TO CSV
 print(table.clusters)
-write.csv(table.clusters, file="tableclusters_codechange.csv", row.names=TRUE)
+write.csv(table.clusters, file="tableclusters_codechange_4_16_18.csv", row.names=TRUE)
 
 ```
 

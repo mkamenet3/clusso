@@ -11,6 +11,7 @@ spaceMat <- function(clusters, numCenters){
     mymat <- NULL
     for(i in 1:nrow(clusters)){
         myvec <- list(as(max_colCpp(numCenters, i, clusters$n, clusters$last), "sparseVector")) 
+       # myvec <- list(sparseVector(max_colCpp(numCenters, i, clusters$n, clusters$last))) 
         mymat <- c(mymat,myvec) 
     }
     xx <- NULL

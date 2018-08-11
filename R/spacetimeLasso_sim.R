@@ -19,7 +19,7 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
     if(!is.null(covars)){
         message("Running with covariates")
         covarMAT <- Matrix::Matrix(data.matrix(covars), sparse=TRUE)
-        sparseMAT <- Matrix::cBind(sparseMAT, covarMAT)
+        sparseMAT <- cbind(sparseMAT, covarMAT)
     }
     else{
         message("No covariates found")
@@ -29,18 +29,25 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
     Ex <- vectors.sim$Ex
     Yx <- YSIM
     Period <- vectors.sim$Period
+    
     message("Running Lasso - stay tuned")
     lasso <- lapply(1:nsim, function(i) glmnet::glmnet(sparseMAT, Yx[[i]], family=("poisson"), alpha=1, offset=log(Ex[[i]]), 
-                                               nlambda = 2000, standardize = FALSE, intercept = FALSE, dfmax = 10))
+                                               nlambda = 2000, standardize = FALSE, intercept = FALSE, dfmax = 10,
+                                               exclude=(ncol(sparseMAT)-(Time-1)):ncol(sparseMAT)))
     message("Lasso complete - extracting estimates and paths")
     coefs.lasso.all <- lapply(1:nsim, function(i) coef(lasso[[i]])[-1,]) #do not take intercept
     xbetaPath<- lapply(1:nsim, function(i) sparseMAT%*%coefs.lasso.all[[i]])
-    mu <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda), 
-                                            function(i) exp(xbetaPath[[j]][,i])))    
-    loglike <- lapply(1:nsim, function(k) sapply(1:length(lasso[[k]]$lambda), 
+    mu <- lapply(1:nsim, function(j) sapply(1:length(lasso[[j]]$lambda),
+                                            function(i) exp(xbetaPath[[j]][,i])))
+    loglike <- lapply(1:nsim, function(k) sapply(1:length(lasso[[k]]$lambda),
                                                  function(i) sum(dpoisson(Yx[[k]], mu[[k]][,i],Ex[[k]]))))
     K <- lapply(1:nsim, function(i) lasso[[i]]$df)   
     message("Selecting best paths")
+    
+    ############################################
+    
+    # ############################################
+    
     
     #########################################################
     #Space-Time, Quasi-Poisson only (yes overdispersion)
@@ -192,9 +199,28 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
         select_muRR.qaicc <- Reduce("+", select_mu.qaicc)/nsim
         E.qaicc <- select_muRR.qaicc
         numclust.qaicc <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaicc[[i]]]))-1)
-     }
+    }
     
-    return(list(lasso = lasso, nsim = nsim, E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc,Ex = Ex,mu = mu, Yx = Yx, PLL.qbic = PLL.qbic, 
+    #Return only changepoints from lasso
+    changepoints_ix <- lapply(1:nsim, function(k) which(diff(K[[k]])!=0)) #Find lambda where new coef introduced
+    lambda_changepoint <- lapply(1:nsim, function(k) lasso[[k]]$lambda[changepoints_ix[[k]]])
+    #QIC
+    coefs_qbic <- lapply(1:nsim, 
+                         function(k) coefs.lasso.all[[k]][which(coefs.lasso.all[[k]][,select.qbic[[k]]]!=0), changepoints_ix[[k]]])
+    coefs_qaic <- lapply(1:nsim, 
+                         function(k) coefs.lasso.all[[k]][which(coefs.lasso.all[[k]][,select.qaic[[k]]]!=0), changepoints_ix[[k]]])
+    coefs_qaicc <- lapply(1:nsim, 
+                         function(k) coefs.lasso.all[[k]][which(coefs.lasso.all[[k]][,select.qaicc[[k]]]!=0), changepoints_ix[[k]]])
+
+    lasso_out <- list(
+        lambdas = lambda_changepoint,
+        coefs_bic = coefs_qbic,
+        coefs_aic = coefs_qaic,
+        coefs_aicc = coefs_qaicc
+    )
+    
+    
+    return(list(lasso = lasso, lasso_out=lasso_out, nsim = nsim, E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc,Ex = Ex,mu = mu, Yx = Yx, PLL.qbic = PLL.qbic, 
                 PLL.qaic = PLL.qaic, PLL.qaicc = PLL.qaicc, select.qbic = select.qbic, select.qaic = select.qaic, 
                 select.qaicc = select.qaicc, select_mu.qbic = select_mu.qbic, select_mu.qaic = select_mu.qaic, 
                 select_mu.qaicc = select_mu.qaicc, xbetaPath = xbetaPath, coefs.lasso.all = coefs.lasso.all,

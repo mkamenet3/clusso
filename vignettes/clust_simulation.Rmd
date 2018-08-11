@@ -71,8 +71,8 @@ Set other conditions. Right now, the null model requires to still input a center
 ```{r}
 rMax=20
 Time=5
-#nsim=100 #number of simulations
-nsim = 2 #feel free to change this back to 100
+nsim=100 #number of simulations
+#nsim = 2 #feel free to change this back to 100
 
 #need inputs for model to run
 center=1
@@ -94,7 +94,7 @@ table.detection.null <- NULL
 Run the null model and store results into object *res*.
 
 ```{r}
-japanbreastcancer<- japanbreastcancer[,-1] #get rid of id column to use clst function
+japanbreastcancer<- japanbreastcancer[,-1] #get rid of id column to use clst functionl
 
 #create clst class object
 clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE) #no covariates here!
@@ -128,7 +128,7 @@ table.detection.null <- rbind(table.detection.null, tabn) #you don't technically
 
 #WRITE TO CSV
 print(table.detection.null)
-write.csv(table.detection.null, file="tabledetectionNULL.csv", row.names=TRUE) #again, if you want to change this so it saves to your hypothetical 'results' sub-folder located inside vignettes on your local machine, then: write.csv(table.detection.null, file="results/tabledetectionNULL.csv", row.names=TRUE)
+write.csv(table.detection.null, file="tabledetectionNULL_4_16_18.csv", row.names=TRUE) #again, if you want to change this so it saves to your hypothetical 'results' sub-folder located inside vignettes on your local machine, then: write.csv(table.detection.null, file="results/tabledetectionNULL.csv", row.names=TRUE)
 
 
 ```
@@ -156,8 +156,8 @@ Make some maps!
 
 ```{r}
 #set file names for the maps - you can change these to be whatever you want.
-pdfname1 <- paste0("rrmapsNULL_test.pdf")
-pdfname2 <- paste0("probabilitymapsNULL_test.pdf")
+pdfname1 <- paste0("rrmapsNULL_test4_16_18.pdf")
+pdfname2 <- paste0("probabilitymapsNULL_test4_16_18.pdf")
 
 #use easyplot
 easyplot(japan.prefect2, japan.poly2 ,pdfname1, res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL, rr=TRUE)
@@ -172,8 +172,8 @@ In the code above, I also specify a parameter called ```threshold <- c(0.9, 0.5)
 
 ```{r}
 #set threshold pdf names
-pdfname3 <- paste0("probmapsthresh1NULL_test.pdf")
-pdfname4 <- paste0("probmapsthresh2NULL_test.pdf")
+pdfname3 <- paste0("probmapsthresh1NULL_test4_16_18.pdf")
+pdfname4 <- paste0("probmapsthresh2NULL_test4_16_18.pdf")
 
 #easyplot threshold results.
 easyplot(japan.prefect2, japan.poly2 ,pdfname3, res$probcolors.thresh1, mods, space="both", probmap=TRUE, obs = NULL,rr=FALSE)
@@ -227,7 +227,7 @@ rMax <- 20
 Time <- 5
 overdispfloor <- TRUE
 #nsim <- 100
-nsim <- 2 #again, nsim is limited to 100 here for illustration only. For an actual simulation, nsim=100 is recommended
+nsim <- 5 #again, nsim is limited to 100 here for illustration only. For an actual simulation, nsim=100 is recommended
 threshold <- c(0.9, 0.5)
 mods <- c("QuasiPoisson", "Poisson")
 
@@ -278,7 +278,7 @@ save(res, file = filename)
 
 #WRITE TO CSV
 print(tabn)
-write.csv(tabn, file="sampleoutput/tabledetection_singlesimexample.csv", row.names=TRUE)
+write.csv(tabn, file="tabledetection_singlesimexample.csv", row.names=TRUE)
 
 
 ```

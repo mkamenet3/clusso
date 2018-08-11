@@ -22,7 +22,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
     if(!is.null(covars)){
         message("Running with covariates")
         covarMAT <- Matrix::Matrix(data.matrix(covars), sparse=TRUE)
-        sparseMat <- Matrix::cBind(sparseMAT, covarMAT)
+        sparseMat <- cbind(sparseMAT, covarMAT)
     }
     else{
         message("No covariates found")
@@ -32,17 +32,27 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
     Ex <- vectors$Ex
     Yx <- vectors$Y.vec
     Period <- vectors$Period
+    
+    ############################################
+    ####Create time matrix - not lasso'd
+    time_period <- factor(rep(1:Time, each=n_uniq))
+    timeMat <- Matrix(model.matrix(~ time_period - 1), sparse=TRUE)
+    #add this to sparsemat
+    sparseMAT <- cbind(sparseMAT, timeMat)
+    ############################################
     #Run
     message("Running Lasso - stay tuned")
     if(!is.null(cv)){
         message("Path selection: cross-validation")
         lasso <- glmnet::cv.glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex), nlambda = 2000, 
-                                   standardize = FALSE, intercept=FALSE,dfmax = 10, nfolds = cv) 
+                                   standardize = FALSE, intercept=FALSE,dfmax = 10, 
+                                   nfolds = cv, exclude=(ncol(sparseMAT)-(Time-1)):ncol(sparseMAT)) 
     }
     else{
         message("Path selection: information criteria")
         lasso <- glmnet::glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex), nlambda = 2000, 
-                                standardize = FALSE, intercept=FALSE,dfmax = 10) 
+                                standardize = FALSE, intercept=FALSE,dfmax = 10, 
+                                exclude=(ncol(sparseMAT)-(Time-1)):ncol(sparseMAT)) 
     }
     message("Lasso complete - extracting estimates and paths")
     coefs.lasso.all <- coef(lasso)[-1,]
@@ -182,8 +192,24 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
             E.qaicc <- mu[,select.qaic]
             numclust.qaicc <- length(unique(coefs.lasso.all[,select.qaicc]))-1
         }
+        #Return only changepoints from lasso
+        changepoints_ix <- which(diff(K)!=0) #Find lambda where new coef introduced
+        lambda_changepoint <- lasso$lambda[changepoints_ix]
+        #QIC
+        coefs_qbic <- coefs.lasso.all[which(coefs.lasso.all[,select.qbic]!=0), changepoints_ix]
+        coefs_qaic <-  coefs.lasso.all[which(coefs.lasso.all[,select.qaic]!=0), changepoints_ix]
+        coefs_qaicc <- coefs.lasso.all[which(coefs.lasso.all[,select.qaicc]!=0), changepoints_ix]
+        
+        lasso_out <- list(
+            lambdas = lambda_changepoint,
+            coefs_bic = coefs_qbic,
+            coefs_aic = coefs_qaic,
+            coefs_aicc = coefs_qaicc
+        )
+        
         res <- list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, numclust.qaic = numclust.qaic,
-                    numclust.qaicc = numclust.qaicc, numclust.qbic= numclust.qbic, Ex = Ex, Yx = Yx, lasso = lasso, K = K)
+                    numclust.qaicc = numclust.qaicc, numclust.qbic= numclust.qbic, Ex = Ex, Yx = Yx, 
+                    lasso = lasso, lasso_out=lasso_out,K = K)
     }
     return(res)
 }
