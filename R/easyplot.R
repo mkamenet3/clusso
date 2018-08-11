@@ -368,13 +368,15 @@ plotmap_ST <- function(prefect, polygons, pdfname,res, obs,rr){
         par(fig=c(.35,.75,0,.1), new=T)
         plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
         rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=redblue(0:50/50),border=F)
-        text(seq(.6,1.4,length=5),rep(.45,5),seq(0,2,length.out=5),srt=330,adj=0)
+        #text(seq(.6,1.4,length=5),rep(.45,5),seq(0,2,length.out=5),srt=330,adj=0)
+        text(seq(0.6, 1.4, length = 5), rep(0.45, 5), seq(0.5, 1.5, length.out = 5), srt = 330, adj = 0)
     }
     else{
         par(fig=c(.35,.75,0,.1), new=T)
         plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
         rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=greys(0:50/50),border=F)
-        text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
+        #text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
+        text(seq(0.6, 1.4, length = 5), rep(0.45, 5), seq(0.5, 1.5, length.out = 5), srt = 330, adj = 0)
     }
     
     #Turn off pdf development
@@ -433,13 +435,15 @@ plotmap_S <- function(prefect, polygons, pdfname,res, obs, rr){
         par(fig=c(.35,.75,0,.1), new=T)
         plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
         rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=redblue(0:50/50),border=F)
-        text(seq(.6,1.4,length=5),rep(.45,5),seq(0,2,length.out=5),srt=330,adj=0)
+        #text(seq(.6,1.4,length=5),rep(.45,5),seq(0,2,length.out=5),srt=330,adj=0)
+        text(seq(0.6, 1.4, length = 5), rep(0.45, 5), seq(0.5, 1.5, length.out = 5), srt = 330, adj = 0)
     }
     else{
         par(fig=c(.35,.75,0,.1), new=T)
         plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
         rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=greys(0:50/50),border=F)
-        text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
+        #text(seq(.6,1.4,length=6),rep(.45,6),c('0.0','0.2','0.4','0.6','0.8','1.0'),srt=330,adj=0)
+        text(seq(0.6, 1.4, length = 5), rep(0.45, 5), seq(0.5, 1.5, length.out = 5), srt = 330, adj = 0)
     }
     
     #Turn off pdf development
@@ -637,7 +641,8 @@ plotmap_bic <- function(prefect, polygons, pdfname,res,rr){
     par(fig=c(.35,.75,0,.1), new=T)
     plot(1, xlim=c(0.6,1.5), ylim=c(0.2,1), axes=F, type='n',  xlab="", ylab="")
     rect(seq(.6,1.4,length=50)[-50],.5,seq(.65,1.4,length=50)[-1],.62,col=redblue(0:50/50),border=F)
-    text(seq(.6,1.4,length=5),rep(.45,5),seq(0,2,length.out=5),srt=330,adj=0)
+    #text(seq(.6,1.4,length=5),rep(.45,5),seq(0,2,length.out=5),srt=330,adj=0)
+    text(seq(0.6, 1.4, length = 5), rep(0.45, 5), seq(0.5, 1.5, length.out = 5), srt = 330, adj = 0)
     
     #Turn off pdf development
     dev.off()
