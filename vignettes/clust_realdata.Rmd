@@ -77,12 +77,12 @@ save(resreal, file = filename)
 
 #Create Empty PDF to Map Onto
 #pdfname <- paste0("jbc_analysis_5_7_18",".pdf")
-pdfname <- paste0("jbc_analysis_7_11_18",".pdf")
+pdfname <- paste0("jbc_analysis_7_16_18",".pdf")
 easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal$rrcolors, mods, space="both", probmap=FALSE, obs=TRUE,rr=TRUE)
 
 #BIC map
 #pdfname <- paste0("jbc_analysisBIC_5_7_18",".pdf")
-pdfname <- paste0("jbc_analysisBIC_7_11_18",".pdf")
+pdfname <- paste0("jbc_analysisBIC_7_16_18",".pdf")
 easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal, mods, space="BIC", probmap=FALSE,rr=TRUE)
 
 

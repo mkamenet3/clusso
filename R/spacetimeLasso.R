@@ -209,7 +209,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
         
         res <- list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, numclust.qaic = numclust.qaic,
                     numclust.qaicc = numclust.qaicc, numclust.qbic= numclust.qbic, Ex = Ex, Yx = Yx, 
-                    lasso = lasso, lasso_out=lasso_out,K = K)
+                    lasso = lasso, lasso_out=lasso_out,K = K, coefs.lasso.all = coefs.lasso.all)
     }
     return(res)
 }

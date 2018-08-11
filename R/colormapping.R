@@ -90,10 +90,14 @@ colormapping <- function(rate,Time,cv, prob) {
             if(max(rbic)>2) {warning("Max riskratios from BIC greater than 2")}
             if(max(raic)>2) {warning("Max riskratios from AIC greater than 2")}
             if(max(raicc)>2) {warning("Max riskratios from AICc greater than 2")}
-            color.obs <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(robs[,i],2)))/log(4)))
-            color.qbic <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(rbic[,i],2)))/log(4)))
-            color.qaic <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(raic[,i],2)))/log(4)))
-            color.qaicc <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(raicc[,i],2)))/log(4)))
+            # color.obs <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(robs[,i],2)))/log(4)))
+            # color.qbic <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(rbic[,i],2)))/log(4)))
+            # color.qaic <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(raic[,i],2)))/log(4)))
+            # color.qaicc <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(raicc[,i],2)))/log(4)))
+            color.obs <- sapply(1:Time, function(i) redblue(log(1.5 * pmax((1/1.5), pmin(robs[, i], 1.5)))/log(2.25)))
+            color.qbic <- sapply(1:Time, function(i) redblue(log(1.5 * pmax((1/1.5), pmin(rbic[, i], 1.5)))/log(2.25)))
+            color.qaic <- sapply(1:Time, function(i) redblue(log(1.5 * pmax((1/1.5), pmin(raic[, i], 1.5)))/log(2.25)))
+            color.qaicc <- sapply(1:Time, function(i) redblue(log(1.5 * pmax((1/1.5), pmin(raicc[, i], 1.5)))/log(2.25)))
             res <- list(colors.obs = color.obs, color.qbic = color.qbic, color.qaic = color.qaic, color.qaicc = color.qaicc)
             
         }
