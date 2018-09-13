@@ -58,9 +58,13 @@ overdispfloor <- TRUE
 
 ```{r}
 
-clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE)
+ clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE)
+#clst <- toclust(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)
 
-system.time(resreal <- clust(clst, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor=TRUE, cv=NULL))
+system.time(resrealnew <- clust(clst, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor=TRUE, cv=NULL))
+
+
+#system.time(resreal <- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both"))
 
 ```
 
@@ -72,20 +76,23 @@ Save diagnostics into csv:
 #save results
 #filename <- paste0("jbc_analysis_5_7_18",".RData")
 #filename <- paste0("jbc_analysis_7_11_18",".RData")
-filename <- paste0("jbc_analysis_8_24_18",".RData")
+#filename <- paste0("jbc_analysis_8_24_18",".RData")
+filename <- paste0("jbc_analysis_9_13_18",".RData")
 save(resreal, file = filename)
 
 
 #Create Empty PDF to Map Onto
 #pdfname <- paste0("jbc_analysis_5_7_18",".pdf")
 #pdfname <- paste0("jbc_analysis_7_16_18",".pdf")
-pdfname <- paste0("jbc_analysis_8_24_18",".pdf")
+#pdfname <- paste0("jbc_analysis_8_24_18",".pdf")
+pdfname <- paste0("jbc_analysis_9_13_18",".pdf")
 easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal$rrcolors, mods, space="both", probmap=FALSE, obs=TRUE,rr=TRUE)
 
 #BIC map
 #pdfname <- paste0("jbc_analysisBIC_5_7_18",".pdf")
 #pdfname <- paste0("jbc_analysisBIC_7_16_18",".pdf")
-pdfname <- paste0("jbc_analysisBIC_8_24_18",".pdf")
+#pdfname <- paste0("jbc_analysisBIC_8_24_18",".pdf")
+pdfname <- paste0("jbc_analysisBIC_9_13_18",".pdf")
 easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal, mods, space="BIC", probmap=FALSE,rr=TRUE)
 
 
