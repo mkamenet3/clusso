@@ -171,10 +171,27 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byr
     numCenters <- n
     #CREATE sparseMAT and cache it for use throughout this function
     if(collapsetime==FALSE){
+        #message("Collapse time false")
+        sparseMAT <- spacetimeMat(clusters, numCenters, Time)
+        ############################################
+        #Create time matrix - not lasso'd
+        time_period <- factor(rep(1:Time, each=n_uniq))
+        timeMat <- Matrix::Matrix(model.matrix(~ time_period - 1), sparse=TRUE)
+        #add this to sparsemat
+        sparseMAT <- cbind(sparseMAT, timeMat)
+        ############################################
+        SOAR::Store(sparseMAT)
+        message("Space-time matrix created")
+        
+    }
+    # 
+    # 
+    # 
+    if(collapsetime==FALSE){
         sparseMAT <- spacetimeMat(clusters, numCenters, Time)
         SOAR::Store(sparseMAT)
         message("Creating space-time matrix")
-       
+
     }
     else{
         sparseMAT <- spaceMat(clusters, numCenters)
