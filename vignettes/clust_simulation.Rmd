@@ -243,6 +243,7 @@ risk.ratio <- 2
 nullmod <- NULL #set to NULL if we want to run non-null model (model with a cluster we've created)
 theta <- NULL #with minimal overdispersion (default is 1000). No option for absolutely no overdispersion (yet) TODO
 table.detection <- NULL
+overdispfloor=TRUE
 
 ```
 

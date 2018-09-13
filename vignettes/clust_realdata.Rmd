@@ -71,18 +71,21 @@ Save diagnostics into csv:
 ```{r}
 #save results
 #filename <- paste0("jbc_analysis_5_7_18",".RData")
-filename <- paste0("jbc_analysis_7_11_18",".RData")
+#filename <- paste0("jbc_analysis_7_11_18",".RData")
+filename <- paste0("jbc_analysis_8_24_18",".RData")
 save(resreal, file = filename)
 
 
 #Create Empty PDF to Map Onto
 #pdfname <- paste0("jbc_analysis_5_7_18",".pdf")
-pdfname <- paste0("jbc_analysis_7_16_18",".pdf")
+#pdfname <- paste0("jbc_analysis_7_16_18",".pdf")
+pdfname <- paste0("jbc_analysis_8_24_18",".pdf")
 easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal$rrcolors, mods, space="both", probmap=FALSE, obs=TRUE,rr=TRUE)
 
 #BIC map
 #pdfname <- paste0("jbc_analysisBIC_5_7_18",".pdf")
-pdfname <- paste0("jbc_analysisBIC_7_16_18",".pdf")
+#pdfname <- paste0("jbc_analysisBIC_7_16_18",".pdf")
+pdfname <- paste0("jbc_analysisBIC_8_24_18",".pdf")
 easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal, mods, space="BIC", probmap=FALSE,rr=TRUE)
 
 
@@ -95,12 +98,12 @@ easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal, mods, space="BIC", probm
 
 model <- c(rep("Poisson",2), rep("Quasi-Poisson",2))
 st <- rep(c("Space", "Space-Time"),2)
-numclust.AIC <- c(res$lassoresult.p.s$numclust.qaic, res$lassoresult.p.st$numclust.qaic, 
-                  res$lassoresult.qp.s$numclust.qaic, res$lassoresult.qp.st$numclust.qaic)
-numclust.AICc <- c(res$lassoresult.p.s$numclust.qaicc, res$lassoresult.p.st$numclust.qaicc, 
-                   res$lassoresult.qp.s$numclust.qaicc, res$lassoresult.qp.st$numclust.qaicc)
-numclust.BIC <- c(res$lassoresult.p.s$numclust.qbic, res$lassoresult.p.st$numclust.qbic, 
-                  res$lassoresult.qp.s$numclust.qbic, res$lassoresult.qp.st$numclust.qbic)
+numclust.AIC <- c(resreal$lassoresult.p.s$numclust.qaic, resreal$lassoresult.p.st$numclust.qaic, 
+                  resreal$lassoresult.qp.s$numclust.qaic, resreal$lassoresult.qp.st$numclust.qaic)
+numclust.AICc <- c(resreal$lassoresult.p.s$numclust.qaicc, resreal$lassoresult.p.st$numclust.qaicc, 
+                   resreal$lassoresult.qp.s$numclust.qaicc, resreal$lassoresult.qp.st$numclust.qaicc)
+numclust.BIC <- c(resreal$lassoresult.p.s$numclust.qbic, resreal$lassoresult.p.st$numclust.qbic, 
+                  resreal$lassoresult.qp.s$numclust.qbic, resreal$lassoresult.qp.st$numclust.qbic)
 
 (table.clusters <- cbind(model, st, numclust.AIC, numclust.AICc, numclust.BIC))
 
