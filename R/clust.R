@@ -187,12 +187,12 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, byr
     # 
     # 
     # 
-    if(collapsetime==FALSE){
-        sparseMAT <- spacetimeMat(clusters, numCenters, Time)
-        SOAR::Store(sparseMAT)
-        message("Creating space-time matrix")
-
-    }
+    # if(collapsetime==FALSE){
+    #     sparseMAT <- spacetimeMat(clusters, numCenters, Time)
+    #     SOAR::Store(sparseMAT)
+    #     message("Creating space-time matrix")
+    # 
+    # }
     else{
         sparseMAT <- spaceMat(clusters, numCenters)
         SOAR::Store(sparseMAT)
