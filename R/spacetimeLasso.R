@@ -44,9 +44,11 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
     message("Running Lasso - stay tuned")
     if(!is.null(cv)){
         message("Path selection: cross-validation")
+        penalty <- c(rep(1,(ncol(sparseMAT)-Time)), rep(0,Time))
         lasso <- glmnet::cv.glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex), nlambda = 2000, 
                                    standardize = FALSE, intercept=FALSE,dfmax = 10, 
-                                   nfolds = cv, exclude=(ncol(sparseMAT)-(Time-1)):ncol(sparseMAT)) 
+                                   nfolds = cv, 
+                                   penalty.factor = penalty) 
     }
     else{
         message("Path selection: information criteria")
