@@ -183,7 +183,7 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, pan
     ##color mapping
     rrcolors.p.st <- colormapping(riskratios.p.st,Time, cv, prob=FALSE)
     rrcolors.qp.st <- colormapping(riskratios.qp.st,Time, cv, prob = FALSE)
-
+    
     #space only
     ##risk ratios
     initial.s <- list(E0 = unlist(vectors.s$E0_0))
@@ -193,6 +193,7 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, pan
     riskratios.qp.s <- get_rr(lassoresult.qp.s,vectors.s,initial.s,
                               as.vector(matrix(E1, ncol=Time)),
                               Time,sim=FALSE, cv)
+    
     ##color mapping
     rrcolors.p.s <- colormapping(riskratios.p.s,Time, cv, prob=FALSE)
     rrcolors.qp.s <- colormapping(riskratios.qp.s,Time, cv, prob=FALSE)
