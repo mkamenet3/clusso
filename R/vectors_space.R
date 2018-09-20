@@ -1,3 +1,4 @@
+#'Collapse space-tie onto space by summing counts over time by spatial unit.
 #'
 #'@title
 #'vectors_space
@@ -8,8 +9,8 @@
 #' @param Ex list of simulated and standardized expected counts
 #' @param Yx observed
 #' @param Time number of time periods
-#' @param init initial list of vectors, inherited from function setVectors.
-#' @return returns space-time 
+#' @param init initial list of vectors, inherited from function \code{setVectors}.
+#' @return returns spatial units with counts aggregated over time periods.
 #' 
 vectors_space <- function(x,Ex, Yx,Time, init){
     id <- rep(1:length(x), times = Time)
