@@ -58,13 +58,8 @@ overdispfloor <- TRUE
 
 ```{r}
 
- clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE)
-#clst <- toclust(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)
-
-system.time(resrealnew <- clust(clst, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor=TRUE, cv=NULL))
-
-
-#system.time(resreal <- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both"))
+clst <- toclust(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)
+system.time(resreal <- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both"))
 
 ```
 
@@ -77,7 +72,7 @@ Save diagnostics into csv:
 #filename <- paste0("jbc_analysis_5_7_18",".RData")
 #filename <- paste0("jbc_analysis_7_11_18",".RData")
 #filename <- paste0("jbc_analysis_8_24_18",".RData")
-filename <- paste0("jbc_analysis_9_13_18",".RData")
+filename <- paste0("jbc_analysis_9_20_18",".RData")
 save(resreal, file = filename)
 
 
@@ -85,7 +80,7 @@ save(resreal, file = filename)
 #pdfname <- paste0("jbc_analysis_5_7_18",".pdf")
 #pdfname <- paste0("jbc_analysis_7_16_18",".pdf")
 #pdfname <- paste0("jbc_analysis_8_24_18",".pdf")
-pdfname <- paste0("jbc_analysis_9_13_18",".pdf")
+pdfname <- paste0("jbc_analysis_9_20_18",".pdf")
 easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal$rrcolors, mods, space="both", probmap=FALSE, obs=TRUE,rr=TRUE)
 
 #BIC map
@@ -153,10 +148,9 @@ rMax <- 20
 Time <- 5
 overdispfloor <- TRUE
 cv <- 10 #how many folds
-clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE)
 
-system.time(res <- clust::clust(clst,x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor=TRUE, cv))
-
+clst <- toclust(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)
+system.time(res<- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both", cv=cv))
 
 ```
 
@@ -218,13 +212,13 @@ japan.prefect2 <- dframe.prefect2[,2:5]
 #Set-up
 head(japanbreastcancer)
 head(utmJapan)
-
+set.seed(1)
 #add a couple of covariates to the dataframe
-covar1 <- rnorm(n = nrow(dframe),mean = 500, sd = 30)
-covar2 <- rpois(n = nrow(dframe), lambda = japanbreastcancer$expdeath)
-covar3 <- rbinom(n = nrow(dframe), size = 50, prob = 0.7)
-covar4 <- rbinom(n = nrow(dframe), 1, 0.5)
-covar5 <- rbinom(n = nrow(dframe), 1, 0.2)
+covar1 <- rnorm(n = nrow(japanbreastcancer),mean = 500, sd = 30)
+covar2 <- rpois(n = nrow(japanbreastcancer), lambda = japanbreastcancer$expdeath)
+covar3 <- rbinom(n = nrow(japanbreastcancer), size = 50, prob = 0.7)
+covar4 <- rbinom(n = nrow(japanbreastcancer), 1, 0.5)
+covar5 <- rbinom(n = nrow(japanbreastcancer), 1, 0.2)
 
 #add new covariates to dataframe
 df <- cbind.data.frame(japanbreastcancer[,-1], covar1, covar2, covar3, covar4, covar5)
@@ -244,10 +238,14 @@ y <- utmJapan$utmy/1000
 rMax <- 20 
 Time <- 5
 overdispfloor <- TRUE
-cv <- 10 #how many folds
-clst <- toclust(df, expected = df$expdeath, observed = df$death, timeperiod = df$period, covars=TRUE)
 
-system.time(res <- clust(clst, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor, cv))
+```
+
+Run **clust**.
+
+```{r}
+clst <- toclust(df, expected = expdeath, observed = death, timeperiod = period, covars=TRUE)
+system.time(res <- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both"))
 
 ```
 
