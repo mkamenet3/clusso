@@ -11,8 +11,8 @@
 #' @param observed Name of variable that contains the observed counts.
 #' @param timeperiod Name of variable that contains the timeperiod in which counts were observed (as factor). 
 #' If spatial-only analysis, create a column that has a single value (ex: "Time1") and convert this to a factor.
-#' @param covars are there additional covariates in the dataframe beyond the three required? If so, set to TRUE. Default is FALSE.
-#' @return clst object
+#' @param covars are there additional covariates in the dataframe beyond the three required? If so, set to \code{TRUE}. Default is \code{FALSE}.
+#' @return \code{clst} object
 #'@examples
 #'\donttest{
 #'data(japanbreastcancer)
