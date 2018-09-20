@@ -20,10 +20,25 @@
 #'}
 
 toclust <- function(df, expected, observed, timeperiod, covars=FALSE){
-    cl <- match.call()
+    if((missing(covars) | covars==FALSE)){
+        covars <- FALSE
+    }
+    else{
+        covars <- TRUE
+    }
+    #print(as.character(expected))
+    #a <- as.character(expected)
+    #print(a)
+    #print(str(expected))
+    # cl <- match.call()
+    # print(cl)
+    # print(str(cl))
     expected <- eval(substitute(expected),df)
     observed <- eval(substitute(observed),df)
     timeperiod <- eval(substitute(timeperiod),df)
+    
+    
+    #print(expected)
     if(inherits(df,"data.frame") == FALSE){
         stop("Input must be a dataframe with clearly labeled covariates")
     }
@@ -40,9 +55,14 @@ toclust <- function(df, expected, observed, timeperiod, covars=FALSE){
         stop("Lengths of at least one of the three required parameters (expected, observed, timeperiod) are not equal. Please check your data.")
     }
     
-    requiredcolNames <- c(unlist(strsplit(as.character(cl[[3]]),"[$]"))[3],
-                          unlist(strsplit(as.character(cl[[4]]),"[$]"))[3],
-                          unlist(strsplit(as.character(cl[[5]]),"[$]"))[3])
+    requiredcolNames <- names(df)[1:3]
+    
+   # requiredcolNames <- c("expected", "observed", "timeperiod")
+        # requiredcolNames <- c(unlist(strsplit(as.character(cl[[3]]),"[$]"))[3],
+    #                       unlist(strsplit(as.character(cl[[4]]),"[$]"))[3],
+    #                       unlist(strsplit(as.character(cl[[5]]),"[$]"))[3])
+    #message(requiredcolNames)
+    
     reqix <- which(names(df) %in% requiredcolNames)
     required_df <- cbind.data.frame(expected, observed,timeperiod)
     if(covars==TRUE){
