@@ -286,7 +286,9 @@ stLasso_cv <- function(lasso, sparseMAT, Ex, Yx){
     #cv version
     ix <- which(lasso$lambda == lasso$lambda.min)
     E.cv <- lasso$glmnet.fit$beta[,ix]
-    mu.cv <- exp(E.cv)
+    #mu.cv <- exp(E.cv)
+    xbetaPath<- sparseMAT%*%lasso$glmnet.fit$beta[,ix]
+    mu <- exp(xbetaPath)
     numclust.cv <- length(unique(E.cv))-Time
     return(list(E.cv = mu[,1], numclust.cv = numclust.cv,
                 Ex = Ex, Yx = Yx, lasso = lasso))
