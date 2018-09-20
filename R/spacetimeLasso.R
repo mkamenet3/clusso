@@ -54,8 +54,8 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
         message("Path selection: information criteria")
         #message(ncol(sparseMAT))
         penalty <- c(rep(1,(ncol(sparseMAT)-Time)), rep(0,Time))
-        #message(str(penalty))
-        #message(tail(penalty))
+        message(str(penalty))
+        message(tail(penalty))
         lasso <- glmnet::glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex), nlambda = 2000,
                                 standardize = FALSE, intercept=FALSE,dfmax = 10,
                                 penalty.factor = penalty)
@@ -105,6 +105,8 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
             exp_coefs_qbic <- c(exp(unique(lasso$beta[,select.qbic])),
                                     exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qbic]))
             numclust.qbic <- length(unique(exp_coefs_qbic))-Time
+            #test <- t(sparseMAT)%*%xbetaPath[,select.qbic]
+            
             
             #QAIC
             PLL.qaic <-  2*(K) - 2*(loglike/overdisp.est)
@@ -283,10 +285,9 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
 stLasso_cv <- function(lasso, sparseMAT, Ex, Yx){
     #cv version
     ix <- which(lasso$lambda == lasso$lambda.min)
-    
-    xbetaPath<- sparseMAT%*%lasso$glmnet.fit$beta[,ix]
-    mu <- exp(xbetaPath)
-    numclust.cv <- length(unique(mu@x))-1
+    E.cv <- lasso$glmnet.fit$beta[,ix]
+    mu.cv <- exp(E.cv)
+    numclust.cv <- length(unique(E.cv))-Time
     return(list(E.cv = mu[,1], numclust.cv = numclust.cv,
                 Ex = Ex, Yx = Yx, lasso = lasso))
 }
