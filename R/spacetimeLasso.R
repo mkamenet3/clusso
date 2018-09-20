@@ -19,6 +19,7 @@
 spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=FALSE,overdispfloor, cv){
     #check for covariates
     covars <- vectors$covars
+#    message(str(covars))
     if(!is.null(covars)){
         message("Running with covariates")
         covarMAT <- Matrix::Matrix(data.matrix(covars), sparse=TRUE)
@@ -54,8 +55,8 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
         message("Path selection: information criteria")
         #message(ncol(sparseMAT))
         penalty <- c(rep(1,(ncol(sparseMAT)-Time)), rep(0,Time))
-        message(str(penalty))
-        message(tail(penalty))
+       # message(str(penalty))
+        #message(tail(penalty))
         lasso <- glmnet::glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex), nlambda = 2000,
                                 standardize = FALSE, intercept=FALSE,dfmax = 10,
                                 penalty.factor = penalty)
@@ -82,7 +83,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
         #Space-Time, Quasi-Poisson only (yes overdispersion)
         #########################################################
         if(spacetime==TRUE & pois == FALSE){
-            message("returning results for space-time Quasi-Poisson model")
+            message("Returning results for space-time Quasi-Poisson model")
             if(!is.null(covars)){
                 offset_reg <- glm(Yx ~ . + as.factor(vectors$Period) + offset(log(Ex)),
                                   data = covars,family=quasipoisson)
@@ -137,7 +138,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
         #Space-Time, Poisson only (no overdispersion)
         #########################################################
         else if(spacetime==TRUE & pois==TRUE){
-            message("returning results for space-time Poisson model")
+            message("Returning results for space-time Poisson model")
             #QBIC
             PLL.qbic  <- -2*(loglike) + ((K)*log(n_uniq*Time))
             select.qbic <- which.min(PLL.qbic)

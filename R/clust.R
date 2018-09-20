@@ -167,7 +167,7 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, pan
     #run lasso
     
     
-    print(c(dim(sparseMAT), n_uniq, str(vectors), str(Time), overdispfloor, cv))
+    #print(c(dim(sparseMAT), n_uniq, str(vectors), str(Time), overdispfloor, cv))
     #print(c(dim(sparseMAT), n_uniq, str(vectors.s), str(Time), overdispfloor, cv))
     lassoresult.p.st <- spacetimeLasso(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=TRUE, overdispfloor, cv)
     lassoresult.qp.st <- spacetimeLasso(sparseMAT, n_uniq, vectors, Time, spacetime=TRUE,pois=FALSE, overdispfloor, cv)
