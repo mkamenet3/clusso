@@ -14,6 +14,7 @@
 #'@param utm default is \code{TRUE}. If \code{FALSE}, then coordinates will be interpreted as Longitude/Latitude and the haversine formula will be used to determine the distance between points.
 #'@param paneldat Is the data in panel/long format? Default is \code{TRUE}. For wide format, specify \code{FALSE} (TODO).
 #'@param analysis A string specifying if the spatial (\code{"space")) TODO, spatio-temporal (\code{"spacetime"}) TODO, or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}. 
+#'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{10}.
 #'@param overdispfloor overdispfloor default is \code{TRUE}. When TRUE, it limits \eqn{\phi1} (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under-dispersion in the model.
 #'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clust}.
 #'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time. TODO
@@ -35,7 +36,7 @@
 #'  }
 
 
-clust <- function(clst, x,y,rMax, Time, utm=TRUE, paneldat=TRUE, analysis = c("space","spacetime", "both"),overdispfloor=TRUE, cv = NULL, collapsetime=FALSE){
+clust <- function(clst, x,y,rMax, Time, utm=TRUE, paneldat=TRUE, analysis = c("space","spacetime", "both"),maxclust = 10,overdispfloor=TRUE, cv = NULL, collapsetime=FALSE){
     if(is(clst, "clst")!=TRUE) stop("clst element not of class `clst`. This is required for the clust function.")
     expected <- clst$required_df$expected
     observed <- clst$required_df$observed
@@ -61,6 +62,14 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, paneldat=TRUE, analysis = c("s
     else{
         paneldat=FALSE
         message("Data assumed to be in panel data. To use vector data instead, please specify 'paneldat=FALSE'")
+    }
+    if(missing(maxclust)){
+        maxclust = 10
+        print(maxclust)
+    }
+    else{
+        maxclust = maxclust
+        print(maxclust)
     }
     if((missing(overdispfloor) | overdispfloor==TRUE)){
         overdispfloor <- TRUE
@@ -88,7 +97,7 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, paneldat=TRUE, analysis = c("s
            #TODO
            # space = 
            # spacetime = 
-           both = clustAll(x, y, rMax,period, expected, observed, covars, Time, utm, paneldat, overdispfloor, cv, collapsetime))
+           both = clustAll(x, y, rMax,period, expected, observed, covars, Time, utm, paneldat, maxclust,overdispfloor, cv, collapsetime))
 }
 
 #' Detect a cluster in space or spacetime using Lasso on observed data    
@@ -108,12 +117,13 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, paneldat=TRUE, analysis = c("s
 #'@param utm default is \code{TRUE}. If \code{FALSE}, then coordinates will be interpreted as Longitude/Latitude and the haversine formula will be used to determine the distance between points.
 #'@param paneldat Is the data in panel/long format? Default is \code{TRUE}. For wide format, specify \code{FALSE} (TODO).
 #'@param overdispfloor overdispfloor default is \code{TRUE}. When TRUE, it limits \eqn{\phi1} (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under-dispersion in the model.
+#'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{10}.
 #'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clust}.
 #'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time. TODO
 #'@inheritParams clust
 #'@return list of output from detection
 
-clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, paneldat, overdispfloor, cv, collapsetime){    
+clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, paneldat, maxclust, overdispfloor, cv, collapsetime){    
     message("Running both Space and Space-Time Models")
     
     #print(c(str(period), str(expected), str(observed), str(covars), str(Time), utm, paneldat, overdispfloor, cv, collapsetime))
@@ -169,10 +179,10 @@ clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, pan
     
     #print(c(dim(sparseMAT), n_uniq, str(vectors), str(Time), overdispfloor, cv))
     #print(c(dim(sparseMAT), n_uniq, str(vectors.s), str(Time), overdispfloor, cv))
-    lassoresult.p.st <- spacetimeLasso(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=TRUE, overdispfloor, cv)
-    lassoresult.qp.st <- spacetimeLasso(sparseMAT, n_uniq, vectors, Time, spacetime=TRUE,pois=FALSE, overdispfloor, cv)
-    lassoresult.p.s <- spacetimeLasso(sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,pois=TRUE, overdispfloor,cv)
-    lassoresult.qp.s <- spacetimeLasso(sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,pois=FALSE, overdispfloor,cv)
+    lassoresult.p.st <- spacetimeLasso(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=TRUE, maxclust, overdispfloor, cv)
+    lassoresult.qp.st <- spacetimeLasso(sparseMAT, n_uniq, vectors, Time, spacetime=TRUE,pois=FALSE, maxclust, overdispfloor, cv)
+    lassoresult.p.s <- spacetimeLasso(sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,pois=TRUE, maxclust, overdispfloor,cv)
+    lassoresult.qp.s <- spacetimeLasso(sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,pois=FALSE, maxclust, overdispfloor,cv)
 
     message("All models ran successfully")
 

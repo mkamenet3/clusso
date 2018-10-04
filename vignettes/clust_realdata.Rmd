@@ -59,7 +59,7 @@ overdispfloor <- TRUE
 ```{r}
 
 clst <- toclust(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)
-system.time(resreal <- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both"))
+system.time(resreal <- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=10))
 
 ```
 
@@ -72,15 +72,16 @@ Save diagnostics into csv:
 #filename <- paste0("jbc_analysis_5_7_18",".RData")
 #filename <- paste0("jbc_analysis_7_11_18",".RData")
 #filename <- paste0("jbc_analysis_8_24_18",".RData")
-filename <- paste0("jbc_analysis_9_20_18",".RData")
-save(resreal, file = filename)
+# filename <- paste0("jbc_analysis_9_20_18",".RData")
+# save(resreal, file = filename)
 
 
 #Create Empty PDF to Map Onto
 #pdfname <- paste0("jbc_analysis_5_7_18",".pdf")
 #pdfname <- paste0("jbc_analysis_7_16_18",".pdf")
 #pdfname <- paste0("jbc_analysis_8_24_18",".pdf")
-pdfname <- paste0("jbc_analysis_9_20_18",".pdf")
+#pdfname <- paste0("jbc_analysis_9_20_18",".pdf")
+pdfname <- paste0("jbc_analysis_10_04_18",".pdf")
 easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal$rrcolors, mods, space="both", probmap=FALSE, obs=TRUE,rr=TRUE)
 
 #BIC map
