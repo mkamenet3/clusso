@@ -61,6 +61,10 @@ clustpretty <- function(clustout, analysis="both", clusteridentify=FALSE, cluste
             message("Using default risk ratio threshold for cluster of > 1.0. To specify a different risk ratio threshold, specify clusterRR. To specify different from background, specify clusterRR='background'")
             clusterRR <- 1.0
         }
+        else if (clusterRR=="background"){
+            clusterRR <- NULL 
+            #as.numeric(apply(resreal$riskratios$riskratios.qp.s$RRbic,2,function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
+        }
         else{
             clusterRR <- clusterRR
         }
