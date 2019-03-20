@@ -63,11 +63,11 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("sp
     }
     if(missing(maxclust)){
         maxclust = 10
-        print(maxclust)
+        #print(maxclust)
     }
     else{
         maxclust = maxclust
-        print(maxclust)
+        #print(maxclust)
     }
     if((missing(overdispfloor) | overdispfloor==TRUE)){
         overdispfloor <- TRUE
@@ -119,16 +119,16 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("sp
 #'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clust}.
 #'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time. TODO
 #'@inheritParams clust
-#'@return list of output from detection
+#'@return list of lists output from detection
 
 clustMaster <- function(analysis, x,y,rMax, period, expected, observed, covars,Time, utm, longdat, maxclust, overdispfloor, cv, collapsetime){  
     if(analysis=="space"){
         analysis_name<-"spatial"
     }
-    if(analysis=="spacetime"){
+    else if(analysis=="spacetime"){
         analysis_name <- "spatio-temporal" 
     }
-    else if(analysis=="both"){
+    else {
         analysis_name <- "both spatial and spatio-temporal"
     }
     message(paste0("Running ", analysis_name," model(s)."))

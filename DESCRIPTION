@@ -20,6 +20,7 @@ Imports:
     RColorBrewer,
     Rcpp (>= 0.12.4),
     SOAR (>= 0.99-11),
+    stringi (>= 1.2.4)
 LinkingTo: Rcpp
 License: GPL (>= 2)
 Maintainer: Maria Kamenetsky <maria.kamenetsky@gmail.com>
