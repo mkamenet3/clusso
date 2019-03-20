@@ -147,14 +147,14 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
            #TODO
            # space = 
            # spacetime = 
-           both = clustAll_sim(x, y, rMax,period, expected, observed, covars, Time, nsim, center, radius, risk.ratio,
+           both = clustMaster_sim(x, y, rMax,period, expected, observed, covars, Time, nsim, center, radius, risk.ratio,
                                      timeperiod,utm, longdat, thresh, theta, nullmod, maxclust,overdispfloor, collapsetime,background_rate))
 }
 
 
 #'
 #'@title
-#'clustAll_sim
+#'clustMaster_sim
 #' @description 
 #'This function runs both the space and space-time Lasso model simulations for all 4 models simulataneously: Quasi-Poisson vs. Poisson in both space and space-time.
 #' This function is to be run on simulated data and all four models are run on the same simulated set. 
@@ -187,7 +187,7 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
 #'@return returns list of lists
 
 
-clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, nsim, center, radius, risk.ratio, 
+clustMaster_sim <- function(x, y, rMax, period, expected, observed, covars,Time, nsim, center, radius, risk.ratio, 
                                timeperiod,utm, longdat, thresh, theta = theta, nullmod=nullmod,
                          maxclust = maxclust, overdispfloor=overdispfloor, collapsetime, background_rate){
     message("Running both Space and Space-Time Models")

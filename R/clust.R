@@ -13,7 +13,7 @@
 #'@param Time Number of time periods or years in your dataset. Must be declared as numeric.
 #'@param utm default is \code{TRUE}. If \code{FALSE}, then coordinates will be interpreted as Longitude/Latitude and the haversine formula will be used to determine the distance between points.
 #'@param longdat Is the data in panel/long format? Default is \code{TRUE}. For wide format, specify \code{FALSE} (TODO).
-#'@param analysis A string specifying if the spatial (\code{"space")) TODO, spatio-temporal (\code{"spacetime"}) TODO, or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}. 
+#'@param analysis A string specifying if the spatial (\code{"space")), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}. 
 #'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{10}.
 #'@param overdispfloor overdispfloor default is \code{TRUE}. When TRUE, it limits \eqn{\phi1} (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under-dispersion in the model.
 #'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clust}.
@@ -29,10 +29,8 @@
 #'rMax <- 20 
 #'Time=5
 #'japanbreastcancer <- japanbreastcancer[,-1] #get rid of indicator column
-#'clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, 
-#'  observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE)
-#'system.time(res <- clust(clst, x1,y1, rMax, Time, utm=TRUE, longdat=TRUE, 
-#'  space="both", overdispfloor=TRUE, cv=NULL))
+#'clst <- toclust(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period)
+#'system.time(resreal <- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=10))
 #'  }
 
 
@@ -96,13 +94,13 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("sp
     switch(analysis, 
            #TODO
            # space = 
-           # spacetime = 
-           both = clustAll(x, y, rMax,period, expected, observed, covars, Time, utm, longdat, maxclust,overdispfloor, cv, collapsetime))
+           #spacetime = 
+           both = clustMaster(x, y, rMax,period, expected, observed, covars, Time, utm, longdat, maxclust,overdispfloor, cv, collapsetime))
 }
 
 #' Detect a cluster in space or spacetime using Lasso on observed data    
 #' @title
-#'clustAll
+#'clustMaster
 #' @description 
 #'This function runs both the space and space-time Lasso model. This function is to be run on observed data. A separate function (clust) is the helper function which will have 
 #'flexibility to specify the space or spacetime or both models to be run (TODO).
@@ -123,7 +121,7 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("sp
 #'@inheritParams clust
 #'@return list of output from detection
 
-clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, longdat, maxclust, overdispfloor, cv, collapsetime){    
+clustMaster <- function(x,y,rMax, period, expected, observed, covars,Time, utm, longdat, maxclust, overdispfloor, cv, collapsetime){    
     message("Running both Space and Space-Time Models")
     
     #print(c(str(period), str(expected), str(observed), str(covars), str(Time), utm, longdat, overdispfloor, cv, collapsetime))
