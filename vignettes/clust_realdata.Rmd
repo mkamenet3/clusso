@@ -58,9 +58,8 @@ overdispfloor <- TRUE
 
 ```{r}
 
-clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE)
-
-system.time(resreal <- clust(clst, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor=TRUE, cv=NULL))
+clst <- toclust(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)
+system.time(resreal <- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=10))
 
 ```
 
@@ -71,18 +70,25 @@ Save diagnostics into csv:
 ```{r}
 #save results
 #filename <- paste0("jbc_analysis_5_7_18",".RData")
-filename <- paste0("jbc_analysis_7_11_18",".RData")
-save(resreal, file = filename)
+#filename <- paste0("jbc_analysis_7_11_18",".RData")
+#filename <- paste0("jbc_analysis_8_24_18",".RData")
+# filename <- paste0("jbc_analysis_9_20_18",".RData")
+# save(resreal, file = filename)
 
 
 #Create Empty PDF to Map Onto
 #pdfname <- paste0("jbc_analysis_5_7_18",".pdf")
-pdfname <- paste0("jbc_analysis_7_16_18",".pdf")
+#pdfname <- paste0("jbc_analysis_7_16_18",".pdf")
+#pdfname <- paste0("jbc_analysis_8_24_18",".pdf")
+#pdfname <- paste0("jbc_analysis_9_20_18",".pdf")
+pdfname <- paste0("jbc_analysis_10_04_18",".pdf")
 easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal$rrcolors, mods, space="both", probmap=FALSE, obs=TRUE,rr=TRUE)
 
 #BIC map
 #pdfname <- paste0("jbc_analysisBIC_5_7_18",".pdf")
-pdfname <- paste0("jbc_analysisBIC_7_16_18",".pdf")
+#pdfname <- paste0("jbc_analysisBIC_7_16_18",".pdf")
+#pdfname <- paste0("jbc_analysisBIC_8_24_18",".pdf")
+pdfname <- paste0("jbc_analysisBIC_9_13_18",".pdf")
 easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal, mods, space="BIC", probmap=FALSE,rr=TRUE)
 
 
@@ -95,12 +101,12 @@ easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal, mods, space="BIC", probm
 
 model <- c(rep("Poisson",2), rep("Quasi-Poisson",2))
 st <- rep(c("Space", "Space-Time"),2)
-numclust.AIC <- c(res$lassoresult.p.s$numclust.qaic, res$lassoresult.p.st$numclust.qaic, 
-                  res$lassoresult.qp.s$numclust.qaic, res$lassoresult.qp.st$numclust.qaic)
-numclust.AICc <- c(res$lassoresult.p.s$numclust.qaicc, res$lassoresult.p.st$numclust.qaicc, 
-                   res$lassoresult.qp.s$numclust.qaicc, res$lassoresult.qp.st$numclust.qaicc)
-numclust.BIC <- c(res$lassoresult.p.s$numclust.qbic, res$lassoresult.p.st$numclust.qbic, 
-                  res$lassoresult.qp.s$numclust.qbic, res$lassoresult.qp.st$numclust.qbic)
+numclust.AIC <- c(resreal$lassoresult.p.s$numclust.qaic, resreal$lassoresult.p.st$numclust.qaic, 
+                  resreal$lassoresult.qp.s$numclust.qaic, resreal$lassoresult.qp.st$numclust.qaic)
+numclust.AICc <- c(resreal$lassoresult.p.s$numclust.qaicc, resreal$lassoresult.p.st$numclust.qaicc, 
+                   resreal$lassoresult.qp.s$numclust.qaicc, resreal$lassoresult.qp.st$numclust.qaicc)
+numclust.BIC <- c(resreal$lassoresult.p.s$numclust.qbic, resreal$lassoresult.p.st$numclust.qbic, 
+                  resreal$lassoresult.qp.s$numclust.qbic, resreal$lassoresult.qp.st$numclust.qbic)
 
 (table.clusters <- cbind(model, st, numclust.AIC, numclust.AICc, numclust.BIC))
 
@@ -143,10 +149,9 @@ rMax <- 20
 Time <- 5
 overdispfloor <- TRUE
 cv <- 10 #how many folds
-clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE)
 
-system.time(res <- clust::clust(clst,x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor=TRUE, cv))
-
+clst <- toclust(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)
+system.time(res<- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both", cv=cv))
 
 ```
 
@@ -208,13 +213,13 @@ japan.prefect2 <- dframe.prefect2[,2:5]
 #Set-up
 head(japanbreastcancer)
 head(utmJapan)
-
+set.seed(1)
 #add a couple of covariates to the dataframe
-covar1 <- rnorm(n = nrow(dframe),mean = 500, sd = 30)
-covar2 <- rpois(n = nrow(dframe), lambda = japanbreastcancer$expdeath)
-covar3 <- rbinom(n = nrow(dframe), size = 50, prob = 0.7)
-covar4 <- rbinom(n = nrow(dframe), 1, 0.5)
-covar5 <- rbinom(n = nrow(dframe), 1, 0.2)
+covar1 <- rnorm(n = nrow(japanbreastcancer),mean = 500, sd = 30)
+covar2 <- rpois(n = nrow(japanbreastcancer), lambda = japanbreastcancer$expdeath)
+covar3 <- rbinom(n = nrow(japanbreastcancer), size = 50, prob = 0.7)
+covar4 <- rbinom(n = nrow(japanbreastcancer), 1, 0.5)
+covar5 <- rbinom(n = nrow(japanbreastcancer), 1, 0.2)
 
 #add new covariates to dataframe
 df <- cbind.data.frame(japanbreastcancer[,-1], covar1, covar2, covar3, covar4, covar5)
@@ -234,10 +239,14 @@ y <- utmJapan$utmy/1000
 rMax <- 20 
 Time <- 5
 overdispfloor <- TRUE
-cv <- 10 #how many folds
-clst <- toclust(df, expected = df$expdeath, observed = df$death, timeperiod = df$period, covars=TRUE)
 
-system.time(res <- clust(clst, x,y, rMax, Time, utm=TRUE, byrow=TRUE, space="both", overdispfloor, cv))
+```
+
+Run **clust**.
+
+```{r}
+clst <- toclust(df, expected = expdeath, observed = death, timeperiod = period, covars=TRUE)
+system.time(res <- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both"))
 
 ```
 

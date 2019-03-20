@@ -3,3 +3,5 @@ Read-and-delete-me.*
 data/*.csv
 vignettes/*.pdf
 *.pdf
+R_simulation/*
+tests_simulation/*

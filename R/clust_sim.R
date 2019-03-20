@@ -1,37 +1,4 @@
-#' @title
-#' vectors_space_sim
-#' @description 
-#' Simulation functions for space and space-time cluster detection with lasso. This function will collapse a space-time vector onto space only
-#' @param x vector coordinates (unique regardless of time period)
-#' @param Ex list of simulated and standardized expected counts
-#' @param YSIM simulated observed
-#' @param Time number of time periods
-#' @param init initial list of vectors, inherited from function setVectors.
-#' @return returns space-time 
-#' 
-vectors_space_sim <- function(x,Ex, YSIM,Time, init){
-    id <- rep(1:length(x), times = Time)
-    if(length(id)!=length(as.vector(Ex[[1]]))){
-        stop("Length of ID var not equal to number of observations")  
-    } 
-    if(!is.null(init$covars)){
-        covars.sim.s <- sapply(1:ncol(init$covars), 
-                           function(i) tapply(as.vector(matrix(init$covars[,i], ncol=Time)),id, 
-                                              function(x) sum(x)))
-    }
-    else{
-        covars.sim.s <- NULL
-    }
-    vectors.sim.s <- list(Period = rep("1", length(x)),
-                          Ex = lapply(1:length(YSIM), function(i) tapply(as.vector(matrix(Ex[[i]], ncol=Time)), id, function(x) sum(x))),
-                          E0_0 = tapply(as.vector(matrix(init$E0, ncol=Time)), id, function(x) sum(x)),
-                          Y.vec = tapply(as.vector(matrix(init$Y.vec, ncol=Time)), id, function(x) round(sum(x))),
-                          covars.s = as.data.frame(covars.sim.s))
-    YSIM.s <- lapply(1:length(YSIM), function(i) tapply(as.vector(matrix(YSIM[[i]], ncol=Time)), id, function(x) round(sum(x))))
-    return(list(vectors.sim.s = vectors.sim.s, YSIM.s = YSIM.s))
-}
-    
-
+#'Detect a cluster in space or spacetime using Lasso - simulation.
 #'@title
 #'clust_sim
 #'@description 
@@ -51,15 +18,15 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init){
 #'we will only be looking at periods 2 and 5. If multi_period is TRUE, then we will instead consider timeperiod through period_end (timeperiod:period_end). Following the same example,
 #'this would mean we look at periods 2, 3, 4, and 5.
 #'@param utm default is true
-#'@param byrow TRUE
-#'@param threshold vector or value as threshold for cluster detection
-#'@param space space and space-time. Default is to run all four models: quasi-poisson and poisson for both space and space-time. User can specify, space = space,
-#'space = spacetime, or space = both.
+#'@param paneldat Is the data in panel/long format? Default is \code{TRUE}. For wide format, specify \code{FALSE} (TODO).
+#'@param threshold vector or value as threshold for cluster detection. Default is NULL. If thresholds supply, must come in pairs (ex: c(0.5, 0.9)) (TODO - make this optional)
+#'@param analysis A string specifying if the spatial (\code{"space")) TODO, spatio-temporal (\code{"spacetime"}) TODO, or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}.
+#'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{10}.
 #'@param theta default is 1000. Can add in overdispersion to simulated model by changing this value.
 #'@param nullmod default is NULL; otherwise will run null model
 #'@param overdispfloor overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
 #'@param collapsetime alternative definition for space-only model to instead collapse expected and observed counts across time. TODO
-#'@param background.rate option to specify varying background rate instead of varying cluster rate for simulation. Default is null. If this option is specified, risk.ratio must be set to "background".
+#'@param background_rate option to specify varying background rate instead of varying cluster rate for simulation. Default is null. If this option is specified, risk.ratio must be set to "background".
 #'@return returns list of lists
 #'@export
 #'@examples
@@ -83,12 +50,12 @@ vectors_space_sim <- function(x,Ex, YSIM,Time, init){
 #'clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, 
 #'  observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE)
 #'res <- clust_sim(clst, x1,y1,rMax, Time, nsim,center, radius, risk.ratio, 
-#'  timeperiod, utm=TRUE, byrow=TRUE, 
-#'threshold, space= "both",theta = theta, nullmod = TRUE, overdispfloor)
+#'  timeperiod, utm=TRUE, paneldat=TRUE, 
+#'threshold, analysis= "both",theta = theta, nullmod = TRUE, overdispfloor)
 #'}
 clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio, 
-                          timeperiod, utm=TRUE, byrow=TRUE, threshold, space = c("space", "spacetime", "both"), 
-                      theta = NULL,nullmod=NULL, overdispfloor,collapsetime=FALSE, background.rate=NULL){
+                          timeperiod, utm=TRUE, paneldat=TRUE, threshold, analysis = c("space", "spacetime", "both"), 
+                      maxclust=10, theta = NULL,nullmod=NULL, overdispfloor,collapsetime=FALSE, background_rate=NULL){
     if(is(clst, "clst")!=TRUE) stop("clst element not of class `clst`. This is required for the clust_sim function.")
     expected <- clst$required_df$expected
     observed <- clst$required_df$observed
@@ -100,29 +67,35 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
     else{
         covars <- NULL
     }
-    if(utm==FALSE){
-        message("Coordinates are assumed to be in lat/long coordinates. For utm coordinates, please specify 'utm=TRUE'")
-        utm=FALSE
-    }
-    else{
+    if((missing(utm) | utm==TRUE)){
         utm=TRUE
     }
-    if(byrow==FALSE){
-        byrow=FALSE
+    else{
+        message("Coordinates are assumed to be in lat/long coordinates. For UTM coordinates, please specify 'utm=TRUE' or leave empty for default (TRUE).")
+        utm=FALSE
+    }
+    if((missing(paneldat) | paneldat==TRUE)){
+        paneldat=TRUE
     }
     else{
-        byrow=TRUE
-        message("Data assumed to be in panel data. To use vector data instead, please specify 'byrow=FALSE'")
+        paneldat=FALSE
+        message("Data assumed to be in panel data. To use vector data instead, please specify 'paneldat=FALSE'")
     }
-    if(overdispfloor==FALSE){
-        overdispfloor <- FALSE
+    if(missing(maxclust)){
+        maxclust = 10
     }
     else{
+        maxclust = maxclust
+    }
+    if((missing(overdispfloor) | overdispfloor==TRUE)){
         overdispfloor <- TRUE
     }
+    else{
+        overdispfloor <- FALSE
+    }
     if(!is.null(nullmod)){
-        if(isTRUE(nullmod)) warning("Null mod has been set to true")
-        nullmod<-TRUE
+        if(isTRUE(nullmod)) warning("Null model has been set to true")
+        nullmod <- TRUE
         message("Running null models. For simulation models, leave nullmod NULL")
     }
     else{
@@ -130,13 +103,13 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
     }
     
     #####
-    #message(paste0("Background rate: ", background.rate))
-    if(isTRUE(!is.null(background.rate))){
-        background.rate <- background.rate
+    #message(paste0("Background rate: ", background_rate))
+    if(isTRUE(!is.null(background_rate))){
+        background_rate <- background_rate
         message("Running model with varying background rate.")
     }
     else{
-        background.rate <- NULL
+        background_rate <- NULL
         message("Running model with varying rate inside cluster.")
     }
     
@@ -155,19 +128,27 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
     }
     if(!is.null(threshold)){
         thresh <- threshold
+        message(paste0("Thresholds specified at: ", thresh[1], " and at ", thresh[2])) 
     }
     else{
         thresh <- NULL
         message("No threshold diagnostics specified.")
     }
-    if(length(space) > 1) stop("You must select either `space`, `spacetime`, or `both`")
-    space <- match.arg(space, several.ok = FALSE)
-    switch(space, 
+    if(collapsetime==TRUE){
+        warning("You've selected to collapse time periods on space. This will results in averaging of counts by geographic unit.
+                To allow time to vary across geographic unit, select `collapsetime=FALSE` (DEFAULT).")
+    }
+    else{
+        collapsetime=FALSE
+    }
+    if(length(analysis) > 1) stop("You must select either `space`, `spacetime`, or `both`")
+    analysis <- match.arg(analysis, several.ok = FALSE)
+    switch(analysis, 
            #TODO
            # space = 
            # spacetime = 
            both = clustAll_sim(x, y, rMax,period, expected, observed, covars, Time, nsim, center, radius, risk.ratio,
-                                     timeperiod,utm, byrow, thresh, theta, nullmod, overdispfloor, collapsetime,background.rate))
+                                     timeperiod,utm, paneldat, thresh, theta, nullmod, maxclust,overdispfloor, collapsetime,background_rate))
 }
 
 
@@ -194,26 +175,27 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
 #'we will only be looking at periods 2 and 5. If multi_period is TRUE, then we will instead consider timeperiod through period_end (timeperiod:period_end). Following the same example,
 #'this would mean we look at periods 2, 3, 4, and 5.
 #'@param utm utm TRUE/FALSE as to whether or not the x and y coordinates are in UTM (TRUE) or LAT/LONG(FALSE)
-#'@param byrow  byrow default is True. If data should be imported by column then set to FALSE
+#'@param paneldat  paneldat default is True. If data should be imported by column then set to FALSE
 #'@param thresh  vector or value as threshold for cluster detection
 #'@param theta default is 1000. Can add in overdispersion to simulated model by changing this value.
 #'@param nullmod if TRUE, then null models will be run. Otherwise, default is null.
+#'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{10}.
 #'@param overdispfloor overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
 #'@param collapsetime alternative definition for space-only model to instead collapse expected and observed counts across time. TODO
-#'@param background.rate option to specify varying background rate instead of varying cluster rate for simulation. Default is null. If this option is specified, risk.ratio must be set to "background".
+#'@param background_rate option to specify varying background rate instead of varying cluster rate for simulation. Default is null. If this option is specified, risk.ratio must be set to "background".
 #'@inheritParams clust_sim
 #'@return returns list of lists
 
 
 clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, nsim, center, radius, risk.ratio, 
-                               timeperiod,utm, byrow, thresh, theta = theta, nullmod=nullmod,
-                         overdispfloor=overdispfloor, collapsetime=FALSE, background.rate){
+                               timeperiod,utm, paneldat, thresh, theta = theta, nullmod=nullmod,
+                         maxclust = maxclust, overdispfloor=overdispfloor, collapsetime, background_rate){
     message("Running both Space and Space-Time Models")
     
     #set up clusters and fitted values
     clusters <- clusters2df(x,y,rMax, utm=utm, length(x))
     n <- length(x)
-    init <- setVectors(period, expected, observed, covars, Time, byrow)
+    init <- setVectors(period, expected, observed, covars, Time, paneldat)
     
     ##Multiple centers/centroids for clusters?
     #TODO change this to be a function and not hard-coded
@@ -241,20 +223,20 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
         rr[cluster$last, timeperiod:Time] = risk.ratio
         message(paste("Running model for period",timeperiod[1]))
     }
-    ##Space-only
-    else{
+    else{ #cluster exists in all time periods
         allTime <- 1:Time
         rr[cluster$last, allTime[1]:tail(allTime, n=1)] <- risk.ratio    
     }
+    ##Space-only
     allTime <- 1:Time
     rr.s[cluster$last, allTime[1]:tail(allTime, n=1)] <- risk.ratio 
     ##Expected Counts and simulations
     #Expected matrices
-    if(isTRUE(!is.null(background.rate))){
+    if(isTRUE(!is.null(background_rate))){
         message("BACKGROUND RATE")
         ###########TODO
-        E1 <- background.rate*as.vector(rr)*init$E0
-        E1.s <- background.rate*as.vector(rr)*init$E0
+        E1 <- background_rate*as.vector(rr)*init$E0
+        E1.s <- background_rate*as.vector(rr)*init$E0
     }
     else{
         E1 <- as.vector(rr)*init$E0
@@ -274,8 +256,8 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     }
     
     #Scale
-    Ex <- scale_sim(YSIM, init, nsim, Time)
-    Ex.s <- scale_sim(YSIM.s, init, nsim, Time)
+    Ex <- clust::scale_sim(YSIM, init, nsim, Time)
+    Ex.s <- clust::scale_sim(YSIM.s, init, nsim, Time)
     
     #create vectors.sim for spacetime
     vectors.sim <- list(Period = Period, Ex = Ex , E0_0 = init$E0, 
@@ -324,17 +306,17 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     # #SPACE-ONLY MODELS
     #set up and run simulation models
     message("RUNNING: SPACE-ONLY QUASI-POISSON")
-    lassoresult.qp.s <- spacetimeLasso_sim(sparseMAT, n_uniq, vectors.sim.s, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM.s, overdispfloor)
+    lassoresult.qp.s <- spacetimeLasso_sim(sparseMAT, n_uniq, vectors.sim.s, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM.s, maxclust,overdispfloor)
 
     message("RUNNING: SPACE-ONLY POISSON")
-    lassoresult.p.s <- spacetimeLasso_sim(sparseMAT, n_uniq, vectors.sim.s, Time, spacetime=TRUE, pois=TRUE, nsim, YSIM.s, overdispfloor)
+    lassoresult.p.s <- spacetimeLasso_sim(sparseMAT, n_uniq, vectors.sim.s, Time, spacetime=TRUE, pois=TRUE, nsim, YSIM.s, maxclust,overdispfloor)
     
     #SPACE-TIME MODELS 
     #set up and run simulation models
     message("RUNNING: SPACE-TIME QUASI-POISSON")
-    lassoresult.qp.st <- spacetimeLasso_sim(sparseMAT,n_uniq,  vectors.sim, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM, overdispfloor)
+    lassoresult.qp.st <- spacetimeLasso_sim(sparseMAT,n_uniq,  vectors.sim, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM, maxclust,overdispfloor)
     message("RUNNING: SPACE-TIME POISSON")
-    lassoresult.p.st <- spacetimeLasso_sim(sparseMAT, n_uniq, vectors.sim, Time, spacetime=TRUE, pois=TRUE, nsim, YSIM, overdispfloor)
+    lassoresult.p.st <- spacetimeLasso_sim(sparseMAT, n_uniq, vectors.sim, Time, spacetime=TRUE, pois=TRUE, nsim, YSIM, maxclust,overdispfloor)
     
     message("All models ran successfully")
     
@@ -349,6 +331,11 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                               E1.s,
                               Time, sim=TRUE, cv= NULL)
     rrcolors.qp.s <- colormapping(riskratios.qp.s, Time = 5, cv=NULL, prob=FALSE)
+    
+    
+##HERE
+    #test.qp.st <- prob_clusteroverlap(sparseMAT, lassoresult.qp.st, rr, risk.ratio, x, y, rMax, nsim, Time, ncentroids) 
+    
     
     ####Probs and threshold probs
     pb.qp.s <- get_prob(lassoresult.qp.s, initial.s,
@@ -413,106 +400,144 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     probcolors.thresh2 <- list(probcolors.qp.s = probcolors.qp.s.thresh2, probcolors.p.s = probcolors.p.s.thresh2,
                                probcolors.qp.st = probcolors.qp.st.thresh2, probcolors.p.st = probcolors.p.st.thresh2)
     
+    #Detection 10-22
+    # detect_out.qp.st <- prob_clusteroverlap(sparseMAT, lassoresult.qp.st, rr, risk.ratio, x, y, rMax, nsim, Time, ncentroids) 
+    # detect_out.p.st <- prob_clusteroverlap(sparseMAT, lassoresult.p.st, rr, risk.ratio, x, y, rMax, nsim, Time, ncentroids) 
+    # detect_out.qp.s <- prob_clusteroverlap(sparseMAT, lassoresult.qp.s, rr.s, risk.ratio, x, y, rMax, nsim, Time, ncentroids) 
+    # detect_out.p.s <- prob_clusteroverlap(sparseMAT, lassoresult.p.s, rr.s, risk.ratio, x, y, rMax, nsim, Time, ncentroids) 
+    
+    #DETECTION ATTEMPT 11-1
+    # test_clust <- prob_clusteroverlap2(sparseMAT, lassoresult.qp.st, rr, risk.ratio, x, y, rMax, nsim, Time, centroids)
+    # test_null <- prob_clusteroverlap2(sparseMAT, lassoresultnull, rr, risk.ratio, x, y, rMax, nsim, Time, centroids, nullmod = TRUE)
+    
+    ##SPACE
+    #P-S
+    detect <- prob_clusteroverlap2(sparseMAT, lassoresult.p.s, rr, risk.ratio, x, y, rMax, nsim, Time, centroids)
+    detect_out.p.s <- matrix(unlist(detect),nrow=2, byrow = TRUE,
+                              dimnames = list(c("outperc", "inperc"),
+                                              c("(Q)BIC", "(Q)AIC", "(Q)AICc")))
+    
+    #QP-S
+    detect <- prob_clusteroverlap2(sparseMAT, lassoresult.qp.s, rr, risk.ratio, x, y, rMax, nsim, Time, centroids)
+    detect_out.qp.s <- matrix(unlist(detect),nrow=2, byrow = TRUE,
+                              dimnames = list(c("outperc", "inperc"),
+                                              c("(Q)BIC", "(Q)AIC", "(Q)AICc")))
+    
+    
+    ##SPACE-TIME
+    #P-ST
+    detect <- prob_clusteroverlap2(sparseMAT, lassoresult.p.st, rr, risk.ratio, x, y, rMax, nsim, Time, centroids)
+    detect_out.p.st <- matrix(unlist(detect),nrow=2, byrow = TRUE,
+                               dimnames = list(c("outperc", "inperc"),
+                                               c("(Q)BIC", "(Q)AIC", "(Q)AICc")))
+    #QP-ST
+    detect <- prob_clusteroverlap2(sparseMAT, lassoresult.qp.st, rr, risk.ratio, x, y, rMax, nsim, Time, centroids)
+    detect_out.qp.st <- matrix(unlist(detect),nrow=2, byrow = TRUE,
+                               dimnames = list(c("outperc", "inperc"),
+                                               c("(Q)BIC", "(Q)AIC", "(Q)AICc")))
+    
+    
     #DETECTION
     ################################################################
-    ##QP - Space
-    set <- detect_set(lassoresult.qp.s, vectors.sim.s, rr.s, Time, x, y, rMax, center, radius, nullmod,nsim)
-    incluster.qp.s <- detect_incluster(sparseMAT,lassoresult.qp.s, vectors.sim.s, rr.s, set, 1:Time, Time, 
-                                       nsim, under=FALSE, nullmod,risk.ratio,
-                                       center, radius,x,y,rMax,thresh, numCenters)
-    if(!is.null(nullmod)){
-        detect.out.qp.s <- (matrix(unlist(incluster.qp.s), ncol=3, byrow=TRUE,
-                                   dimnames = list(c(
-                                       paste0("prop.null.")),
-                                       c("aic", "aicc", "bic")
-                                   )))
-        detect.out.thresh.qp.s <- NULL
-    }
-    else {
-        detect.out.qp.s <- (matrix(unlist(incluster.qp.s[1:12]),ncol=3, byrow=TRUE,
-                                                       dimnames = list(c(
-                                                           paste0("incluster.centroid.", "nothresh"),
-                                                           paste0("outcluster.centroid.", "nothresh"),
-                                                           paste0("notinpotclus.","nothresh"),
-                                                           paste0("inpotclus.","nothresh")),
-                                                           c("aic","aicc","bic"))))
-        detect.out.thresh.qp.s <- incluster.qp.s[13]
-    }
-    ################################################################
-    ##P - Space
-    set <- detect_set(lassoresult.p.s, vectors.sim.s, rr.s, Time, x, y, rMax, center, radius, nullmod,nsim)
-    incluster.p.s <- detect_incluster(sparseMAT,lassoresult.p.s, vectors.sim.s, rr.s, set, 1:Time, Time, nsim, under=FALSE, nullmod,risk.ratio,
-                                      center, radius,x,y,rMax,thresh, numCenters)
-    
-    if(!is.null(nullmod)){
-        detect.out.p.s <-  (matrix(unlist(incluster.p.s), ncol=3, byrow=TRUE,
-                                   dimnames = list(c(
-                                       paste0("prop.null.")),
-                                       c("aic", "aicc", "bic")
-                                   )))
-        detect.out.thresh.p.s <- NULL
-    }
-    else {
-        detect.out.p.s <- (matrix(unlist(incluster.p.s[1:12]),ncol=3, byrow=TRUE,
-                                   dimnames = list(c(
-                                       paste0("incluster.centroid.", "nothresh"),
-                                       paste0("outcluster.centroid.", "nothresh"),
-                                       paste0("notinpotclus.","nothresh"),
-                                       paste0("inpotclus.","nothresh")),
-                                       c("aic","aicc","bic"))))
-        detect.out.thresh.p.s <- incluster.p.s[13]
-                                      
-    }
-    ################################################################
-    ##QP - SPACETIME
-    set <- detect_set(lassoresult.qp.st, vectors.sim, rr, Time, x, y, rMax, center, radius, nullmod,nsim)
-    incluster.qp.st <- detect_incluster(sparseMAT,lassoresult.qp.st, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE, nullmod,risk.ratio,
-                                        center, radius,x,y,rMax,thresh, numCenters)
- 
-    
-    if(!is.null(nullmod)){
-        detect.out.qp.st <- (matrix(unlist(incluster.qp.st), ncol=3, byrow=TRUE,
-                                    dimnames = list(c(
-                                        paste0("prop.null.")),
-                                        c("aic", "aicc", "bic")
-                                    )))
-        detect.out.thresh.qp.st <- NULL
-    }
-    else{
-        detect.out.qp.st <- (matrix(unlist(incluster.qp.st[1:12]),ncol=3, byrow=TRUE,
-                                   dimnames = list(c(
-                                       paste0("incluster.centroid.", "nothresh"),
-                                       paste0("outcluster.centroid.", "nothresh"),
-                                       paste0("notinpotclus.","nothresh"),
-                                       paste0("inpotclus.","nothresh")),
-                                       c("aic","aicc","bic"))))
-        detect.out.thresh.qp.st <- incluster.qp.st[13]
-    }
-    ################################################################
-    ##P - SPACETIME
-    set <- detect_set(lassoresult.p.st, vectors.sim, rr, Time, x, y, rMax, center, radius, nullmod,nsim)
-    incluster.p.st <- detect_incluster(sparseMAT,lassoresult.p.st, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE, nullmod,risk.ratio,
-                                       center, radius,x,y,rMax,thresh, numCenters)
-    
-    
-    if(!is.null(nullmod)){
-        detect.out.p.st <- (matrix(unlist(incluster.p.st), ncol=3, byrow=TRUE,
-                                   dimnames = list(c(
-                                       paste0("prop.null.")),
-                                       c("aic", "aicc", "bic")
-                                   )))
-        detect.out.thresh.p.st <- NULL
-    }
-    else {
-        detect.out.p.st <- (matrix(unlist(incluster.p.st[1:12]),ncol=3, byrow=TRUE,
-                                   dimnames = list(c(
-                                       paste0("incluster.centroid.", "nothresh"),
-                                       paste0("outcluster.centroid.", "nothresh"),
-                                       paste0("notinpotclus.","nothresh"),
-                                       paste0("inpotclus.","nothresh")),
-                                       c("aic","aicc","bic"))))
-        detect.out.thresh.p.st <- incluster.p.st[13]
-    }
+    # #test.qp.st <- prob_clusteroverlap(sparseMAT, lassoresult.qp.st, rr, risk.ratio, x, y, rMax, nsim, Time, ncentroids) 
+    # ##QP - Space
+    # set <- detect_set(lassoresult.qp.s, vectors.sim.s, rr.s, Time, x, y, rMax, center, radius, nullmod,nsim)
+    # incluster.qp.s <- detect_incluster(sparseMAT,lassoresult.qp.s, vectors.sim.s, rr.s, set, 1:Time, Time, 
+    #                                    nsim, under=FALSE, nullmod,risk.ratio,
+    #                                    center, radius,x,y,rMax,thresh, numCenters)
+    # if(!is.null(nullmod)){
+    #     detect.out.qp.s <- (matrix(unlist(incluster.qp.s[1:12]), ncol=3, paneldat=TRUE,
+    #                                dimnames = list(c(
+    #                                    paste0("prop.null.")),
+    #                                    c("aic", "aicc", "bic")
+    #                                )))
+    #     detect.out.thresh.qp.s <- NULL
+    # }
+    # else {
+    #     detect.out.qp.s <- (matrix(unlist(incluster.qp.s[1:12]),ncol=3, paneldat=TRUE,
+    #                                                    dimnames = list(c(
+    #                                                        paste0("incluster.centroid.", "nothresh"),
+    #                                                        paste0("outcluster.centroid.", "nothresh"),
+    #                                                        paste0("notinpotclus.","nothresh"),
+    #                                                        paste0("inpotclus.","nothresh")),
+    #                                                        c("aic","aicc","bic"))))
+    #     detect.out.thresh.qp.s <- incluster.qp.s[13]
+    # }
+    # ################################################################
+    # ##P - Space
+    # set <- detect_set(lassoresult.p.s, vectors.sim.s, rr.s, Time, x, y, rMax, center, radius, nullmod,nsim)
+    # incluster.p.s <- detect_incluster(sparseMAT,lassoresult.p.s, vectors.sim.s, rr.s, set, 1:Time, Time, nsim, under=FALSE, nullmod,risk.ratio,
+    #                                   center, radius,x,y,rMax,thresh, numCenters)
+    # 
+    # if(!is.null(nullmod)){
+    #     detect.out.p.s <-  (matrix(unlist(incluster.p.s), ncol=3, paneldat=TRUE,
+    #                                dimnames = list(c(
+    #                                    paste0("prop.null.")),
+    #                                    c("aic", "aicc", "bic")
+    #                                )))
+    #     detect.out.thresh.p.s <- NULL
+    # }
+    # else {
+    #     detect.out.p.s <- (matrix(unlist(incluster.p.s[1:12]),ncol=3, paneldat=TRUE,
+    #                                dimnames = list(c(
+    #                                    paste0("incluster.centroid.", "nothresh"),
+    #                                    paste0("outcluster.centroid.", "nothresh"),
+    #                                    paste0("notinpotclus.","nothresh"),
+    #                                    paste0("inpotclus.","nothresh")),
+    #                                    c("aic","aicc","bic"))))
+    #     detect.out.thresh.p.s <- incluster.p.s[13]
+    #                                   
+    # }
+    # ################################################################
+    # ##QP - SPACETIME
+    # set <- detect_set(lassoresult.qp.st, vectors.sim, rr, Time, x, y, rMax, center, radius, nullmod,nsim)
+    # incluster.qp.st <- detect_incluster(sparseMAT,lassoresult.qp.st, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE, nullmod,risk.ratio,
+    #                                     center, radius,x,y,rMax,thresh, numCenters)
+    # 
+    # 
+    # if(!is.null(nullmod)){
+    #     detect.out.qp.st <- (matrix(unlist(incluster.qp.st), ncol=3, paneldat=TRUE,
+    #                                 dimnames = list(c(
+    #                                     paste0("prop.null.")),
+    #                                     c("aic", "aicc", "bic")
+    #                                 )))
+    #     detect.out.thresh.qp.st <- NULL
+    # }
+    # else{
+    #     detect.out.qp.st <- (matrix(unlist(incluster.qp.st[1:12]),ncol=3, paneldat=TRUE,
+    #                                dimnames = list(c(
+    #                                    paste0("incluster.centroid.", "nothresh"),
+    #                                    paste0("outcluster.centroid.", "nothresh"),
+    #                                    paste0("notinpotclus.","nothresh"),
+    #                                    paste0("inpotclus.","nothresh")),
+    #                                    c("aic","aicc","bic"))))
+    #     detect.out.thresh.qp.st <- incluster.qp.st[13]
+    # }
+    # ################################################################
+    # ##P - SPACETIME
+    # set <- detect_set(lassoresult.p.st, vectors.sim, rr, Time, x, y, rMax, center, radius, nullmod,nsim)
+    # incluster.p.st <- detect_incluster(sparseMAT,lassoresult.p.st, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE, nullmod,risk.ratio,
+    #                                    center, radius,x,y,rMax,thresh, numCenters)
+    # 
+    # 
+    # if(!is.null(nullmod)){
+    #     detect.out.p.st <- (matrix(unlist(incluster.p.st), ncol=3, paneldat=TRUE,
+    #                                dimnames = list(c(
+    #                                    paste0("prop.null.")),
+    #                                    c("aic", "aicc", "bic")
+    #                                )))
+    #     detect.out.thresh.p.st <- NULL
+    # }
+    # else {
+    #     detect.out.p.st <- (matrix(unlist(incluster.p.st[1:12]),ncol=3, paneldat=TRUE,
+    #                                dimnames = list(c(
+    #                                    paste0("incluster.centroid.", "nothresh"),
+    #                                    paste0("outcluster.centroid.", "nothresh"),
+    #                                    paste0("notinpotclus.","nothresh"),
+    #                                    paste0("inpotclus.","nothresh")),
+    #                                    c("aic","aicc","bic"))))
+    #     detect.out.thresh.p.st <- incluster.p.st[13]
+    # }
     ################################################################
     SOAR::Remove(sparseMAT)
     
@@ -525,25 +550,26 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
                 rrcolors = rrcolors,
                 probrates = probrates,
                 probcolors = probcolors,
-                probcolors.thresh1 = probcolors.thresh1,
-                probcolors.thresh2 = probcolors.thresh2,
+                #probcolors.thresh1 = probcolors.thresh1,
+                #probcolors.thresh2 = probcolors.thresh2,
                 rr.mat = rr,
                 rr.mat.s = rr.s,
                 init.vec = vectors.sim,
                 init.vec.s = vectors.sim.s ,
                 #return spacetime first
-                incluster.qp.st = incluster.qp.st,
-                incluster.p.st = incluster.p.st,
-                detect.out.thresh.qp.st = detect.out.thresh.qp.st,
-                detect.out.thresh.p.st = detect.out.thresh.p.st,
-                detect.out.p.st = detect.out.p.st,
-                detect.out.qp.st = detect.out.qp.st,
+                #incluster.qp.st = incluster.qp.st,
+                #incluster.p.st = incluster.p.st,
+                #detect.out.thresh.qp.st = detect.out.thresh.qp.st,
+                #detect.out.thresh.p.st = detect.out.thresh.p.st,
+                detect_out.p.st = detect_out.p.st,
+                detect_out.qp.st = detect_out.qp.st,
                 #return space-only second
-                incluster.qp.s = incluster.qp.s,
-                incluster.p.s = incluster.p.s,
-                detect.out.thresh.qp.s = detect.out.thresh.qp.s,
-                detect.out.thresh.p.s = detect.out.thresh.p.s,
-                detect.out.p.s = detect.out.p.s,
-                detect.out.qp.s = detect.out.qp.s))
+                #incluster.qp.s = incluster.qp.s,
+                #incluster.p.s = incluster.p.s,
+                #detect.out.thresh.qp.s = detect.out.thresh.qp.s,
+                #detect.out.thresh.p.s = detect.out.thresh.p.s,
+                detect_out.p.s = detect_out.p.s,
+                detect_out.qp.s = detect_out.qp.s))
 }
+#detect_out.qp.st
 
