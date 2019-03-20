@@ -9,17 +9,26 @@ vignette: >
 
 #Introduction
 
-Load *clust*
+This package is still under development. Please [report any bugs](https://github.com/mkamenet3/cluST/issues).
+
+
+Load `clust`package:
 
 ```{r, message=FALSE, warning=FALSE}
 library("clust")
 
+#load dev version R scripts
+file.sources = list.files("../R/",pattern="*.R")
+sapply(paste0("../R/",file.sources),source,.GlobalEnv)
+load("../data/japanbreastcancer.RData")
 ```
 
 
-## Running the _clust_ with real data
+## Using `clust` with real data (Breast Cancer in Japan)
 
 ### Prepare Data
+
+We start by setting the seed using the `set.seed()` to ensure that the simulation is reproducible. We load the data that comes with the `clust` package with `data("japanbreastcancer")`.
 
 
 ```{r}
@@ -27,13 +36,29 @@ set.seed(8282017)
 
 #load data
 data("japanbreastcancer")
+```
 
+
+To explore the 4 data sets that are part of `japanbreastcancer`, we apply the `head()` function to each of the data sets.
+1. `utmJapan`: data set containing a unique identifier for each centroid (*id*), x-coordinate in UTM (*utmx*), and y-coordinate in UTM (*utmy*)
+1. `dframe.poly2`: polygon tesselations
+1. `dframe.prefect2`: boundaries for the prefects (geographical boundaries) of the region.
+1. `japanbreastcancer`: data set containting a unique identifier for each centroid (*id*), period of observation (categorical variable with 5 levels, *period*), death count (*death*), expected death count (*expdeath)
+
+
+
+```{r}
 #inspect
 head(utmJapan)
 head(dframe.poly2)
 head(dframe.prefect2)
 head(japanbreastcancer)
+```
 
+From the polygons (`dframe.poly2`) data set we extract the second and third columns, only the x and y coordinates of the polygons and create `japan.poly2`. From the prefect boundaries (`dframe.prefect2`) data set, we extract the second through fifth columns - the two x and two y coordinates of the polygons boundaries and create `japan.prefect2`.
+
+
+```{r}
 #take what we need
 japan.poly2 <- dframe.poly2[,2:3]
 japan.prefect2 <- dframe.prefect2[,2:5]
@@ -42,11 +67,27 @@ japan.prefect2 <- dframe.prefect2[,2:5]
 
 ### Set global conditions
 
+When using `clust`, there are certain global parameters that need to be set
+
+There are two types of models we want to run: a quasi-poisson and Poisson model. Specifying this argument will make the output nicer (**TODO: CHANGE THIS TO OPTIONAL, CREATE REASONABLE DEFAULTS**)
+
 ```{r}
 #Initial inputs
 mods <- c("QuasiPoisson", "Poisson")
+```
+
+We take the easting and northing coordinates from the `utmJapan` dataset, set the easting coordinate, `utmx`, to `x` and the northing coordinate, `utmy`, to `y`. Each is divided by 1000 to change the scale from meters to kilometers.
+
+
+```{r}
 x <- utmJapan$utmx/1000
 y <- utmJapan$utmy/1000
+```
+
+Below, we set the maximum radius for a cluster to 20 km (`rMax=20`) based on scientific knowledge of the area and our definition of a meaningful cluster, set the number of unique time periods to 5 (`Time=5`), number of simulations to be run to 10 (`nsim=10`), and set a floor for overdispersion to avoid estimating underdispersion (`overdispfloor=TRUE`). 
+
+
+```{r}
 rMax <- 20 
 Time <- 5
 overdispfloor <- TRUE
@@ -56,39 +97,46 @@ overdispfloor <- TRUE
 
 ### Running the models
 
+The first step is to create a `clst` object using the `toclust()` function. By applying `str()` to `clst`, we see that the `clst` object neatly organizes the data into required covariates (expected counts, observed counts, and timeperiod are required), and other covariates (omitted here). If you have additional covariates, additional covariates will be included in the model and will not be penalized under the LASSO.
+
+
 ```{r}
-
-clst <- toclust(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)
-system.time(resreal <- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=10))
-
+clst <- toclust(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period)
+class(clst)
+str(clst)
 ```
+
+To perform the lasso cluster detection, we use the function `clust()`. 
+
+The first argument is the `clst` object created above, which contains the observed counts, expected counts, and respective time period (as a categorical factor). These are part of the required data. If there are additional covariates we want to include in our model (to be excluded from being penalized by the lasso), then we can include them in the `toclust()` function.
+
+The next two arguments are `x` and `y`, which are the UTM easting and northing coordinates, scaled to be in kilometers. 
+
+The fourth argument is the number of time periods measurements were taken during (`Time`, or 5 in our data). **TODO: address missing data; make this unnecessary if analysis="space"**
+
+The fifth argument species that our coordinates are indeed UTM. The default is lat/lon coordinates.
+
+The sixth argument is `analysis`. The only current option is `both`, which will perform both the spatial and spatio-temporal analyses. **TODO: Allow user specify type of analysis**
+
+The final required argument is `maxclust`. This is the maximum number of actual clusters expected in the given area. This is based on scientific knowledge of the area. For the japanese breast cancer data, we set `maxclust=10`.
+
+The output of `clust()` is assigned to the object `resreal`. `resreal` is a large list of lists. The recommended way to explore the results is to explore the `names(resreal)` and select each sub-list of interest.
+
+```{r}
+system.time(resreal <- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=10))
+names(resreal)
+```
+
+More importantly, however, we can send diagnostics to a csv for further analysis and create maps based on our results.
+
 
 ### Maps
 
-Save diagnostics into csv:
+Create maps using the `easyplot()` function.
 
 ```{r}
-#save results
-#filename <- paste0("jbc_analysis_5_7_18",".RData")
-#filename <- paste0("jbc_analysis_7_11_18",".RData")
-#filename <- paste0("jbc_analysis_8_24_18",".RData")
-# filename <- paste0("jbc_analysis_9_20_18",".RData")
-# save(resreal, file = filename)
-
-
-#Create Empty PDF to Map Onto
-#pdfname <- paste0("jbc_analysis_5_7_18",".pdf")
-#pdfname <- paste0("jbc_analysis_7_16_18",".pdf")
-#pdfname <- paste0("jbc_analysis_8_24_18",".pdf")
-#pdfname <- paste0("jbc_analysis_9_20_18",".pdf")
-pdfname <- paste0("jbc_analysis_10_04_18",".pdf")
+pdfname <- paste0("jbc_analysis_2019_03_19",".pdf")
 easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal$rrcolors, mods, space="both", probmap=FALSE, obs=TRUE,rr=TRUE)
-
-#BIC map
-#pdfname <- paste0("jbc_analysisBIC_5_7_18",".pdf")
-#pdfname <- paste0("jbc_analysisBIC_7_16_18",".pdf")
-#pdfname <- paste0("jbc_analysisBIC_8_24_18",".pdf")
-pdfname <- paste0("jbc_analysisBIC_9_13_18",".pdf")
 easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal, mods, space="BIC", probmap=FALSE,rr=TRUE)
 
 
@@ -96,6 +144,10 @@ easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal, mods, space="BIC", probm
 
 
 ### Diagnostics of Clusters Detected
+
+Finally, we can extract the number of clusters detected by each criterion and compile the information into an easy-to-read table:
+
+**TODO: Make this the OUTPUT**
 
 ```{r}
 
@@ -113,12 +165,12 @@ numclust.BIC <- c(resreal$lassoresult.p.s$numclust.qbic, resreal$lassoresult.p.s
 
 #WRITE TO CSV
 print(table.clusters)
-write.csv(table.clusters, file="tableclusters_codechange_4_16_18.csv", row.names=TRUE)
+write.csv(table.clusters, file="tableclusters_codechange_2019_03_19.csv", row.names=TRUE)
 
 ```
 
 
-
+**TODO: FIX BELOW 2019-03-19**
 
 ## Comparison to Cross-Validation
 
