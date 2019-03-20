@@ -24,13 +24,13 @@ clusters2df <- function(xP,yP, r.max, utm=FALSE,n){
     if(utm==FALSE){
         if(mean(nchar(vapply(strsplit(as.character(xP), "[.]"),"[", 1, FUN.VALUE=character(1))))>2 & 
            mean(nchar(vapply(strsplit(as.character(yP), "[.]"),"[", 1, FUN.VALUE=character(1))))>2)
-            stop("Your coordinates may be in UTM due to character length. Please double check.")
+            message("Your coordinates may be in UTM due to character length. Please double check.")
         tmpR <- (as.matrix(geosphere::distm(cbind(xP, yP), fun=geosphere::distHaversine))[indR,])/1000    
     } 
     else{
         if(mean(nchar(vapply(strsplit(as.character(xP), "[.]"),"[", 1, FUN.VALUE=character(1))))<=2 & 
            mean(nchar(vapply(strsplit(as.character(yP), "[.]"),"[", 1, FUN.VALUE=character(1))))<=2)
-            stop("Your coordinates may be Lat/Long due to character length. Please double check.")
+            message("Your coordinates may be Lat/Long due to character length. Please double check.")
         tmpR = as.matrix(dist(cbind(xP,yP)))[indR,]
     }
     lastR = apply(tmpR, 1, function(x,r) order(x)[1:sum(x<=r)],r=r.max)
