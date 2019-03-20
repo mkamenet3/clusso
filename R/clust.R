@@ -92,7 +92,6 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("sp
     if(length(analysis) > 1) stop("You must select either `space`, `spacetime`, or `both`")
     analysis <- match.arg(analysis, several.ok = FALSE)
     switch(analysis, 
-           #TODO
            space = clustMaster(analysis="space",x, y, rMax,period, expected, observed, covars, Time, utm, longdat, maxclust,overdispfloor, cv, collapsetime),
            spacetime = clustMaster(analysis="spacetime",x, y, rMax,period, expected, observed, covars, Time, utm, longdat, maxclust,overdispfloor, cv, collapsetime),
            both = clustMaster(analysis="both",x, y, rMax,period, expected, observed, covars, Time, utm, longdat, maxclust,overdispfloor, cv, collapsetime))
@@ -164,7 +163,6 @@ clustMaster <- function(analysis, x,y,rMax, period, expected, observed, covars,T
         timeMat <- Matrix::Matrix(model.matrix(~ time_period - 1), sparse=TRUE)
         #add this to sparsemat
         sparseMAT <- cbind(sparseMAT, timeMat)
-        ############################################
         SOAR::Store(sparseMAT)
         message("Space-time matrix created")
     }
@@ -262,57 +260,7 @@ clustMaster <- function(analysis, x,y,rMax, period, expected, observed, covars,T
                     init.vec = vectors,
                     init.vec.s = vectors.s))
     }
-    
-    # 
-    # lassoresult.p.st <- spacetimeLasso(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=TRUE, maxclust, overdispfloor, cv)
-    # lassoresult.qp.st <- spacetimeLasso(sparseMAT, n_uniq, vectors, Time, spacetime=TRUE,pois=FALSE, maxclust, overdispfloor, cv)
-    # lassoresult.p.s <- spacetimeLasso(sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,pois=TRUE, maxclust, overdispfloor,cv)
-    # lassoresult.qp.s <- spacetimeLasso(sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,pois=FALSE, maxclust, overdispfloor,cv)
-
-   
-
-    # #space time
-    # ##risk ratios
-    # riskratios.p.st <- get_rr(lassoresult.p.st, vectors,init,E1,Time, sim=FALSE, cv)
-    # riskratios.qp.st <- get_rr(lassoresult.qp.st, vectors,init,E1,Time, sim=FALSE, cv)
-    # ##color mapping
-    # rrcolors.p.st <- colormapping(riskratios.p.st,Time, cv, prob=FALSE)
-    # rrcolors.qp.st <- colormapping(riskratios.qp.st,Time, cv, prob = FALSE)
-    # 
-    # #space only
-    # ##risk ratios
-    # initial.s <- list(E0 = unlist(vectors.s$E0_0))
-    # riskratios.p.s <- get_rr(lassoresult.p.s, vectors.s,initial.s,
-    #                          as.vector(matrix(E1, ncol=Time)),
-    #                          Time,sim=FALSE, cv)
-    # riskratios.qp.s <- get_rr(lassoresult.qp.s,vectors.s,initial.s,
-    #                           as.vector(matrix(E1, ncol=Time)),
-    #                           Time,sim=FALSE, cv)
-    # 
-    # ##color mapping
-    # rrcolors.p.s <- colormapping(riskratios.p.s,Time, cv, prob=FALSE)
-    # rrcolors.qp.s <- colormapping(riskratios.qp.s,Time, cv, prob=FALSE)
-    # 
-    # #COMBINE RISKRATIOS INTO LISTS
-    # riskratios <- list(riskratios.qp.s = riskratios.qp.s, riskratios.p.s = riskratios.p.s,
-    #                    riskratios.qp.st = riskratios.qp.st, riskratios.p.st = riskratios.p.st)
-    # rrcolors <- list(rrcolors.qp.s = rrcolors.qp.s, rrcolors.p.s = rrcolors.p.s,
-    #                  rrcolors.qp.st = rrcolors.qp.st, rrcolors.p.st = rrcolors.p.st)
-
     SOAR::Remove(sparseMAT)
-
-    # return(list(lassoresult.p.st = lassoresult.p.st,
-    #             #lassoresult.p.st = lassoresult.p.st$lasso_out,
-    #             lassoresult.qp.st = lassoresult.qp.st,
-    #             #lassoresult.qp.st = lassoresult.qp.st$lasso_out,
-    #             lassoresult.p.s = lassoresult.p.s,
-    #             #lassoresult.p.s = lassoresult.p.s$lasso_out,
-    #             lassoresult.qp.s = lassoresult.qp.s,
-    #             #lassoresult.qp.s = lassoresult.qp.s$lasso_out,
-    #             riskratios = riskratios,
-    #             rrcolors = rrcolors,
-    #             init.vec = vectors,
-    #             init.vec.s = vectors.s))
 }
 
 
