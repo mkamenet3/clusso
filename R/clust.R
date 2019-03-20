@@ -93,9 +93,9 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("sp
     analysis <- match.arg(analysis, several.ok = FALSE)
     switch(analysis, 
            #TODO
-           # space = 
-           #spacetime = 
-           both = clustMaster(x, y, rMax,period, expected, observed, covars, Time, utm, longdat, maxclust,overdispfloor, cv, collapsetime))
+           space = clustMaster(analysis="space",x, y, rMax,period, expected, observed, covars, Time, utm, longdat, maxclust,overdispfloor, cv, collapsetime),
+           spacetime = clustMaster(analysis="spacetime",x, y, rMax,period, expected, observed, covars, Time, utm, longdat, maxclust,overdispfloor, cv, collapsetime),
+           both = clustMaster(analysis="both",x, y, rMax,period, expected, observed, covars, Time, utm, longdat, maxclust,overdispfloor, cv, collapsetime))
 }
 
 #' Detect a cluster in space or spacetime using Lasso on observed data    
@@ -104,6 +104,7 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("sp
 #' @description 
 #'This function runs both the space and space-time Lasso model. This function is to be run on observed data. A separate function (clust) is the helper function which will have 
 #'flexibility to specify the space or spacetime or both models to be run (TODO).
+#'@param analysis A string specifying if the spatial (\code{"space")), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}. 
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
 #'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
 #'@param rMax set max radius (in km)
@@ -121,10 +122,17 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("sp
 #'@inheritParams clust
 #'@return list of output from detection
 
-clustMaster <- function(x,y,rMax, period, expected, observed, covars,Time, utm, longdat, maxclust, overdispfloor, cv, collapsetime){    
-    message("Running both Space and Space-Time Models")
-    
-    #print(c(str(period), str(expected), str(observed), str(covars), str(Time), utm, longdat, overdispfloor, cv, collapsetime))
+clustMaster <- function(analysis, x,y,rMax, period, expected, observed, covars,Time, utm, longdat, maxclust, overdispfloor, cv, collapsetime){  
+    if(analysis=="space"){
+        analysis_name<-"spatial"
+    }
+    if(analysis=="spacetime"){
+        analysis_name <- "spatio-temporal" 
+    }
+    else if(analysis=="both"){
+        analysis_name <- "both spatial and spatio-temporal"
+    }
+    message(paste0("Running ", analysis_name," model(s)."))
     #set up clusters and fitted values
     clusters <- clusters2df(x,y,rMax, utm=utm, length(x))
     n <- length(x)
@@ -133,18 +141,24 @@ clustMaster <- function(x,y,rMax, period, expected, observed, covars,Time, utm, 
     Ex <- clust::scale(init, Time)
     Yx <- init$Y.vec
     #set vectors
-    vectors <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec, covars = covars)
-    vectors.s <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec, covars = covars)
-    
+    if(analysis=="spacetime"){
+        vectors <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec, covars = covars)    
+    }
+    else if (analysis=="space"){
+        vectors.s <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec, covars = covars)    
+    }
+    else{
+        #both
+        vectors <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec, covars = covars)    
+        vectors.s <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec, covars = covars)    
+    }
     #create sparseMAT once and cache it   
     n_uniq <- length(unique(clusters$center))
     potClus <- n
     numCenters <- n
     #CREATE sparseMAT and cache it for use throughout this function
     if(collapsetime==FALSE){
-        #message("Collapse time false")
         sparseMAT <- spacetimeMat(clusters, numCenters, Time)
-        ############################################
         #Create time matrix - not lasso'd
         time_period <- factor(rep(1:Time, each=n_uniq))
         timeMat <- Matrix::Matrix(model.matrix(~ time_period - 1), sparse=TRUE)
@@ -153,18 +167,8 @@ clustMaster <- function(x,y,rMax, period, expected, observed, covars,Time, utm, 
         ############################################
         SOAR::Store(sparseMAT)
         message("Space-time matrix created")
-        
     }
-    # 
-    # 
-    # 
-    # if(collapsetime==FALSE){
-    #     sparseMAT <- spacetimeMat(clusters, numCenters, Time)
-    #     SOAR::Store(sparseMAT)
-    #     message("Creating space-time matrix")
-    # 
-    # }
-    else{
+    else {
         sparseMAT <- spaceMat(clusters, numCenters)
         SOAR::Store(sparseMAT)
         message("Creating space-only matrix")
@@ -172,60 +176,143 @@ clustMaster <- function(x,y,rMax, period, expected, observed, covars,Time, utm, 
             covars <- NULL
         }
     }
-    #run lasso
+    #RUN LASSO
+    if(analysis=="spacetime"){
+        lassoresult.p.st <- spacetimeLasso(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=TRUE, maxclust, overdispfloor, cv)
+        lassoresult.qp.st <- spacetimeLasso(sparseMAT, n_uniq, vectors, Time, spacetime=TRUE,pois=FALSE, maxclust, overdispfloor, cv)
+        message("All models ran successfully")
+        #space time
+        ##risk ratios
+        riskratios.p.st <- get_rr(lassoresult.p.st, vectors,init,E1,Time, sim=FALSE, cv)
+        riskratios.qp.st <- get_rr(lassoresult.qp.st, vectors,init,E1,Time, sim=FALSE, cv)
+        ##color mapping
+        rrcolors.p.st <- colormapping(riskratios.p.st,Time, cv, prob=FALSE)
+        rrcolors.qp.st <- colormapping(riskratios.qp.st,Time, cv, prob = FALSE)
+        #COMBINE RISKRATIOS INTO LISTS
+        riskratios <- list(riskratios.qp.st = riskratios.qp.st, riskratios.p.st = riskratios.p.st)
+        rrcolors <- list(rrcolors.qp.st = rrcolors.qp.st, rrcolors.p.st = rrcolors.p.st)
+        return(list(lassoresult.p.st = lassoresult.p.st,
+                    lassoresult.qp.st = lassoresult.qp.st,
+                    riskratios = riskratios,
+                    rrcolors = rrcolors,
+                    init.vec = vectors))
+    }
+    else if (analysis=="space"){
+        lassoresult.p.s <- spacetimeLasso(sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,pois=TRUE, maxclust, overdispfloor,cv)
+        lassoresult.qp.s <- spacetimeLasso(sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,pois=FALSE, maxclust, overdispfloor,cv)
+        message("All models ran successfully")
+        #space only
+        ##risk ratios
+        initial.s <- list(E0 = unlist(vectors.s$E0_0))
+        riskratios.p.s <- get_rr(lassoresult.p.s, vectors.s,initial.s,
+                                 as.vector(matrix(E1, ncol=Time)),
+                                 Time,sim=FALSE, cv)
+        riskratios.qp.s <- get_rr(lassoresult.qp.s,vectors.s,initial.s,
+                                  as.vector(matrix(E1, ncol=Time)),
+                                  Time,sim=FALSE, cv)
+        ##color mapping
+        rrcolors.p.s <- colormapping(riskratios.p.s,Time, cv, prob=FALSE)
+        rrcolors.qp.s <- colormapping(riskratios.qp.s,Time, cv, prob=FALSE)
+        #COMBINE RISKRATIOS INTO LISTS
+        riskratios <- list(riskratios.qp.s = riskratios.qp.s, riskratios.p.s = riskratios.p.s)
+        rrcolors <- list(rrcolors.qp.s = rrcolors.qp.s, rrcolors.p.s = rrcolors.p.s)
+        return(list(lassoresult.p.s = lassoresult.p.s,
+                    lassoresult.qp.s = lassoresult.qp.s,
+                    riskratios = riskratios,
+                    rrcolors = rrcolors,
+                    init.vec.s = vectors.s))
+    }
+    else{
+        #both
+        lassoresult.p.st <- spacetimeLasso(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=TRUE, maxclust, overdispfloor, cv)
+        lassoresult.qp.st <- spacetimeLasso(sparseMAT, n_uniq, vectors, Time, spacetime=TRUE,pois=FALSE, maxclust, overdispfloor, cv)
+        lassoresult.p.s <- spacetimeLasso(sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,pois=TRUE, maxclust, overdispfloor,cv)
+        lassoresult.qp.s <- spacetimeLasso(sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,pois=FALSE, maxclust, overdispfloor,cv)
+        message("All models ran successfully")
+        #space time
+        ##risk ratios
+        riskratios.p.st <- get_rr(lassoresult.p.st, vectors,init,E1,Time, sim=FALSE, cv)
+        riskratios.qp.st <- get_rr(lassoresult.qp.st, vectors,init,E1,Time, sim=FALSE, cv)
+        ##color mapping
+        rrcolors.p.st <- colormapping(riskratios.p.st,Time, cv, prob=FALSE)
+        rrcolors.qp.st <- colormapping(riskratios.qp.st,Time, cv, prob = FALSE)
+        #space only
+        ##risk ratios
+        initial.s <- list(E0 = unlist(vectors.s$E0_0))
+        riskratios.p.s <- get_rr(lassoresult.p.s, vectors.s,initial.s,
+                                 as.vector(matrix(E1, ncol=Time)),
+                                 Time,sim=FALSE, cv)
+        riskratios.qp.s <- get_rr(lassoresult.qp.s,vectors.s,initial.s,
+                                  as.vector(matrix(E1, ncol=Time)),
+                                  Time,sim=FALSE, cv)
+        ##color mapping
+        rrcolors.p.s <- colormapping(riskratios.p.s,Time, cv, prob=FALSE)
+        rrcolors.qp.s <- colormapping(riskratios.qp.s,Time, cv, prob=FALSE)
+        #COMBINE RISKRATIOS INTO LISTS
+        riskratios <- list(riskratios.qp.s = riskratios.qp.s, riskratios.p.s = riskratios.p.s,
+                           riskratios.qp.st = riskratios.qp.st, riskratios.p.st = riskratios.p.st)
+        rrcolors <- list(rrcolors.qp.s = rrcolors.qp.s, rrcolors.p.s = rrcolors.p.s,
+                         rrcolors.qp.st = rrcolors.qp.st, rrcolors.p.st = rrcolors.p.st)
+        return(list(lassoresult.p.st = lassoresult.p.st,
+                    lassoresult.qp.st = lassoresult.qp.st,
+                    lassoresult.p.s = lassoresult.p.s,
+                    lassoresult.qp.s = lassoresult.qp.s,
+                    riskratios = riskratios,
+                    rrcolors = rrcolors,
+                    init.vec = vectors,
+                    init.vec.s = vectors.s))
+    }
     
-    
-    #print(c(dim(sparseMAT), n_uniq, str(vectors), str(Time), overdispfloor, cv))
-    #print(c(dim(sparseMAT), n_uniq, str(vectors.s), str(Time), overdispfloor, cv))
-    lassoresult.p.st <- spacetimeLasso(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=TRUE, maxclust, overdispfloor, cv)
-    lassoresult.qp.st <- spacetimeLasso(sparseMAT, n_uniq, vectors, Time, spacetime=TRUE,pois=FALSE, maxclust, overdispfloor, cv)
-    lassoresult.p.s <- spacetimeLasso(sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,pois=TRUE, maxclust, overdispfloor,cv)
-    lassoresult.qp.s <- spacetimeLasso(sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,pois=FALSE, maxclust, overdispfloor,cv)
+    # 
+    # lassoresult.p.st <- spacetimeLasso(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=TRUE, maxclust, overdispfloor, cv)
+    # lassoresult.qp.st <- spacetimeLasso(sparseMAT, n_uniq, vectors, Time, spacetime=TRUE,pois=FALSE, maxclust, overdispfloor, cv)
+    # lassoresult.p.s <- spacetimeLasso(sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,pois=TRUE, maxclust, overdispfloor,cv)
+    # lassoresult.qp.s <- spacetimeLasso(sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,pois=FALSE, maxclust, overdispfloor,cv)
 
-    message("All models ran successfully")
+   
 
-    #space time
-    ##risk ratios
-    riskratios.p.st <- get_rr(lassoresult.p.st, vectors,init,E1,Time, sim=FALSE, cv)
-    riskratios.qp.st <- get_rr(lassoresult.qp.st, vectors,init,E1,Time, sim=FALSE, cv)
-    ##color mapping
-    rrcolors.p.st <- colormapping(riskratios.p.st,Time, cv, prob=FALSE)
-    rrcolors.qp.st <- colormapping(riskratios.qp.st,Time, cv, prob = FALSE)
-    
-    #space only
-    ##risk ratios
-    initial.s <- list(E0 = unlist(vectors.s$E0_0))
-    riskratios.p.s <- get_rr(lassoresult.p.s, vectors.s,initial.s,
-                             as.vector(matrix(E1, ncol=Time)),
-                             Time,sim=FALSE, cv)
-    riskratios.qp.s <- get_rr(lassoresult.qp.s,vectors.s,initial.s,
-                              as.vector(matrix(E1, ncol=Time)),
-                              Time,sim=FALSE, cv)
-    
-    ##color mapping
-    rrcolors.p.s <- colormapping(riskratios.p.s,Time, cv, prob=FALSE)
-    rrcolors.qp.s <- colormapping(riskratios.qp.s,Time, cv, prob=FALSE)
-
-    #COMBINE RISKRATIOS INTO LISTS
-    riskratios <- list(riskratios.qp.s = riskratios.qp.s, riskratios.p.s = riskratios.p.s,
-                       riskratios.qp.st = riskratios.qp.st, riskratios.p.st = riskratios.p.st)
-    rrcolors <- list(rrcolors.qp.s = rrcolors.qp.s, rrcolors.p.s = rrcolors.p.s,
-                     rrcolors.qp.st = rrcolors.qp.st, rrcolors.p.st = rrcolors.p.st)
+    # #space time
+    # ##risk ratios
+    # riskratios.p.st <- get_rr(lassoresult.p.st, vectors,init,E1,Time, sim=FALSE, cv)
+    # riskratios.qp.st <- get_rr(lassoresult.qp.st, vectors,init,E1,Time, sim=FALSE, cv)
+    # ##color mapping
+    # rrcolors.p.st <- colormapping(riskratios.p.st,Time, cv, prob=FALSE)
+    # rrcolors.qp.st <- colormapping(riskratios.qp.st,Time, cv, prob = FALSE)
+    # 
+    # #space only
+    # ##risk ratios
+    # initial.s <- list(E0 = unlist(vectors.s$E0_0))
+    # riskratios.p.s <- get_rr(lassoresult.p.s, vectors.s,initial.s,
+    #                          as.vector(matrix(E1, ncol=Time)),
+    #                          Time,sim=FALSE, cv)
+    # riskratios.qp.s <- get_rr(lassoresult.qp.s,vectors.s,initial.s,
+    #                           as.vector(matrix(E1, ncol=Time)),
+    #                           Time,sim=FALSE, cv)
+    # 
+    # ##color mapping
+    # rrcolors.p.s <- colormapping(riskratios.p.s,Time, cv, prob=FALSE)
+    # rrcolors.qp.s <- colormapping(riskratios.qp.s,Time, cv, prob=FALSE)
+    # 
+    # #COMBINE RISKRATIOS INTO LISTS
+    # riskratios <- list(riskratios.qp.s = riskratios.qp.s, riskratios.p.s = riskratios.p.s,
+    #                    riskratios.qp.st = riskratios.qp.st, riskratios.p.st = riskratios.p.st)
+    # rrcolors <- list(rrcolors.qp.s = rrcolors.qp.s, rrcolors.p.s = rrcolors.p.s,
+    #                  rrcolors.qp.st = rrcolors.qp.st, rrcolors.p.st = rrcolors.p.st)
 
     SOAR::Remove(sparseMAT)
 
-    return(list(lassoresult.p.st = lassoresult.p.st,
-                #lassoresult.p.st = lassoresult.p.st$lasso_out,
-                lassoresult.qp.st = lassoresult.qp.st,
-                #lassoresult.qp.st = lassoresult.qp.st$lasso_out,
-                lassoresult.p.s = lassoresult.p.s,
-                #lassoresult.p.s = lassoresult.p.s$lasso_out,
-                lassoresult.qp.s = lassoresult.qp.s,
-                #lassoresult.qp.s = lassoresult.qp.s$lasso_out,
-                riskratios = riskratios,
-                rrcolors = rrcolors,
-                init.vec = vectors,
-                init.vec.s = vectors.s))
+    # return(list(lassoresult.p.st = lassoresult.p.st,
+    #             #lassoresult.p.st = lassoresult.p.st$lasso_out,
+    #             lassoresult.qp.st = lassoresult.qp.st,
+    #             #lassoresult.qp.st = lassoresult.qp.st$lasso_out,
+    #             lassoresult.p.s = lassoresult.p.s,
+    #             #lassoresult.p.s = lassoresult.p.s$lasso_out,
+    #             lassoresult.qp.s = lassoresult.qp.s,
+    #             #lassoresult.qp.s = lassoresult.qp.s$lasso_out,
+    #             riskratios = riskratios,
+    #             rrcolors = rrcolors,
+    #             init.vec = vectors,
+    #             init.vec.s = vectors.s))
 }
 
 
