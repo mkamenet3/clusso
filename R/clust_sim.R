@@ -18,7 +18,7 @@
 #'we will only be looking at periods 2 and 5. If multi_period is TRUE, then we will instead consider timeperiod through period_end (timeperiod:period_end). Following the same example,
 #'this would mean we look at periods 2, 3, 4, and 5.
 #'@param utm default is true
-#'@param paneldat Is the data in panel/long format? Default is \code{TRUE}. For wide format, specify \code{FALSE} (TODO).
+#'@param longdat Is the data in panel/long format? Default is \code{TRUE}. For wide format, specify \code{FALSE} (TODO).
 #'@param threshold vector or value as threshold for cluster detection. Default is NULL. If thresholds supply, must come in pairs (ex: c(0.5, 0.9)) (TODO - make this optional)
 #'@param analysis A string specifying if the spatial (\code{"space")) TODO, spatio-temporal (\code{"spacetime"}) TODO, or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}.
 #'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{10}.
@@ -50,11 +50,11 @@
 #'clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, 
 #'  observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE)
 #'res <- clust_sim(clst, x1,y1,rMax, Time, nsim,center, radius, risk.ratio, 
-#'  timeperiod, utm=TRUE, paneldat=TRUE, 
+#'  timeperiod, utm=TRUE, longdat=TRUE, 
 #'threshold, analysis= "both",theta = theta, nullmod = TRUE, overdispfloor)
 #'}
 clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio, 
-                          timeperiod, utm=TRUE, paneldat=TRUE, threshold, analysis = c("space", "spacetime", "both"), 
+                          timeperiod, utm=TRUE, longdat=TRUE, threshold, analysis = c("space", "spacetime", "both"), 
                       maxclust=10, theta = NULL,nullmod=NULL, overdispfloor,collapsetime=FALSE, background_rate=NULL){
     if(is(clst, "clst")!=TRUE) stop("clst element not of class `clst`. This is required for the clust_sim function.")
     expected <- clst$required_df$expected
@@ -74,12 +74,12 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
         message("Coordinates are assumed to be in lat/long coordinates. For UTM coordinates, please specify 'utm=TRUE' or leave empty for default (TRUE).")
         utm=FALSE
     }
-    if((missing(paneldat) | paneldat==TRUE)){
-        paneldat=TRUE
+    if((missing(longdat) | longdat==TRUE)){
+        longdat=TRUE
     }
     else{
-        paneldat=FALSE
-        message("Data assumed to be in panel data. To use vector data instead, please specify 'paneldat=FALSE'")
+        longdat=FALSE
+        message("Data assumed to be in panel data. To use vector data instead, please specify 'longdat=FALSE'")
     }
     if(missing(maxclust)){
         maxclust = 10
@@ -148,7 +148,7 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
            # space = 
            # spacetime = 
            both = clustAll_sim(x, y, rMax,period, expected, observed, covars, Time, nsim, center, radius, risk.ratio,
-                                     timeperiod,utm, paneldat, thresh, theta, nullmod, maxclust,overdispfloor, collapsetime,background_rate))
+                                     timeperiod,utm, longdat, thresh, theta, nullmod, maxclust,overdispfloor, collapsetime,background_rate))
 }
 
 
@@ -175,7 +175,7 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
 #'we will only be looking at periods 2 and 5. If multi_period is TRUE, then we will instead consider timeperiod through period_end (timeperiod:period_end). Following the same example,
 #'this would mean we look at periods 2, 3, 4, and 5.
 #'@param utm utm TRUE/FALSE as to whether or not the x and y coordinates are in UTM (TRUE) or LAT/LONG(FALSE)
-#'@param paneldat  paneldat default is True. If data should be imported by column then set to FALSE
+#'@param longdat  longdat default is True. If data should be imported by column then set to FALSE
 #'@param thresh  vector or value as threshold for cluster detection
 #'@param theta default is 1000. Can add in overdispersion to simulated model by changing this value.
 #'@param nullmod if TRUE, then null models will be run. Otherwise, default is null.
@@ -188,14 +188,14 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
 
 
 clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, nsim, center, radius, risk.ratio, 
-                               timeperiod,utm, paneldat, thresh, theta = theta, nullmod=nullmod,
+                               timeperiod,utm, longdat, thresh, theta = theta, nullmod=nullmod,
                          maxclust = maxclust, overdispfloor=overdispfloor, collapsetime, background_rate){
     message("Running both Space and Space-Time Models")
     
     #set up clusters and fitted values
     clusters <- clusters2df(x,y,rMax, utm=utm, length(x))
     n <- length(x)
-    init <- setVectors(period, expected, observed, covars, Time, paneldat)
+    init <- setVectors(period, expected, observed, covars, Time, longdat)
     
     ##Multiple centers/centroids for clusters?
     #TODO change this to be a function and not hard-coded
@@ -446,7 +446,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     #                                    nsim, under=FALSE, nullmod,risk.ratio,
     #                                    center, radius,x,y,rMax,thresh, numCenters)
     # if(!is.null(nullmod)){
-    #     detect.out.qp.s <- (matrix(unlist(incluster.qp.s[1:12]), ncol=3, paneldat=TRUE,
+    #     detect.out.qp.s <- (matrix(unlist(incluster.qp.s[1:12]), ncol=3, longdat=TRUE,
     #                                dimnames = list(c(
     #                                    paste0("prop.null.")),
     #                                    c("aic", "aicc", "bic")
@@ -454,7 +454,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     #     detect.out.thresh.qp.s <- NULL
     # }
     # else {
-    #     detect.out.qp.s <- (matrix(unlist(incluster.qp.s[1:12]),ncol=3, paneldat=TRUE,
+    #     detect.out.qp.s <- (matrix(unlist(incluster.qp.s[1:12]),ncol=3, longdat=TRUE,
     #                                                    dimnames = list(c(
     #                                                        paste0("incluster.centroid.", "nothresh"),
     #                                                        paste0("outcluster.centroid.", "nothresh"),
@@ -470,7 +470,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     #                                   center, radius,x,y,rMax,thresh, numCenters)
     # 
     # if(!is.null(nullmod)){
-    #     detect.out.p.s <-  (matrix(unlist(incluster.p.s), ncol=3, paneldat=TRUE,
+    #     detect.out.p.s <-  (matrix(unlist(incluster.p.s), ncol=3, longdat=TRUE,
     #                                dimnames = list(c(
     #                                    paste0("prop.null.")),
     #                                    c("aic", "aicc", "bic")
@@ -478,7 +478,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     #     detect.out.thresh.p.s <- NULL
     # }
     # else {
-    #     detect.out.p.s <- (matrix(unlist(incluster.p.s[1:12]),ncol=3, paneldat=TRUE,
+    #     detect.out.p.s <- (matrix(unlist(incluster.p.s[1:12]),ncol=3, longdat=TRUE,
     #                                dimnames = list(c(
     #                                    paste0("incluster.centroid.", "nothresh"),
     #                                    paste0("outcluster.centroid.", "nothresh"),
@@ -496,7 +496,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     # 
     # 
     # if(!is.null(nullmod)){
-    #     detect.out.qp.st <- (matrix(unlist(incluster.qp.st), ncol=3, paneldat=TRUE,
+    #     detect.out.qp.st <- (matrix(unlist(incluster.qp.st), ncol=3, longdat=TRUE,
     #                                 dimnames = list(c(
     #                                     paste0("prop.null.")),
     #                                     c("aic", "aicc", "bic")
@@ -504,7 +504,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     #     detect.out.thresh.qp.st <- NULL
     # }
     # else{
-    #     detect.out.qp.st <- (matrix(unlist(incluster.qp.st[1:12]),ncol=3, paneldat=TRUE,
+    #     detect.out.qp.st <- (matrix(unlist(incluster.qp.st[1:12]),ncol=3, longdat=TRUE,
     #                                dimnames = list(c(
     #                                    paste0("incluster.centroid.", "nothresh"),
     #                                    paste0("outcluster.centroid.", "nothresh"),
@@ -521,7 +521,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     # 
     # 
     # if(!is.null(nullmod)){
-    #     detect.out.p.st <- (matrix(unlist(incluster.p.st), ncol=3, paneldat=TRUE,
+    #     detect.out.p.st <- (matrix(unlist(incluster.p.st), ncol=3, longdat=TRUE,
     #                                dimnames = list(c(
     #                                    paste0("prop.null.")),
     #                                    c("aic", "aicc", "bic")
@@ -529,7 +529,7 @@ clustAll_sim <- function(x, y, rMax, period, expected, observed, covars,Time, ns
     #     detect.out.thresh.p.st <- NULL
     # }
     # else {
-    #     detect.out.p.st <- (matrix(unlist(incluster.p.st[1:12]),ncol=3, paneldat=TRUE,
+    #     detect.out.p.st <- (matrix(unlist(incluster.p.st[1:12]),ncol=3, longdat=TRUE,
     #                                dimnames = list(c(
     #                                    paste0("incluster.centroid.", "nothresh"),
     #                                    paste0("outcluster.centroid.", "nothresh"),

@@ -12,7 +12,7 @@
 #'@param rMax set max radius (in km).
 #'@param Time Number of time periods or years in your dataset. Must be declared as numeric.
 #'@param utm default is \code{TRUE}. If \code{FALSE}, then coordinates will be interpreted as Longitude/Latitude and the haversine formula will be used to determine the distance between points.
-#'@param paneldat Is the data in panel/long format? Default is \code{TRUE}. For wide format, specify \code{FALSE} (TODO).
+#'@param longdat Is the data in panel/long format? Default is \code{TRUE}. For wide format, specify \code{FALSE} (TODO).
 #'@param analysis A string specifying if the spatial (\code{"space")) TODO, spatio-temporal (\code{"spacetime"}) TODO, or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}. 
 #'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{10}.
 #'@param overdispfloor overdispfloor default is \code{TRUE}. When TRUE, it limits \eqn{\phi1} (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under-dispersion in the model.
@@ -31,12 +31,12 @@
 #'japanbreastcancer <- japanbreastcancer[,-1] #get rid of indicator column
 #'clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, 
 #'  observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE)
-#'system.time(res <- clust(clst, x1,y1, rMax, Time, utm=TRUE, paneldat=TRUE, 
+#'system.time(res <- clust(clst, x1,y1, rMax, Time, utm=TRUE, longdat=TRUE, 
 #'  space="both", overdispfloor=TRUE, cv=NULL))
 #'  }
 
 
-clust <- function(clst, x,y,rMax, Time, utm=TRUE, paneldat=TRUE, analysis = c("space","spacetime", "both"),maxclust = 10,overdispfloor=TRUE, cv = NULL, collapsetime=FALSE){
+clust <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("space","spacetime", "both"),maxclust = 10,overdispfloor=TRUE, cv = NULL, collapsetime=FALSE){
     if(is(clst, "clst")!=TRUE) stop("clst element not of class `clst`. This is required for the clust function.")
     expected <- clst$required_df$expected
     observed <- clst$required_df$observed
@@ -56,12 +56,12 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, paneldat=TRUE, analysis = c("s
         message("Coordinates are assumed to be in lat/long coordinates. For UTM coordinates, please specify 'utm=TRUE' or leave empty for defaulte (TRUE).")
         utm=FALSE
     }
-    if((missing(paneldat) | paneldat==TRUE)){
-        paneldat=TRUE
+    if((missing(longdat) | longdat==TRUE)){
+        longdat=TRUE
     }
     else{
-        paneldat=FALSE
-        message("Data assumed to be in panel data. To use vector data instead, please specify 'paneldat=FALSE'")
+        longdat=FALSE
+        message("Data assumed to be in panel data. To use vector data instead, please specify 'longdat=FALSE'")
     }
     if(missing(maxclust)){
         maxclust = 10
@@ -97,7 +97,7 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, paneldat=TRUE, analysis = c("s
            #TODO
            # space = 
            # spacetime = 
-           both = clustAll(x, y, rMax,period, expected, observed, covars, Time, utm, paneldat, maxclust,overdispfloor, cv, collapsetime))
+           both = clustAll(x, y, rMax,period, expected, observed, covars, Time, utm, longdat, maxclust,overdispfloor, cv, collapsetime))
 }
 
 #' Detect a cluster in space or spacetime using Lasso on observed data    
@@ -115,7 +115,7 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, paneldat=TRUE, analysis = c("s
 #'@param covars matrix of covariates.
 #'@param Time Number of time periods or years in your dataset. Must be declared as numeric.
 #'@param utm default is \code{TRUE}. If \code{FALSE}, then coordinates will be interpreted as Longitude/Latitude and the haversine formula will be used to determine the distance between points.
-#'@param paneldat Is the data in panel/long format? Default is \code{TRUE}. For wide format, specify \code{FALSE} (TODO).
+#'@param longdat Is the data in panel/long format? Default is \code{TRUE}. For wide format, specify \code{FALSE} (TODO).
 #'@param overdispfloor overdispfloor default is \code{TRUE}. When TRUE, it limits \eqn{\phi1} (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under-dispersion in the model.
 #'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{10}.
 #'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clust}.
@@ -123,14 +123,14 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, paneldat=TRUE, analysis = c("s
 #'@inheritParams clust
 #'@return list of output from detection
 
-clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, paneldat, maxclust, overdispfloor, cv, collapsetime){    
+clustAll <- function(x,y,rMax, period, expected, observed, covars,Time, utm, longdat, maxclust, overdispfloor, cv, collapsetime){    
     message("Running both Space and Space-Time Models")
     
-    #print(c(str(period), str(expected), str(observed), str(covars), str(Time), utm, paneldat, overdispfloor, cv, collapsetime))
+    #print(c(str(period), str(expected), str(observed), str(covars), str(Time), utm, longdat, overdispfloor, cv, collapsetime))
     #set up clusters and fitted values
     clusters <- clusters2df(x,y,rMax, utm=utm, length(x))
     n <- length(x)
-    init <- setVectors(period, expected, observed, covars, Time, paneldat)
+    init <- setVectors(period, expected, observed, covars, Time, longdat)
     E1 <- init$E0
     Ex <- clust::scale(init, Time)
     Yx <- init$Y.vec
