@@ -71,8 +71,8 @@ Set other conditions. Right now, the null model requires to still input a center
 ```{r}
 rMax=20
 Time=5
-nsim=100 #number of simulations
-#nsim = 2 #feel free to change this back to 100
+#nsim=100 #number of simulations
+nsim = 100 #feel free to change this back to 100
 
 #need inputs for model to run
 center=1
@@ -97,7 +97,8 @@ Run the null model and store results into object *res*.
 japanbreastcancer<- japanbreastcancer[,-1] #get rid of id column to use clst functionl
 
 #create clst class object
-clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE) #no covariates here!
+#clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE) #no covariates here!
+clst <- toclust(japanbreastcancer, expected = expdeath, observed = death, timeperiod = period, covars=FALSE)
 
 #run clust_sim and time it
 system.time(res <- clust_sim(clst, x,y,rMax, Time,
@@ -227,7 +228,7 @@ rMax <- 20
 Time <- 5
 overdispfloor <- TRUE
 #nsim <- 100
-nsim <- 5 #again, nsim is limited to 100 here for illustration only. For an actual simulation, nsim=100 is recommended
+nsim <- 100 #again, nsim is limited to 100 here for illustration only. For an actual simulation, nsim=100 is recommended
 threshold <- c(0.9, 0.5)
 mods <- c("QuasiPoisson", "Poisson")
 
@@ -236,14 +237,20 @@ mods <- c("QuasiPoisson", "Poisson")
 ### Set conditions for cluster
 
 ```{r}
-center <- 150 #can take values 1 - 208 because we have a total of 208 centroids
+#center <- 150 #can take values 1 - 208 because we have a total of 208 centroids
+center <- 75
+#radius <- 11
 radius <- 18
 timeperiods <- c(3:5)
-risk.ratio <- 2
+#risk.ratio <- 1.5
+risk.ratio <- 1.5
 nullmod <- NULL #set to NULL if we want to run non-null model (model with a cluster we've created)
-theta <- NULL #with minimal overdispersion (default is 1000). No option for absolutely no overdispersion (yet) TODO
+#theta <- NULL #with minimal overdispersion (default is 1000). No option for absolutely no overdispersion (yet) TODO
+theta <- 1000
 table.detection <- NULL
 overdispfloor=TRUE
+maxclust <- 10
+
 
 ```
 
@@ -252,10 +259,10 @@ overdispfloor=TRUE
 ```{r}
 japanbreastcancer <- japanbreastcancer[,-1] #need to get rid of id's
 
-clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, observed = japanbreastcancer$death, timeperiod = japanbreastcancer$period, covars=FALSE)
+clst <- toclust(japanbreastcancer, expected = expdeath, observed = death, timeperiod = period, covars=FALSE)
 
 system.time(res <- clust_sim(clst, x, y,rMax,Time, nsim,center, radius, risk.ratio, timeperiods, 
-                             utm=TRUE, byrow=TRUE, threshold, space= "both", theta, nullmod, overdispfloor))
+                             utm=TRUE, paneldat=TRUE, threshold, analysis= "both", maxclust,theta, nullmod, overdispfloor))
 
 ```
 
