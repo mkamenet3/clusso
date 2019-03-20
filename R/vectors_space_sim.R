@@ -1,13 +1,15 @@
+#'Collapse space-tie onto space by summing counts over time by spatial unit - simulation.
+#'
 #' @title
 #' vectors_space_sim
 #' @description 
-#' Simulation functions for space and space-time cluster detection with lasso. This function will collapse a space-time vector onto space only
+#' Simulation functions for space and space-time cluster detection with lasso. This function will collapse a space-time vector onto space only. Function used for simulation.
 #' @param x vector coordinates (unique regardless of time period)
 #' @param Ex list of simulated and standardized expected counts
 #' @param YSIM simulated observed
 #' @param Time number of time periods
 #' @param init initial list of vectors, inherited from function setVectors.
-#' @return returns space-time 
+#' @return returns returns spatial units with counts aggregated over time periods.
 #' 
 vectors_space_sim <- function(x,Ex, YSIM,Time, init){
     id <- rep(1:length(x), times = Time)
