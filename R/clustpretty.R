@@ -118,12 +118,12 @@ clustpretty <- function(clustout, analysis="both", clusteridentify=FALSE, cluste
                 identAICc.p <- lapply(1:ncol(resreal$riskratios$riskratios.p.s$RRaicc),
                                       function(i) which(resreal$riskratios$riskratios.p.s$RRaicc[,i]>clusterRR)) 
             }
-            QBIC = as.data.frame(stri_list2matrix(identBIC.qp)); colnames(QBIC) <- varnames
-            BIC =  as.data.frame(stri_list2matrix(identBIC.p)); colnames(BIC) <- varnames
-            QAIC = as.data.frame(stri_list2matrix(identAIC.qp)); colnames(QAIC) <- varnames
-            AIC = as.data.frame(stri_list2matrix(identAIC.p)); colnames(AIC) <- varnames
-            QAICc = as.data.frame(stri_list2matrix(identAICc.qp)); colnames(QAICc) <- varnames
-            AICc = as.data.frame(stri_list2matrix(identAICc.p)); colnames(AICc) <- varnames
+            QBIC = as.data.frame(stringi::stri_list2matrix(identBIC.qp)); colnames(QBIC) <- varnames
+            BIC =  as.data.frame(stringi::stri_list2matrix(identBIC.p)); colnames(BIC) <- varnames
+            QAIC = as.data.frame(stringi::stri_list2matrix(identAIC.qp)); colnames(QAIC) <- varnames
+            AIC = as.data.frame(stringi::stri_list2matrix(identAIC.p)); colnames(AIC) <- varnames
+            QAICc = as.data.frame(stringi::stri_list2matrix(identAICc.qp)); colnames(QAICc) <- varnames
+            AICc = as.data.frame(stringi::stri_list2matrix(identAICc.p)); colnames(AICc) <- varnames
             identQP <- list(QBIC = QBIC,
                             QAIC = QAIC, 
                             QAICc = QAICc)
@@ -177,12 +177,12 @@ clustpretty <- function(clustout, analysis="both", clusteridentify=FALSE, cluste
                 identAICc.p <- lapply(1:ncol(resreal$riskratios$riskratios.p.st$RRaicc),
                                       function(i) which(resreal$riskratios$riskratios.p.st$RRaicc[,i]>clusterRR)) 
             }
-            QBIC = as.data.frame(stri_list2matrix(identBIC.qp)); colnames(QBIC) <- varnames
-            BIC =  as.data.frame(stri_list2matrix(identBIC.p)); colnames(BIC) <- varnames
-            QAIC = as.data.frame(stri_list2matrix(identAIC.qp)); colnames(QAIC) <- varnames
-            AIC = as.data.frame(stri_list2matrix(identAIC.p)); colnames(AIC) <- varnames
-            QAICc = as.data.frame(stri_list2matrix(identAICc.qp)); colnames(QAICc) <- varnames
-            AICc = as.data.frame(stri_list2matrix(identAICc.p)); colnames(AICc) <- varnames
+            QBIC = as.data.frame(stringi::stri_list2matrix(identBIC.qp)); colnames(QBIC) <- varnames
+            BIC =  as.data.frame(stringi::stri_list2matrix(identBIC.p)); colnames(BIC) <- varnames
+            QAIC = as.data.frame(stringi::stri_list2matrix(identAIC.qp)); colnames(QAIC) <- varnames
+            AIC = as.data.frame(stringi::stri_list2matrix(identAIC.p)); colnames(AIC) <- varnames
+            QAICc = as.data.frame(stringi::stri_list2matrix(identAICc.qp)); colnames(QAICc) <- varnames
+            AICc = as.data.frame(stringi::stri_list2matrix(identAICc.p)); colnames(AICc) <- varnames
             identQP <- list(QBIC = QBIC,
                             QAIC = QAIC, 
                             QAICc = QAICc)
@@ -193,6 +193,7 @@ clustpretty <- function(clustout, analysis="both", clusteridentify=FALSE, cluste
             return(list(table.clusters = table.clusters, table.identified = table.identified))
         }
         else{
+            #both
             varnames <- paste0("Period",1:length(unique(resreal$init.vec.s$Period))) 
             if(clusterRR=="background"){
                 #background rates
@@ -252,6 +253,7 @@ clustpretty <- function(clustout, analysis="both", clusteridentify=FALSE, cluste
                 
             }
             else{
+                #notbackground but set clusterRR
                 #Space
                 identBIC.qp.s <- lapply(1:ncol(resreal$riskratios$riskratios.qp.s$RRbic),
                                         function(i) which(resreal$riskratios$riskratios.qp.s$RRbic[,i]>clusterRR)) 
@@ -265,32 +267,35 @@ clustpretty <- function(clustout, analysis="both", clusteridentify=FALSE, cluste
                                          function(i) which(resreal$riskratios$riskratios.qp.s$RRaicc[,i]>clusterRR)) 
                 identAICc.p.s <- lapply(1:ncol(resreal$riskratios$riskratios.p.s$RRaicc),
                                         function(i) which(resreal$riskratios$riskratios.p.s$RRaicc[,i]>clusterRR)) 
+                #spacetime
+                #spacetime
+                identBIC.qp.st <- lapply(1:ncol(resreal$riskratios$riskratios.qp.st$RRbic),
+                                         function(i) which(resreal$riskratios$riskratios.qp.st$RRbic[,i]>clusterRR)) 
+                identBIC.p.st <- lapply(1:ncol(resreal$riskratios$riskratios.p.st$RRbic),
+                                        function(i) which(resreal$riskratios$riskratios.p.st$RRbic[,i]>clusterRR)) 
+                identAIC.qp.st <- lapply(1:ncol(resreal$riskratios$riskratios.qp.st$RRaic),
+                                         function(i) which(resreal$riskratios$riskratios.qp.st$RRaic[,i]>clusterRR)) 
+                identAIC.p.st <- lapply(1:ncol(resreal$riskratios$riskratios.p.st$RRaic),
+                                        function(i) which(resreal$riskratios$riskratios.p.st$RRaic[,i]>clusterRR)) 
+                identAICc.qp.st <- lapply(1:ncol(resreal$riskratios$riskratios.qp.s$RRaicc),
+                                          function(i) which(resreal$riskratios$riskratios.qp.st$RRaicc[,i]>clusterRR)) 
+                identAICc.p.st <- lapply(1:ncol(resreal$riskratios$riskratios.p.st$RRaicc),
+                                         function(i) which(resreal$riskratios$riskratios.p.s$RRaicc[,i]>clusterRR))
             }
-            QBIC.s = as.data.frame(stri_list2matrix(identBIC.qp.s)); colnames(QBIC.s) <- varnames
-            BIC.s =  as.data.frame(stri_list2matrix(identBIC.p.s)); colnames(BIC.s) <- varnames
-            QAIC.s = as.data.frame(stri_list2matrix(identAIC.qp.s)); colnames(QAIC.s) <- varnames
-            AIC.s = as.data.frame(stri_list2matrix(identAIC.p.s)); colnames(AIC.s) <- varnames
-            QAICc.s = as.data.frame(stri_list2matrix(identAICc.qp.s)); colnames(QAICc.s) <- varnames
-            AICc.s = as.data.frame(stri_list2matrix(identAICc.p.s)); colnames(AICc.s) <- varnames
-            #spacetime
-            identBIC.qp.st <- lapply(1:ncol(resreal$riskratios$riskratios.qp.st$RRbic),
-                                    function(i) which(resreal$riskratios$riskratios.qp.st$RRbic[,i]>clusterRR)) 
-            identBIC.p.st <- lapply(1:ncol(resreal$riskratios$riskratios.p.st$RRbic),
-                                   function(i) which(resreal$riskratios$riskratios.p.st$RRbic[,i]>clusterRR)) 
-            identAIC.qp.st <- lapply(1:ncol(resreal$riskratios$riskratios.qp.st$RRaic),
-                                    function(i) which(resreal$riskratios$riskratios.qp.st$RRaic[,i]>clusterRR)) 
-            identAIC.p.st <- lapply(1:ncol(resreal$riskratios$riskratios.p.st$RRaic),
-                                   function(i) which(resreal$riskratios$riskratios.p.st$RRaic[,i]>clusterRR)) 
-            identAICc.qp.st <- lapply(1:ncol(resreal$riskratios$riskratios.qp.s$RRaicc),
-                                     function(i) which(resreal$riskratios$riskratios.qp.st$RRaicc[,i]>clusterRR)) 
-            identAICc.p.st <- lapply(1:ncol(resreal$riskratios$riskratios.p.st$RRaicc),
-                                    function(i) which(resreal$riskratios$riskratios.p.s$RRaicc[,i]>clusterRR)) 
-            QBIC.st = as.data.frame(stri_list2matrix(identBIC.qp.st)); colnames(QBIC.st) <- varnames
-            BIC.st =  as.data.frame(stri_list2matrix(identBIC.p.st)); colnames(BIC.st) <- varnames
-            QAIC.st = as.data.frame(stri_list2matrix(identAIC.qp.st)); colnames(QAIC.st) <- varnames
-            AIC.st = as.data.frame(stri_list2matrix(identAIC.p.st)); colnames(AIC.st) <- varnames
-            QAICc.st = as.data.frame(stri_list2matrix(identAICc.qp.st)); colnames(QAICc.st) <- varnames
-            AICc.st = as.data.frame(stri_list2matrix(identAICc.p.st)); colnames(AICc.st) <- varnames
+            #space
+            QBIC.s = as.data.frame(stringi::stri_list2matrix(identBIC.qp.s)); colnames(QBIC.s) <- varnames
+            BIC.s =  as.data.frame(stringi::stri_list2matrix(identBIC.p.s)); colnames(BIC.s) <- varnames
+            QAIC.s = as.data.frame(stringi::stri_list2matrix(identAIC.qp.s)); colnames(QAIC.s) <- varnames
+            AIC.s = as.data.frame(stringi::stri_list2matrix(identAIC.p.s)); colnames(AIC.s) <- varnames
+            QAICc.s = as.data.frame(stringi::stri_list2matrix(identAICc.qp.s)); colnames(QAICc.s) <- varnames
+            AICc.s = as.data.frame(stringi::stri_list2matrix(identAICc.p.s)); colnames(AICc.s) <- varnames
+            #spacetime 
+            QBIC.st = as.data.frame(stringi::stri_list2matrix(identBIC.qp.st)); colnames(QBIC.st) <- varnames
+            BIC.st =  as.data.frame(stringi::stri_list2matrix(identBIC.p.st)); colnames(BIC.st) <- varnames
+            QAIC.st = as.data.frame(stringi::stri_list2matrix(identAIC.qp.st)); colnames(QAIC.st) <- varnames
+            AIC.st = as.data.frame(stringi::stri_list2matrix(identAIC.p.st)); colnames(AIC.st) <- varnames
+            QAICc.st = as.data.frame(stringi::stri_list2matrix(identAICc.qp.st)); colnames(QAICc.st) <- varnames
+            AICc.st = as.data.frame(stringi::stri_list2matrix(identAICc.p.st)); colnames(AICc.st) <- varnames
             #Output
             identQP <- list(QBIC.s = QBIC.s, QBIC.st = QBIC.st,
                             QAIC.s = QAIC.s, QAIC.st = QAIC.st, 
