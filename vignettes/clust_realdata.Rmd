@@ -130,23 +130,22 @@ head(calcexpected(japanbreastcancer$death, japanbreastcancer$period, japanbreast
 The output of `clust()` is assigned to the object `resreal`. `resreal` is a large list of lists. The recommended way to explore the results is to explore the `names(resreal)` and select each sub-list of interest.
 
 ```{r}
-system.time(resreal <- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="space", maxclust=10))
+system.time(resreal <- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=10))
 names(resreal)
 ```
 
 We can also use the function `clustpretty()` to create a nice table for the number of clusters detected:
 
 ```{r}
-clustpretty(resreal, analysis="space", clusteridentify=FALSE)
+clustpretty(resreal, analysis="both", clusteridentify=FALSE)
 
-names(clustpretty(resreal, analysis="space", clusteridentify=TRUE))
-clustpretty(resreal, analysis="space", clusteridentify=TRUE)
+names(clustpretty(resreal, analysis="both", clusteridentify=TRUE))
+clustpretty(resreal, analysis="both", clusteridentify=TRUE)
 
-clustpretty(resreal, analysis="space", clusteridentify=TRUE, clusterRR = 1.05)
-clustpretty(resreal, analysis="space", clusteridentify=TRUE, clusterRR = "background")
+clustpretty(resreal, analysis="both", clusteridentify=TRUE, clusterRR = 1.05)
+clustpretty(resreal, analysis="both", clusteridentify=TRUE, clusterRR = "background")
 ```
 
-If we want to
 
 
 More importantly, however, if we have polygons and boundary files, we can use the `easyplot()` function.
