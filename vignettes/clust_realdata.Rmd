@@ -112,13 +112,20 @@ The first argument is the `clst` object created above, which contains the observ
 
 The next two arguments are `x` and `y`, which are the UTM easting and northing coordinates, scaled to be in kilometers. 
 
-The fourth argument is the number of time periods measurements were taken during (`Time`, or 5 in our data). **TODO: address missing data; make this unnecessary if analysis="space" GitHub Issue #50**
+The fourth argument is the number of time periods measurements were taken during (`Time`, or 5 in our data). 
 
 The fifth argument species that our coordinates are indeed UTM. The default is lat/lon coordinates.
 
-The sixth argument is `analysis`. The only current option is `both`, which will perform both the spatial and spatio-temporal analyses. **TODO: Allow user specify type of analysis**
-
+The sixth argument is `analysis`. The only current option is `both`, which will perform both the spatial and spatio-temporal analyses. 
 The final required argument is `maxclust`. This is the maximum number of actual clusters expected in the given area. This is based on scientific knowledge of the area. For the japanese breast cancer data, we set `maxclust=10`.
+
+
+For additional functionality, if you do not have expected counts readily available, they can be calculated using the auxiliary function `calcexpected()`, from the `clust` package.
+
+```{r}
+head(calcexpected(japanbreastcancer$death, japanbreastcancer$period, japanbreastcancer$id, family="poisson"))
+```
+
 
 The output of `clust()` is assigned to the object `resreal`. `resreal` is a large list of lists. The recommended way to explore the results is to explore the `names(resreal)` and select each sub-list of interest.
 
