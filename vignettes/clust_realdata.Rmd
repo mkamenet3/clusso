@@ -136,6 +136,7 @@ names(clustpretty(resreal, analysis="space", clusteridentify=TRUE))
 clustpretty(resreal, analysis="space", clusteridentify=TRUE)
 
 clustpretty(resreal, analysis="space", clusteridentify=TRUE, clusterRR = 1.05)
+clustpretty(resreal, analysis="space", clusteridentify=TRUE, clusterRR = "background")
 ```
 
 If we want to
