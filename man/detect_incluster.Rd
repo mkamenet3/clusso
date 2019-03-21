@@ -4,9 +4,9 @@
 \alias{detect_incluster}
 \title{detect_incluster}
 \usage{
-detect_incluster(sparseMAT, lassoresult, vectors.sim, rr, set, timeperiod, Time,
-  nsim, under = FALSE, nullmod, risk.ratio, center, radius, x, y, rMax,
-  thresh)
+detect_incluster(sparseMAT, lassoresult, vectors.sim, rr, set, timeperiod,
+  Time, nsim, under = FALSE, nullmod, risk.ratio, center, radius, x, y,
+  rMax, thresh, ncentroids)
 }
 \arguments{
 \item{sparseMAT}{large sparse matrix created in \code{clust_sim} function.}
@@ -51,4 +51,3 @@ a model with an under-estimated cluster (artificial cluster <1), and on an eleva
 cells detected that are inside/outside the true cluster and percent of total potential clusters that are at least partially inside/outside the true cluster
 that are detected. Additional criteria with threshold options can also be specified.
 }
-

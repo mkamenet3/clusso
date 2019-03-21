@@ -38,7 +38,7 @@ detect_incluster <- function(sparseMAT,lassoresult, vectors.sim, rr, set, timepe
         ############################
         ##Prob in/out cluster function as function of all potential clusters
         if(is.null(thresh)){
-            clusterdetectionrates <- prob_clusteroverlap(sparseMAT,lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh)
+            clusterdetectionrates <- prob_clusteroverlap(sparseMAT,lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh, ncentroids)
         }
         else{
             if(length(thresh)>1){
@@ -46,7 +46,7 @@ detect_incluster <- function(sparseMAT,lassoresult, vectors.sim, rr, set, timepe
                 }
             else{
                 clusterdetectionrates <- prob_clusteroverlap(sparseMAT,lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh, ncentroids)    
-            sh }
+            }
             
         }
         

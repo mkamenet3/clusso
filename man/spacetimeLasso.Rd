@@ -5,7 +5,7 @@
 \title{spacetimeLasso}
 \usage{
 spacetimeLasso(sparseMAT, n_uniq, vectors, Time, spacetime = TRUE,
-  pois = FALSE, overdispfloor, cv)
+  pois = FALSE, maxclust, overdispfloor, cv)
 }
 \arguments{
 \item{sparseMAT}{large sparse matrix created in \code{clust} function.}
@@ -19,6 +19,8 @@ spacetimeLasso(sparseMAT, n_uniq, vectors, Time, spacetime = TRUE,
 \item{spacetime}{indicator of whether the cluster detection method should be run on all space-time clusters(default) or on only the potential space clusters.}
 
 \item{pois}{whether or not the Quasi-Poisson or Poisson model should be run. Default is pois=FALSE (default is Quasi-Poisson model is to be run)}
+
+\item{maxclust}{Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{10}.}
 
 \item{overdispfloor}{default is TRUE. If TRUE, does not allow for underdispersion. If FALSE, allows for underdispersion (phi < 1)}
 
@@ -34,4 +36,3 @@ This function runs the Lasso regularization technique on our large sparse matric
 \details{
 Spatial and Spatio-Temporal Lasso
 }
-

@@ -20,4 +20,3 @@ plotmap_S_cv(prefect, polygons, pdfname, res, obs)
 \description{
 Space-only plotting
 }
-

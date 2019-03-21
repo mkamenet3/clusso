@@ -18,10 +18,10 @@
 #'Time=5
 #'japanbreastcancer <- japanbreastcancer[,-1] #get rid of indicator column
 #'clst <- toclust(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period)
-#'system.time(resreal <- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=10))
-#'clustpretty(resreal, analysis="both")
-#'clustpretty(resreal, analysis="both", clusteridentify=TRUE)
-#'clustpretty(resreal, analysis="both", clusteridentify=TRUE, clusterRR = 1.05)
+#'system.time(clustout <- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=10))
+#'clustpretty(clustout, analysis="both")
+#'clustpretty(clustout, analysis="both", clusteridentify=TRUE)
+#'clustpretty(clustout, analysis="both", clusteridentify=TRUE, clusterRR = 1.05)
 #'  }
 
 
@@ -30,27 +30,27 @@ clustpretty <- function(clustout, analysis="both", clusteridentify=FALSE, cluste
     if(analysis=="space"){
         model <- c("Poisson", "Quasi-Poisson")
         analysistype <- rep("Space",2)
-        numclust.AIC <- c(resreal$lassoresult.p.s$numclust.qaic,resreal$lassoresult.qp.s$numclust.qaic)
-        numclust.AICc <- c(resreal$lassoresult.p.s$numclust.qaicc, resreal$lassoresult.qp.s$numclust.qaicc)
-        numclust.BIC <- c(resreal$lassoresult.p.s$numclust.qbic, resreal$lassoresult.qp.s$numclust.qbic)
+        numclust.AIC <- c(clustout$lassoresult.p.s$numclust.qaic,clustout$lassoresult.qp.s$numclust.qaic)
+        numclust.AICc <- c(clustout$lassoresult.p.s$numclust.qaicc, clustout$lassoresult.qp.s$numclust.qaicc)
+        numclust.BIC <- c(clustout$lassoresult.p.s$numclust.qbic, clustout$lassoresult.qp.s$numclust.qbic)
     }
     else if(analysis=="spacetime"){
         model <- c("Poisson", "Quasi-Poisson")
         analysistype <- rep("Space-Time",2)
-        numclust.AIC <- c(resreal$lassoresult.p.st$numclust.qaic, resreal$lassoresult.qp.st$numclust.qaic)
-        numclust.AICc <- c(resreal$lassoresult.p.st$numclust.qaicc, resreal$lassoresult.qp.st$numclust.qaicc)
-        numclust.BIC <- c(resreal$lassoresult.p.st$numclust.qbic, resreal$lassoresult.qp.st$numclust.qbic)
+        numclust.AIC <- c(clustout$lassoresult.p.st$numclust.qaic, clustout$lassoresult.qp.st$numclust.qaic)
+        numclust.AICc <- c(clustout$lassoresult.p.st$numclust.qaicc, clustout$lassoresult.qp.st$numclust.qaicc)
+        numclust.BIC <- c(clustout$lassoresult.p.st$numclust.qbic, clustout$lassoresult.qp.st$numclust.qbic)
     }
     else{
         #both
         model <- c(rep("Poisson",2), rep("Quasi-Poisson",2))
         analysistype <- rep(c("Space", "Space-Time"),2)
-        numclust.AIC <- c(resreal$lassoresult.p.s$numclust.qaic, resreal$lassoresult.p.st$numclust.qaic, 
-                          resreal$lassoresult.qp.s$numclust.qaic, resreal$lassoresult.qp.st$numclust.qaic)
-        numclust.AICc <- c(resreal$lassoresult.p.s$numclust.qaicc, resreal$lassoresult.p.st$numclust.qaicc, 
-                           resreal$lassoresult.qp.s$numclust.qaicc, resreal$lassoresult.qp.st$numclust.qaicc)
-        numclust.BIC <- c(resreal$lassoresult.p.s$numclust.qbic, resreal$lassoresult.p.st$numclust.qbic, 
-                          resreal$lassoresult.qp.s$numclust.qbic, resreal$lassoresult.qp.st$numclust.qbic)
+        numclust.AIC <- c(clustout$lassoresult.p.s$numclust.qaic, clustout$lassoresult.p.st$numclust.qaic, 
+                          clustout$lassoresult.qp.s$numclust.qaic, clustout$lassoresult.qp.st$numclust.qaic)
+        numclust.AICc <- c(clustout$lassoresult.p.s$numclust.qaicc, clustout$lassoresult.p.st$numclust.qaicc, 
+                           clustout$lassoresult.qp.s$numclust.qaicc, clustout$lassoresult.qp.st$numclust.qaicc)
+        numclust.BIC <- c(clustout$lassoresult.p.s$numclust.qbic, clustout$lassoresult.p.st$numclust.qbic, 
+                          clustout$lassoresult.qp.s$numclust.qbic, clustout$lassoresult.qp.st$numclust.qbic)
     }
     table.clusters <- cbind.data.frame(model, analysistype, numclust.AIC, numclust.AICc, numclust.BIC)
     
@@ -64,59 +64,59 @@ clustpretty <- function(clustout, analysis="both", clusteridentify=FALSE, cluste
         }
         else if (clusterRR=="background"){
             clusterRR <- "background" 
-            #as.numeric(apply(resreal$riskratios$riskratios.qp.s$RRbic,2,function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
+            #as.numeric(apply(clustout$riskratios$riskratios.qp.s$RRbic,2,function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
         }
         else{
             clusterRR <- clusterRR
         }
         #todo set default to background
         if(analysis=="space"){
-            varnames <- paste0("Period",1:length(unique(resreal$init.vec.s$Period))) 
+            varnames <- paste0("Period",1:length(unique(clustout$init.vec.s$Period))) 
             if(clusterRR=="background"){
                 #background rates
-                clusterRRbic.qp <- as.numeric(apply(resreal$riskratios$riskratios.qp.s$RRbic,2,
+                clusterRRbic.qp <- as.numeric(apply(clustout$riskratios$riskratios.qp.s$RRbic,2,
                                  function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
-                clusterRRaic.qp <- as.numeric(apply(resreal$riskratios$riskratios.qp.s$RRaic,2,
+                clusterRRaic.qp <- as.numeric(apply(clustout$riskratios$riskratios.qp.s$RRaic,2,
                                                  function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
-                clusterRRaicc.qp <- as.numeric(apply(resreal$riskratios$riskratios.qp.s$RRaicc,2,
+                clusterRRaicc.qp <- as.numeric(apply(clustout$riskratios$riskratios.qp.s$RRaicc,2,
                                                  function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
-                clusterRRbic.p <- as.numeric(apply(resreal$riskratios$riskratios.p.s$RRbic,2,
+                clusterRRbic.p <- as.numeric(apply(clustout$riskratios$riskratios.p.s$RRbic,2,
                                                     function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
-                clusterRRaic.p <- as.numeric(apply(resreal$riskratios$riskratios.p.s$RRaic,2,
+                clusterRRaic.p <- as.numeric(apply(clustout$riskratios$riskratios.p.s$RRaic,2,
                                                     function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
-                clusterRRaicc.p <- as.numeric(apply(resreal$riskratios$riskratios.p.s$RRaicc,2,
+                clusterRRaicc.p <- as.numeric(apply(clustout$riskratios$riskratios.p.s$RRaicc,2,
                                                      function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
                 #calc identified
-                #identBIC.qp <- lapply(1:ncol(resreal$riskratios$riskratios.qp.s$RRbic),
-                 #                     function(i) which(round(resreal$riskratios$riskratios.qp.s$RRbic[,i],4)>clusterRRbic.qp[[i]])) 
-                identBIC.qp <- lapply(1:ncol(resreal$riskratios$riskratios.qp.s$RRbic),
-                                      function(i) which(abs(resreal$riskratios$riskratios.qp.s$RRbic[,i] - clusterRRbic.qp[[i]]) > err)) 
+                #identBIC.qp <- lapply(1:ncol(clustout$riskratios$riskratios.qp.s$RRbic),
+                 #                     function(i) which(round(clustout$riskratios$riskratios.qp.s$RRbic[,i],4)>clusterRRbic.qp[[i]])) 
+                identBIC.qp <- lapply(1:ncol(clustout$riskratios$riskratios.qp.s$RRbic),
+                                      function(i) which(abs(clustout$riskratios$riskratios.qp.s$RRbic[,i] - clusterRRbic.qp[[i]]) > err)) 
                 
                 
-                identBIC.p <- lapply(1:ncol(resreal$riskratios$riskratios.p.s$RRbic),
-                                     function(i) which(abs(resreal$riskratios$riskratios.p.s$RRbic[,i]-clusterRRbic.p[[i]])> err)) 
-                identAIC.qp <- lapply(1:ncol(resreal$riskratios$riskratios.qp.s$RRaic),
-                                      function(i) which(abs(resreal$riskratios$riskratios.qp.s$RRaic[,i]-clusterRRaic.qp[[i]])> err)) 
-                identAIC.p <- lapply(1:ncol(resreal$riskratios$riskratios.p.s$RRaic),
-                                     function(i) which(abs(resreal$riskratios$riskratios.p.s$RRaic[,i]-clusterRRaic.p[[i]])> err)) 
-                identAICc.qp <- lapply(1:ncol(resreal$riskratios$riskratios.qp.s$RRaicc),
-                                       function(i) which(abs(resreal$riskratios$riskratios.qp.s$RRaicc[,i]-clusterRRaicc.qp[[i]])> err)) 
-                identAICc.p <- lapply(1:ncol(resreal$riskratios$riskratios.p.s$RRaicc),
-                                      function(i) which(abs(resreal$riskratios$riskratios.p.s$RRaicc[,i]>clusterRRaicc.p[[i]])> err)) 
+                identBIC.p <- lapply(1:ncol(clustout$riskratios$riskratios.p.s$RRbic),
+                                     function(i) which(abs(clustout$riskratios$riskratios.p.s$RRbic[,i]-clusterRRbic.p[[i]])> err)) 
+                identAIC.qp <- lapply(1:ncol(clustout$riskratios$riskratios.qp.s$RRaic),
+                                      function(i) which(abs(clustout$riskratios$riskratios.qp.s$RRaic[,i]-clusterRRaic.qp[[i]])> err)) 
+                identAIC.p <- lapply(1:ncol(clustout$riskratios$riskratios.p.s$RRaic),
+                                     function(i) which(abs(clustout$riskratios$riskratios.p.s$RRaic[,i]-clusterRRaic.p[[i]])> err)) 
+                identAICc.qp <- lapply(1:ncol(clustout$riskratios$riskratios.qp.s$RRaicc),
+                                       function(i) which(abs(clustout$riskratios$riskratios.qp.s$RRaicc[,i]-clusterRRaicc.qp[[i]])> err)) 
+                identAICc.p <- lapply(1:ncol(clustout$riskratios$riskratios.p.s$RRaicc),
+                                      function(i) which(abs(clustout$riskratios$riskratios.p.s$RRaicc[,i]>clusterRRaicc.p[[i]])> err)) 
             }
             else{
-                identBIC.qp <- lapply(1:ncol(resreal$riskratios$riskratios.qp.s$RRbic),
-                                      function(i) which(resreal$riskratios$riskratios.qp.s$RRbic[,i]>clusterRR)) 
-                identBIC.p <- lapply(1:ncol(resreal$riskratios$riskratios.p.s$RRbic),
-                                     function(i) which(resreal$riskratios$riskratios.p.s$RRbic[,i]>clusterRR)) 
-                identAIC.qp <- lapply(1:ncol(resreal$riskratios$riskratios.qp.s$RRaic),
-                                      function(i) which(resreal$riskratios$riskratios.qp.s$RRaic[,i]>clusterRR)) 
-                identAIC.p <- lapply(1:ncol(resreal$riskratios$riskratios.p.s$RRaic),
-                                     function(i) which(resreal$riskratios$riskratios.p.s$RRaic[,i]>clusterRR)) 
-                identAICc.qp <- lapply(1:ncol(resreal$riskratios$riskratios.qp.s$RRaicc),
-                                       function(i) which(resreal$riskratios$riskratios.qp.s$RRaicc[,i]>clusterRR)) 
-                identAICc.p <- lapply(1:ncol(resreal$riskratios$riskratios.p.s$RRaicc),
-                                      function(i) which(resreal$riskratios$riskratios.p.s$RRaicc[,i]>clusterRR)) 
+                identBIC.qp <- lapply(1:ncol(clustout$riskratios$riskratios.qp.s$RRbic),
+                                      function(i) which(clustout$riskratios$riskratios.qp.s$RRbic[,i]>clusterRR)) 
+                identBIC.p <- lapply(1:ncol(clustout$riskratios$riskratios.p.s$RRbic),
+                                     function(i) which(clustout$riskratios$riskratios.p.s$RRbic[,i]>clusterRR)) 
+                identAIC.qp <- lapply(1:ncol(clustout$riskratios$riskratios.qp.s$RRaic),
+                                      function(i) which(clustout$riskratios$riskratios.qp.s$RRaic[,i]>clusterRR)) 
+                identAIC.p <- lapply(1:ncol(clustout$riskratios$riskratios.p.s$RRaic),
+                                     function(i) which(clustout$riskratios$riskratios.p.s$RRaic[,i]>clusterRR)) 
+                identAICc.qp <- lapply(1:ncol(clustout$riskratios$riskratios.qp.s$RRaicc),
+                                       function(i) which(clustout$riskratios$riskratios.qp.s$RRaicc[,i]>clusterRR)) 
+                identAICc.p <- lapply(1:ncol(clustout$riskratios$riskratios.p.s$RRaicc),
+                                      function(i) which(clustout$riskratios$riskratios.p.s$RRaicc[,i]>clusterRR)) 
             }
             QBIC = as.data.frame(stringi::stri_list2matrix(identBIC.qp)); colnames(QBIC) <- varnames
             BIC =  as.data.frame(stringi::stri_list2matrix(identBIC.p)); colnames(BIC) <- varnames
@@ -134,48 +134,48 @@ clustpretty <- function(clustout, analysis="both", clusteridentify=FALSE, cluste
             return(list(table.clusters = table.clusters, table.identified = table.identified))
         }
         else if(analysis=="spacetime"){
-            varnames <- paste0("Period",1:length(unique(resreal$init.vec$Period))) 
+            varnames <- paste0("Period",1:length(unique(clustout$init.vec$Period))) 
             if(clusterRR=="background"){
                 #background rates
-                clusterRRbic.qp <- as.numeric(apply(resreal$riskratios$riskratios.qp.st$RRbic,2,
+                clusterRRbic.qp <- as.numeric(apply(clustout$riskratios$riskratios.qp.st$RRbic,2,
                                                  function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
-                clusterRRaic.qp <- as.numeric(apply(resreal$riskratios$riskratios.qp.st$RRaic,2,
+                clusterRRaic.qp <- as.numeric(apply(clustout$riskratios$riskratios.qp.st$RRaic,2,
                                                  function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
-                clusterRRaicc.qp <- as.numeric(apply(resreal$riskratios$riskratios.qp.st$RRaicc,2,
+                clusterRRaicc.qp <- as.numeric(apply(clustout$riskratios$riskratios.qp.st$RRaicc,2,
                                                   function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
-                clusterRRbic.p <- as.numeric(apply(resreal$riskratios$riskratios.p.st$RRbic,2,
+                clusterRRbic.p <- as.numeric(apply(clustout$riskratios$riskratios.p.st$RRbic,2,
                                                     function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
-                clusterRRaic.p <- as.numeric(apply(resreal$riskratios$riskratios.p.st$RRaic,2,
+                clusterRRaic.p <- as.numeric(apply(clustout$riskratios$riskratios.p.st$RRaic,2,
                                                     function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
-                clusterRRaicc.p <- as.numeric(apply(resreal$riskratios$riskratios.p.st$RRaicc,2,
+                clusterRRaicc.p <- as.numeric(apply(clustout$riskratios$riskratios.p.st$RRaicc,2,
                                                      function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
                 #calc identified
-                identBIC.qp <- lapply(1:ncol(resreal$riskratios$riskratios.qp.st$RRbic),
-                                      function(i) which(abs(resreal$riskratios$riskratios.qp.st$RRbic[,i]-clusterRRbic.qp[[i]])> err)) 
-                identBIC.p <- lapply(1:ncol(resreal$riskratios$riskratios.p.st$RRbic),
-                                     function(i) which(abs(resreal$riskratios$riskratios.p.st$RRbic[,i]-clusterRRbic.p[[i]])> err)) 
-                identAIC.qp <- lapply(1:ncol(resreal$riskratios$riskratios.qp.st$RRaic),
-                                      function(i) which(abs(resreal$riskratios$riskratios.qp.st$RRaic[,i]-clusterRRaic.qp[[i]])> err)) 
-                identAIC.p <- lapply(1:ncol(resreal$riskratios$riskratios.p.st$RRaic),
-                                     function(i) which(abs(resreal$riskratios$riskratios.p.st$RRaic[,i]-clusterRRaic.p[[i]])> err)) 
-                identAICc.qp <- lapply(1:ncol(resreal$riskratios$riskratios.qp.st$RRaicc),
-                                       function(i) which(abs(resreal$riskratios$riskratios.qp.st$RRaicc[,i]-clusterRRaicc.qp[[i]])> err)) 
-                identAICc.p <- lapply(1:ncol(resreal$riskratios$riskratios.p.st$RRaicc),
-                                      function(i) which(abs(resreal$riskratios$riskratios.p.st$RRaicc[,i]-clusterRRaicc.p[[i]])> err)) 
+                identBIC.qp <- lapply(1:ncol(clustout$riskratios$riskratios.qp.st$RRbic),
+                                      function(i) which(abs(clustout$riskratios$riskratios.qp.st$RRbic[,i]-clusterRRbic.qp[[i]])> err)) 
+                identBIC.p <- lapply(1:ncol(clustout$riskratios$riskratios.p.st$RRbic),
+                                     function(i) which(abs(clustout$riskratios$riskratios.p.st$RRbic[,i]-clusterRRbic.p[[i]])> err)) 
+                identAIC.qp <- lapply(1:ncol(clustout$riskratios$riskratios.qp.st$RRaic),
+                                      function(i) which(abs(clustout$riskratios$riskratios.qp.st$RRaic[,i]-clusterRRaic.qp[[i]])> err)) 
+                identAIC.p <- lapply(1:ncol(clustout$riskratios$riskratios.p.st$RRaic),
+                                     function(i) which(abs(clustout$riskratios$riskratios.p.st$RRaic[,i]-clusterRRaic.p[[i]])> err)) 
+                identAICc.qp <- lapply(1:ncol(clustout$riskratios$riskratios.qp.st$RRaicc),
+                                       function(i) which(abs(clustout$riskratios$riskratios.qp.st$RRaicc[,i]-clusterRRaicc.qp[[i]])> err)) 
+                identAICc.p <- lapply(1:ncol(clustout$riskratios$riskratios.p.st$RRaicc),
+                                      function(i) which(abs(clustout$riskratios$riskratios.p.st$RRaicc[,i]-clusterRRaicc.p[[i]])> err)) 
             }
             else{
-                identBIC.qp <- lapply(1:ncol(resreal$riskratios$riskratios.qp.st$RRbic),
-                                      function(i) which(resreal$riskratios$riskratios.qp.st$RRbic[,i]>clusterRR)) 
-                identBIC.p <- lapply(1:ncol(resreal$riskratios$riskratios.p.st$RRbic),
-                                     function(i) which(resreal$riskratios$riskratios.p.st$RRbic[,i]>clusterRR)) 
-                identAIC.qp <- lapply(1:ncol(resreal$riskratios$riskratios.qp.st$RRaic),
-                                      function(i) which(resreal$riskratios$riskratios.qp.st$RRaic[,i]>clusterRR)) 
-                identAIC.p <- lapply(1:ncol(resreal$riskratios$riskratios.p.st$RRaic),
-                                     function(i) which(resreal$riskratios$riskratios.p.st$RRaic[,i]>clusterRR)) 
-                identAICc.qp <- lapply(1:ncol(resreal$riskratios$riskratios.qp.st$RRaicc),
-                                       function(i) which(resreal$riskratios$riskratios.qp.st$RRaicc[,i]>clusterRR)) 
-                identAICc.p <- lapply(1:ncol(resreal$riskratios$riskratios.p.st$RRaicc),
-                                      function(i) which(resreal$riskratios$riskratios.p.st$RRaicc[,i]>clusterRR)) 
+                identBIC.qp <- lapply(1:ncol(clustout$riskratios$riskratios.qp.st$RRbic),
+                                      function(i) which(clustout$riskratios$riskratios.qp.st$RRbic[,i]>clusterRR)) 
+                identBIC.p <- lapply(1:ncol(clustout$riskratios$riskratios.p.st$RRbic),
+                                     function(i) which(clustout$riskratios$riskratios.p.st$RRbic[,i]>clusterRR)) 
+                identAIC.qp <- lapply(1:ncol(clustout$riskratios$riskratios.qp.st$RRaic),
+                                      function(i) which(clustout$riskratios$riskratios.qp.st$RRaic[,i]>clusterRR)) 
+                identAIC.p <- lapply(1:ncol(clustout$riskratios$riskratios.p.st$RRaic),
+                                     function(i) which(clustout$riskratios$riskratios.p.st$RRaic[,i]>clusterRR)) 
+                identAICc.qp <- lapply(1:ncol(clustout$riskratios$riskratios.qp.st$RRaicc),
+                                       function(i) which(clustout$riskratios$riskratios.qp.st$RRaicc[,i]>clusterRR)) 
+                identAICc.p <- lapply(1:ncol(clustout$riskratios$riskratios.p.st$RRaicc),
+                                      function(i) which(clustout$riskratios$riskratios.p.st$RRaicc[,i]>clusterRR)) 
             }
             QBIC = as.data.frame(stringi::stri_list2matrix(identBIC.qp)); colnames(QBIC) <- varnames
             BIC =  as.data.frame(stringi::stri_list2matrix(identBIC.p)); colnames(BIC) <- varnames
@@ -194,93 +194,93 @@ clustpretty <- function(clustout, analysis="both", clusteridentify=FALSE, cluste
         }
         else{
             #both
-            varnames <- paste0("Period",1:length(unique(resreal$init.vec.s$Period))) 
+            varnames <- paste0("Period",1:length(unique(clustout$init.vec.s$Period))) 
             if(clusterRR=="background"){
                 #background rates
                 #space
-                clusterRRbic.qp.s <- as.numeric(apply(resreal$riskratios$riskratios.qp.s$RRbic,2,
+                clusterRRbic.qp.s <- as.numeric(apply(clustout$riskratios$riskratios.qp.s$RRbic,2,
                                                  function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
-                clusterRRaic.qp.s <- as.numeric(apply(resreal$riskratios$riskratios.qp.s$RRaic,2,
+                clusterRRaic.qp.s <- as.numeric(apply(clustout$riskratios$riskratios.qp.s$RRaic,2,
                                                  function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
-                clusterRRaicc.qp.s <- as.numeric(apply(resreal$riskratios$riskratios.qp.s$RRaicc,2,
+                clusterRRaicc.qp.s <- as.numeric(apply(clustout$riskratios$riskratios.qp.s$RRaicc,2,
                                                   function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
-                clusterRRbic.p.s <- as.numeric(apply(resreal$riskratios$riskratios.p.s$RRbic,2,
+                clusterRRbic.p.s <- as.numeric(apply(clustout$riskratios$riskratios.p.s$RRbic,2,
                                                       function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
-                clusterRRaic.p.s <- as.numeric(apply(resreal$riskratios$riskratios.p.s$RRaic,2,
+                clusterRRaic.p.s <- as.numeric(apply(clustout$riskratios$riskratios.p.s$RRaic,2,
                                                       function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
-                clusterRRaicc.p.s <- as.numeric(apply(resreal$riskratios$riskratios.p.s$RRaicc,2,
+                clusterRRaicc.p.s <- as.numeric(apply(clustout$riskratios$riskratios.p.s$RRaicc,2,
                                                        function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
                 #spacetime
-                clusterRRbic.qp.st <- as.numeric(apply(resreal$riskratios$riskratios.qp.st$RRbic,2,
+                clusterRRbic.qp.st <- as.numeric(apply(clustout$riskratios$riskratios.qp.st$RRbic,2,
                                                     function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
-                clusterRRaic.qp.st <- as.numeric(apply(resreal$riskratios$riskratios.qp.st$RRaic,2,
+                clusterRRaic.qp.st <- as.numeric(apply(clustout$riskratios$riskratios.qp.st$RRaic,2,
                                                     function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
-                clusterRRaicc.qp.st <- as.numeric(apply(resreal$riskratios$riskratios.qp.st$RRaicc,2,
+                clusterRRaicc.qp.st <- as.numeric(apply(clustout$riskratios$riskratios.qp.st$RRaicc,2,
                                                      function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
-                clusterRRbic.p.st <- as.numeric(apply(resreal$riskratios$riskratios.p.st$RRbic,2,
+                clusterRRbic.p.st <- as.numeric(apply(clustout$riskratios$riskratios.p.st$RRbic,2,
                                                        function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
-                clusterRRaic.p.st <- as.numeric(apply(resreal$riskratios$riskratios.p.st$RRaic,2,
+                clusterRRaic.p.st <- as.numeric(apply(clustout$riskratios$riskratios.p.st$RRaic,2,
                                                        function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
-                clusterRRaicc.p.st <- as.numeric(apply(resreal$riskratios$riskratios.p.st$RRaicc,2,
+                clusterRRaicc.p.st <- as.numeric(apply(clustout$riskratios$riskratios.p.st$RRaicc,2,
                                                         function(x) names(sort(table(x),decreasing=TRUE))[[1]]))
                 #calc identified
                 #space
-                identBIC.qp.s <- lapply(1:ncol(resreal$riskratios$riskratios.qp.s$RRbic),
-                                      function(i) which(abs(resreal$riskratios$riskratios.qp.s$RRbic[,i]-clusterRRbic.qp.s[[i]])> err)) 
-                identBIC.p.s <- lapply(1:ncol(resreal$riskratios$riskratios.p.s$RRbic),
-                                     function(i) which(abs(resreal$riskratios$riskratios.p.s$RRbic[,i]-clusterRRbic.p.s[[i]])> err)) 
-                identAIC.qp.s <- lapply(1:ncol(resreal$riskratios$riskratios.qp.s$RRaic),
-                                      function(i) which(abs(resreal$riskratios$riskratios.qp.s$RRaic[,i]-clusterRRaic.qp.s[[i]])> err)) 
-                identAIC.p.s <- lapply(1:ncol(resreal$riskratios$riskratios.p.s$RRaic),
-                                     function(i) which(abs(resreal$riskratios$riskratios.p.s$RRaic[,i]-clusterRRaic.p.s[[i]])> err)) 
-                identAICc.qp.s <- lapply(1:ncol(resreal$riskratios$riskratios.qp.s$RRaicc),
-                                       function(i) which(abs(resreal$riskratios$riskratios.qp.s$RRaicc[,i]-clusterRRaicc.qp.s[[i]])> err)) 
-                identAICc.p.s <- lapply(1:ncol(resreal$riskratios$riskratios.p.s$RRaicc),
-                                      function(i) which(abs(resreal$riskratios$riskratios.p.s$RRaicc[,i]-clusterRRaicc.p.s[[i]])> err))
+                identBIC.qp.s <- lapply(1:ncol(clustout$riskratios$riskratios.qp.s$RRbic),
+                                      function(i) which(abs(clustout$riskratios$riskratios.qp.s$RRbic[,i]-clusterRRbic.qp.s[[i]])> err)) 
+                identBIC.p.s <- lapply(1:ncol(clustout$riskratios$riskratios.p.s$RRbic),
+                                     function(i) which(abs(clustout$riskratios$riskratios.p.s$RRbic[,i]-clusterRRbic.p.s[[i]])> err)) 
+                identAIC.qp.s <- lapply(1:ncol(clustout$riskratios$riskratios.qp.s$RRaic),
+                                      function(i) which(abs(clustout$riskratios$riskratios.qp.s$RRaic[,i]-clusterRRaic.qp.s[[i]])> err)) 
+                identAIC.p.s <- lapply(1:ncol(clustout$riskratios$riskratios.p.s$RRaic),
+                                     function(i) which(abs(clustout$riskratios$riskratios.p.s$RRaic[,i]-clusterRRaic.p.s[[i]])> err)) 
+                identAICc.qp.s <- lapply(1:ncol(clustout$riskratios$riskratios.qp.s$RRaicc),
+                                       function(i) which(abs(clustout$riskratios$riskratios.qp.s$RRaicc[,i]-clusterRRaicc.qp.s[[i]])> err)) 
+                identAICc.p.s <- lapply(1:ncol(clustout$riskratios$riskratios.p.s$RRaicc),
+                                      function(i) which(abs(clustout$riskratios$riskratios.p.s$RRaicc[,i]-clusterRRaicc.p.s[[i]])> err))
                 #spacetime
-                identBIC.qp.st <- lapply(1:ncol(resreal$riskratios$riskratios.qp.st$RRbic),
-                                      function(i) which(abs(resreal$riskratios$riskratios.qp.st$RRbic[,i]-clusterRRbic.qp.st[[i]])> err)) 
-                identBIC.p.st <- lapply(1:ncol(resreal$riskratios$riskratios.p.st$RRbic),
-                                     function(i) which(abs(resreal$riskratios$riskratios.p.st$RRbic[,i]-clusterRRbic.p.st[[i]])> err)) 
-                identAIC.qp.st <- lapply(1:ncol(resreal$riskratios$riskratios.qp.st$RRaic),
-                                      function(i) which(abs(resreal$riskratios$riskratios.qp.st$RRaic[,i]-clusterRRaic.qp.st[[i]])> err)) 
-                identAIC.p.st <- lapply(1:ncol(resreal$riskratios$riskratios.p.st$RRaic),
-                                     function(i) which(abs(resreal$riskratios$riskratios.p.st$RRaic[,i]-clusterRRaic.p.st[[i]])> err)) 
-                identAICc.qp.st <- lapply(1:ncol(resreal$riskratios$riskratios.qp.st$RRaicc),
-                                       function(i) which(abs(resreal$riskratios$riskratios.qp.st$RRaicc[,i]-clusterRRaicc.qp.st[[i]])> err)) 
-                identAICc.p.st <- lapply(1:ncol(resreal$riskratios$riskratios.p.st$RRaicc),
-                                      function(i) which(abs(resreal$riskratios$riskratios.p.st$RRaicc[,i]-clusterRRaicc.p.st[[i]])> err)) 
+                identBIC.qp.st <- lapply(1:ncol(clustout$riskratios$riskratios.qp.st$RRbic),
+                                      function(i) which(abs(clustout$riskratios$riskratios.qp.st$RRbic[,i]-clusterRRbic.qp.st[[i]])> err)) 
+                identBIC.p.st <- lapply(1:ncol(clustout$riskratios$riskratios.p.st$RRbic),
+                                     function(i) which(abs(clustout$riskratios$riskratios.p.st$RRbic[,i]-clusterRRbic.p.st[[i]])> err)) 
+                identAIC.qp.st <- lapply(1:ncol(clustout$riskratios$riskratios.qp.st$RRaic),
+                                      function(i) which(abs(clustout$riskratios$riskratios.qp.st$RRaic[,i]-clusterRRaic.qp.st[[i]])> err)) 
+                identAIC.p.st <- lapply(1:ncol(clustout$riskratios$riskratios.p.st$RRaic),
+                                     function(i) which(abs(clustout$riskratios$riskratios.p.st$RRaic[,i]-clusterRRaic.p.st[[i]])> err)) 
+                identAICc.qp.st <- lapply(1:ncol(clustout$riskratios$riskratios.qp.st$RRaicc),
+                                       function(i) which(abs(clustout$riskratios$riskratios.qp.st$RRaicc[,i]-clusterRRaicc.qp.st[[i]])> err)) 
+                identAICc.p.st <- lapply(1:ncol(clustout$riskratios$riskratios.p.st$RRaicc),
+                                      function(i) which(abs(clustout$riskratios$riskratios.p.st$RRaicc[,i]-clusterRRaicc.p.st[[i]])> err)) 
                 
             }
             else{
                 #notbackground but set clusterRR
                 #Space
-                identBIC.qp.s <- lapply(1:ncol(resreal$riskratios$riskratios.qp.s$RRbic),
-                                        function(i) which(resreal$riskratios$riskratios.qp.s$RRbic[,i]>clusterRR)) 
-                identBIC.p.s <- lapply(1:ncol(resreal$riskratios$riskratios.p.s$RRbic),
-                                       function(i) which(resreal$riskratios$riskratios.p.s$RRbic[,i]>clusterRR)) 
-                identAIC.qp.s <- lapply(1:ncol(resreal$riskratios$riskratios.qp.s$RRaic),
-                                        function(i) which(resreal$riskratios$riskratios.qp.s$RRaic[,i]>clusterRR)) 
-                identAIC.p.s <- lapply(1:ncol(resreal$riskratios$riskratios.p.s$RRaic),
-                                       function(i) which(resreal$riskratios$riskratios.p.s$RRaic[,i]>clusterRR)) 
-                identAICc.qp.s <- lapply(1:ncol(resreal$riskratios$riskratios.qp.s$RRaicc),
-                                         function(i) which(resreal$riskratios$riskratios.qp.s$RRaicc[,i]>clusterRR)) 
-                identAICc.p.s <- lapply(1:ncol(resreal$riskratios$riskratios.p.s$RRaicc),
-                                        function(i) which(resreal$riskratios$riskratios.p.s$RRaicc[,i]>clusterRR)) 
+                identBIC.qp.s <- lapply(1:ncol(clustout$riskratios$riskratios.qp.s$RRbic),
+                                        function(i) which(clustout$riskratios$riskratios.qp.s$RRbic[,i]>clusterRR)) 
+                identBIC.p.s <- lapply(1:ncol(clustout$riskratios$riskratios.p.s$RRbic),
+                                       function(i) which(clustout$riskratios$riskratios.p.s$RRbic[,i]>clusterRR)) 
+                identAIC.qp.s <- lapply(1:ncol(clustout$riskratios$riskratios.qp.s$RRaic),
+                                        function(i) which(clustout$riskratios$riskratios.qp.s$RRaic[,i]>clusterRR)) 
+                identAIC.p.s <- lapply(1:ncol(clustout$riskratios$riskratios.p.s$RRaic),
+                                       function(i) which(clustout$riskratios$riskratios.p.s$RRaic[,i]>clusterRR)) 
+                identAICc.qp.s <- lapply(1:ncol(clustout$riskratios$riskratios.qp.s$RRaicc),
+                                         function(i) which(clustout$riskratios$riskratios.qp.s$RRaicc[,i]>clusterRR)) 
+                identAICc.p.s <- lapply(1:ncol(clustout$riskratios$riskratios.p.s$RRaicc),
+                                        function(i) which(clustout$riskratios$riskratios.p.s$RRaicc[,i]>clusterRR)) 
                 #spacetime
                 #spacetime
-                identBIC.qp.st <- lapply(1:ncol(resreal$riskratios$riskratios.qp.st$RRbic),
-                                         function(i) which(resreal$riskratios$riskratios.qp.st$RRbic[,i]>clusterRR)) 
-                identBIC.p.st <- lapply(1:ncol(resreal$riskratios$riskratios.p.st$RRbic),
-                                        function(i) which(resreal$riskratios$riskratios.p.st$RRbic[,i]>clusterRR)) 
-                identAIC.qp.st <- lapply(1:ncol(resreal$riskratios$riskratios.qp.st$RRaic),
-                                         function(i) which(resreal$riskratios$riskratios.qp.st$RRaic[,i]>clusterRR)) 
-                identAIC.p.st <- lapply(1:ncol(resreal$riskratios$riskratios.p.st$RRaic),
-                                        function(i) which(resreal$riskratios$riskratios.p.st$RRaic[,i]>clusterRR)) 
-                identAICc.qp.st <- lapply(1:ncol(resreal$riskratios$riskratios.qp.s$RRaicc),
-                                          function(i) which(resreal$riskratios$riskratios.qp.st$RRaicc[,i]>clusterRR)) 
-                identAICc.p.st <- lapply(1:ncol(resreal$riskratios$riskratios.p.st$RRaicc),
-                                         function(i) which(resreal$riskratios$riskratios.p.s$RRaicc[,i]>clusterRR))
+                identBIC.qp.st <- lapply(1:ncol(clustout$riskratios$riskratios.qp.st$RRbic),
+                                         function(i) which(clustout$riskratios$riskratios.qp.st$RRbic[,i]>clusterRR)) 
+                identBIC.p.st <- lapply(1:ncol(clustout$riskratios$riskratios.p.st$RRbic),
+                                        function(i) which(clustout$riskratios$riskratios.p.st$RRbic[,i]>clusterRR)) 
+                identAIC.qp.st <- lapply(1:ncol(clustout$riskratios$riskratios.qp.st$RRaic),
+                                         function(i) which(clustout$riskratios$riskratios.qp.st$RRaic[,i]>clusterRR)) 
+                identAIC.p.st <- lapply(1:ncol(clustout$riskratios$riskratios.p.st$RRaic),
+                                        function(i) which(clustout$riskratios$riskratios.p.st$RRaic[,i]>clusterRR)) 
+                identAICc.qp.st <- lapply(1:ncol(clustout$riskratios$riskratios.qp.s$RRaicc),
+                                          function(i) which(clustout$riskratios$riskratios.qp.st$RRaicc[,i]>clusterRR)) 
+                identAICc.p.st <- lapply(1:ncol(clustout$riskratios$riskratios.p.st$RRaicc),
+                                         function(i) which(clustout$riskratios$riskratios.p.s$RRaicc[,i]>clusterRR))
             }
             #space
             QBIC.s = as.data.frame(stringi::stri_list2matrix(identBIC.qp.s)); colnames(QBIC.s) <- varnames

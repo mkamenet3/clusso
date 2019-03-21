@@ -19,4 +19,3 @@ returns phi overdispersion parameter
 \description{
 This function calculates the overdispersion parameter for the QIC 'c' overdispersion parameter.
 }
-

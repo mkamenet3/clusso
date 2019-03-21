@@ -18,4 +18,3 @@ blues
 \details{
 This function shows scale of blue; used to create the legend for rr maps
 }
-

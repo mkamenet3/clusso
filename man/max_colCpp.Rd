@@ -21,4 +21,3 @@ integer vector for the last observation in a sequence of observations by growing
 \description{
 Calculates maximum column for spatial radius
 }
-

@@ -142,7 +142,7 @@ prob_clusteroverlap2 <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,n
 #'@param ncentroids number of centroids
 #'@return returns vector which calculated the number of time the cluster was correctly identified out of the simulations
 #prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, thresh, ncentroids){
-prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, ncentroids){
+prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, thresh,ncentroids, nullmod=NULL){
     #DEFINE TRUTH
     if(risk.ratio==1){
      warning("Risk.ratio was set to 1")
@@ -193,7 +193,7 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
     betaselect_bin <- lapply(1:nsim, function(i) ifelse(betaselect[[i]]!=0,1,0))
     
     ###
-    betaselect <- lapply(1:nsim, function(i) lassoresultnull$coefs.lasso.all[[i]][,selected[[i]]])
+    betaselect <- lapply(1:nsim, function(i) lassoresult$coefs.lasso.all[[i]][,selected[[i]]])
     betaselect_bin <- lapply(1:nsim, function(i) ifelse(abs(betaselect[[i]] >= 10e-3),1,0))
     ###
     betaselect_bin_clusteronly <- lapply(1:nsim, function(i) betaselect_bin[[i]][-c(ncol(sparseMAT)-Time+1:ncol(sparseMAT))])

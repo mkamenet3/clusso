@@ -21,4 +21,3 @@ returns vectors ofcolors for each time period, where risk ratios have been const
 \description{
 This function establishes the spread of reds and blues for the risk ratios to be mapped to. Higher risk ratios will be deeper red colors and lower risk ratios will be deeper blue colors.
 }
-

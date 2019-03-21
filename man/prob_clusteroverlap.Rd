@@ -4,8 +4,8 @@
 \alias{prob_clusteroverlap}
 \title{prob_clusteroverlap}
 \usage{
-prob_clusteroverlap(sparseMAT, lassoresult, rr, risk.ratio, x, y, rMax, nsim,
-  Time, thresh)
+prob_clusteroverlap(sparseMAT, lassoresult, rr, risk.ratio, x, y, rMax,
+  nsim, Time, ncentroids)
 }
 \arguments{
 \item{sparseMAT}{large sparse matrix created in \code{clust_sim} function.}
@@ -26,6 +26,8 @@ prob_clusteroverlap(sparseMAT, lassoresult, rr, risk.ratio, x, y, rMax, nsim,
 
 \item{Time}{number of time period}
 
+\item{ncentroids}{number of centroids}
+
 \item{thresh}{Default is NULL; vector or value as threshold for cluster detection}
 }
 \value{
@@ -34,4 +36,3 @@ returns vector which calculated the number of time the cluster was correctly ide
 \description{
 Finds the probability of any overlap with true cluster based on BIC, AIC, and AICc based on the expected risk ratio
 }
-

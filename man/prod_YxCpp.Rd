@@ -19,4 +19,3 @@ numeric vector that feeds into st_matCpp function
 \description{
 helper function
 }
-

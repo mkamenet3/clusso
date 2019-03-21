@@ -24,4 +24,3 @@ This function will output results from cross-validation results.
 \details{
 Selection via cross-validation
 }
-

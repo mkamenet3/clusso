@@ -19,4 +19,3 @@ scale_sim(YSIM, init, nsim, Time)
 This function standardizes the fitted values by the sum of the *simulated* observed/the sum of the expected within each time period. Inputs should all be in vector form.
 The function handles standardizing within time period as long. This function should be used with simulation study.
 }
-

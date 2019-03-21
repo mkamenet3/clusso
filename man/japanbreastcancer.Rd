@@ -2,9 +2,9 @@
 % Please edit documentation in R/japanbreastcancer.R
 \docType{data}
 \name{japanbreastcancer}
+\alias{japanbreastcancer}
 \alias{dframe.poly2}
 \alias{dframe.prefect2}
-\alias{japanbreastcancer}
 \alias{utmJapan}
 \title{Japanese Breast Cancer Data}
 \format{An object of class "data.frame". Includes four separate dataframes: 
@@ -24,4 +24,3 @@ Data on breast cancer incidence in prefects in Japan across 5 time periods. UTM 
 data(japanbreastcancer)
 }
 \keyword{datasets}
-

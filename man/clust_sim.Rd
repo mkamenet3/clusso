@@ -4,10 +4,11 @@
 \alias{clust_sim}
 \title{clust_sim}
 \usage{
-clust_sim(clst, x, y, rMax, Time, nsim, center, radius, risk.ratio, timeperiod,
-  utm = TRUE, byrow = TRUE, threshold, space = c("space", "spacetime",
-  "both"), theta = NULL, nullmod = NULL, overdispfloor,
-  collapsetime = FALSE, background.rate = NULL)
+clust_sim(clst, x, y, rMax, Time, nsim, center, radius, risk.ratio,
+  timeperiod, utm = TRUE, longdat = TRUE, threshold,
+  analysis = c("space", "spacetime", "both"), maxclust = 10,
+  theta = NULL, nullmod = NULL, overdispfloor, collapsetime = FALSE,
+  background_rate = NULL)
 }
 \arguments{
 \item{clst}{list; output from toclust function. Must be of class clst.}
@@ -34,12 +35,11 @@ this would mean we look at periods 2, 3, 4, and 5.}
 
 \item{utm}{default is true}
 
-\item{byrow}{TRUE}
+\item{longdat}{Is the data in panel/long format? Default is \code{TRUE}. For wide format, specify \code{FALSE} (TODO).}
 
-\item{threshold}{vector or value as threshold for cluster detection}
+\item{threshold}{vector or value as threshold for cluster detection. Default is NULL. If thresholds supply, must come in pairs (ex: c(0.5, 0.9)) (TODO - make this optional)}
 
-\item{space}{space and space-time. Default is to run all four models: quasi-poisson and poisson for both space and space-time. User can specify, space = space,
-space = spacetime, or space = both.}
+\item{maxclust}{Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{10}.}
 
 \item{theta}{default is 1000. Can add in overdispersion to simulated model by changing this value.}
 
@@ -49,7 +49,7 @@ space = spacetime, or space = both.}
 
 \item{collapsetime}{alternative definition for space-only model to instead collapse expected and observed counts across time. TODO}
 
-\item{background.rate}{option to specify varying background rate instead of varying cluster rate for simulation. Default is null. If this option is specified, risk.ratio must be set to "background".}
+\item{background_rate}{option to specify varying background rate instead of varying cluster rate for simulation. Default is null. If this option is specified, risk.ratio must be set to "background".}
 }
 \value{
 returns list of lists
@@ -58,6 +58,9 @@ returns list of lists
 This helper function runs both the space and space-time Lasso model simulations for all 4 models simulataneously: Quasi-Poisson vs. Poisson in both space and space-time.
 This function is to be run on simulated data and all four models are run on the same simulated set. 
 A separate function (clust.sim) can be used for running simulations on individual models and (clust) can be used for observed data.
+}
+\details{
+Detect a cluster in space or spacetime using Lasso - simulation.
 }
 \examples{
 \donttest{
@@ -80,8 +83,7 @@ dframe <- dframe[,-1]
 clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, 
  observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE)
 res <- clust_sim(clst, x1,y1,rMax, Time, nsim,center, radius, risk.ratio, 
- timeperiod, utm=TRUE, byrow=TRUE, 
-threshold, space= "both",theta = theta, nullmod = TRUE, overdispfloor)
+ timeperiod, utm=TRUE, longdat=TRUE, 
+threshold, analysis= "both",theta = theta, nullmod = TRUE, overdispfloor)
 }
 }
-

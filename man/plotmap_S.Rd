@@ -22,4 +22,3 @@ plotmap_S(prefect, polygons, pdfname, res, obs, rr)
 \description{
 Space-only plotting
 }
-

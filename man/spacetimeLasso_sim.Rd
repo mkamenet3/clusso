@@ -4,8 +4,8 @@
 \alias{spacetimeLasso_sim}
 \title{Simulations for Spatial and Spatio-Temporal Lasso}
 \usage{
-spacetimeLasso_sim(sparseMAT, n_uniq, vectors.sim, Time, spacetime, pois, nsim,
-  YSIM, overdispfloor)
+spacetimeLasso_sim(sparseMAT, n_uniq, vectors.sim, Time, spacetime, pois,
+  nsim, YSIM, maxclust, overdispfloor)
 }
 \arguments{
 \item{sparseMAT}{large sparse matrix created in \code{clust_sim} function.}
@@ -33,4 +33,3 @@ a list of observed counts (Yx), the lasso object, a list of K values (number of 
 \description{
 This function runs the Lasso regularization technique on our large sparse matric of potential space-time clusters.It is specifically created to use with simulations.
 }
-

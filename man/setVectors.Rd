@@ -38,4 +38,3 @@ covars <- NULL
 setVectors(period1, expected, observed, covars, Time, byrow=TRUE)
 setVectors(period2, expected, observed, covars, Time, byrow=FALSE)
 }
-

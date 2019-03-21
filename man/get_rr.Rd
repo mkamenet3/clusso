@@ -31,4 +31,3 @@ relative risk by averageing the relative risk in each simulation over the number
 are first average over the number of simulations and then we determine the relative risk to the initial expected counts. Both methods return the same results,
 however this method returns a smoother background ratio that does not vary across time periods as much
 }
-

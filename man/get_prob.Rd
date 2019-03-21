@@ -2,29 +2,34 @@
 % Please edit documentation in R/prob_clusteroverlap.R
 \name{get_prob}
 \alias{get_prob}
-\title{get_prob}
+\title{#' @title
+#' get_prob
+#' @description 
+#' Finds the probability of being in the cluster for BIC, AIC, and AICc based on the expected risk ratio
+#' @param lassoresult result of either space-time lasso simulation or space-only simulation
+#' @param init list of initial vector values
+#' @param E1 standardized expected counts
+#' @param ncentroids number of centroids or centers
+#' @param Time number of time periods
+#' @param nsim number of simulations
+#' @param threshold vector of two threshold values TODO: allow flexibility for number of threshold
+#' @return returns list of probabilities.
+#'}
 \usage{
 get_prob(lassoresult, init, E1, ncentroids, Time, nsim, threshold)
 }
-\arguments{
-\item{lassoresult}{result of either space-time lasso simulation or space-only simulation}
-
-\item{init}{list of initial vector values}
-
-\item{E1}{standardized expected counts}
-
-\item{ncentroids}{number of centroids or centers}
-
-\item{Time}{number of time periods}
-
-\item{nsim}{number of simulations}
-
-\item{threshold}{vector of two threshold values TODO: allow flexibility for number of threshold}
-}
-\value{
-returns list of probabilities.
-}
 \description{
-Finds the probability of being in the cluster for BIC, AIC, and AICc based on the expected risk ratio
+#' @title
+#' get_prob
+#' @description 
+#' Finds the probability of being in the cluster for BIC, AIC, and AICc based on the expected risk ratio
+#' @param lassoresult result of either space-time lasso simulation or space-only simulation
+#' @param init list of initial vector values
+#' @param E1 standardized expected counts
+#' @param ncentroids number of centroids or centers
+#' @param Time number of time periods
+#' @param nsim number of simulations
+#' @param threshold vector of two threshold values TODO: allow flexibility for number of threshold
+#' @return returns list of probabilities.
+#'
 }
-

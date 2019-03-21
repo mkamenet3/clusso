@@ -20,4 +20,3 @@ plotmap_bic(prefect, polygons, pdfname, res, rr)
 \description{
 Space-time plotting
 }
-

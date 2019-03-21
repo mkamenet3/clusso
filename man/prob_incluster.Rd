@@ -4,7 +4,7 @@
 \alias{prob_incluster}
 \title{prob_incluster}
 \usage{
-prob_incluster(select_mu, ncentroids, Time, nsim)
+prob_incluster(select_mu, ncentroids, Time, nsim, background = NULL)
 }
 \arguments{
 \item{select_mu}{List of selected mu vectors selected by the respective information criteria.}
@@ -14,6 +14,8 @@ prob_incluster(select_mu, ncentroids, Time, nsim)
 \item{Time}{number of time period}
 
 \item{nsim}{number of simulations}
+
+\item{option}{to return background in addition to probabilities. Default is NULL (just return probabilities, not background)}
 }
 \value{
 returns vector which calculated the number of time the cluster was correctly identified out of the simulations
@@ -24,4 +26,3 @@ compared to the background rate. It then average over the number of simulations,
 To map this probabilities into a color scheme, please see the $colormapping$ function and select probmap=TRUE. TODO integrate all of this
 into a workflow and extend to observed data, not only simulated data.
 }
-

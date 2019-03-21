@@ -11,7 +11,7 @@ Description: This package efficiently detects cluster in sparse space and
     extensions for simulations and related simulation diagnostics as well as
     color-coding for easy-to-make maps.
 Depends:
-    R (>= 3.2.0)
+    R (>= 3.5.2)
 Imports:
     geosphere,
     glmnet (>= 2.0.0),
@@ -20,11 +20,15 @@ Imports:
     RColorBrewer,
     Rcpp (>= 0.12.4),
     SOAR (>= 0.99-11),
-    stringi (>= 1.2.4)
+    stringi (>= 1.2.4),
+    stats,
+    grDevices, 
+    methods,
+    graphics
 LinkingTo: Rcpp
 License: GPL (>= 2)
 Maintainer: Maria Kamenetsky <maria.kamenetsky@gmail.com>
 BugReports: https://github.com/mkamenet3/cluST/issues
 LazyData: true
-RoxygenNote: 5.0.1
+RoxygenNote: 6.1.1
 Suggests: testthat
