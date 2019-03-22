@@ -11,11 +11,12 @@
 #'@param rMax Maximum radius for threshold in simulation
 #'@param nsim number of simulations
 #'@param Time number of time period
+#'@param thresh thresholds for simulation detection (TODO)
 #'@param ncentroids number of centroids
 #'@param nullmod Is model run the the null model with no cluster to detect? Default is that model has a cluster to detect (\code{nullmod=NULL})
 #'@return returns vector which calculated the number of time the cluster was correctly identified out of the simulations
 #'@returns List of detection probabilities (in vs. out of cluster) by criterion.
-prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, ncentroids, nullmod=NULL){
+prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, thresh,ncentroids, nullmod=NULL){
     #DEFINE TRUTH
     if(risk.ratio==1){
         warning("Risk.ratio was set to 1")
@@ -29,6 +30,9 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
     }
     else{
         nullmod = FALSE
+    }
+    if(!is.null(thresh)){
+        message("Threshold detection function is still in development. Stay tuned!")
     }
     ##(Q)BIC
     selected <- lassoresult$select.qbic
