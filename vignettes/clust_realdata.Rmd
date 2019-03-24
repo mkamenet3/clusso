@@ -16,11 +16,12 @@ Load `clust`package:
 
 ```{r, message=FALSE, warning=FALSE}
 library("clust")
+#library("Matrix")
 
 #load dev version R scripts
-file.sources = list.files("../R/",pattern="*.R")
-sapply(paste0("../R/",file.sources),source,.GlobalEnv)
-load("../data/japanbreastcancer.RData")
+# file.sources = list.files("../R/",pattern="*.R")
+# sapply(paste0("../R/",file.sources),source,.GlobalEnv)
+# load("../data/japanbreastcancer.RData")
 ```
 
 
