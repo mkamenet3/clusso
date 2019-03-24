@@ -8,6 +8,10 @@ clustpretty(clustout, analysis = "both", clusteridentify = FALSE,
   clusterRR)
 }
 \arguments{
+\item{clustout}{Object with output from \code{clust}.}
+
+\item{analysis}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}.}
+
 \item{clusteridentify}{Whether specific clusters should be identified in output; default is FALSE}
 
 \item{clusterRR}{Risk ratio cut off for a cluster to be identified. Alternatively, a risk ratio can be provided (ex: 1.0, 1.25) that would serve as a cut off value for identifiying a cluster. Current default is 1.0. We define a cluster as being different from the background rate (TODO).}
@@ -31,9 +35,9 @@ rMax <- 20
 Time=5
 japanbreastcancer <- japanbreastcancer[,-1] #get rid of indicator column
 clst <- toclust(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period)
-system.time(resreal <- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=10))
-clustpretty(resreal, analysis="both")
-clustpretty(resreal, analysis="both", clusteridentify=TRUE)
-clustpretty(resreal, analysis="both", clusteridentify=TRUE, clusterRR = 1.05)
+system.time(clustout <- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=10))
+clustpretty(clustout, analysis="both")
+clustpretty(clustout, analysis="both", clusteridentify=TRUE)
+clustpretty(clustout, analysis="both", clusteridentify=TRUE, clusterRR = 1.05)
  }
 }

@@ -1,13 +1,15 @@
 #' Create pretty table from \code{clust} output    
-#' @title
+#' 
+#'@title 
 #'clustpretty
-#' @description 
-#' This function takes the cluster detection results from the \code{clust} function and creates a nice table of detected clusters.  
-#'@param clustout
-#'@param analysis  A string specifying if the spatial (\code{"space")), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}. 
+#'@description 
+#'This function takes the cluster detection results from the \code{clust} function and creates a nice table of detected clusters.  
+#'@param clustout Object with output from \code{clust}.
+#'@param analysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}. 
 #'@param clusteridentify Whether specific clusters should be identified in output; default is FALSE
 #'@param clusterRR Risk ratio cut off for a cluster to be identified. Alternatively, a risk ratio can be provided (ex: 1.0, 1.25) that would serve as a cut off value for identifiying a cluster. Current default is 1.0. We define a cluster as being different from the background rate (TODO). 
 #'@return Data frame of output that can be sent to a csv or list of data frames (if clusteridentify set to TRUE).
+#'@export
 #'@examples
 #'\donttest{
 #'data(japanbreastcancer)

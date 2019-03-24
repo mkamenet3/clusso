@@ -15,6 +15,7 @@ using namespace Rcpp;
 //' @param ccenter centroid value
 //' @return numeric vector that feeds into st_matCpp function
 //' @description helper function
+//' @export
 // [[Rcpp::export]]
 NumericVector prod_YxCpp (NumericVector vY, IntegerVector clast, IntegerVector ccenter){
     int ind;
@@ -43,6 +44,7 @@ NumericVector prod_YxCpp (NumericVector vY, IntegerVector clast, IntegerVector c
 //' @param T integer
 //' @return numeric vector
 //' @description helper function
+//' @export
 // [[Rcpp::export]]
 NumericVector st_matCpp (NumericMatrix X, IntegerVector last, IntegerVector center, int T){
     int n = X.nrow();

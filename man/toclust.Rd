@@ -15,7 +15,7 @@ toclust(df, expected, observed, timeperiod, covars = FALSE)
 
 \item{observed}{Name of variable that contains the observed counts.}
 
-\item{timeperiod}{Name of variable that contains the timeperiod in which counts were observed (as factor). 
+\item{timeperiod}{Name of variable that contains the timeperiod in which counts were observed (as factor).
 If spatial-only analysis, create a column that has a single value (ex: "Time1") and convert this to a factor.}
 
 \item{covars}{are there additional covariates in the dataframe beyond the three required? If so, set to \code{TRUE}. Default is \code{FALSE}.}
@@ -24,7 +24,7 @@ If spatial-only analysis, create a column that has a single value (ex: "Time1") 
 \code{clst} object
 }
 \description{
-Creates \code{clst} object for creating potential spatial and spatio-temporal clusters. This function creates a \code{clst} 
+Creates \code{clst} object for creating potential spatial and spatio-temporal clusters. This function creates a \code{clst}
 object which will contain the expected, observed, and timeperiod information necessary to run \pkg{clust}.
 If dataframe is fed in, assumes panel format - see \code{vignette} for details.
 }

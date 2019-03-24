@@ -25,8 +25,8 @@ detect_incluster(sparseMAT, lassoresult, vectors.sim, rr, set, timeperiod,
 
 \item{nsim}{number of simulations run}
 
-\item{under}{Default is FALSE. If TRUE, then it will estimate detection based on a relative risk which is < 1. In other words, it will consider 
-clusters to be identified where the estimated values are less than the background rate, not more than the background rate as is the case in the 
+\item{under}{Default is FALSE. If TRUE, then it will estimate detection based on a relative risk which is < 1. In other words, it will consider
+clusters to be identified where the estimated values are less than the background rate, not more than the background rate as is the case in the
 elevated relative risk models.}
 
 \item{nullmod}{Default is NULL. If TRUE, then it will estimate detection based on the null model where there is no cluster.}
@@ -44,10 +44,12 @@ elevated relative risk models.}
 \item{rMax}{Maximum radius for threshold in simulation}
 
 \item{thresh}{Default is NULL. Vector of thresholds for additional diagnostic criteria for cluster detection.}
+
+\item{ncentroids}{Number of centroids in the data.}
 }
 \description{
 This function will calculate detection based on the three information criterion. You can run detection on a null model (no cluster),
-a model with an under-estimated cluster (artificial cluster <1), and on an elevated relative risk cluster. Standard detection criteria include percent of 
+a model with an under-estimated cluster (artificial cluster <1), and on an elevated relative risk cluster. Standard detection criteria include percent of
 cells detected that are inside/outside the true cluster and percent of total potential clusters that are at least partially inside/outside the true cluster
 that are detected. Additional criteria with threshold options can also be specified.
 }

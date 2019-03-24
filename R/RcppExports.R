@@ -21,6 +21,7 @@ max_colCpp <- function(N, iMax, cn, clast) {
 #' @param ccenter centroid value
 #' @return numeric vector that feeds into st_matCpp function
 #' @description helper function
+#' @export
 prod_YxCpp <- function(vY, clast, ccenter) {
     .Call('_clust_prod_YxCpp', PACKAGE = 'clust', vY, clast, ccenter)
 }
@@ -34,6 +35,7 @@ prod_YxCpp <- function(vY, clast, ccenter) {
 #' @param T integer
 #' @return numeric vector
 #' @description helper function
+#' @export
 st_matCpp <- function(X, last, center, T) {
     .Call('_clust_st_matCpp', PACKAGE = 'clust', X, last, center, T)
 }

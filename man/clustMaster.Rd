@@ -8,6 +8,8 @@ clustMaster(analysis, x, y, rMax, period, expected, observed, covars, Time,
   utm, longdat, maxclust, overdispfloor, cv, collapsetime)
 }
 \arguments{
+\item{analysis}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}.}
+
 \item{x}{x coordinates (easting/latitude); if utm coordinates, scale to km.}
 
 \item{y}{y coordinates (northing/longitude); if utm coordinates, scale to km.}
@@ -40,7 +42,7 @@ clustMaster(analysis, x, y, rMax, period, expected, observed, covars, Time,
 list of lists output from detection
 }
 \description{
-This function runs both the space and space-time Lasso model. This function is to be run on observed data. A separate function (clust) is the helper function which will have 
+This function runs both the space and space-time Lasso model. This function is to be run on observed data. A separate function (clust) is the helper function which will have
 flexibility to specify the space or spacetime or both models to be run (TODO).
 }
 \details{

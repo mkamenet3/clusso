@@ -15,7 +15,7 @@ prob_incluster(select_mu, ncentroids, Time, nsim, background = NULL)
 
 \item{nsim}{number of simulations}
 
-\item{option}{to return background in addition to probabilities. Default is NULL (just return probabilities, not background)}
+\item{background}{option to return background in addition to probabilities. Default is NULL (just return probabilities, not background)}
 }
 \value{
 returns vector which calculated the number of time the cluster was correctly identified out of the simulations

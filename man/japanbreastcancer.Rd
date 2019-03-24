@@ -7,12 +7,12 @@
 \alias{dframe.prefect2}
 \alias{utmJapan}
 \title{Japanese Breast Cancer Data}
-\format{An object of class "data.frame". Includes four separate dataframes: 
+\format{An object of class "data.frame". Includes four separate dataframes:
 \itemize{
- \item 1) dframe.poly2 - coordinates for plotting polygons
- \item 2) dframe.prefect2 - coordinates for plotting prefect boundaries
- \item 3) japanbreastcancer - data on observed death from breast cancer and expected death by polygon-time period.
- \item 4) utmJapan - UTM coordinates
+\item 1) dframe.poly2 - coordinates for plotting polygons
+\item 2) dframe.prefect2 - coordinates for plotting prefect boundaries
+\item 3) japanbreastcancer - data on observed death from breast cancer and expected death by polygon-time period.
+\item 4) utmJapan - UTM coordinates
 }}
 \usage{
 data(japanbreastcancer)

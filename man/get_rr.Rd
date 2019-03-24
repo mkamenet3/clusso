@@ -26,7 +26,7 @@ This returns a list of the risk ratios (observed over expected) as determined by
 2) observed based on QBIC path/expected; 3) observed based on QAIC path/expected; 4) observed based on QAICc path/expected.
 }
 \description{
-This function will extract the relative risk ratios as determined by observed counts, QBIC, QAIC, and QAICc, respectively. This method determines the 
+This function will extract the relative risk ratios as determined by observed counts, QBIC, QAIC, and QAICc, respectively. This method determines the
 relative risk by averageing the relative risk in each simulation over the number of simulations. This is in contrast to $setRR$ where the expected counts
 are first average over the number of simulations and then we determine the relative risk to the initial expected counts. Both methods return the same results,
 however this method returns a smoother background ratio that does not vary across time periods as much

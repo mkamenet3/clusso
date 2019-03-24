@@ -5,7 +5,7 @@
 \title{prob_clusteroverlap}
 \usage{
 prob_clusteroverlap(sparseMAT, lassoresult, rr, risk.ratio, x, y, rMax,
-  nsim, Time, ncentroids)
+  nsim, Time, thresh, ncentroids, nullmod = NULL)
 }
 \arguments{
 \item{sparseMAT}{large sparse matrix created in \code{clust_sim} function.}
@@ -26,12 +26,14 @@ prob_clusteroverlap(sparseMAT, lassoresult, rr, risk.ratio, x, y, rMax,
 
 \item{Time}{number of time period}
 
+\item{thresh}{thresholds for simulation detection (TODO)}
+
 \item{ncentroids}{number of centroids}
 
-\item{thresh}{Default is NULL; vector or value as threshold for cluster detection}
+\item{nullmod}{Is model run the the null model with no cluster to detect? Default is that model has a cluster to detect (\code{nullmod=NULL})}
 }
 \value{
-returns vector which calculated the number of time the cluster was correctly identified out of the simulations
+List of detection probabilities (in vs. out of cluster) by criterion. Returns vector which calculated the number of time the cluster was correctly identified out of the simulations.
 }
 \description{
 Finds the probability of any overlap with true cluster based on BIC, AIC, and AICc based on the expected risk ratio
