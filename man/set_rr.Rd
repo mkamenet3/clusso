@@ -25,4 +25,3 @@ set_rr
 \details{
 This function will create vectors of the risk ratios as determined by observed counts, QBIC, QAIC, and QAICc, respectively.
 }
-

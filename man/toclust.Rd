@@ -2,26 +2,35 @@
 % Please edit documentation in R/toclust.R
 \name{toclust}
 \alias{toclust}
-\title{toclust}
+\title{toclust
+
+Creates \code{clst} object.}
 \usage{
 toclust(df, expected, observed, timeperiod, covars = FALSE)
 }
 \arguments{
-\item{df}{dataframe of variables}
+\item{df}{name of dataframe.}
 
-\item{expected}{vector or column in a dataframe of expected counts. Format must be supplied as df$var}
+\item{expected}{Name of variable that contains the expected counts.}
 
-\item{observed}{vector or column in a dataframe of observed counts. Format must be supplied as df$var}
+\item{observed}{Name of variable that contains the observed counts.}
 
-\item{timeperiod}{vector or column in a dataframe of timeperiod (should be converted to a factor beforehand). Format must be supplied as df$var}
+\item{timeperiod}{Name of variable that contains the timeperiod in which counts were observed (as factor).
+If spatial-only analysis, create a column that has a single value (ex: "Time1") and convert this to a factor.}
 
-\item{covars}{are there additional covariates in the dataframe beyond the three required? Default is FALSE}
+\item{covars}{are there additional covariates in the dataframe beyond the three required? If so, set to \code{TRUE}. Default is \code{FALSE}.}
 }
 \value{
-clst object
+\code{clst} object
 }
 \description{
-Create clst object for creating potential spatial and spatio-temporal clusters. This function will create a clst object which will contain the expected, observed, and time period information necessary to run further cluster functions.
-If dataframe is fed in, assumes panel format. Also used for converting covariates to proper object.
+Creates \code{clst} object for creating potential spatial and spatio-temporal clusters. This function creates a \code{clst}
+object which will contain the expected, observed, and timeperiod information necessary to run \pkg{clust}.
+If dataframe is fed in, assumes panel format - see \code{vignette} for details.
 }
-
+\examples{
+\donttest{
+data(japanbreastcancer)
+clst <- toclust(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)  
+}
+}

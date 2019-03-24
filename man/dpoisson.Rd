@@ -2,7 +2,7 @@
 % Please edit documentation in R/dpoisson.R
 \name{dpoisson}
 \alias{dpoisson}
-\title{Poisson Distribution Function}
+\title{Poisson Function}
 \usage{
 dpoisson(y, lambda, E0)
 }
@@ -17,7 +17,7 @@ dpoisson(y, lambda, E0)
 returns a a vector (or a list of vectors) of the Poisson log-likelihood for each proposed path of the Lasso tuning parameter values
 }
 \description{
-This is the main distriution function for our model. This assumes we have a Poisson fixed effect and Gamma random effect. In order to deal with constraints from the Lasso function, we use the Poisson distirbution function here and account for overdispersion in the QIC.
+Poisson function.
 }
 \examples{
 set.seed(1)
@@ -28,4 +28,3 @@ E0 <- E*(sum(y)/sum(E))
 lambda <- exp(c(rep(0,15),rep(0.4,5)))
 dpoisson(y, lambda, E0)
 }
-

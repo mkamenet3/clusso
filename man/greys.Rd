@@ -18,4 +18,3 @@ greys
 \details{
 This function establishes the spread of grey scale for probabilities to be mapped to. Higher probabilities will be darker and lower probabilities will be lighter colors.
 }
-

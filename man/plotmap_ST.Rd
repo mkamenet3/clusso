@@ -22,4 +22,3 @@ plotmap_ST(prefect, polygons, pdfname, res, obs, rr)
 \description{
 Space-time plotting
 }
-

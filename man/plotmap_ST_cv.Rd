@@ -20,4 +20,3 @@ plotmap_ST_cv(prefect, polygons, pdfname, res, obs)
 \description{
 Space-time plotting
 }
-

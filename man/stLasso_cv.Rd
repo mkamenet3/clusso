@@ -4,7 +4,7 @@
 \alias{stLasso_cv}
 \title{stLasso_cv}
 \usage{
-stLasso_cv(lasso, sparseMAT, Ex, Yx)
+stLasso_cv(lasso, sparseMAT, Ex, Yx, Time)
 }
 \arguments{
 \item{lasso}{results of cv.glmnet}
@@ -14,6 +14,8 @@ stLasso_cv(lasso, sparseMAT, Ex, Yx)
 \item{Ex}{expected counts (inherits from setVectors)}
 
 \item{Yx}{observed counts (inherits from setVectors)}
+
+\item{Time}{number of time periods}
 }
 \value{
 list of expected values, number of clusters, Ex, Yx, and lasso object
@@ -24,4 +26,3 @@ This function will output results from cross-validation results.
 \details{
 Selection via cross-validation
 }
-

@@ -13,7 +13,7 @@ setVectors(period, expect, observed, covars, Time, byrow = TRUE)
 
 \item{observed}{vector of observed counts. Observed counts must match up with the year and expected vectors.}
 
-\item{covars}{dataframe of covariates. NULL if no covariates supplied. Inherits this argument from `clust` or `clust_sim` functions}
+\item{covars}{dataframe of covariates. NULL if no covariates supplied. Inherits this argument from \code{clust} or \code{clust_sim} functions}
 
 \item{Time}{Number of time periods or years in your dataset. Must be declared as numeric.}
 
@@ -38,4 +38,3 @@ covars <- NULL
 setVectors(period1, expected, observed, covars, Time, byrow=TRUE)
 setVectors(period2, expected, observed, covars, Time, byrow=FALSE)
 }
-

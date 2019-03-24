@@ -18,4 +18,3 @@ reds
 \details{
 This function shows scale of red; used to create the legend for rr maps
 }
-

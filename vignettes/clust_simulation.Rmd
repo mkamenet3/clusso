@@ -13,52 +13,74 @@ vignette: >
 This package is still under development. Please [report any bugs](https://github.com/mkamenet3/cluST/issues).
 
 
-Load *clust*
+Load `clust`package:
 
 ```{r, message=FALSE, warning=FALSE}
 #load package
 library("clust")
 
+#load dev version R scripts
+file.sources = list.files("../R/",pattern="*.R")
+sapply(paste0("../R/",file.sources),source,.GlobalEnv)
+load("../data/japanbreastcancer.RData")
 ```
 
 
-## Running the Null Model (no cluster to detect) with minimal overdispersion
+## Toy Example 1: Simulation
 
-For speed, I set *nsim=2*, but you should feel free to ramp this up to 100. No covariates are shown here.
+In this first simulation, we will explore how to use the `clust` package to perform a simple simulation using the Japanese breast cancer data set. For simplicity, no covariates are included and `nsim=10` for speed and illustration.
 
 ### Prepare Data
 
+We start by setting the seed using the `set.seed()` to ensure that the simulation is reproducible. We load the data that comes with the `clust` package with `data("japanbreastcancer")`.
 
 ```{r}
 set.seed(8202017)
-
 #load data
 data("japanbreastcancer")
+```
 
+To explore the 4 data sets that are part of `japanbreastcancer`, we apply the `head()` function to each of the data sets.
+1. `utmJapan`: data set containing a unique identifier for each centroid (*id*), x-coordinate in UTM (*utmx*), and y-coordinate in UTM (*utmy*)
+1. `dframe.poly2`: polygon tesselations
+1. `dframe.prefect2`: boundaries for the prefects (geographical boundaries) of the region.
+1. `japanbreastcancer`: data set containting a unique identifier for each centroid (*id*), period of observation (categorical variable with 5 levels, *period*), death count (*death*), expected death count (*expdeath)
+
+```{r}
 #inspect
 head(utmJapan)
 head(dframe.poly2)
 head(dframe.prefect2)
 head(japanbreastcancer)
 
+```
+
+From the polygons (`dframe.poly2`) data set we extract the second and third columns, only the x and y coordinates of the polygons and create `japan.poly2`. From the prefect boundaries (`dframe.prefect2`) data set, we extract the second through fifth columns - the two x and two y coordinates of the polygons boundaries and create `japan.prefect2`.
+
+```{r}
 #take what we need
 japan.poly2 <- dframe.poly2[,2:3]
 japan.prefect2 <- dframe.prefect2[,2:5]
 ```
 
-
-
 ### Set global conditions
 
+When using `clust`, there are certain global parameters that need to be set
 
-Set threshold(s):
+
+We first set a threshold for detection (**TODO: MAKE THIS OPTIONAL AND NOT REQUIRE 2**)
 
 ```{r}
 threshold <- c(0.9, 0.5)
+```
+
+There are two types of models we want to run: a quasi-poisson and Poisson model. Specifying this argument will make the output nicer (**TODO: CHANGE THIS TO OPTIONAL, CREATE REASONABLE DEFAULTS**)
+
+```{r}
 mods <- c("QuasiPoisson", "Poisson")
 ```
 
-Set the easting and northing coordinates:
+We take the easting and northing coordinates from the `utmJapan` dataset, set the easting coordinate, `utmx`, to `x` and the northing coordinate, `utmy`, to `y`. Each is divided by 1000 to change the scale from meters to kilometers.
 
 ```{r}
 x=utmJapan$utmx/1000
@@ -66,22 +88,31 @@ y=utmJapan$utmy/1000
 
 ```
 
-Set other conditions. Right now, the null model requires to still input a center and radius even for the null case, but this will be adjusted in future versions. For poisson model with no overdispersion, set ```theta=Inf```.
+Below, we set the maximum radius for a cluster to 20 km (`rMax=20`) based on scientific knowledge of the area and our definition of a meaningful cluster, set the number of unique time periods to 5 (`Time=5`), number of simulations to be run to 10 (`nsim=10`), and set a floor for overdispersion to avoid estimating underdispersion (`overdispfloor=TRUE`). 
+
+Since this is a simulation, we must first create a cluster to be found using `clust`. We create a cluster centered at centroid #1 (`center=1`), with a radius of 18km (`radius=18`), that exists in all 5 time periods (`timeperiod=c(1:5)`), has a risk.ratio of 2 (`risk.ratio=2`), moderate overdispersion (`theta=1000`).
+
+ For poisson model with no overdispersion, set ```theta=Inf```.
 
 ```{r}
 rMax=20
 Time=5
 #nsim=100 #number of simulations
-nsim = 100 #feel free to change this back to 100
+nsim = 10
+overdispfloor = TRUE
 
-#need inputs for model to run
-center=1
+#create cluster to detect
+center=150
 radius=18
 timeperiod = c(1:5)
-risk.ratio=1
+risk.ratio=2
 theta = 1000
 #theta = Inf #if theta=Inf, this will run the pure Poisson model with no overdispersion at all.
-overdispfloor = TRUE
+```
+
+Lastly, for simulation output, we create two objects to hold the output.
+
+```{r}
 nullmod <- NULL
 table.detection.null <- NULL
 
@@ -90,24 +121,39 @@ table.detection.null <- NULL
 
 ### Running the models
 
-
-Run the null model and store results into object *res*.
+If we apply the `head()` function to the `japanbreastcancer` data set, we find that the first column is `id` and is an identifier for each centroid. We omit this column below and only keep the time period (`period`), observed (`death`) and expected (`expdeath`) counts. **TODO: Have this automated so user doesn't need to worry about it.**
 
 ```{r}
-japanbreastcancer<- japanbreastcancer[,-1] #get rid of id column to use clst functionl
+japanbreastcancer<- japanbreastcancer[,-1] #get rid of id column to use clst function
+head(japanbreastcancer)
+```
 
+The first step is to create a `clst` object using the `toclust()` function. By applying `str()` to `clst`, we see that the `clst` object neatly organizes the data into required covariates (expected counts, observed counts, and timeperiod are required), and other covariates (omitted here). If you have additional covariates, additional covariates will be included in the model and will not be penalized under the LASSO.
+
+```{r}
 #create clst class object
-#clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE) #no covariates here!
-clst <- toclust(japanbreastcancer, expected = expdeath, observed = death, timeperiod = period, covars=FALSE)
+clst <- toclust(japanbreastcancer, expected = expdeath, observed = death, timeperiod = period)
+class(clst)
+str(clst)
+```
 
+Finally, we are ready to perform the simulation using the `clust_sim()` function.
+
+```{r}
 #run clust_sim and time it
 system.time(res <- clust_sim(clst, x,y,rMax, Time,
-                                 nsim,center, radius, risk.ratio, timeperiod,
-                                 utm=TRUE, byrow=TRUE, threshold, space= "both",
-                             theta = theta, nullmod = TRUE, overdispfloor))
+                                 nsim,center, radius, risk.ratio, timeperiod,utm = TRUE,
+                                 threshold, analysis= "both",
+                             theta = theta, threshold = threshold,overdispfloor=overdispfloor))
+
+names(res)
 ```
 
 ### Diagnostics and Maps
+
+Now that we have performed the toy simulation above, we can save the results to a csv for further analysis and exploration.
+
+**END: 2019-03-19**
 
 Save diagnostics into csv. The csv will save into the \textit{vignettes} folder. To save somewhere else, change the file path where I set *filename*.
 
@@ -121,9 +167,9 @@ save(res, file = filename) #save it!
 
 #Print Detection for the Simulation
 (tabn <- rbind("******",cbind(radius,risk.ratio,center,time=as.numeric(paste(timeperiod, collapse = "")), mod = "ST",
-                              rbind("QuasiPois",res$detect.out.qp.st), rbind("Pois",res$detect.out.p.st)),
+                              rbind("QuasiPois",res$detect_out.qp.st), rbind("Pois",res$detect_out.p.st)),
                cbind(radius,risk.ratio,center,time=as.numeric(paste(timeperiod, collapse = "")), mod = "Space",
-                     rbind("QuasiPois",res$detect.out.qp.s), rbind("Pois",res$detect.out.p.s)))) #I like to see what this looks like before I save to csv
+                     rbind("QuasiPois",res$detect_out.qp.s), rbind("Pois",res$detect_out.p.s)))) #I like to see what this looks like before I save to csv
 table.detection.null <- rbind(table.detection.null, tabn) #you don't technically need this step here, but for the parameter sweep below you do, so I kept it in here for consistency.
 
 

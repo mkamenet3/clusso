@@ -284,9 +284,10 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
 #' @param sparseMAT sparse spatial or spatio-temporal design matrix
 #' @param Ex expected counts (inherits from setVectors)
 #' @param Yx observed counts (inherits from setVectors)
+#' @param Time number of time periods
 #' @return list of expected values, number of clusters, Ex, Yx, and lasso object
 #' 
-stLasso_cv <- function(lasso, sparseMAT, Ex, Yx){
+stLasso_cv <- function(lasso, sparseMAT, Ex, Yx, Time){
     #cv version
     ix <- which(lasso$lambda == lasso$lambda.min)
     E.cv <- lasso$glmnet.fit$beta[,ix]

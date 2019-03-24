@@ -21,4 +21,3 @@ numeric vector
 \description{
 helper function
 }
-

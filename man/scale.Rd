@@ -30,4 +30,3 @@ covars <- NULL
 init <- setVectors(period, expected, observed, covars, Time, byrow=TRUE)
 scale(init, Time)
 }
-

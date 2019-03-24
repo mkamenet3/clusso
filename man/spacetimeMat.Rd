@@ -7,7 +7,7 @@
 spacetimeMat(clusters, numCenters, Time)
 }
 \arguments{
-\item{clusters}{the potential clusters dataframe created by *clusters2df*}
+\item{clusters}{the potential clusters dataframe created by \emph{clusters2df}}
 
 \item{numCenters}{number of centroids in space matrix}
 
@@ -19,4 +19,3 @@ Returns sparse space time matrix
 \description{
 This function takes the Kronecker product of the space and time matrices to create the space-time matrix
 }
-

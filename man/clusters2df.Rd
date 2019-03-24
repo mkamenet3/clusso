@@ -34,4 +34,3 @@ y_latlon<- c(7.88, 7.45, 7.72, 7.57, 7.57, 7.60)
 clusters2df(x_utm, y_utm, rMax, utm=TRUE, length(x_utm))
 clusters2df(x_latlon, y_latlon, rMax, utm=FALSE, length(x_latlon))
 }
-

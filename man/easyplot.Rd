@@ -43,4 +43,3 @@ easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname2,
  res$probcolors, mods, space="both", probmap=TRUE, obs = NULL,rr=FALSE)
 }
 }
-

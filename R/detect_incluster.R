@@ -24,6 +24,7 @@
 #'@param y y-coordinates
 #'@param rMax Maximum radius for threshold in simulation
 #'@param thresh Default is NULL. Vector of thresholds for additional diagnostic criteria for cluster detection.
+#'@param ncentroids Number of centroids in the data.
 detect_incluster <- function(sparseMAT,lassoresult, vectors.sim, rr, set, timeperiod, Time, nsim, under=FALSE,nullmod, 
                              risk.ratio,center,radius,x,y,rMax,thresh, ncentroids){
     message("Detection Results for:\n"
@@ -38,7 +39,7 @@ detect_incluster <- function(sparseMAT,lassoresult, vectors.sim, rr, set, timepe
         ############################
         ##Prob in/out cluster function as function of all potential clusters
         if(is.null(thresh)){
-            clusterdetectionrates <- prob_clusteroverlap(sparseMAT,lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh)
+            clusterdetectionrates <- prob_clusteroverlap(sparseMAT,lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh, ncentroids)
         }
         else{
             if(length(thresh)>1){
@@ -46,7 +47,7 @@ detect_incluster <- function(sparseMAT,lassoresult, vectors.sim, rr, set, timepe
                 }
             else{
                 clusterdetectionrates <- prob_clusteroverlap(sparseMAT,lassoresult,rr,risk.ratio,x,y,rMax,nsim,Time,thresh, ncentroids)    
-            sh }
+            }
             
         }
         

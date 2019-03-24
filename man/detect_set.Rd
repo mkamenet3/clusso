@@ -41,4 +41,3 @@ Set initial conditions to enable detection diagnostic functions. This function w
 in the simulation were detected (true positives), what percent of clusters were incorrectly in the background (false negatives),
 and what percent were incorrectly identified as clusters (false positives).
 }
-

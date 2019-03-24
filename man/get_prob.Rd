@@ -27,4 +27,3 @@ returns list of probabilities.
 \description{
 Finds the probability of being in the cluster for BIC, AIC, and AICc based on the expected risk ratio
 }
-
