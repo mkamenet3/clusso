@@ -14,8 +14,7 @@
 #'@param thresh thresholds for simulation detection (TODO)
 #'@param ncentroids number of centroids
 #'@param nullmod Is model run the the null model with no cluster to detect? Default is that model has a cluster to detect (\code{nullmod=NULL})
-#'@return returns vector which calculated the number of time the cluster was correctly identified out of the simulations
-#'@returns List of detection probabilities (in vs. out of cluster) by criterion.
+#'@return List of detection probabilities (in vs. out of cluster) by criterion. Returns vector which calculated the number of time the cluster was correctly identified out of the simulations.
 prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,nsim,Time, thresh,ncentroids, nullmod=NULL){
     #DEFINE TRUTH
     if(risk.ratio==1){
@@ -138,19 +137,19 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
 }
     
     
-#' #' @title
-#' #' get_prob
-#' #' @description 
-#' #' Finds the probability of being in the cluster for BIC, AIC, and AICc based on the expected risk ratio
-#' #' @param lassoresult result of either space-time lasso simulation or space-only simulation
-#' #' @param init list of initial vector values
-#' #' @param E1 standardized expected counts
-#' #' @param ncentroids number of centroids or centers
-#' #' @param Time number of time periods
-#' #' @param nsim number of simulations
-#' #' @param threshold vector of two threshold values TODO: allow flexibility for number of threshold
-#' #' @return returns list of probabilities.
-#' #' 
+#' @title
+#'get_prob
+#'@description 
+#'Finds the probability of being in the cluster for BIC, AIC, and AICc based on the expected risk ratio
+#'@param lassoresult result of either space-time lasso simulation or space-only simulation
+#'@param init list of initial vector values
+#'@param E1 standardized expected counts
+#'@param ncentroids number of centroids or centers
+#'@param Time number of time periods
+#'@param nsim number of simulations
+#'@param threshold vector of two threshold values TODO: allow flexibility for number of threshold
+#'@return returns list of probabilities.
+ 
 get_prob <- function(lassoresult,init, E1, ncentroids, Time, nsim, threshold){
     prob.bic <- prob_incluster(lassoresult$select_mu.qbic, ncentroids, Time, nsim)
     prob.aic <- prob_incluster(lassoresult$select_mu.qaic, ncentroids, Time, nsim)
@@ -197,7 +196,7 @@ get_prob <- function(lassoresult,init, E1, ncentroids, Time, nsim, threshold){
 #'@param ncentroids number of centroids
 #'@param Time number of time period
 #'@param nsim number of simulations
-#'@param option to return background in addition to probabilities. Default is NULL (just return probabilities, not background)
+#'@param background option to return background in addition to probabilities. Default is NULL (just return probabilities, not background)
 #'@return returns vector which calculated the number of time the cluster was correctly identified out of the simulations
 prob_incluster <- function(select_mu, ncentroids, Time, nsim, background=NULL){
     #prob.bic <- prob_incluster(lassoresult$select_mu.qbic, ncentroids, Time, nsim)
