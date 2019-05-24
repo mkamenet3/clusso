@@ -29,7 +29,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
     else{
         message("No covariates found")
     }
-    message(paste("Number of potential clusters to scan through: ", dim(sparseMAT)[2]))
+    message(paste("Number of potential clusters to scan through: ", (dim(sparseMAT)[2]-Time)))
     #Set initial
     Ex <- vectors$Ex
     Yx <- vectors$Y.vec
