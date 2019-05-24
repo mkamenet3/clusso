@@ -5,3 +5,6 @@ vignettes/*.pdf
 *.pdf
 R_simulation/*
 tests_simulation/*
+clustSIMULATION/tests_simulation
+.gitignore
+.Rbuildignore

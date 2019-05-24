@@ -29,7 +29,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
     else{
         message("No covariates found")
     }
-    message(paste("Number of potential clusters to scan through: ", dim(sparseMAT)[2]))
+    message(paste("Number of potential clusters to scan through: ", (dim(sparseMAT)[2]-Time)))
     #Set initial
     Ex <- vectors$Ex
     Yx <- vectors$Y.vec
@@ -108,7 +108,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
             #message(print((nrow(lasso$beta)-Time+1):nrow(lasso$beta)))
             exp_coefs_qbic <- c(exp(unique(lasso$beta[,select.qbic])),
                                     exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qbic]))
-            numclust.qbic <- length(unique(exp_coefs_qbic))-Time
+            numclust.qbic <- K[select.qbic]-Time #length(unique(exp_coefs_qbic))-Time
             #test <- t(sparseMAT)%*%xbetaPath[,select.qbic]
             
             
@@ -121,7 +121,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
             #                         exp(lasso$beta[66871:66875,select.qaic])))
             exp_coefs_qaic <- c(exp(unique(lasso$beta[,select.qaic])),
                                     exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaic]))
-            numclust.qaic <- length(unique(exp_coefs_qaic)) - Time
+            numclust.qaic <- K[select.qaic]-Time #length(unique(exp_coefs_qaic)) - Time
             
             
             #QAICc
@@ -133,8 +133,11 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
             #numclust.qaicc <- length(unique(coefs.lasso.all[,select.qaicc]))-1
             exp_coefs_qaicc <- c(exp(unique(lasso$beta[,select.qaicc])),
                                     exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaicc]))
-            numclust.qaicc <- length(unique(exp_coefs_qaicc))-Time
+            numclust.qaicc <- K[select.qaicc]-Time #length(unique(exp_coefs_qaicc))-Time
             
+            selections <- list(select.qbic=select.qbic,
+                               select.qaic = select.qaic,
+                               select.qaicc = select.qaic)
             
         }
         #########################################################
@@ -148,7 +151,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
             E.qbic <- mu[,select.qbic]
             exp_coefs_qbic <- c(exp(unique(lasso$beta[,select.qbic])),
                            exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qbic]))
-            numclust.qbic <- length(unique(exp_coefs_qbic)) - Time
+            numclust.qbic <- K[select.qbic]-Time #length(unique(exp_coefs_qbic)) - Time
             #numclust.qbic <- length(unique(coefs.lasso.all[,select.qbic]))-1
             
             #QAIC
@@ -158,7 +161,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
             #numclust.qaic <- length(unique(coefs.lasso.all[,select.qaic]))-1
             exp_coefs_qaic <- c(exp(unique(lasso$beta[,select.qaic])),
                             exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaic]))
-            numclust.qaic <- length(unique(exp_coefs_qaic)) - Time
+            numclust.qaic <- K[select.qaic]-Time #length(unique(exp_coefs_qaic)) - Time
             
             
             #QAICc
@@ -169,7 +172,12 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
             #numclust.qaicc <- length(unique(coefs.lasso.all[,select.qaicc]))-1
             exp_coefs_qaicc <- c(exp(unique(lasso$beta[,select.qaicc])),
                             exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaicc]))
-            numclust.qaicc <- length(unique(exp_coefs_qaicc)) - Time
+            numclust.qaicc <- K[select.qaicc]-Time #length(unique(exp_coefs_qaicc)) - Time
+            
+            selections <- list(select.qbic=select.qbic,
+                               select.qaic = select.qaic,
+                               select.qaicc = select.qaic)
+            
         }
         #########################################################
         #Space-Only, Quasi-Poisson
@@ -194,7 +202,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
             #numclust.qbic <- length(unique(coefs.lasso.all[,select.qbic]))-1
             exp_coefs_qbic <- c(exp(unique(lasso$beta[,select.qbic])),
                             exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qbic]))
-            numclust.qbic <- length(unique(exp_coefs_qbic)) - Time
+            numclust.qbic <- K[select.qbic]-Time #length(unique(exp_coefs_qbic)) - Time
             
             #QAIC
             PLL.qaic <-  2*(K) - 2*(loglike/overdisp.est)
@@ -203,7 +211,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
             #numclust.qaic <- length(unique(coefs.lasso.all[,select.qaic]))-1
             exp_coefs_qaic <- c(exp(unique(lasso$beta[,select.qaic])),
                             exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaic]))
-            numclust.qaic <- length(unique(exp_coefs_qaic)) - Time
+            numclust.qaic <- K[select.qaic]-Time #length(unique(exp_coefs_qaic)) - Time
             
             
             #QAICc
@@ -214,7 +222,12 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
             #numclust.qaicc <- length(unique(coefs.lasso.all[,select.qaicc]))-1
             exp_coefs_qaicc <- c(exp(unique(lasso$beta[,select.qaicc])),
                             exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaicc]))
-            numclust.qaicc <- length(unique(exp_coefs_qaicc)) - Time
+            numclust.qaicc <- K[select.qaicc]-Time  #length(unique(exp_coefs_qaicc)) - Time
+            
+            selections <- list(select.qbic=select.qbic,
+                               select.qaic = select.qaic,
+                               select.qaicc = select.qaic)
+            
         }
         #########################################################
         #Space-only, Poisson only
@@ -228,7 +241,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
             #numclust.qbic <- length(unique(coefs.lasso.all[,select.qbic]))-1
             exp_coefs_qbic <- c(exp(unique(lasso$beta[,select.qbic])),
                             exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qbic]))
-            numclust.qbic <- length(unique(exp_coefs_qbic)) - Time
+            numclust.qbic <- K[select.qbic]-Time #length(unique(exp_coefs_qbic)) - Time
             
             #QAIC
             PLL.qaic <-  2*(K) - 2*(loglike)
@@ -237,7 +250,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
             #numclust.qaic <- length(unique(coefs.lasso.all[,select.qaic]))-1
             exp_coefs_qaic <- c(exp(unique(lasso$beta[,select.qaic])),
                             exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaic]))
-            numclust.qaic <- length(unique(exp_coefs_qaic)) - Time
+            numclust.qaic <- K[select.qaic]-Time #length(unique(exp_coefs_qaic)) - Time
             
             #QAICc
             PLL.qaicc <- 2*(K) - 2*(loglike) +
@@ -247,7 +260,12 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
             #numclust.qaicc <- length(unique(coefs.lasso.all[,select.qaicc]))-1
             exp_coefs_qaicc <- c(exp(unique(lasso$beta[,select.qaicc])),
                             exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaicc]))
-            numclust.qaicc <- length(unique(exp_coefs_qaicc)) - Time
+            numclust.qaicc <- K[select.qaicc]-Time #length(unique(exp_coefs_qaicc)) - Time
+            
+            selections <- list(select.qbic=select.qbic,
+                               select.qaic = select.qaic,
+                               select.qaicc = select.qaic)
+            
         }
         #Return only changepoints from lasso
         changepoints_ix <- which(diff(K)!=0) #Find lambda where new coef introduced
@@ -268,7 +286,8 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
                     numclust.qaicc = numclust.qaicc, numclust.qbic= numclust.qbic, Ex = Ex, Yx = Yx, 
                     lasso = lasso, lasso_out=lasso_out,K = K, coefs.lasso.all = coefs.lasso.all,
                     exp_coefs_qbic = exp_coefs_qbic, exp_coefs_qaic = exp_coefs_qaic, exp_coefs_qaicc = exp_coefs_qaicc,
-                    penalty = penalty)
+                    penalty = penalty,
+                    selections = selections)
     }
     return(res)
 }
