@@ -13,7 +13,7 @@ plotmap_bic(prefect, polygons, pdfname, res, rr)
 
 \item{pdfname}{pdfname of what the output pdf will be called}
 
-\item{res}{resultant list from clust_ function}
+\item{res}{resultant list from clusso_ function}
 
 \item{rr}{if FALSE, will print probability map legend, if TRUE will print legend for risk ratios (redblue scheme)}
 }

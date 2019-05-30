@@ -8,9 +8,9 @@ spacetimeLasso(sparseMAT, n_uniq, vectors, Time, spacetime = TRUE,
   pois = FALSE, maxclust, overdispfloor, cv)
 }
 \arguments{
-\item{sparseMAT}{large sparse matrix created in \code{clust} function.}
+\item{sparseMAT}{large sparse matrix created in \code{clusso} function.}
 
-\item{n_uniq}{number of unique polygons (ex: counties, zip code, etc). Inherited from \code{clust}.}
+\item{n_uniq}{number of unique polygons (ex: counties, zip code, etc). Inherited from \code{clusso}.}
 
 \item{vectors}{takes in the list of expected and observed counts from setVectors function}
 
