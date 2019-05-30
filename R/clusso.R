@@ -1,12 +1,12 @@
 #'Detect a cluster in space or spacetime using Lasso 
 #'
-#' Set up for clust
+#' Set up for clusso
 #'
 #'@title
-#'clust
+#'clusso
 #' @description
 #' Runs helper function for both the space and space-time Lasso model on observed data. 
-#'@param clst list; output from \code{toclust} function. Must be of class \code{clst}.
+#'@param clst list; output from \code{toclusso} function. Must be of class \code{clst}.
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
 #'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
 #'@param rMax set max radius (in km).
@@ -16,7 +16,7 @@
 #'@param analysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}. 
 #'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{10}.
 #'@param overdispfloor overdispfloor default is \code{TRUE}. When TRUE, it limits \eqn{\phi1} (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under-dispersion in the model.
-#'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clust}.
+#'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
 #'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time. TODO
 #'@export
 #'@return returns list of cluster detection results ready to plot
@@ -29,13 +29,13 @@
 #'rMax <- 20 
 #'Time=5
 #'japanbreastcancer <- japanbreastcancer[,-1] #get rid of indicator column
-#'clst <- toclust(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period)
-#'system.time(resreal <- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=10))
+#'clst <- toclusso(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period)
+#'system.time(resreal <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=10))
 #'  }
 
 
-clust <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("space","spacetime", "both"),maxclust = 10,overdispfloor=TRUE, cv = NULL, collapsetime=FALSE){
-    if(is(clst, "clst")!=TRUE) stop("clst element not of class `clst`. This is required for the clust function.")
+clusso <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("space","spacetime", "both"),maxclust = 10,overdispfloor=TRUE, cv = NULL, collapsetime=FALSE){
+    if(is(clst, "clst")!=TRUE) stop("clst element not of class `clst`. This is required for the clusso function.")
     expected <- clst$required_df$expected
     observed <- clst$required_df$observed
     period <- clst$required_df$timeperiod
@@ -92,16 +92,16 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("sp
     if(length(analysis) > 1) stop("You must select either `space`, `spacetime`, or `both`")
     analysis <- match.arg(analysis, several.ok = FALSE)
     switch(analysis, 
-           space = clustMaster(analysis="space",x, y, rMax,period, expected, observed, covars, Time, utm, longdat, maxclust,overdispfloor, cv, collapsetime),
-           spacetime = clustMaster(analysis="spacetime",x, y, rMax,period, expected, observed, covars, Time, utm, longdat, maxclust,overdispfloor, cv, collapsetime),
-           both = clustMaster(analysis="both",x, y, rMax,period, expected, observed, covars, Time, utm, longdat, maxclust,overdispfloor, cv, collapsetime))
+           space = clussoMaster(analysis="space",x, y, rMax,period, expected, observed, covars, Time, utm, longdat, maxclust,overdispfloor, cv, collapsetime),
+           spacetime = clussoMaster(analysis="spacetime",x, y, rMax,period, expected, observed, covars, Time, utm, longdat, maxclust,overdispfloor, cv, collapsetime),
+           both = clussoMaster(analysis="both",x, y, rMax,period, expected, observed, covars, Time, utm, longdat, maxclust,overdispfloor, cv, collapsetime))
 }
 
 #' Detect a cluster in space or spacetime using Lasso on observed data    
 #' @title
-#'clustMaster
+#'clussoMaster
 #' @description 
-#'This function runs both the space and space-time Lasso model. This function is to be run on observed data. A separate function (clust) is the helper function which will have 
+#'This function runs both the space and space-time Lasso model. This function is to be run on observed data. A separate function (clusso) is the helper function which will have 
 #'flexibility to specify the space or spacetime or both models to be run (TODO).
 #'@param analysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}. 
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
@@ -116,12 +116,12 @@ clust <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("sp
 #'@param longdat Is the data in panel/long format? Default is \code{TRUE}. For wide format, specify \code{FALSE} (TODO).
 #'@param overdispfloor overdispfloor default is \code{TRUE}. When TRUE, it limits \eqn{\phi1} (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under-dispersion in the model.
 #'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{10}.
-#'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clust}.
+#'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
 #'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time. TODO
-#'@inheritParams clust
+#'@inheritParams clusso
 #'@return list of lists output from detection
 
-clustMaster <- function(analysis, x,y,rMax, period, expected, observed, covars,Time, utm, longdat, maxclust, overdispfloor, cv, collapsetime){  
+clussoMaster <- function(analysis, x,y,rMax, period, expected, observed, covars,Time, utm, longdat, maxclust, overdispfloor, cv, collapsetime){  
     if(analysis=="space"){
         analysis_name<-"spatial"
     }
@@ -137,7 +137,7 @@ clustMaster <- function(analysis, x,y,rMax, period, expected, observed, covars,T
     n <- length(x)
     init <- setVectors(period, expected, observed, covars, Time, longdat)
     E1 <- init$E0
-    Ex <- clust::scale(init, Time)
+    Ex <- clusso::scale(init, Time)
     Yx <- init$Y.vec
     #set vectors
     if(analysis=="spacetime"){
