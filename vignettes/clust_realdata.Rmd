@@ -1,21 +1,21 @@
 ---
-title: "Running *clust* with Real Data"
+title: "Running *clusso* with Real Data"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Intro to clust}
+  %\VignetteIndexEntry{Intro to clusso}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
 
 #Introduction
 
-This package is still under development. Please [report any bugs](https://github.com/mkamenet3/cluST/issues).
+This package is still under development. Please [report any bugs](https://github.com/mkamenet3/clusso/issues).
 
 
-Load `clust`package:
+Load `clusso`package:
 
 ```{r, message=FALSE, warning=FALSE}
-library("clust")
+library("clusso")
 #library("Matrix")
 
 #load dev version R scripts
@@ -25,11 +25,11 @@ library("clust")
 ```
 
 
-## Using `clust` with real data (Breast Cancer in Japan)
+## Using `clusso` with real data (Breast Cancer in Japan)
 
 ### Prepare Data
 
-We start by setting the seed using the `set.seed()` to ensure that the simulation is reproducible. We load the data that comes with the `clust` package with `data("japanbreastcancer")`.
+We start by setting the seed using the `set.seed()` to ensure that the simulation is reproducible. We load the data that comes with the `clusso` package with `data("japanbreastcancer")`.
 
 
 ```{r}
@@ -68,7 +68,7 @@ japan.prefect2 <- dframe.prefect2[,2:5]
 
 ### Set global conditions
 
-When using `clust`, there are certain global parameters that need to be set
+When using `clusso`, there are certain global parameters that need to be set
 
 There are two types of models we want to run: a quasi-poisson and Poisson model. Specifying this argument will make the output nicer (**TODO: CHANGE THIS TO OPTIONAL, CREATE REASONABLE DEFAULTS**)
 
@@ -98,18 +98,18 @@ overdispfloor <- TRUE
 
 ### Running the models
 
-The first step is to create a `clst` object using the `toclust()` function. By applying `str()` to `clst`, we see that the `clst` object neatly organizes the data into required covariates (expected counts, observed counts, and timeperiod are required), and other covariates (omitted here). If you have additional covariates, additional covariates will be included in the model and will not be penalized under the LASSO.
+The first step is to create a `clst` object using the `toclusso()` function. By applying `str()` to `clst`, we see that the `clst` object neatly organizes the data into required covariates (expected counts, observed counts, and timeperiod are required), and other covariates (omitted here). If you have additional covariates, additional covariates will be included in the model and will not be penalized under the LASSO.
 
 
 ```{r}
-clst <- toclust(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period)
+clst <- toclusso(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period)
 class(clst)
 str(clst)
 ```
 
-To perform the lasso cluster detection, we use the function `clust()`. 
+To perform the lasso cluster detection, we use the function `clusso()`. 
 
-The first argument is the `clst` object created above, which contains the observed counts, expected counts, and respective time period (as a categorical factor). These are part of the required data. If there are additional covariates we want to include in our model (to be excluded from being penalized by the lasso), then we can include them in the `toclust()` function.
+The first argument is the `clst` object created above, which contains the observed counts, expected counts, and respective time period (as a categorical factor). These are part of the required data. If there are additional covariates we want to include in our model (to be excluded from being penalized by the lasso), then we can include them in the `toclusso()` function.
 
 The next two arguments are `x` and `y`, which are the UTM easting and northing coordinates, scaled to be in kilometers. 
 
@@ -121,30 +121,30 @@ The sixth argument is `analysis`. The only current option is `both`, which will 
 The final required argument is `maxclust`. This is the maximum number of actual clusters expected in the given area. This is based on scientific knowledge of the area. For the japanese breast cancer data, we set `maxclust=10`.
 
 
-For additional functionality, if you do not have expected counts readily available, they can be calculated using the auxiliary function `calcexpected()`, from the `clust` package.
+For additional functionality, if you do not have expected counts readily available, they can be calculated using the auxiliary function `calcexpected()`, from the `clusso` package.
 
 ```{r}
 head(calcexpected(japanbreastcancer$death, japanbreastcancer$period, japanbreastcancer$id, family="poisson"))
 ```
 
 
-The output of `clust()` is assigned to the object `resreal`. `resreal` is a large list of lists. The recommended way to explore the results is to explore the `names(resreal)` and select each sub-list of interest.
+The output of `clusso()` is assigned to the object `resreal`. `resreal` is a large list of lists. The recommended way to explore the results is to explore the `names(resreal)` and select each sub-list of interest.
 
 ```{r}
-system.time(resreal <- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=10))
+system.time(resreal <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=10))
 names(resreal)
 ```
 
-We can also use the function `clustpretty()` to create a nice table for the number of clusters detected:
+We can also use the function `clussopretty()` to create a nice table for the number of clusters detected:
 
 ```{r}
-clustpretty(resreal, analysis="both", clusteridentify=FALSE)
+clussopretty(resreal, analysis="both", clusteridentify=FALSE)
 
-names(clustpretty(resreal, analysis="both", clusteridentify=TRUE))
-clustpretty(resreal, analysis="both", clusteridentify=TRUE)
+names(clussopretty(resreal, analysis="both", clusteridentify=TRUE))
+clussopretty(resreal, analysis="both", clusteridentify=TRUE)
 
-clustpretty(resreal, analysis="both", clusteridentify=TRUE, clusterRR = 1.05)
-clustpretty(resreal, analysis="both", clusteridentify=TRUE, clusterRR = "background")
+clussopretty(resreal, analysis="both", clusteridentify=TRUE, clusterRR = 1.05)
+clussopretty(resreal, analysis="both", clusteridentify=TRUE, clusterRR = "background")
 ```
 
 
@@ -205,8 +205,8 @@ Time <- 5
 overdispfloor <- TRUE
 cv <- 10 #how many folds
 
-clst <- toclust(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)
-system.time(res<- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both", cv=cv))
+clst <- toclusso(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)
+system.time(res<- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", cv=cv))
 
 ```
 
@@ -297,11 +297,11 @@ overdispfloor <- TRUE
 
 ```
 
-Run **clust**.
+Run **clusso**.
 
 ```{r}
-clst <- toclust(df, expected = expdeath, observed = death, timeperiod = period, covars=TRUE)
-system.time(res <- clust(clst, x,y, rMax, Time, utm=TRUE, analysis="both"))
+clst <- toclusso(df, expected = expdeath, observed = death, timeperiod = period, covars=TRUE)
+system.time(res <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both"))
 
 ```
 
