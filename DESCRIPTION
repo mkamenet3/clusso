@@ -1,4 +1,4 @@
-Package: clust
+Package: clusso
 Title: Space and space-time cluster detection with Lasso
 Version: 0.1
 Authors@R: person("Maria", "Kamenetsky", , "maria.kamenetsky@gmail.com", role = c("aut", "cre"))
@@ -31,7 +31,7 @@ VignetteBuilder: knitr
 Encoding: UTF-8
 License: GPL (>= 2)
 Maintainer: Maria Kamenetsky <maria.kamenetsky@gmail.com>
-BugReports: https://github.com/mkamenet3/cluST/issues
+BugReports: https://github.com/mkamenet3/clusso/issues
 LazyData: yes
 Roxygen: list(markdown = TRUE, roclets = c("rd", "namespace", "collate"))
 RoxygenNote: 6.1.1

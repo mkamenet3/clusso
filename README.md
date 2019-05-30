@@ -1,16 +1,16 @@
-# clust: efficient spatial and spatio-temporal cluster detection using the LASSO
-_cluST_
+# clusso: efficient spatial and spatio-temporal cluster detection using the LASSO
+_clusso_
 
 
-*clust* is an R package which can be used to efficiently detect spatial clusters and spatio-temporal clusters with count data on a lattice. Examples include rates of disease in a population broken down by a geographic unit. 
+*clusso* is an R package which can be used to efficiently detect spatial clusters and spatio-temporal clusters using the LASSO with count data on a lattice. Examples include rates of disease in a population broken down by a geographic unit. 
 
 This package is still under development. Please report bugs or constructive
-tips to issues [here](https://github.com/mkamenet3/cluST/issues)
+tips to issues [here](https://github.com/mkamenet3/clusso/issues)
 
-Detailed examples of use can be found in the [vignette](https://github.com/mkamenet3/cluST/tree/renamefuncs/scripts/clust/vignettes)
+Detailed examples of use can be found in the [vignette](https://github.com/mkamenet3/clusso/tree/renamefuncs/scripts/clusso/vignettes)
 
 
-The main functions in this package are ```clust``` and ```clust_sim``` which
+The main functions in this package are ```clusso``` and ```clusso_sim``` which
 both perform both spatial and spatio-temporal cluster detection using the lasso. The
 former works with observed and expected data while the former is used for the
 simulation of results. Diagnostic tools are also provided for further analysis
@@ -22,7 +22,7 @@ risk ratios from the output as well as provide colormapping. These can then easi
 
 ## Installation
 
-*clust* was built on R version 3.1.2. 
+*clusso* was built on R version 3.1.2. 
 
 Other package dependencies are:
 
@@ -37,11 +37,11 @@ Other package dependencies are:
 - spdep
 
 
-To download the latest version of *clust*:
+To download the latest version of *clusso*:
 
 ```R
 library("devtools")
-devtools::install_github("mkamenet3/cluST")
+devtools::install_github("mkamenet3/clusso")
 ```
 
 
