@@ -7,7 +7,7 @@
 #' @param period vector of periods or years in dataset. Should be imported as a factor.
 #' @param expect vector of expected counts. Expected counts must match up with the year and observed vectors.
 #' @param observed vector of observed counts. Observed counts must match up with the year and expected vectors.
-#' @param covars dataframe of covariates. NULL if no covariates supplied. Inherits this argument from `clust` or `clust_sim` functions
+#' @param covars dataframe of covariates. NULL if no covariates supplied. Inherits this argument from `clusso` or `clusso_sim` functions
 #' @param Time Number of time periods or years in your dataset. Must be declared as numeric.
 #' @param byrow default is set to TRUE. Data from the dataset should be imported by row. This is most often the case
 #' when you have a dataframe ordered by an identifier and then the period/time frame within that id listed chronologically (in panel format by identifier).

@@ -4,8 +4,8 @@
 #' 
 #' @description 
 #' This function runs the Lasso regularization technique on our large sparse matric of potential space or space-time clusters.
-#' @param sparseMAT large sparse matrix created in \code{clust} function.
-#' @param n_uniq number of unique polygons (ex: counties, zip code, etc). Inherited from \code{clust}.
+#' @param sparseMAT large sparse matrix created in \code{clusso} function.
+#' @param n_uniq number of unique polygons (ex: counties, zip code, etc). Inherited from \code{clusso}.
 #' @param vectors takes in the list of expected and observed counts from setVectors function
 #' @param Time number of time periods in the dataset
 #' @param spacetime indicator of whether the cluster detection method should be run on all space-time clusters(default) or on only the potential space clusters.

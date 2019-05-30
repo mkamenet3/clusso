@@ -1,7 +1,7 @@
 #' Spatio-temporal Sparse Matrix
 #' 
 #' This function takes the Kronecker product of the space and time matrices to create the space-time matrix
-#' @param clusters the potential clusters dataframe created by *clusters2df*
+#' @param clusters the potential clusters dataframe created by \code{clusters2df}
 #' @param numCenters number of centroids in space matrix
 #' @param Time number of time periods
 #' @return Returns sparse space time matrix     
