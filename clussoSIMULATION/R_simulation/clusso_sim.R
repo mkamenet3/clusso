@@ -1,11 +1,11 @@
 #'Detect a cluster in space or spacetime using Lasso - simulation.
 #'@title
-#'clust_sim
+#'clusso_sim
 #'@description 
 #'This helper function runs both the space and space-time Lasso model simulations for all 4 models simulataneously: Quasi-Poisson vs. Poisson in both space and space-time.
 #' This function is to be run on simulated data and all four models are run on the same simulated set. 
-#'A separate function (clust.sim) can be used for running simulations on individual models and (clust) can be used for observed data.
-#'@param clst list; output from toclust function. Must be of class clst.
+#'A separate function (clusso_sim) can be used for running simulations on individual models and (clusso) can be used for observed data.
+#'@param clst list; output from toclusso function. Must be of class clst.
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
 #'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
 #'@param rMax set max radius (in km)
@@ -47,16 +47,16 @@
 #'overdispfloor = TRUE
 #'nullmod <- TRUE
 #'dframe <- dframe[,-1]
-#'clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, 
+#'clst <- toclusso(japanbreastcancer, expected = japanbreastcancer$expdeath, 
 #'  observed = japanbreastcancer$death,timeperiod = japanbreastcancer$period, covars = FALSE)
-#'res <- clust_sim(clst, x1,y1,rMax, Time, nsim,center, radius, risk.ratio, 
+#'res <- clusso_sim(clst, x1,y1,rMax, Time, nsim,center, radius, risk.ratio, 
 #'  timeperiod, utm=TRUE, longdat=TRUE, 
 #'threshold, analysis= "both",theta = theta, nullmod = TRUE, overdispfloor)
 #'}
-clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio, 
+clusso_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio, 
                           timeperiod, utm=TRUE, longdat=TRUE, threshold, analysis = c("space", "spacetime", "both"), 
                       maxclust=10, theta = NULL,nullmod=NULL, overdispfloor,collapsetime=FALSE, background_rate=NULL){
-    if(is(clst, "clst")!=TRUE) stop("clst element not of class `clst`. This is required for the clust_sim function.")
+    if(is(clst, "clst")!=TRUE) stop("clst element not of class `clst`. This is required for the clusso_sim function.")
     expected <- clst$required_df$expected
     observed <- clst$required_df$observed
     period <- clst$required_df$timeperiod
@@ -147,25 +147,25 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
            #TODO
            # space = 
            # spacetime = 
-           both = clustMaster_sim(x, y, rMax,period, expected, observed, covars, Time, nsim, center, radius, risk.ratio,
+           both = clussoMaster_sim(x, y, rMax,period, expected, observed, covars, Time, nsim, center, radius, risk.ratio,
                                      timeperiod,utm, longdat, thresh, theta, nullmod, maxclust,overdispfloor, collapsetime,background_rate))
 }
 
 
 #'
 #'@title
-#'clustMaster_sim
+#'clussoMaster_sim
 #' @description 
 #'This function runs both the space and space-time Lasso model simulations for all 4 models simulataneously: Quasi-Poisson vs. Poisson in both space and space-time.
 #' This function is to be run on simulated data and all four models are run on the same simulated set. 
-#'A separate function (clust.sim) can be used for running simulations on individual models and (clust) can be used for observed data.
+#'A separate function (clusso_sim) can be used for running simulations on individual models and (clusso) can be used for observed data.
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
 #'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
 #'@param rMax set max radius (in km)
 #'@param period vector of periods or years in dataset. Should be imported as a factor.
 #'@param expected vector of expected counts. Expected counts must match up with the year and observed vectors.
 #'@param observed vector of observed counts. Observed counts must match up with the year and expected vectors.
-#'@param covars dataframe of covariates, if supplied to `toclust` function. 
+#'@param covars dataframe of covariates, if supplied to \code{toclusso} function. 
 #'@param Time Number of time periods or years in your dataset. Must be declared as numeric.
 #'@param nsim Number of simulations you would like to run
 #'@param center can be a single center or for multiple clusters, concatenate them. Max three TODO extend this
@@ -183,11 +183,11 @@ clust_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
 #'@param overdispfloor overdispfloor default is TRUE. When TRUE, it limits phi (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under dispersion.
 #'@param collapsetime alternative definition for space-only model to instead collapse expected and observed counts across time. TODO
 #'@param background_rate option to specify varying background rate instead of varying cluster rate for simulation. Default is null. If this option is specified, risk.ratio must be set to "background".
-#'@inheritParams clust_sim
+#'@inheritParams clusso_sim
 #'@return returns list of lists
 
 
-clustMaster_sim <- function(x, y, rMax, period, expected, observed, covars,Time, nsim, center, radius, risk.ratio, 
+clussoMaster_sim <- function(x, y, rMax, period, expected, observed, covars,Time, nsim, center, radius, risk.ratio, 
                                timeperiod,utm, longdat, thresh, theta = theta, nullmod=nullmod,
                          maxclust = maxclust, overdispfloor=overdispfloor, collapsetime, background_rate){
     message("Running both Space and Space-Time Models")
@@ -256,8 +256,8 @@ clustMaster_sim <- function(x, y, rMax, period, expected, observed, covars,Time,
     }
     
     #Scale
-    Ex <- clust::scale_sim(YSIM, init, nsim, Time)
-    Ex.s <- clust::scale_sim(YSIM.s, init, nsim, Time)
+    Ex <- clusso::scale_sim(YSIM, init, nsim, Time)
+    Ex.s <- clusso::scale_sim(YSIM.s, init, nsim, Time)
     
     #create vectors.sim for spacetime
     vectors.sim <- list(Period = Period, Ex = Ex , E0_0 = init$E0, 
