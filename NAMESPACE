@@ -18,5 +18,12 @@ export(spacetimeLasso)
 export(spacetimeMat)
 export(st_matCpp)
 export(timeMat)
+importFrom("grDevices", "colorRamp", "dev.off", "pdf", "rgb")	
+importFrom("graphics", "par", "plot", "polygon", "rect", "segments",	
+                "text")	
+importFrom("methods", "as", "is")	
+importFrom("stats", "coef", "deviance", "df.residual", "dist",	
+                "fitted", "glm", "model.matrix", "poisson", "quasipoisson")	
+importFrom("Matrix","sparseVector")
 importFrom(Rcpp,sourceCpp)
 useDynLib(clusso)
