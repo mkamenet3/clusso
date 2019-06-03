@@ -2,7 +2,7 @@
 #' prob_clusteroverlap
 #' @description
 #' Finds the probability of any overlap with true cluster based on BIC, AIC, and AICc based on the expected risk ratio
-#'@param sparseMAT large sparse matrix created in \code{clust_sim} function.
+#'@param sparseMAT large sparse matrix created in \code{clusso_sim} function.
 #'@param lassoresult List of QBIC, QAIC, QAICc estimates from the mylasso.sim function
 #'@param rr risk ratio matrix that was used in the simulation
 #'@param risk.ratio Risk ratio that was set for cluster in simulation

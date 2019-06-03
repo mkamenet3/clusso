@@ -89,7 +89,7 @@ easyplot <- function(prefect, polygons, pdfname, rescols, mods, space=c("space",
 #' @param prefect prefects dataframe
 #' @param polygons polygons dataframe
 #' @param pdfname pdfname of what the output pdf will be called
-#' @param res resultant list from clust_ function
+#' @param res resultant list from clusso_ function
 #' @param obs if observed is to be plotted or oracle from simulation
 #' 
 plotmap_ST_cv <- function(prefect, polygons, pdfname,res, obs){
@@ -179,7 +179,7 @@ plotmap_ST_cv <- function(prefect, polygons, pdfname,res, obs){
 #' @param prefect prefects dataframe
 #' @param polygons polygons dataframe
 #' @param pdfname pdfname of what the output pdf will be called
-#' @param res resultant list from clust_ function
+#' @param res resultant list from clusso_ function
 #' @param obs if observed is to be plotted or oracle from simulation
 plotmap_S_cv <- function(prefect, polygons, pdfname,res, obs){
     if(!is.null(obs)){
@@ -219,7 +219,7 @@ plotmap_S_cv <- function(prefect, polygons, pdfname,res, obs){
 #' @param prefect prefects dataframe
 #' @param polygons polygons dataframe
 #' @param pdfname pdfname of what the output pdf will be called
-#' @param res resultant list from clust_ function
+#' @param res resultant list from clusso_ function
 #' @param obs if observed is to be plotted or oracle from simulation
 #' @param rr if FALSE, will print probability map legend, if TRUE will print legend for risk ratios (redblue scheme)
 plotmap_ST <- function(prefect, polygons, pdfname,res, obs,rr){
@@ -387,7 +387,7 @@ plotmap_ST <- function(prefect, polygons, pdfname,res, obs,rr){
 #' @param prefect prefects dataframe
 #' @param polygons polygons dataframe
 #' @param pdfname pdfname of what the output pdf will be called
-#' @param res resultant list from clust_ function
+#' @param res resultant list from clusso_ function
 #' @param obs if observed is to be plotted or oracle from simulation
 #' @param rr is TRUE, result in legend for redblue (risk ratios). Default is grey scale legend
 plotmap_S <- function(prefect, polygons, pdfname,res, obs, rr){
@@ -456,7 +456,7 @@ plotmap_S <- function(prefect, polygons, pdfname,res, obs, rr){
 #' @param prefect prefects dataframe
 #' @param polygons polygons dataframe
 #' @param pdfname pdfname of what the output pdf will be called
-#' @param res resultant list from clust_ function
+#' @param res resultant list from clusso_ function
 #' @param rr if FALSE, will print probability map legend, if TRUE will print legend for risk ratios (redblue scheme)
 plotmap_bic <- function(prefect, polygons, pdfname,res,rr){
     #Observed plot

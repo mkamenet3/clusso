@@ -10,7 +10,7 @@
 #' @return integer vector for the last observation in a sequence of observations by growing radius, given users rMax specifications.
 #' @export
 max_colCpp <- function(N, iMax, cn, clast) {
-    .Call('_clust_max_colCpp', PACKAGE = 'clust', N, iMax, cn, clast)
+    .Call('_clusso_max_colCpp', PACKAGE = 'clusso', N, iMax, cn, clast)
 }
 
 #' @title
@@ -23,7 +23,7 @@ max_colCpp <- function(N, iMax, cn, clast) {
 #' @description helper function
 #' @export
 prod_YxCpp <- function(vY, clast, ccenter) {
-    .Call('_clust_prod_YxCpp', PACKAGE = 'clust', vY, clast, ccenter)
+    .Call('_clusso_prod_YxCpp', PACKAGE = 'clusso', vY, clast, ccenter)
 }
 
 #' @title
@@ -37,6 +37,6 @@ prod_YxCpp <- function(vY, clast, ccenter) {
 #' @description helper function
 #' @export
 st_matCpp <- function(X, last, center, T) {
-    .Call('_clust_st_matCpp', PACKAGE = 'clust', X, last, center, T)
+    .Call('_clusso_st_matCpp', PACKAGE = 'clusso', X, last, center, T)
 }
 

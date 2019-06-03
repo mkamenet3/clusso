@@ -1,8 +1,8 @@
 #' Simulations for Spatial and Spatio-Temporal Lasso
 #' 
 #' This function runs the Lasso regularization technique on our large sparse matric of potential space-time clusters.It is specifically created to use with simulations.
-#' @param sparseMAT large sparse matrix created in \code{clust_sim} function.
-#' @param n_uniq number of unique polygons (ex: counties, zip code, etc). Inherited from \code{clust_sim}.
+#' @param sparseMAT large sparse matrix created in \code{clusso_sim} function.
+#' @param n_uniq number of unique polygons (ex: counties, zip code, etc). Inherited from \code{clusso_sim}.
 #' @param vectors.sim takes in the list of expected and observed counts from setVectors function
 #' @param Time number of time periods in the dataset
 #' @param spacetime indicator of whether the cluster detection method should be run on all space-time clusters(default) or on only the potential space clusters.
@@ -80,7 +80,7 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
         # exp_coefs_qbic <- c(exp(unique(lasso$beta[,select.qbic])),
         #                     exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qbic]))
         #numclust.qbic <- length(unique(exp_coefs_qbic))-Time
-        numclust.qbic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qbic[[i]]]))-(Time+1))
+        numclust.qbic <-  lapply(1:nsim, function(i) K[[i]][select.qbic[[i]]]-Time)  #lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qbic[[i]]]))-(Time+1))
 
          #QAIC
         PLL.qaic <- lapply(1:nsim, function(i) 2*(K[[i]]) - 2*(loglike[[i]]/overdisp.est))
@@ -91,7 +91,7 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
         #E.qaic <- select_muRR.qaic
         E.qaic <- exp(select_muRR.qaic)
         #numclust.qaic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaic[[i]]]))-1)
-        numclust.qaic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaic[[i]]]))-(Time+1))
+        numclust.qaic <- lapply(1:nsim, function(i) K[[i]][select.qaic[[i]]]-Time) #lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaic[[i]]]))-(Time+1))
 
          #QAICc
         PLL.qaicc <- lapply(1:nsim, function(i) 2*(K[[i]]) - 2*(loglike[[i]]/overdisp.est) + 
@@ -103,7 +103,7 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
         #E.qaicc <- select_muRR.qaicc
         E.qaicc <- exp(select_muRR.qaicc)
         #numclust.qaicc <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaicc[[i]]]))-1)
-        numclust.qaicc <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaicc[[i]]]))-(Time+1))
+        numclust.qaicc <- lapply(1:nsim, function(i) K[[i]][select.qaicc[[i]]]-Time) #lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaicc[[i]]]))-(Time+1))
 
     }
 
@@ -121,7 +121,7 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
         #E.qbic <- select_muRR.qbic
         E.qbic <- exp(select_muRR.qbic)
         #numclust.qbic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qbic[[i]]]))-1)
-        numclust.qbic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qbic[[i]]]))-(Time+1))
+        numclust.qbic <- lapply(1:nsim, function(i) K[[i]][select.qbic[[i]]]-Time) #lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qbic[[i]]]))-(Time+1))
         
         #QAIC
         PLL.qaic <- lapply(1:nsim, function(i) 2*(K[[i]]) - 2*(loglike[[i]]))
@@ -130,7 +130,7 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
         select_muRR.qaic <- Reduce("+", select_mu.qaic)/nsim
         E.qaic <- exp(select_muRR.qaic)
         #numclust.qaic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaic[[i]]]))-1)
-        numclust.qaic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaic[[i]]]))-(Time+1))
+        numclust.qaic <- lapply(1:nsim, function(i) K[[i]][select.qaic[[i]]]-Time) #lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaic[[i]]]))-(Time+1))
        
         #QAICc
         PLL.qaicc <- lapply(1:nsim, function(i) 2*(K[[i]]) - 2*(loglike[[i]]) + 
@@ -142,7 +142,7 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
         #E.qaicc <- select_muRR.qaicc
         E.qaicc <- exp(select_muRR.qaicc)
         #numclust.qaicc <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaicc[[i]]]))-1)
-        numclust.qaicc <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaicc[[i]]]))-(Time+1))
+        numclust.qaicc <- lapply(1:nsim, function(i) K[[i]][select.qaicc[[i]]]-Time) #lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaicc[[i]]]))-(Time+1))
     }
     
     #########################################################
@@ -171,7 +171,7 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
         #E.qbic <- select_muRR.qbic
         E.qbic <- exp(select_muRR.qbic)
         #numclust.qbic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qbic[[i]]]))-1)
-        numclust.qbic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qbic[[i]]]))-(Time+1))
+        numclust.qbic <- lapply(1:nsim, function(i) K[[i]][select.qbic[[i]]]-Time) #lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qbic[[i]]]))-(Time+1))
        
         #QAIC
         PLL.qaic <- lapply(1:nsim, function(i) 2*(K[[i]]) - 2*(loglike[[i]]/overdisp.est))
@@ -182,7 +182,7 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
         #E.qaic <- select_muRR.qaic
         E.qaic <- exp(select_muRR.qaic)
         #numclust.qaic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaic[[i]]]))-1)
-        numclust.qaic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaic[[i]]]))-(Time+1))
+        numclust.qaic <- lapply(1:nsim, function(i) K[[i]][select.qaic[[i]]]-Time) #lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaic[[i]]]))-(Time+1))
        
         #QAICc
         PLL.qaicc <- lapply(1:nsim, function(i) 2*(K[[i]]) - 2*(loglike[[i]]/overdisp.est) + 
@@ -194,7 +194,7 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
         #E.qaicc <- select_muRR.qaicc
         E.qaicc <- exp(select_muRR.qaicc)
         #numclust.qaicc <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaicc[[i]]]))-1)
-        numclust.qaicc <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaicc[[i]]]))-(Time+1))
+        numclust.qaicc <- lapply(1:nsim, function(i) K[[i]][select.qaicc[[i]]]-Time) #lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaicc[[i]]]))-(Time+1))
      }
 
     #########################################################
@@ -211,7 +211,7 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
         #E.qbic <- select_muRR.qbic
         E.qbic <- exp(select_muRR.qbic)
         #numclust.qbic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qbic[[i]]]))-1)
-        numclust.qbic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qbic[[i]]]))-(Time+1))
+        numclust.qbic <- lapply(1:nsim, function(i) K[[i]][select.qbic[[i]]]-Time) #lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qbic[[i]]]))-(Time+1))
        
         #QAIC
         PLL.qaic <- lapply(1:nsim, function(i) 2*(K[[i]]) - 2*(loglike[[i]]))
@@ -222,7 +222,7 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
         #E.qaic <- select_muRR.qaic
         E.qaic <- exp(select_muRR.qaic)
         #numclust.qaic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaic[[i]]]))-1)
-        numclust.qaic <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaic[[i]]]))-(Time+1))
+        numclust.qaic <- lapply(1:nsim, function(i) K[[i]][select.qaic[[i]]]-Time) #lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaic[[i]]]))-(Time+1))
          
         #QAICc
         PLL.qaicc <- lapply(1:nsim, function(i) 2*(K[[i]]) - 2*(loglike[[i]]) + 
@@ -234,7 +234,7 @@ spacetimeLasso_sim <- function(sparseMAT, n_uniq ,vectors.sim, Time, spacetime,p
         #E.qaicc <- select_muRR.qaicc
         E.qaicc <- exp(select_muRR.qaicc)
         #numclust.qaicc <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaicc[[i]]]))-1)
-        numclust.qaicc <- lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaicc[[i]]]))-(Time+1))
+        numclust.qaicc <- lapply(1:nsim, function(i) K[[i]][select.qaicc[[i]]]-Time) #lapply(1:nsim, function(i) length(unique(coefs.lasso.all[[i]][,select.qaicc[[i]]]))-(Time+1))
     }
     
     #Return only changepoints from lasso

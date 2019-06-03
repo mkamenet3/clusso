@@ -13,7 +13,7 @@ plotmap_S_cv(prefect, polygons, pdfname, res, obs)
 
 \item{pdfname}{pdfname of what the output pdf will be called}
 
-\item{res}{resultant list from clust_ function}
+\item{res}{resultant list from clusso_ function}
 
 \item{obs}{if observed is to be plotted or oracle from simulation}
 }

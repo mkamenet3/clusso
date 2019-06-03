@@ -9,7 +9,7 @@ detect_incluster(sparseMAT, lassoresult, vectors.sim, rr, set, timeperiod,
   rMax, thresh, ncentroids)
 }
 \arguments{
-\item{sparseMAT}{large sparse matrix created in \code{clust_sim} function.}
+\item{sparseMAT}{large sparse matrix created in \code{clusso_sim} function.}
 
 \item{lassoresult}{List of QBIC, QAIC, QAICc estimates from the lasso results}
 

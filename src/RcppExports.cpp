@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // max_colCpp
 IntegerVector max_colCpp(const int N, int iMax, IntegerVector cn, IntegerVector clast);
-RcppExport SEXP _clust_max_colCpp(SEXP NSEXP, SEXP iMaxSEXP, SEXP cnSEXP, SEXP clastSEXP) {
+RcppExport SEXP _clusso_max_colCpp(SEXP NSEXP, SEXP iMaxSEXP, SEXP cnSEXP, SEXP clastSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -21,7 +21,7 @@ END_RCPP
 }
 // prod_YxCpp
 NumericVector prod_YxCpp(NumericVector vY, IntegerVector clast, IntegerVector ccenter);
-RcppExport SEXP _clust_prod_YxCpp(SEXP vYSEXP, SEXP clastSEXP, SEXP ccenterSEXP) {
+RcppExport SEXP _clusso_prod_YxCpp(SEXP vYSEXP, SEXP clastSEXP, SEXP ccenterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -34,7 +34,7 @@ END_RCPP
 }
 // st_matCpp
 NumericVector st_matCpp(NumericMatrix X, IntegerVector last, IntegerVector center, int T);
-RcppExport SEXP _clust_st_matCpp(SEXP XSEXP, SEXP lastSEXP, SEXP centerSEXP, SEXP TSEXP) {
+RcppExport SEXP _clusso_st_matCpp(SEXP XSEXP, SEXP lastSEXP, SEXP centerSEXP, SEXP TSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -48,13 +48,13 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_clust_max_colCpp", (DL_FUNC) &_clust_max_colCpp, 4},
-    {"_clust_prod_YxCpp", (DL_FUNC) &_clust_prod_YxCpp, 3},
-    {"_clust_st_matCpp", (DL_FUNC) &_clust_st_matCpp, 4},
+    {"_clusso_max_colCpp", (DL_FUNC) &_clusso_max_colCpp, 4},
+    {"_clusso_prod_YxCpp", (DL_FUNC) &_clusso_prod_YxCpp, 3},
+    {"_clusso_st_matCpp", (DL_FUNC) &_clusso_st_matCpp, 4},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_clust(DllInfo *dll) {
+RcppExport void R_init_clusso(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

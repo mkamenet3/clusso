@@ -7,7 +7,7 @@
 spaceMat(clusters, numCenters)
 }
 \arguments{
-\item{clusters}{clusters dataframe from (cluster.df function) that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)}
+\item{clusters}{clusters dataframe that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster)}
 
 \item{numCenters}{the number of centers/centroids}
 }

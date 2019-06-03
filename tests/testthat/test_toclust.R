@@ -1,6 +1,6 @@
 library("testthat")
 library("MASS")
-context("Testing toclust")
+context("Testing toclusso")
 
 
 
@@ -12,10 +12,10 @@ test_that("Length of inputs the same",{
     Time = 2
     dat <- cbind.data.frame(expected, observed, period)
     
-    expect_warning(toclust(dat,expected, observed, period))
-    expect_error(toclust(dat,expected, observed[-1], as.factor(period)))
-    expect_error(toclust(c(expected,9), observed, as.factor(period)))
-    expect_error(toclust(C(expected,9), observed[-1], as.factor(period)))
+    expect_warning(toclusso(dat,expected, observed, period))
+    expect_error(toclusso(dat,expected, observed[-1], as.factor(period)))
+    expect_error(toclusso(c(expected,9), observed, as.factor(period)))
+    expect_error(toclusso(C(expected,9), observed[-1], as.factor(period)))
 })
 
 

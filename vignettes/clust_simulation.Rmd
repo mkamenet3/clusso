@@ -1,8 +1,8 @@
 ---
-title: "Running *clust* with Simulations"
+title: "Running *clusso* with Simulations"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Intro to clust}
+  %\VignetteIndexEntry{Intro to clusso}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
@@ -10,14 +10,14 @@ vignette: >
 
 #Introduction
 
-This package is still under development. Please [report any bugs](https://github.com/mkamenet3/cluST/issues).
+This package is still under development. Please [report any bugs](https://github.com/mkamenet3/clusso/issues).
 
 
-Load `clust`package:
+Load `clusso`package:
 
 ```{r, message=FALSE, warning=FALSE}
 #load package
-library("clust")
+library("clusso")
 
 #load dev version R scripts
 file.sources = list.files("../R/",pattern="*.R")
@@ -28,11 +28,11 @@ load("../data/japanbreastcancer.RData")
 
 ## Toy Example 1: Simulation
 
-In this first simulation, we will explore how to use the `clust` package to perform a simple simulation using the Japanese breast cancer data set. For simplicity, no covariates are included and `nsim=10` for speed and illustration.
+In this first simulation, we will explore how to use the `clusso` package to perform a simple simulation using the Japanese breast cancer data set. For simplicity, no covariates are included and `nsim=10` for speed and illustration.
 
 ### Prepare Data
 
-We start by setting the seed using the `set.seed()` to ensure that the simulation is reproducible. We load the data that comes with the `clust` package with `data("japanbreastcancer")`.
+We start by setting the seed using the `set.seed()` to ensure that the simulation is reproducible. We load the data that comes with the `clusso` package with `data("japanbreastcancer")`.
 
 ```{r}
 set.seed(8202017)
@@ -65,7 +65,7 @@ japan.prefect2 <- dframe.prefect2[,2:5]
 
 ### Set global conditions
 
-When using `clust`, there are certain global parameters that need to be set
+When using `clusso`, there are certain global parameters that need to be set
 
 
 We first set a threshold for detection (**TODO: MAKE THIS OPTIONAL AND NOT REQUIRE 2**)
@@ -90,7 +90,7 @@ y=utmJapan$utmy/1000
 
 Below, we set the maximum radius for a cluster to 20 km (`rMax=20`) based on scientific knowledge of the area and our definition of a meaningful cluster, set the number of unique time periods to 5 (`Time=5`), number of simulations to be run to 10 (`nsim=10`), and set a floor for overdispersion to avoid estimating underdispersion (`overdispfloor=TRUE`). 
 
-Since this is a simulation, we must first create a cluster to be found using `clust`. We create a cluster centered at centroid #1 (`center=1`), with a radius of 18km (`radius=18`), that exists in all 5 time periods (`timeperiod=c(1:5)`), has a risk.ratio of 2 (`risk.ratio=2`), moderate overdispersion (`theta=1000`).
+Since this is a simulation, we must first create a cluster to be found using `clusso`. We create a cluster centered at centroid #1 (`center=1`), with a radius of 18km (`radius=18`), that exists in all 5 time periods (`timeperiod=c(1:5)`), has a risk.ratio of 2 (`risk.ratio=2`), moderate overdispersion (`theta=1000`).
 
  For poisson model with no overdispersion, set ```theta=Inf```.
 
@@ -128,20 +128,20 @@ japanbreastcancer<- japanbreastcancer[,-1] #get rid of id column to use clst fun
 head(japanbreastcancer)
 ```
 
-The first step is to create a `clst` object using the `toclust()` function. By applying `str()` to `clst`, we see that the `clst` object neatly organizes the data into required covariates (expected counts, observed counts, and timeperiod are required), and other covariates (omitted here). If you have additional covariates, additional covariates will be included in the model and will not be penalized under the LASSO.
+The first step is to create a `clst` object using the `toclusso()` function. By applying `str()` to `clst`, we see that the `clst` object neatly organizes the data into required covariates (expected counts, observed counts, and timeperiod are required), and other covariates (omitted here). If you have additional covariates, additional covariates will be included in the model and will not be penalized under the LASSO.
 
 ```{r}
 #create clst class object
-clst <- toclust(japanbreastcancer, expected = expdeath, observed = death, timeperiod = period)
+clst <- toclusso(japanbreastcancer, expected = expdeath, observed = death, timeperiod = period)
 class(clst)
 str(clst)
 ```
 
-Finally, we are ready to perform the simulation using the `clust_sim()` function.
+Finally, we are ready to perform the simulation using the `clusso_sim()` function.
 
 ```{r}
-#run clust_sim and time it
-system.time(res <- clust_sim(clst, x,y,rMax, Time,
+#run clusso_sim and time it
+system.time(res <- clusso_sim(clst, x,y,rMax, Time,
                                  nsim,center, radius, risk.ratio, timeperiod,utm = TRUE,
                                  threshold, analysis= "both",
                              theta = theta, threshold = threshold,overdispfloor=overdispfloor))
@@ -305,9 +305,9 @@ maxclust <- 10
 ```{r}
 japanbreastcancer <- japanbreastcancer[,-1] #need to get rid of id's
 
-clst <- toclust(japanbreastcancer, expected = expdeath, observed = death, timeperiod = period, covars=FALSE)
+clst <- toclusso(japanbreastcancer, expected = expdeath, observed = death, timeperiod = period, covars=FALSE)
 
-system.time(res <- clust_sim(clst, x, y,rMax,Time, nsim,center, radius, risk.ratio, timeperiods, 
+system.time(res <- clusso_sim(clst, x, y,rMax,Time, nsim,center, radius, risk.ratio, timeperiods, 
                              utm=TRUE, paneldat=TRUE, threshold, analysis= "both", maxclust,theta, nullmod, overdispfloor))
 
 ```
@@ -337,7 +337,7 @@ write.csv(tabn, file="tabledetection_singlesimexample.csv", row.names=TRUE)
 
 ```
 
-We can also output the threshold results, just to explore additional diagnostics (still underdevelopment, please [report any bugs](https://github.com/mkamenet3/cluST/issues)!)
+We can also output the threshold results, just to explore additional diagnostics (still underdevelopment, please [report any bugs](https://github.com/mkamenet3/clusso/issues)!)
 
 ```{r}
 #threshold results
@@ -384,7 +384,7 @@ easyplot(japan.prefect2, japan.poly2 ,pdfname4, res$probcolors.thresh2, mods, sp
 ## Running simulation with covariates
 
 
-We also allow for the model to take on covariates, which are specified in the ```clst``` class definition and are then passed to the larger ```clust_sim()``` function.
+We also allow for the model to take on covariates, which are specified in the ```clst``` class definition and are then passed to the larger ```clusso_sim()``` function.
 
 Import geography data:
 
@@ -472,9 +472,9 @@ table.detection <- NULL
 
 ```{r}
 
-clst <- toclust(df, expected = japanbreastcancer$expdeath, observed = japanbreastcancer$death, timeperiod = japanbreastcancer$period, covars=TRUE)
+clst <- toclusso(df, expected = japanbreastcancer$expdeath, observed = japanbreastcancer$death, timeperiod = japanbreastcancer$period, covars=TRUE)
 
-system.time(res <- clust_sim(clst, x, y,rMax,Time, nsim,center, radius, risk.ratio, timeperiods, 
+system.time(res <- clusso_sim(clst, x, y,rMax,Time, nsim,center, radius, risk.ratio, timeperiods, 
                              utm=TRUE, byrow=TRUE, threshold, space= "both", theta, nullmod, overdispfloor))
 
 ```
@@ -577,7 +577,7 @@ for(cent in centers){
         for(tim in timeperiods){
             for(risk in risk.ratios){
                 print(c(cent, rad, tim, risk))
-                system.time(res <- clust_sim(clst,x, y,rMax,Time,
+                system.time(res <- clusso_sim(clst,x, y,rMax,Time,
                                              nsim,cent, rad, risk, tim, utm=TRUE, byrow=TRUE, threshold, 
                                              space= "both", theta, nullmod, overdispfloor))
                 #save results
@@ -691,9 +691,9 @@ Run the model with varying background rate:
 ```{r}
 japanbreastcancer <- japanbreastcancer[,-1] #need to get rid of id's
 
-clst <- toclust(japanbreastcancer, expected = japanbreastcancer$expdeath, observed = japanbreastcancer$death, timeperiod = japanbreastcancer$period, covars=FALSE)
+clst <- toclusso(japanbreastcancer, expected = japanbreastcancer$expdeath, observed = japanbreastcancer$death, timeperiod = japanbreastcancer$period, covars=FALSE)
 
-system.time(res <- clust_sim(clst, x, y,rMax,Time, nsim,center, radius, risk.ratio, timeperiods, 
+system.time(res <- clusso_sim(clst, x, y,rMax,Time, nsim,center, radius, risk.ratio, timeperiods, 
                              utm=TRUE, byrow=TRUE, threshold, space= "both", theta, nullmod, overdispfloor,
                              background.rate=background.rate))
 ```
@@ -821,7 +821,7 @@ for(cent in centers){
                 for(thet in thetas){
                     for(back in background.rates){
                         print(c(cent, rad, tim, risk,back,thet))
-                        system.time(res <- clust_sim(clst,x, y,rMax,Time,
+                        system.time(res <- clusso_sim(clst,x, y,rMax,Time,
                                                      nsim,cent, rad, risk, tim, utm=TRUE, byrow=TRUE, threshold, 
                                                      space= "both", thet, nullmod, overdispfloor,
                                                      background.rate = back))

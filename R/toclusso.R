@@ -1,10 +1,10 @@
 #' @title
-#'toclust
+#'toclusso
 #' 
 #' Creates \code{clst} object.
 #' @description 
 #' Creates \code{clst} object for creating potential spatial and spatio-temporal clusters. This function creates a \code{clst} 
-#' object which will contain the expected, observed, and timeperiod information necessary to run \pkg{clust}.
+#' object which will contain the expected, observed, and timeperiod information necessary to run \pkg{clusso}.
 #' If dataframe is fed in, assumes panel format - see \code{vignette} for details. 
 #' @param df name of dataframe.
 #' @param expected Name of variable that contains the expected counts.
@@ -16,10 +16,10 @@
 #'@examples
 #'\donttest{
 #'data(japanbreastcancer)
-#'clst <- toclust(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)  
+#'clst <- toclusso(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)  
 #'}
 
-toclust <- function(df, expected, observed, timeperiod, covars=FALSE){
+toclusso <- function(df, expected, observed, timeperiod, covars=FALSE){
     if((missing(covars) | covars==FALSE)){
         covars <- FALSE
     }
@@ -43,7 +43,7 @@ toclust <- function(df, expected, observed, timeperiod, covars=FALSE){
         stop("Input must be a dataframe with clearly labeled covariates")
     }
     if(is.null(expected) | is.null(observed) | is.null(timeperiod)){
-        stop("Must supply expected, observed, and timeperiod data for clust() to run.")
+        stop("Must supply expected, observed, and timeperiod data for clusso() to run.")
     }
     if(inherits(timeperiod, "factor") == FALSE){
         timeperiod <- as.factor(timeperiod)

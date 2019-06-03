@@ -8,7 +8,7 @@ prob_clusteroverlap(sparseMAT, lassoresult, rr, risk.ratio, x, y, rMax,
   nsim, Time, thresh, ncentroids, nullmod = NULL)
 }
 \arguments{
-\item{sparseMAT}{large sparse matrix created in \code{clust_sim} function.}
+\item{sparseMAT}{large sparse matrix created in \code{clusso_sim} function.}
 
 \item{lassoresult}{List of QBIC, QAIC, QAICc estimates from the mylasso.sim function}
 

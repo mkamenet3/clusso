@@ -1,4 +1,4 @@
 library(testthat)
-library(clust)
+library(clusso)
 
-test_check("clust")
+test_check("clusso")
