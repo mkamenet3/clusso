@@ -51,7 +51,7 @@ clusso <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("s
         utm=TRUE
     }
     else{
-        message("Coordinates are assumed to be in lat/long coordinates. For UTM coordinates, please specify 'utm=TRUE' or leave empty for defaulte (TRUE).")
+        message("Coordinates are assumed to be in lat/long coordinates. For UTM coordinates, please specify 'utm=TRUE' or leave empty for default (TRUE).")
         utm=FALSE
     }
     if((missing(longdat) | longdat==TRUE)){
@@ -59,7 +59,7 @@ clusso <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("s
     }
     else{
         longdat=FALSE
-        message("Data assumed to be in panel data. To use vector data instead, please specify 'longdat=FALSE'")
+        #message("Data assumed to be in panel data. To use vector data instead, please specify 'longdat=FALSE'")
     }
     if(missing(maxclust)){
         maxclust = 16
@@ -164,12 +164,12 @@ clussoMaster <- function(analysis, x,y,rMax, period, expected, observed, covars,
         #add this to sparsemat
         sparseMAT <- cbind(sparseMAT, timeMat)
         SOAR::Store(sparseMAT)
-        message("Space-time matrix created")
+        #message("Space-time matrix created")
     }
     else {
         sparseMAT <- spaceMat(clusters, numCenters)
         SOAR::Store(sparseMAT)
-        message("Creating space-only matrix")
+        #message("Creating space-only matrix")
         if(nrow(covars)==0){
             covars <- NULL
         }
