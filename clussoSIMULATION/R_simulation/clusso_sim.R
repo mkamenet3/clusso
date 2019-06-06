@@ -289,7 +289,7 @@ clussoMaster_sim <- function(x, y, rMax, period, expected, observed, covars,Time
         sparseMAT <- cbind(sparseMAT, timeMat)
         ############################################
         SOAR::Store(sparseMAT)
-        message("Space-time matrix created")
+        #message("Space-time matrix created")
         
     }
     else{
