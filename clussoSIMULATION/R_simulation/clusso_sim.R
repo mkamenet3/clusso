@@ -55,7 +55,7 @@
 #'}
 clusso_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio, 
                           timeperiod, utm=TRUE, longdat=TRUE, threshold, analysis = c("space", "spacetime", "both"), 
-                      maxclust=10, theta = NULL,nullmod=NULL, overdispfloor,collapsetime=FALSE, background_rate=NULL){
+                      maxclust=11, theta = NULL,nullmod=NULL, overdispfloor,collapsetime=FALSE, background_rate=NULL){
     if(is(clst, "clst")!=TRUE) stop("clst element not of class `clst`. This is required for the clusso_sim function.")
     expected <- clst$required_df$expected
     observed <- clst$required_df$observed
@@ -82,10 +82,10 @@ clusso_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
         message("Data assumed to be in panel data. To use vector data instead, please specify 'longdat=FALSE'")
     }
     if(missing(maxclust)){
-        maxclust = 10
+        maxclust = 11 + Time
     }
     else{
-        maxclust = maxclust
+        maxclust = maxclust + Time
     }
     if((missing(overdispfloor) | overdispfloor==TRUE)){
         overdispfloor <- TRUE
@@ -93,6 +93,7 @@ clusso_sim <- function(clst, x,y, rMax, Time, nsim, center, radius, risk.ratio,
     else{
         overdispfloor <- FALSE
     }
+    print(paste("maxclust: ", maxclust))
     if(!is.null(nullmod)){
         if(isTRUE(nullmod)) warning("Null model has been set to true")
         nullmod <- TRUE
@@ -306,6 +307,7 @@ clussoMaster_sim <- function(x, y, rMax, period, expected, observed, covars,Time
     # #SPACE-ONLY MODELS
     #set up and run simulation models
     message("RUNNING: SPACE-ONLY QUASI-POISSON")
+    #lassoresult.qp.s <- spacetimeLasso_sim(sparseMAT, n_uniq, vectors.sim.s, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM.s, maxclust,overdispfloor)
     lassoresult.qp.s <- spacetimeLasso_sim(sparseMAT, n_uniq, vectors.sim.s, Time, spacetime=TRUE, pois=FALSE, nsim, YSIM.s, maxclust,overdispfloor)
 
     message("RUNNING: SPACE-ONLY POISSON")
@@ -413,14 +415,14 @@ clussoMaster_sim <- function(x, y, rMax, period, expected, observed, covars,Time
     ##SPACE
     #P-S
     #detect <- prob_clusteroverlap2(sparseMAT, lassoresult.p.s, rr, risk.ratio, x, y, rMax, nsim, Time, centroids)
-    detect <- prob_clusteroverlap(sparseMAT, lassoresult.p.s, rr, risk.ratio, x, y, rMax, nsim, Time, centroids)
+    detect <- prob_clusteroverlap(sparseMAT, lassoresult.p.s, rr, risk.ratio, x, y, rMax, nsim, Time, numCenters)
     detect_out.p.s <- matrix(unlist(detect),nrow=2, byrow = TRUE,
                               dimnames = list(c("outperc", "inperc"),
                                               c("(Q)BIC", "(Q)AIC", "(Q)AICc")))
     
     #QP-S
     #detect <- prob_clusteroverlap2(sparseMAT, lassoresult.qp.s, rr, risk.ratio, x, y, rMax, nsim, Time, centroids)
-    detect <- prob_clusteroverlap(sparseMAT, lassoresult.qp.s, rr, risk.ratio, x, y, rMax, nsim, Time, centroids)
+    detect <- prob_clusteroverlap(sparseMAT, lassoresult.qp.s, rr, risk.ratio, x, y, rMax, nsim, Time, numCenters )
     detect_out.qp.s <- matrix(unlist(detect),nrow=2, byrow = TRUE,
                               dimnames = list(c("outperc", "inperc"),
                                               c("(Q)BIC", "(Q)AIC", "(Q)AICc")))
@@ -429,13 +431,13 @@ clussoMaster_sim <- function(x, y, rMax, period, expected, observed, covars,Time
     ##SPACE-TIME
     #P-ST
     #detect <- prob_clusteroverlap2(sparseMAT, lassoresult.p.st, rr, risk.ratio, x, y, rMax, nsim, Time, centroids)
-    detect <- prob_clusteroverlap(sparseMAT, lassoresult.p.st, rr, risk.ratio, x, y, rMax, nsim, Time, centroids)
+    detect <- prob_clusteroverlap(sparseMAT, lassoresult.p.st, rr, risk.ratio, x, y, rMax, nsim, Time, numCenters )
     detect_out.p.st <- matrix(unlist(detect),nrow=2, byrow = TRUE,
                                dimnames = list(c("outperc", "inperc"),
                                                c("(Q)BIC", "(Q)AIC", "(Q)AICc")))
     #QP-ST
     #detect <- prob_clusteroverlap2(sparseMAT, lassoresult.qp.st, rr, risk.ratio, x, y, rMax, nsim, Time, centroids)
-    detect <- prob_clusteroverlap(sparseMAT, lassoresult.qp.st, rr, risk.ratio, x, y, rMax, nsim, Time, centroids)
+    detect <- prob_clusteroverlap(sparseMAT, lassoresult.qp.st, rr, risk.ratio, x, y, rMax, nsim, Time, numCenters )
     detect_out.qp.st <- matrix(unlist(detect),nrow=2, byrow = TRUE,
                                dimnames = list(c("outperc", "inperc"),
                                                c("(Q)BIC", "(Q)AIC", "(Q)AICc")))
