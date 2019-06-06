@@ -10,7 +10,7 @@
 #' @param Time number of time periods in the dataset
 #' @param spacetime indicator of whether the cluster detection method should be run on all space-time clusters(default) or on only the potential space clusters.
 #' @param pois whether or not the Quasi-Poisson or Poisson model should be run. Default is pois=FALSE (default is Quasi-Poisson model is to be run)
-#' @param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{10}.
+#' @param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{11}.
 #' @param overdispfloor default is TRUE. If TRUE, does not allow for underdispersion. If FALSE, allows for underdispersion (phi < 1)
 #' @param cv option for cross-validation instead of AIC/BIC. Default is set to FALSE
 #' @return This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
@@ -43,7 +43,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
     # sparseMAT <- cbind(sparseMAT, timeMat)
     ############################################
     #Run
-    message("Running Lasso - stay tuned")
+    #message("Running Lasso - stay tuned")
     if(!is.null(cv)){
         message("Path selection: cross-validation")
         penalty <- c(rep(1,(ncol(sparseMAT)-Time)), rep(0,Time))
@@ -80,13 +80,13 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
         mu <- sapply(1:length(lasso$lambda), function(i) exp(xbetaPath[,i]))
         loglike <- sapply(1:length(lasso$lambda), function(i) sum(dpoisson(Yx, mu[,i],Ex)))
         K <- lasso$df
-        message("Selecting best paths")
+        #message("Selecting best paths")
         
         #########################################################
         #Space-Time, Quasi-Poisson only (yes overdispersion)
         #########################################################
         if(spacetime==TRUE & pois == FALSE){
-            message("Returning results for space-time Quasi-Poisson model")
+            #message("Returning results for space-time Quasi-Poisson model")
             if(!is.null(covars)){
                 offset_reg <- glm(Yx ~ . + as.factor(vectors$Period) + offset(log(Ex)),
                                   data = covars,family=quasipoisson)
@@ -144,7 +144,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
         #Space-Time, Poisson only (no overdispersion)
         #########################################################
         else if(spacetime==TRUE & pois==TRUE){
-            message("Returning results for space-time Poisson model")
+            #message("Returning results for space-time Poisson model")
             #QBIC
             PLL.qbic  <- -2*(loglike) + ((K)*log(n_uniq*Time))
             select.qbic <- which.min(PLL.qbic)
@@ -183,7 +183,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
         #Space-Only, Quasi-Poisson
         #########################################################
         else if(spacetime==FALSE & pois==FALSE){
-            message("Returning results for space-only Quasi-Poisson model")
+            #message("Returning results for space-only Quasi-Poisson model")
             if(!is.null(covars)){
                 offset_reg <- glm(Yx ~ . + offset(log(Ex)),data = covars,family=quasipoisson)
             }
@@ -233,7 +233,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
         #Space-only, Poisson only
         #########################################################
         else if(spacetime==FALSE & pois == TRUE){
-            message("Returning results for space-only  Poisson model")
+            #message("Returning results for space-only  Poisson model")
             #QBIC
             PLL.qbic  <- -2*(loglike) + ((K)*log(n_uniq*Time))
             select.qbic <- which.min(PLL.qbic)
@@ -267,6 +267,11 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
                                select.qaicc = select.qaic)
             
         }
+        #warning if numclust similar to maxclust
+        if (numclust.qaic==(maxclust-Time)){
+            message("The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.")
+        }
+        
         #Return only changepoints from lasso
         changepoints_ix <- which(diff(K)!=0) #Find lambda where new coef introduced
         lambda_changepoint <- lasso$lambda[changepoints_ix]
