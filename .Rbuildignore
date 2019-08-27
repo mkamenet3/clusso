@@ -2,3 +2,4 @@
 ^\.Rproj\.user$
 clustSIMULATION/*
 vignettes/*
+data/*.csv
