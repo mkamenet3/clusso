@@ -20,7 +20,7 @@ spacetimeLasso(sparseMAT, n_uniq, vectors, Time, spacetime = TRUE,
 
 \item{pois}{whether or not the Quasi-Poisson or Poisson model should be run. Default is pois=FALSE (default is Quasi-Poisson model is to be run)}
 
-\item{maxclust}{Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{10}.}
+\item{maxclust}{Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{11}.}
 
 \item{overdispfloor}{default is TRUE. If TRUE, does not allow for underdispersion. If FALSE, allows for underdispersion (phi < 1)}
 

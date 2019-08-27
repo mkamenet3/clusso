@@ -7,7 +7,7 @@
 \title{clusso: Spatial cluster detection using LASSO}
 \usage{
 clusso(clst, x, y, rMax, Time, utm = TRUE, longdat = TRUE,
-  analysis = c("space", "spacetime", "both"), maxclust = 10,
+  analysis = c("space", "spacetime", "both"), maxclust = 11,
   overdispfloor = TRUE, cv = NULL, collapsetime = FALSE)
 }
 \arguments{
@@ -27,7 +27,7 @@ clusso(clst, x, y, rMax, Time, utm = TRUE, longdat = TRUE,
 
 \item{analysis}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}.}
 
-\item{maxclust}{Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{10}.}
+\item{maxclust}{Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{11}.}
 
 \item{overdispfloor}{overdispfloor default is \code{TRUE}. When TRUE, it limits \eqn{\phi1} (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under-dispersion in the model.}
 
