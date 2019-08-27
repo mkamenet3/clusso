@@ -16,7 +16,7 @@ Load `clusso`package:
 
 ```{r, message=FALSE, warning=FALSE}
 library("clusso")
-#library("Matrix")
+library("Matrix")
 
 #load dev version R scripts
 # file.sources = list.files("../R/",pattern="*.R")
@@ -44,7 +44,7 @@ To explore the 4 data sets that are part of `japanbreastcancer`, we apply the `h
 1. `utmJapan`: data set containing a unique identifier for each centroid (*id*), x-coordinate in UTM (*utmx*), and y-coordinate in UTM (*utmy*)
 1. `dframe.poly2`: polygon tesselations
 1. `dframe.prefect2`: boundaries for the prefects (geographical boundaries) of the region.
-1. `japanbreastcancer`: data set containting a unique identifier for each centroid (*id*), period of observation (categorical variable with 5 levels, *period*), death count (*death*), expected death count (*expdeath)
+1. `japanbreastcancer`: data set containting a unique identifier for each centroid (*id*), period of observation (categorical variable with 5 levels, *period*), death count (*death*), expected death count (*expdeath*)
 
 
 
@@ -85,7 +85,7 @@ x <- utmJapan$utmx/1000
 y <- utmJapan$utmy/1000
 ```
 
-Below, we set the maximum radius for a cluster to 20 km (`rMax=20`) based on scientific knowledge of the area and our definition of a meaningful cluster, set the number of unique time periods to 5 (`Time=5`), number of simulations to be run to 10 (`nsim=10`), and set a floor for overdispersion to avoid estimating underdispersion (`overdispfloor=TRUE`). 
+Below, we set the maximum radius for a cluster to 20 km (`rMax=20`) based on scientific knowledge of the area and our definition of a meaningful cluster, set the number of unique time periods to 5 (`Time=5`), number of simulations to be run to 11 (`nsim=11`), and set a floor for overdispersion to avoid estimating underdispersion (`overdispfloor=TRUE`). 
 
 
 ```{r}
@@ -131,7 +131,7 @@ head(calcexpected(japanbreastcancer$death, japanbreastcancer$period, japanbreast
 The output of `clusso()` is assigned to the object `resreal`. `resreal` is a large list of lists. The recommended way to explore the results is to explore the `names(resreal)` and select each sub-list of interest.
 
 ```{r}
-system.time(resreal <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=10))
+system.time(resreal <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=11))
 names(resreal)
 ```
 
@@ -156,7 +156,8 @@ More importantly, however, if we have polygons and boundary files, we can use th
 Create maps using the `easyplot()` function.
 
 ```{r}
-pdfname <- paste0("jbc_analysis_2019_03_19",".pdf")
+#pdfname <- paste0("jbc_analysis_2019_03_19",".pdf")
+pdfname <- paste0("test",".pdf")
 easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal$rrcolors, mods, space="both", probmap=FALSE, obs=TRUE,rr=TRUE)
 easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal, mods, space="BIC", probmap=FALSE,rr=TRUE)
 

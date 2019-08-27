@@ -34,7 +34,7 @@
 #'  }
 
 
-clusso <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("space","spacetime", "both"),maxclust = 10,overdispfloor=TRUE, cv = NULL, collapsetime=FALSE){
+clusso <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("space","spacetime", "both"),maxclust = 11,overdispfloor=TRUE, cv = NULL, collapsetime=FALSE){
     if(is(clst, "clst")!=TRUE) stop("clst element not of class `clst`. This is required for the clusso function.")
     expected <- clst$required_df$expected
     observed <- clst$required_df$observed
@@ -63,7 +63,7 @@ clusso <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("s
     }
     if(missing(maxclust)){
         maxclust = 11 + Time
-        #print(maxclust)
+        print(maxclust)
     }
     else{
         maxclust = maxclust + Time
@@ -261,6 +261,19 @@ clussoMaster <- function(analysis, x,y,rMax, period, expected, observed, covars,
                     init.vec.s = vectors.s))
     }
     SOAR::Remove(sparseMAT)
+    #add warning about maxclust
+        numclust.AIC <- c(lassoresult.p.s$numclust.qaic, lassoresult.p.st$numclust.qaic, 
+                          lassoresult.qp.s$numclust.qaic, lassoresult.qp.st$numclust.qaic)
+        numclust.AICc <- c(lassoresult.p.s$numclust.qaicc, lassoresult.p.st$numclust.qaicc, 
+                           lassoresult.qp.s$numclust.qaicc, lassoresult.qp.st$numclust.qaicc)
+        numclust.BIC <- c(lassoresult.p.s$numclust.qbic, lassoresult.p.st$numclust.qbic, 
+                          lassoresult.qp.s$numclust.qbic, lassoresult.qp.st$numclust.qbic)
+    nclusters <- c(numclust.AIC, numclust.AICc, numclust.BIC)
+    if(any(nclusters==maxclust)){
+        warning("Number of clusters detected by at least one criterion equals maxclust. Consider increasing maxclust.")
+    }
+    
+    
 }
 
 
