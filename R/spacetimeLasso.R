@@ -73,7 +73,7 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
     
     #if running cross-validation version:
     if(!is.null(cv)){
-        res <- stLasso_cv(lasso, sparseMAT, Ex, Yx)
+        res <- stLasso_cv(lasso, sparseMAT, Ex, Yx, Time)
     }
     #information criteria selection version:
     else{

@@ -30,7 +30,7 @@ clussoMaster(analysis, x, y, rMax, period, expected, observed, covars,
 
 \item{longdat}{Is the data in panel/long format? Default is \code{TRUE}. For wide format, specify \code{FALSE} (TODO).}
 
-\item{maxclust}{Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{10}.}
+\item{maxclust}{Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{11}.}
 
 \item{overdispfloor}{overdispfloor default is \code{TRUE}. When TRUE, it limits \eqn{\phi1} (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under-dispersion in the model.}
 

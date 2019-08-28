@@ -16,7 +16,7 @@ spacetimeMat <- function(clusters, numCenters, Time){
 #' timeMat
 #' 
 #' This function creates a sparse matrix of 1's of all of the potential time periods for the cluster to be in. The number of 
-#' potential time periods is determined by [(Time*(Time-1)]/2.
+#' potential time periods is determined by [(Time*(Time-1))]/2.
 #' @param Time Number of time periods in the data
 #' @return returns sparse matrix of 1's as indicators of membership in the time cluster
 #' @export

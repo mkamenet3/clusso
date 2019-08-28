@@ -28,9 +28,3 @@ Creates \code{clst} object for creating potential spatial and spatio-temporal cl
 object which will contain the expected, observed, and timeperiod information necessary to run \pkg{clusso}.
 If dataframe is fed in, assumes panel format - see \code{vignette} for details.
 }
-\examples{
-\donttest{
-data(japanbreastcancer)
-clst <- toclusso(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)  
-}
-}

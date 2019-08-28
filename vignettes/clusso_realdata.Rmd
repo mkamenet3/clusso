@@ -37,6 +37,9 @@ set.seed(8282017)
 
 #load data
 data("japanbreastcancer")
+
+
+utmJapan <- read.csv("../data/utmJapan.csv")
 ```
 
 
@@ -132,7 +135,7 @@ The output of `clusso()` is assigned to the object `resreal`. `resreal` is a lar
 
 ```{r}
 system.time(resreal <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=11))
-names(resreal)
+
 ```
 
 We can also use the function `clussopretty()` to create a nice table for the number of clusters detected:

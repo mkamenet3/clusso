@@ -14,6 +14,7 @@
 #' @param covars are there additional covariates in the dataframe beyond the three required? If so, set to \code{TRUE}. Default is \code{FALSE}.
 #' @return \code{clst} object
 #'@examples
+#' @export
 #'\donttest{
 #'data(japanbreastcancer)
 #'clst <- toclusso(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)  

@@ -63,7 +63,7 @@ clusso <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("s
     }
     if(missing(maxclust)){
         maxclust = 11 + Time
-        print(maxclust)
+        #print(maxclust)
     }
     else{
         maxclust = maxclust + Time
