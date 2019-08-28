@@ -37,8 +37,7 @@ set.seed(8282017)
 
 #load data
 data("japanbreastcancer")
-
-
+jbc <- japanbreastcancer
 utmJapan <- read.csv("../data/utmJapan.csv")
 ```
 
@@ -47,7 +46,7 @@ To explore the 4 data sets that are part of `japanbreastcancer`, we apply the `h
 1. `utmJapan`: data set containing a unique identifier for each centroid (*id*), x-coordinate in UTM (*utmx*), and y-coordinate in UTM (*utmy*)
 1. `dframe.poly2`: polygon tesselations
 1. `dframe.prefect2`: boundaries for the prefects (geographical boundaries) of the region.
-1. `japanbreastcancer`: data set containting a unique identifier for each centroid (*id*), period of observation (categorical variable with 5 levels, *period*), death count (*death*), expected death count (*expdeath*)
+1. `jbc`: data set containting a unique identifier for each centroid (*id*), period of observation (categorical variable with 5 levels, *period*), death count (*death*), expected death count (*expdeath*). These data are simulated (with some noise) based on observed data.
 
 
 
@@ -56,7 +55,7 @@ To explore the 4 data sets that are part of `japanbreastcancer`, we apply the `h
 head(utmJapan)
 head(dframe.poly2)
 head(dframe.prefect2)
-head(japanbreastcancer)
+head(jbc)
 ```
 
 From the polygons (`dframe.poly2`) data set we extract the second and third columns, only the x and y coordinates of the polygons and create `japan.poly2`. From the prefect boundaries (`dframe.prefect2`) data set, we extract the second through fifth columns - the two x and two y coordinates of the polygons boundaries and create `japan.prefect2`.
@@ -105,7 +104,7 @@ The first step is to create a `clst` object using the `toclusso()` function. By 
 
 
 ```{r}
-clst <- toclusso(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period)
+clst <- toclusso(jbc, expected = expdeath, observed=death,timeperiod = period)
 class(clst)
 str(clst)
 ```
@@ -127,7 +126,7 @@ The final required argument is `maxclust`. This is the maximum number of actual 
 For additional functionality, if you do not have expected counts readily available, they can be calculated using the auxiliary function `calcexpected()`, from the `clusso` package.
 
 ```{r}
-head(calcexpected(japanbreastcancer$death, japanbreastcancer$period, japanbreastcancer$id, family="poisson"))
+head(calcexpected(jbc$death, jbc$period, jbc$id, family="poisson"))
 ```
 
 
@@ -144,8 +143,14 @@ We can also use the function `clussopretty()` to create a nice table for the num
 clussopretty(resreal, analysis="both", clusteridentify=FALSE)
 
 names(clussopretty(resreal, analysis="both", clusteridentify=TRUE))
-clussopretty(resreal, analysis="both", clusteridentify=TRUE)
 
+```
+
+
+With the argument `clusteridentify=TRUE`, centroid indices (by time period) are extracted. Since these lists are very long, output is left to the user to explore:
+
+```{r, eval=FALSE}
+clussopretty(resreal, analysis="both", clusteridentify=TRUE)
 clussopretty(resreal, analysis="both", clusteridentify=TRUE, clusterRR = 1.05)
 clussopretty(resreal, analysis="both", clusteridentify=TRUE, clusterRR = "background")
 ```
