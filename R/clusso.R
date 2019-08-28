@@ -262,13 +262,15 @@ clussoMaster <- function(analysis, x,y,rMax, period, expected, observed, covars,
     }
     SOAR::Remove(sparseMAT)
     #add warning about maxclust
-        numclust.AIC <- c(lassoresult.p.s$numclust.qaic, lassoresult.p.st$numclust.qaic, 
-                          lassoresult.qp.s$numclust.qaic, lassoresult.qp.st$numclust.qaic)
-        numclust.AICc <- c(lassoresult.p.s$numclust.qaicc, lassoresult.p.st$numclust.qaicc, 
-                           lassoresult.qp.s$numclust.qaicc, lassoresult.qp.st$numclust.qaicc)
-        numclust.BIC <- c(lassoresult.p.s$numclust.qbic, lassoresult.p.st$numclust.qbic, 
-                          lassoresult.qp.s$numclust.qbic, lassoresult.qp.st$numclust.qbic)
-    nclusters <- c(numclust.AIC, numclust.AICc, numclust.BIC)
+    numclust.AIC <- c(lassoresult.p.s$numclust.qaic, lassoresult.p.st$numclust.qaic, 
+                      lassoresult.qp.s$numclust.qaic, lassoresult.qp.st$numclust.qaic)
+    numclust.AICc <- c(lassoresult.p.s$numclust.qaicc, lassoresult.p.st$numclust.qaicc, 
+                       lassoresult.qp.s$numclust.qaicc, lassoresult.qp.st$numclust.qaicc)
+    numclust.BIC <- c(lassoresult.p.s$numclust.qbic, lassoresult.p.st$numclust.qbic, 
+                      lassoresult.qp.s$numclust.qbic, lassoresult.qp.st$numclust.qbic)
+    numclust.cv <-  c(lassoresult.p.s$numclust.cv, lassoresult.p.st$numclust.cv, 
+                      lassoresult.qp.s$numclust.cv, lassoresult.qp.st$numclust.cv)
+    nclusters <- c(numclust.AIC, numclust.AICc, numclust.BIC,numclust.cv)
     if(any(nclusters==maxclust)){
         warning("Number of clusters detected by at least one criterion equals maxclust. Consider increasing maxclust.")
     }
