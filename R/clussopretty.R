@@ -7,7 +7,8 @@
 #'@param outclusso Object with output from \code{clusso}.
 #'@param analysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}. 
 #'@param clusteridentify Whether specific clusters should be identified in output; default is FALSE
-#'@param clusterRR Risk ratio cut off for a cluster to be identified. Alternatively, a risk ratio can be provided (ex: 1.0, 1.25) that would serve as a cut off value for identifiying a cluster. Current default is 1.0. We define a cluster as being different from the background rate (TODO). 
+#'@param clusterRR Risk ratio cut off for a cluster to be identified. Alternatively, a risk ratio can be provided (ex: 1.0, 1.25) that would serve as a cut off value for identifiying a cluster. Current default is 1.0. We define a cluster as being different from the background rate. 
+#'@param cv Boolean, default is FALSE. If TRUE, then this will assume that the cross-validation (and not information criteria) model selection was perfromed.
 #'@return Data frame of output that can be sent to a csv or list of data frames (if clusteridentify set to TRUE).
 #'@export
 #'@examples
@@ -27,34 +28,58 @@
 #'  }
 
 
-clussopretty <- function(outclusso, analysis="both", clusteridentify=FALSE, clusterRR){
+clussopretty <- function(outclusso, analysis="both", clusteridentify=FALSE, clusterRR, cv=FALSE){
     err <- 1e-4
-    if(analysis=="space"){
-        model <- c("Poisson", "Quasi-Poisson")
-        analysistype <- rep("Space",2)
-        numclust.AIC <- c(outclusso$lassoresult.p.s$numclust.qaic,outclusso$lassoresult.qp.s$numclust.qaic)
-        numclust.AICc <- c(outclusso$lassoresult.p.s$numclust.qaicc, outclusso$lassoresult.qp.s$numclust.qaicc)
-        numclust.BIC <- c(outclusso$lassoresult.p.s$numclust.qbic, outclusso$lassoresult.qp.s$numclust.qbic)
-    }
-    else if(analysis=="spacetime"){
-        model <- c("Poisson", "Quasi-Poisson")
-        analysistype <- rep("Space-Time",2)
-        numclust.AIC <- c(outclusso$lassoresult.p.st$numclust.qaic, outclusso$lassoresult.qp.st$numclust.qaic)
-        numclust.AICc <- c(outclusso$lassoresult.p.st$numclust.qaicc, outclusso$lassoresult.qp.st$numclust.qaicc)
-        numclust.BIC <- c(outclusso$lassoresult.p.st$numclust.qbic, outclusso$lassoresult.qp.st$numclust.qbic)
+    if(cv==TRUE){
+    #cv version
+        if(analysis=="space"){
+            model <- c("Poisson", "Quasi-Poisson")
+            analysistype <- rep("Space",2)
+            numclust.cv <- c(outclusso$lassoresult.p.s$numclust.cv,outclusso$lassoresult.qp.s$numclust.cv)
+        }
+        else if(analysis=="spacetime"){
+            model <- c("Poisson", "Quasi-Poisson")
+            analysistype <- rep("Space-Time",2)
+            numclust.cv <- c(outclusso$lassoresult.p.st$numclust.cv, outclusso$lassoresult.qp.st$numclust.cv)
+        }
+        else{
+            #both
+            model <- c(rep("Poisson",2), rep("Quasi-Poisson",2))
+            analysistype <- rep(c("Space", "Space-Time"),2)
+            numclust.cv <- c(outclusso$lassoresult.p.s$numclust.cv, outclusso$lassoresult.p.st$numclust.cv, 
+                              outclusso$lassoresult.qp.s$numclust.cv, outclusso$lassoresult.qp.st$numclust.cv)
+        }
+        table.clusters <- cbind.data.frame(model, analysistype, numclust.cv)
     }
     else{
-        #both
-        model <- c(rep("Poisson",2), rep("Quasi-Poisson",2))
-        analysistype <- rep(c("Space", "Space-Time"),2)
-        numclust.AIC <- c(outclusso$lassoresult.p.s$numclust.qaic, outclusso$lassoresult.p.st$numclust.qaic, 
-                          outclusso$lassoresult.qp.s$numclust.qaic, outclusso$lassoresult.qp.st$numclust.qaic)
-        numclust.AICc <- c(outclusso$lassoresult.p.s$numclust.qaicc, outclusso$lassoresult.p.st$numclust.qaicc, 
-                           outclusso$lassoresult.qp.s$numclust.qaicc, outclusso$lassoresult.qp.st$numclust.qaicc)
-        numclust.BIC <- c(outclusso$lassoresult.p.s$numclust.qbic, outclusso$lassoresult.p.st$numclust.qbic, 
-                          outclusso$lassoresult.qp.s$numclust.qbic, outclusso$lassoresult.qp.st$numclust.qbic)
+        if(analysis=="space"){
+            model <- c("Poisson", "Quasi-Poisson")
+            analysistype <- rep("Space",2)
+            numclust.AIC <- c(outclusso$lassoresult.p.s$numclust.qaic,outclusso$lassoresult.qp.s$numclust.qaic)
+            numclust.AICc <- c(outclusso$lassoresult.p.s$numclust.qaicc, outclusso$lassoresult.qp.s$numclust.qaicc)
+            numclust.BIC <- c(outclusso$lassoresult.p.s$numclust.qbic, outclusso$lassoresult.qp.s$numclust.qbic)
+        }
+        else if(analysis=="spacetime"){
+            model <- c("Poisson", "Quasi-Poisson")
+            analysistype <- rep("Space-Time",2)
+            numclust.AIC <- c(outclusso$lassoresult.p.st$numclust.qaic, outclusso$lassoresult.qp.st$numclust.qaic)
+            numclust.AICc <- c(outclusso$lassoresult.p.st$numclust.qaicc, outclusso$lassoresult.qp.st$numclust.qaicc)
+            numclust.BIC <- c(outclusso$lassoresult.p.st$numclust.qbic, outclusso$lassoresult.qp.st$numclust.qbic)
+        }
+        else{
+            #both
+            model <- c(rep("Poisson",2), rep("Quasi-Poisson",2))
+            analysistype <- rep(c("Space", "Space-Time"),2)
+            numclust.AIC <- c(outclusso$lassoresult.p.s$numclust.qaic, outclusso$lassoresult.p.st$numclust.qaic, 
+                              outclusso$lassoresult.qp.s$numclust.qaic, outclusso$lassoresult.qp.st$numclust.qaic)
+            numclust.AICc <- c(outclusso$lassoresult.p.s$numclust.qaicc, outclusso$lassoresult.p.st$numclust.qaicc, 
+                               outclusso$lassoresult.qp.s$numclust.qaicc, outclusso$lassoresult.qp.st$numclust.qaicc)
+            numclust.BIC <- c(outclusso$lassoresult.p.s$numclust.qbic, outclusso$lassoresult.p.st$numclust.qbic, 
+                              outclusso$lassoresult.qp.s$numclust.qbic, outclusso$lassoresult.qp.st$numclust.qbic)
+        }
+        table.clusters <- cbind.data.frame(model, analysistype, numclust.AIC, numclust.AICc, numclust.BIC)
     }
-    table.clusters <- cbind.data.frame(model, analysistype, numclust.AIC, numclust.AICc, numclust.BIC)
+    
     
     if(clusteridentify==FALSE){
         return(table.clusters)
