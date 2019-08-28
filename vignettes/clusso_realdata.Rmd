@@ -37,8 +37,7 @@ set.seed(8282017)
 
 #load data
 data("japanbreastcancer")
-
-
+jbc <- japanbreastcancer
 utmJapan <- read.csv("../data/utmJapan.csv")
 ```
 
@@ -47,7 +46,7 @@ To explore the 4 data sets that are part of `japanbreastcancer`, we apply the `h
 1. `utmJapan`: data set containing a unique identifier for each centroid (*id*), x-coordinate in UTM (*utmx*), and y-coordinate in UTM (*utmy*)
 1. `dframe.poly2`: polygon tesselations
 1. `dframe.prefect2`: boundaries for the prefects (geographical boundaries) of the region.
-1. `japanbreastcancer`: data set containting a unique identifier for each centroid (*id*), period of observation (categorical variable with 5 levels, *period*), death count (*death*), expected death count (*expdeath*)
+1. `jbc`: data set containting a unique identifier for each centroid (*id*), period of observation (categorical variable with 5 levels, *period*), death count (*death*), expected death count (*expdeath*). These data are simulated (with some noise) based on observed data.
 
 
 
@@ -56,18 +55,12 @@ To explore the 4 data sets that are part of `japanbreastcancer`, we apply the `h
 head(utmJapan)
 head(dframe.poly2)
 head(dframe.prefect2)
-head(japanbreastcancer)
+head(jbc)
 ```
 
 From the polygons (`dframe.poly2`) data set we extract the second and third columns, only the x and y coordinates of the polygons and create `japan.poly2`. From the prefect boundaries (`dframe.prefect2`) data set, we extract the second through fifth columns - the two x and two y coordinates of the polygons boundaries and create `japan.prefect2`.
 
 
-```{r}
-#take what we need
-japan.poly2 <- dframe.poly2[,2:3]
-japan.prefect2 <- dframe.prefect2[,2:5]
-
-```
 
 ### Set global conditions
 
@@ -105,7 +98,7 @@ The first step is to create a `clst` object using the `toclusso()` function. By 
 
 
 ```{r}
-clst <- toclusso(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period)
+clst <- toclusso(jbc, expected = expdeath, observed=death,timeperiod = period)
 class(clst)
 str(clst)
 ```
@@ -127,7 +120,7 @@ The final required argument is `maxclust`. This is the maximum number of actual 
 For additional functionality, if you do not have expected counts readily available, they can be calculated using the auxiliary function `calcexpected()`, from the `clusso` package.
 
 ```{r}
-head(calcexpected(japanbreastcancer$death, japanbreastcancer$period, japanbreastcancer$id, family="poisson"))
+head(calcexpected(jbc$death, jbc$period, jbc$id, family="poisson"))
 ```
 
 
@@ -144,8 +137,14 @@ We can also use the function `clussopretty()` to create a nice table for the num
 clussopretty(resreal, analysis="both", clusteridentify=FALSE)
 
 names(clussopretty(resreal, analysis="both", clusteridentify=TRUE))
-clussopretty(resreal, analysis="both", clusteridentify=TRUE)
 
+```
+
+
+With the argument `clusteridentify=TRUE`, centroid indices (by time period) are extracted. Since these lists are very long, output is left to the user to explore:
+
+```{r, eval=FALSE}
+clussopretty(resreal, analysis="both", clusteridentify=TRUE)
 clussopretty(resreal, analysis="both", clusteridentify=TRUE, clusterRR = 1.05)
 clussopretty(resreal, analysis="both", clusteridentify=TRUE, clusterRR = "background")
 ```
@@ -196,79 +195,48 @@ clussopretty(rescv, analysis="both", clusteridentify=FALSE, cv=TRUE)
 
 ## Real Data Example with Covariates
 
-Import geography data:
+We can continue with the Japanese breast cancer dataset imported above. 
 
-```{r}
-#load data
-data("japanbreastcancer")
+We will again checkout the `head()` of the dataframe, `jbc`. 
 
-#inspect
-head(utmJapan)
-head(dframe.poly2)
-head(dframe.prefect2)
-head(japanbreastcancer)
-
-#take what we need
-japan.poly2 <- dframe.poly2[,2:3]
-japan.prefect2 <- dframe.prefect2[,2:5]
-
-
-```
 
 
 ```{r}
 #Set-up
-head(japanbreastcancer)
-head(utmJapan)
-set.seed(1)
-#add a couple of covariates to the dataframe
-covar1 <- rnorm(n = nrow(japanbreastcancer),mean = 500, sd = 30)
-covar2 <- rpois(n = nrow(japanbreastcancer), lambda = japanbreastcancer$expdeath)
-covar3 <- rbinom(n = nrow(japanbreastcancer), size = 50, prob = 0.7)
-covar4 <- rbinom(n = nrow(japanbreastcancer), 1, 0.5)
-covar5 <- rbinom(n = nrow(japanbreastcancer), 1, 0.2)
-
-#add new covariates to dataframe
-df <- cbind.data.frame(japanbreastcancer[,-1], covar1, covar2, covar3, covar4, covar5)
-
-#check out the new dataframe
-head(df)
-
-#assume this is what you start with
+head(jbc)
 ```
 
+
+There are 5 additional covariates, `covar1` - `covar5` that we will want to adjust for as unpenalized terms in the LASSO.
+
+
+We will need to recreate our `clst` object using the `toclusso()` function, setting the argument `covars=TRUE`.
 
 ```{r}
-#Initial inputs
-mods <- c("QuasiPoisson", "Poisson")
-x <- utmJapan$utmx/1000
-y <- utmJapan$utmy/1000
-rMax <- 20 
-Time <- 5
-overdispfloor <- TRUE
+clst <- toclusso(jbc, expected = expdeath, observed = death, timeperiod = period,
+                 covars=TRUE, id = id)
+str(clst)
+system.time(rescovars <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both"))
 
 ```
 
-Run **clusso**.
+Use `clussopretty()` to create a nice table of clusters detected:
 
 ```{r}
-clst <- toclusso(df, expected = expdeath, observed = death, timeperiod = period, covars=TRUE)
-system.time(res <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both"))
-
+clussopretty(rescovars, analysis="both", clusteridentify = FALSE)
 ```
+
+
 
 ### Maps
 
+Create maps using `easyplot()`:
+
 
 ```{r}
-#save results
-filename <- paste0("jbc_analysis_covars",".RData")
-save(res, file = filename)
+pdfname <- paste0("outcovars", ".pdf")
 
-
-#Create Empty PDF to Map Onto
-pdfname <- paste0("jbc_analysis_covars",".pdf")
-
-easyplot(japan.prefect2, japan.poly2 ,pdfname, res$rrcolors, mods, space="both", obs=TRUE, obs=TRUE, obs=TRUE,rr=TRUE)
+easyplot(japan.prefect2, japan.poly2 ,pdfname, rescovars$rrcolors, mods, space="both",
+         probmap=FALSE, obs=TRUE,rr=TRUE)
 ```
 

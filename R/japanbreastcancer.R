@@ -12,13 +12,12 @@
 #' \itemize{
 #'  \item 1) dframe.poly2 - coordinates for plotting polygons
 #'  \item 2) dframe.prefect2 - coordinates for plotting prefect boundaries
-#'  \item 3) japanbreastcancer - data on observed death from breast cancer and expected death by polygon-time period.
+#'  \item 3) jbc - simulated data (based on observed data) of deaths from breast cancer and expected death by polygon-time period.
 #'  \item 4) utmJapan - UTM coordinates
 #' }
 #' 
 #' @keywords datasets
 #' 
-#' @aliases dframe.poly2 dframe.prefect2 utmJapan
 #' 
 #' @examples 
 #' data(japanbreastcancer)
