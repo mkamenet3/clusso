@@ -66,7 +66,9 @@ toclusso <- function(df, expected, observed, timeperiod, covars=FALSE, id=NULL){
     #print(requiredcolNames)
     #print(names(df))
     #print(reqix)
-    required_df <- cbind.data.frame(expect, observe,period)
+    required_df <- cbind.data.frame(expected = expect, 
+                                    observed = observe,
+                                    timeperiod = period)
     if(covars==TRUE){
         othercovariates_df <- df[,-reqix]
     }
