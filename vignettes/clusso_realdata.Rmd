@@ -159,8 +159,7 @@ More importantly, however, if we have polygons and boundary files, we can use th
 Create maps using the `easyplot()` function.
 
 ```{r}
-#pdfname <- paste0("jbc_analysis_2019_03_19",".pdf")
-pdfname <- paste0("test",".pdf")
+pdfname <- paste0("out",".pdf")
 easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal$rrcolors, mods, space="both", probmap=FALSE, obs=TRUE,rr=TRUE)
 easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal, mods, space="BIC", probmap=FALSE,rr=TRUE)
 
@@ -168,82 +167,31 @@ easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal, mods, space="BIC", probm
 ```
 
 
-### Diagnostics of Clusters Detected
-
-Finally, we can extract the number of clusters detected by each criterion and compile the information into an easy-to-read table:
 
 
-
-
-
-
-**TODO: FIX BELOW 2019-03-19**
 
 ## Comparison to Cross-Validation
 
-
-```{r}
-#load data
-data("japanbreastcancer")
-
-#inspect
-head(utmJapan)
-head(dframe.poly2)
-head(dframe.prefect2)
-head(japanbreastcancer)
-
-#take what we need
-japan.poly2 <- dframe.poly2[,2:3]
-japan.prefect2 <- dframe.prefect2[,2:5]
-
-```
-
+We continue with the same dataset as above, but now explore results by $k$ fold cross-validation. All initial inputs are assumed to be the same.
 
 ```{r}
 #Initial inputs
-mods <- c("QuasiPoisson", "Poisson")
-x <- utmJapan$utmx/1000
-y <- utmJapan$utmy/1000
-rMax <- 20 
-Time <- 5
-overdispfloor <- TRUE
-cv <- 10 #how many folds
+cv <- 10 #how many folds for cv
 
-clst <- toclusso(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)
-system.time(res<- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", cv=cv))
+#perform clusso using cv
+system.time(rescv<- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", cv=cv))
 
 ```
 
 ```{r}
-
-model <- c(rep("Poisson",2), rep("Quasi-Poisson",2))
-st <- rep(c("Space", "Space-Time"),2)
-numclust.cv <- c(res$lassoresult.p.s$numclust.cv, res$lassoresult.p.st$numclust.cv, 
-                  res$lassoresult.qp.s$numclust.cv, res$lassoresult.qp.st$numclust.cv)
-
-
-(table.clusterscv <- cbind(model, st, numclust.cv))
-
-
-#WRITE TO CSV
-print(table.clusterscv)
-write.csv(table.clusterscv, file="tableclusters_cv.csv", row.names=TRUE)
+clussopretty(rescv, analysis="both", clusteridentify=FALSE, cv=TRUE)
 ```
 
-### Maps
-
-```{r}
-#save results
-filename <- paste0("jbc_analysis_cv",".RData")
-save(res, file = filename)
 
 
-#Create Empty PDF to Map Onto
-pdfname <- paste0("jbc_analysis_cv",".pdf")
 
-easyplot(japan.prefect2, japan.poly2 ,pdfname, res$rrcolors, mods, space="both", probmap=FALSE, cv=10, obs=TRUE, rr=TRUE)
 
-```
+
 
 
 ## Real Data Example with Covariates
