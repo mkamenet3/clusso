@@ -5,7 +5,7 @@
 \title{clussopretty}
 \usage{
 clussopretty(outclusso, analysis = "both", clusteridentify = FALSE,
-  clusterRR)
+  clusterRR, cv = FALSE)
 }
 \arguments{
 \item{outclusso}{Object with output from \code{clusso}.}
@@ -14,7 +14,9 @@ clussopretty(outclusso, analysis = "both", clusteridentify = FALSE,
 
 \item{clusteridentify}{Whether specific clusters should be identified in output; default is FALSE}
 
-\item{clusterRR}{Risk ratio cut off for a cluster to be identified. Alternatively, a risk ratio can be provided (ex: 1.0, 1.25) that would serve as a cut off value for identifiying a cluster. Current default is 1.0. We define a cluster as being different from the background rate (TODO).}
+\item{clusterRR}{Risk ratio cut off for a cluster to be identified. Alternatively, a risk ratio can be provided (ex: 1.0, 1.25) that would serve as a cut off value for identifiying a cluster. Current default is 1.0. We define a cluster as being different from the background rate.}
+
+\item{cv}{Boolean, default is FALSE. If TRUE, then this will assume that the cross-validation (and not information criteria) model selection was perfromed.}
 }
 \value{
 Data frame of output that can be sent to a csv or list of data frames (if clusteridentify set to TRUE).

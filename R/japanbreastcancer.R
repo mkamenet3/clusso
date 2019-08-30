@@ -18,7 +18,5 @@
 #' 
 #' @keywords datasets
 #' 
-#' 
 #' @examples 
 #' data(japanbreastcancer)
-"japanbreastcancer"
