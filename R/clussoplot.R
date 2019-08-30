@@ -56,7 +56,7 @@ clussoplotMaster <- function(outclusso, analysistype, Time, maxdim){
         for (i in 1:length(changepoints_ix)){
             names(coefs[[i]])<- names(coefsix[[i]])
         }
-        outclussodframe <- data.table::rbindlist(lapply(coefs, function(x) data.table(t(x))),
+        outclussodframe <- data.table::rbindlist(lapply(coefs, function(x) data.table::data.table(t(x))),
                                                  fill = TRUE)
         outclussodframe[is.na(outclussodframe)] <- 0
         outclussodframe$lams <- lams[changepoints_ix]
