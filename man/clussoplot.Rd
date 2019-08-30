@@ -4,7 +4,8 @@
 \alias{clussoplot}
 \title{clussoplot}
 \usage{
-clussoplot(outclusso, analysis = c("space", "spacetime", "both"), Time)
+clussoplot(outclusso, analysis = c("space", "spacetime", "both"), Time,
+  cv = FALSE)
 }
 \arguments{
 \item{outclusso}{outclusso Object with output from \code{clusso}.}
@@ -12,6 +13,8 @@ clussoplot(outclusso, analysis = c("space", "spacetime", "both"), Time)
 \item{analysis}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.}
 
 \item{Time}{Number of time periods in the analysis}
+
+\item{cv}{Boolean. If TRUE, then cross-validation was used. Default is FALSE (information criteria used)}
 }
 \value{
 Returns a plot

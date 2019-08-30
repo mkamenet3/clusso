@@ -16,7 +16,6 @@ Load `clusso`package:
 
 ```{r, message=FALSE, warning=FALSE}
 library("clusso")
-library("Matrix")
 
 ```
 
@@ -32,8 +31,8 @@ We start by setting the seed using the `set.seed()` to ensure that the simulatio
 set.seed(8282017)
 
 #load data
-#data("japanbreastcancer")
-load("data/japanbreastcancer.RData")
+data("japanbreastcancer")
+load("../data/japanbreastcancer.RData")
 ```
 
 
@@ -163,7 +162,7 @@ easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal, mods, space="BIC", probm
 Lastly, we can create plots of the coefficient paths with the function `clussoplot()`:
 
 ```{r}
-clussoplot(resreal, analysis="space", Time=5)
+clussoplot(resreal, analysis="both", Time=5)
 ```
 
 
