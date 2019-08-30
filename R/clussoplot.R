@@ -6,13 +6,14 @@
 #'@param outclusso outclusso Object with output from \code{clusso}.
 #'@param analysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. 
 #'@param Time Number of time periods in the analysis
+#'@param cv Boolean. If TRUE, then cross-validation was used. Default is FALSE (information criteria used)
 #'@export
 #'@return Returns a plot
 #'@examples
 #'\donttest{
 #'clussoplot(resreal, analysis="both", Time=5)
 #'}
-clussoplot <- function(outclusso, analysis=c("space","spacetime","both"), Time){
+clussoplot <- function(outclusso, analysis=c("space","spacetime","both"), Time, cv=FALSE){
     #dims
     maxdim <-dim(outclusso$lassoresult.qp.st$lasso$beta)[1]
     analysis <- match.arg(analysis, several.ok = FALSE)
@@ -31,7 +32,6 @@ clussoplot <- function(outclusso, analysis=c("space","spacetime","both"), Time){
 #'@param analysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. 
 #'@param Time Number of time periods in the analysis
 #'@param maxdim maximum number of potential clusters
-#'@export
 #'@return Returns plots
 clussoplotMaster <- function(outclusso, analysistype, Time, maxdim){
     for (i in 1:length(analysistype)){
