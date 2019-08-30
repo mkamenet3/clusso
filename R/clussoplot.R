@@ -28,20 +28,18 @@ clussoplot <- function(outclusso, analysis=c("space","spacetime","both"), Time){
     analysis <- match.arg(analysis, several.ok = FALSE)
     switch(analysis,
            space = clussoplotMaster(outclusso, analysistype=c("p.s", "qp.s"), Time, maxdim),
-           spacetime = clussoplotMaster(),
-           both = clussoplotMaster())
+           spacetime = clussoplotMaster(outclusso, analysistype = c("p.st", "qp.st"), Time, maxdim),
+           both = clussoplotMaster(outclusso, analysistype = c("p.s", "qp.s","p.st", "qp.st"), Time, maxdim))
 }
 
 clussoplotMaster <- function(outclusso, analysistype, Time, maxdim){
     for (i in 1:length(analysistype)){
-        print(analysistype[i])
+        #Create labels for plots
         labtype <- ifelse(substr(analysistype[i],1,1)=="p","Poisson", "Quasi-Poisson")
-        print(labtype)
+        dimtype <- ifelse(substr(analysistype[i],(nchar(analysistype[i])+1)-1,
+                                 nchar(analysistype[i]))=="s","Space", "Space-Time")
         prefix <- paste0("outclusso$lassoresult.",analysistype[i])
         lams <- log(eval(parse(text=paste0(prefix,"$lasso$lambda"))))
-        
-        
-        #lams <- log(outclusso$lassoresult.qp.st$lasso$lambda)
         changepoints_ix <- which(diff(eval(parse(text=paste0(prefix,"$lasso$df"))))!=0)
         coefsix <- lapply(1:length(changepoints_ix), 
                           function(i) which( t(eval(parse(text=paste0(prefix,"$lasso$beta"))))[changepoints_ix[i],]!=0))
@@ -72,21 +70,16 @@ clussoplotMaster <- function(outclusso, analysistype, Time, maxdim){
         kaic <- outclusso_long$lams[which(outclusso_long$k==numclust.qaic)][1]
         kaicc <- outclusso_long$lams[which(outclusso_long$k==numclust.qaicc)][1]
         kbic <- outclusso_long$lams[which(outclusso_long$k==numclust.qbic)][1]
-        #Create labels for plots
-        #if(substr(analysistype[i],1,1)=="p"){labtype="Poisson"}
-        # labtype <- ifelse(substr(eval(parse(text=analysistype[i])),1,1)=="p","Poisson", "Quasi-Poisson")
-        # print(labtype)
-        #if(substr(analysistype[i],1,1)=="q"){labtype="Quasi-Poisson"}
-        
+
         #PLOT!
         p <- ggplot2::ggplot(outclusso_long,aes(x=lams, y=var, color=s)) +
             geom_line(size=1.5) +
             theme_bw() +
             ylab("Coefficients") +
             xlab(parse(text=paste0('"(log)"', ' ~ lambda '))) +
-            ggtitle(paste0("Solution Paths - Potential Clusters: ",labtype)) +
+            ggtitle(paste0("Solution Paths - Potential Clusters: ",labtype,", ",  dimtype)) +
             geom_hline(yintercept=0, lwd=1.5) +
-            theme(plot.title = element_text(hjust = 0.5, size=18),
+            theme(plot.title = element_text(hjust = 0.5, size=14),
                   legend.title = element_blank(),
                   legend.position="bottom",
                   legend.text=element_text(size=14),
