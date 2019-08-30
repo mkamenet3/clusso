@@ -3,25 +3,15 @@
 #'@title
 #'clussoplot
 #'@description Plot the coefficient paths from the LASSO-identified potential clusters.
-#'@param
-#'
-#'
-#'
+#'@param outclusso outclusso Object with output from \code{clusso}.
+#'@param analysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. 
+#'@param Time Number of time periods in the analysis
 #'@export
 #'@return Returns a plot
 #'@examples
-
-
-
-
-
-# 
-# library(data.table)
-# library(Matrix)
-# library(dplyr)
-# library(tidyr)
-# library(ggplot2)
-
+#'\donttest{
+#'clussoplot(resreal, analysis="both", Time=5)
+#'}
 clussoplot <- function(outclusso, analysis=c("space","spacetime","both"), Time){
     #dims
     maxdim <-dim(outclusso$lassoresult.qp.st$lasso$beta)[1]
@@ -32,6 +22,17 @@ clussoplot <- function(outclusso, analysis=c("space","spacetime","both"), Time){
            both = clussoplotMaster(outclusso, analysistype = c("p.s", "qp.s","p.st", "qp.st"), Time, maxdim))
 }
 
+#'Helper: Plot coefficient paths from clusso
+#'
+#'@title
+#'clussoplotMaster 
+#'@description Plot the coefficient paths from the LASSO-identified potential clusters.
+#'@param outclusso outclusso Object with output from \code{clusso}.
+#'@param analysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. 
+#'@param Time Number of time periods in the analysis
+#'@param maxdim maximum number of potential clusters
+#'@export
+#'@return Returns plots
 clussoplotMaster <- function(outclusso, analysistype, Time, maxdim){
     for (i in 1:length(analysistype)){
         #Create labels for plots
@@ -92,8 +93,5 @@ clussoplotMaster <- function(outclusso, analysistype, Time, maxdim){
             annotate("text", x=kaicc, y= -0.03,hjust=-0.25,vjust=0.8,label = paste0("(Q)AICc\n  k=", numclust.qaicc)) +
             annotate("text", x=kbic, y= 0.11,hjust=-0.25,vjust=0.8,label = paste0("(Q)BIC\n  k=", numclust.qbic)) 
         print(p)
-
     }
-    
-    
 }
