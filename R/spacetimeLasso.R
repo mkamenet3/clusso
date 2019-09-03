@@ -20,16 +20,19 @@
 spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=FALSE,maxclust, overdispfloor, cv){
     #check for covariates
     covars <- vectors$covars
+    #print(paste0("Dimstart", dim(sparseMAT)))
 #    message(str(covars))
     if(!is.null(covars)){
         message("Running with covariates")
         covarMAT <- Matrix::Matrix(data.matrix(covars), sparse=TRUE)
-        sparseMat <- cbind(sparseMAT, covarMAT)
+        sparseMAT <- cbind(sparseMAT, covarMAT)
+        message(paste("Number of potential clusters to scan through: ", (dim(sparseMAT)[2]-(Time+ncol(covarMAT)))))
     }
     else{
         message("No covariates found")
+        message(paste("Number of potential clusters to scan through: ", (dim(sparseMAT)[2]-Time)))
     }
-    message(paste("Number of potential clusters to scan through: ", (dim(sparseMAT)[2]-Time)))
+    #message(paste("Number of potential clusters to scan through: ", (dim(sparseMAT)[2]-Time)))
     #Set initial
     Ex <- vectors$Ex
     Yx <- vectors$Y.vec
@@ -46,26 +49,30 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
     #message("Running Lasso - stay tuned")
     if(!is.null(cv)){
         message("Path selection: cross-validation")
-        penalty <- c(rep(1,(ncol(sparseMAT)-Time)), rep(0,Time))
+        if(!is.null(covars)){
+            penalty <- c(rep(1,(ncol(sparseMAT)-Time)), rep(0,(Time+ncol(covarMAT))))   
+           # print(table(penalty))
+        }
+        else{
+            penalty <- c(rep(1,(ncol(sparseMAT)-Time)), rep(0,Time))    
+        }
         lasso <- glmnet::cv.glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex), nlambda = 2000, 
                                    standardize = FALSE, intercept=FALSE,dfmax = maxclust, 
-                                   #standardize = FALSE, intercept=FALSE,dfmax = 10, 
                                    nfolds = cv, 
                                    penalty.factor = penalty) 
     }
     else{
         message("Path selection: information criteria")
-        #message(ncol(sparseMAT))
-        penalty <- c(rep(1,(ncol(sparseMAT)-Time)), rep(0,Time))
-       # message(str(penalty))
-        #message(tail(penalty))
+        if(!is.null(covars)){
+            penalty <- c(rep(1,(ncol(sparseMAT)-Time)), rep(0,(Time+ncol(covarMAT))))   
+        }
+        else{
+            penalty <- c(rep(1,(ncol(sparseMAT)-Time)), rep(0,Time))    
+        }
+
         lasso <- glmnet::glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex), nlambda = 2000,
-                                #standardize = FALSE, intercept=FALSE,dfmax = 10,
                                 standardize = FALSE, intercept=FALSE,dfmax = maxclust,
                                 penalty.factor = penalty)
-        # lasso <- glmnet::glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex), nlambda = 2000,
-        #                         standardize = FALSE, intercept=FALSE,dfmax = 10,
-        #                         exclude=(ncol(sparseMAT)-(Time-1)):ncol(sparseMAT))
     }
     message("Lasso complete - extracting estimates and paths")
     coefs.lasso.all <- coef(lasso)[-1,]
@@ -80,7 +87,6 @@ spacetimeLasso<- function(sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,pois=F
         mu <- sapply(1:length(lasso$lambda), function(i) exp(xbetaPath[,i]))
         loglike <- sapply(1:length(lasso$lambda), function(i) sum(dpoisson(Yx, mu[,i],Ex)))
         K <- lasso$df
-        #message("Selecting best paths")
         
         #########################################################
         #Space-Time, Quasi-Poisson only (yes overdispersion)

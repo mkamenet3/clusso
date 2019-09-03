@@ -6,7 +6,7 @@
 
 Creates \code{clst} object.}
 \usage{
-toclusso(df, expected, observed, timeperiod, covars = FALSE)
+toclusso(df, expected, observed, timeperiod, covars = FALSE, id = NULL)
 }
 \arguments{
 \item{df}{name of dataframe.}
@@ -19,6 +19,8 @@ toclusso(df, expected, observed, timeperiod, covars = FALSE)
 If spatial-only analysis, create a column that has a single value (ex: "Time1") and convert this to a factor.}
 
 \item{covars}{are there additional covariates in the dataframe beyond the three required? If so, set to \code{TRUE}. Default is \code{FALSE}.}
+
+\item{id}{Optional. If your dataframe contains an ID variable that should not be a covariate, set the name here.}
 }
 \value{
 \code{clst} object
@@ -27,4 +29,8 @@ If spatial-only analysis, create a column that has a single value (ex: "Time1") 
 Creates \code{clst} object for creating potential spatial and spatio-temporal clusters. This function creates a \code{clst}
 object which will contain the expected, observed, and timeperiod information necessary to run \pkg{clusso}.
 If dataframe is fed in, assumes panel format - see \code{vignette} for details.
+}
+\examples{
+\donttest{
+clst <- toclusso(jbc, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)}
 }

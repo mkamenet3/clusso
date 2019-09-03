@@ -14,12 +14,10 @@
 #' @param covars are there additional covariates in the dataframe beyond the three required? If so, set to \code{TRUE}. Default is \code{FALSE}.
 #' @param id Optional. If your dataframe contains an ID variable that should not be a covariate, set the name here.
 #' @return \code{clst} object
-#'@examples
 #' @export
+#'@examples
 #'\donttest{
-#'data(japanbreastcancer)
-#'clst <- toclusso(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)  
-#'}
+#'clst <- toclusso(jbc, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)}
 
 toclusso <- function(df, expected, observed, timeperiod, covars=FALSE, id=NULL){
     if((missing(covars) | covars==FALSE)){
