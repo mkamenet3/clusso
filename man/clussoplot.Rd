@@ -10,11 +10,11 @@ clussoplot(outclusso, analysis = c("space", "spacetime", "both"), Time,
 \arguments{
 \item{outclusso}{outclusso Object with output from \code{clusso}.}
 
-\item{analysis}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.}
+\item{analysis}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis  should be executed.}
 
 \item{Time}{Number of time periods in the analysis}
 
-\item{cv}{Boolean. If TRUE, then cross-validation was used. Default is FALSE (information criteria used)}
+\item{cv}{Boolean. Takes TRUE if cross-validation was used. Default is FALSE.}
 }
 \value{
 Returns a plot
