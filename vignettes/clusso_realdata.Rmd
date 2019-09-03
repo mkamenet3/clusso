@@ -231,6 +231,13 @@ Use `clussopretty()` to create a nice table of clusters detected:
 clussopretty(rescovars, analysis="both", clusteridentify = FALSE)
 ```
 
+We can also extract the coefficients for the unpenalized terms and undo the log-link by exponentiating:
+
+```{r}
+exp(rescovars$lassoresult.qp.st$lasso$beta[-(1:66870), rescovars$lassoresult.qp.st$selections$select.qaic])
+exp(rescovars$lassoresult.qp.st$lasso$beta[-(1:66870), rescovars$lassoresult.qp.st$selections$select.qbic])
+```
+
 
 
 ### Maps
