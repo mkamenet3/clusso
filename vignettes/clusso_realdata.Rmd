@@ -31,8 +31,11 @@ We start by setting the seed using the `set.seed()` to ensure that the simulatio
 set.seed(8282017)
 
 #load data
-data("japanbreastcancer")
-load("../data/japanbreastcancer.RData")
+data("jbc")
+data("utmJapan")
+data("japan.poly2")
+data("japan.prefect2")
+
 ```
 
 
@@ -114,7 +117,7 @@ The final required argument is `maxclust`. This is the maximum number of actual 
 For additional functionality, if you do not have expected counts readily available, they can be calculated using the auxiliary function `calcexpected()`, from the `clusso` package.
 
 ```{r}
-head(calcexpected(jbc$death, factor(jbc$period), jbc$id, family="poisson"))
+head(calcexpected(jbc$death, factor(jbc$period), factor(jbc$id), family="poisson"))
 ```
 
 
@@ -185,8 +188,11 @@ system.time(rescv<- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", cv=
 clussopretty(rescv, analysis="both", clusteridentify=FALSE, cv=TRUE)
 ```
 
+Lastly, we can plot the coefficient paths identified via cross-validation using `clussoplot()` by adding the argument `cv=TRUE`:
 
-
+```{r}
+clussoplot(rescv, analysis="both", Time=5, cv=TRUE)
+```
 
 
 
@@ -237,5 +243,10 @@ pdfname <- paste0("outcovars", ".pdf")
 
 easyplot(japan.prefect2, japan.poly2 ,pdfname, rescovars$rrcolors, mods, space="both",
          probmap=FALSE, obs=TRUE,rr=TRUE)
+```
+
+```{r}
+clussoplot(rescovars, analysis="both", Time=5)
+
 ```
 
