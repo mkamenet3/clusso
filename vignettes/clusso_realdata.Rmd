@@ -7,12 +7,17 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.height = 5, fig.width = 8, message = FALSE)
+```
+
 #Introduction
 
 This package is still under development. Please [report any bugs](https://github.com/mkamenet3/clusso/issues).
 
+Messages from `clusso` have been suppressed for this tutorial, but there are many messages generated that we hope the user will find helpful. Feedback is welcome [here](https://github.com/mkamenet3/clusso/issues).
 
-Load `clusso`package:
+Load `clusso` package:
 
 ```{r, message=FALSE, warning=FALSE}
 library("clusso")
@@ -24,12 +29,10 @@ library("clusso")
 
 ### Prepare Data
 
-We start by setting the seed using the `set.seed()` to ensure that the simulation is reproducible. We load the data that comes with the `clusso` package with `data("japanbreastcancer")`.
+We load four datasets that comes with the `clusso` package:
 
 
 ```{r}
-set.seed(8282017)
-
 #load data
 data("jbc")
 data("utmJapan")
@@ -39,7 +42,8 @@ data("japan.prefect2")
 ```
 
 
-To explore the 4 data sets that are part of `japanbreastcancer`, we apply the `head()` function to each of the data sets.
+To explore the 4 data sets, we apply the `head()` function to each of the data sets.
+
 1. `utmJapan`: data set containing a unique identifier for each centroid (*id*), x-coordinate in UTM (*utmx*), and y-coordinate in UTM (*utmy*)
 1. `japan.poly2`: polygon tesselations
 1. `japan.prefect2`: boundaries for the prefects (geographical boundaries) of the region.
@@ -54,8 +58,6 @@ head(japan.poly2)
 head(japan.prefect2)
 head(jbc)
 ```
-
-From the polygons (`dframe.poly2`) data set we extract the second and third columns, only the x and y coordinates of the polygons and create `japan.poly2`. From the prefect boundaries (`dframe.prefect2`) data set, we extract the second through fifth columns - the two x and two y coordinates of the polygons boundaries and create `japan.prefect2`.
 
 
 
@@ -78,7 +80,7 @@ x <- utmJapan$utmx/1000
 y <- utmJapan$utmy/1000
 ```
 
-Below, we set the maximum radius for a cluster to 20 km (`rMax=20`) based on scientific knowledge of the area and our definition of a meaningful cluster, set the number of unique time periods to 5 (`Time=5`), number of simulations to be run to 11 (`nsim=11`), and set a floor for overdispersion to avoid estimating underdispersion (`overdispfloor=TRUE`). 
+Below, we set the maximum radius for a cluster to 20 km (`rMax=20`) based on scientific knowledge of the area and our definition of a meaningful cluster, set the number of unique time periods to 5 (`Time=5`), and set a floor for overdispersion to avoid estimating underdispersion (`overdispfloor=TRUE`). 
 
 
 ```{r}
@@ -91,7 +93,7 @@ overdispfloor <- TRUE
 
 ### Running the models
 
-The first step is to create a `clst` object using the `toclusso()` function. By applying `str()` to `clst`, we see that the `clst` object neatly organizes the data into required covariates (expected counts, observed counts, and timeperiod are required), and other covariates (omitted here). If you have additional covariates, additional covariates will be included in the model and will not be penalized under the LASSO.
+The first step is to create a `clst` object using the `toclusso()` function. By applying `str()` to `clst`, we see that the `clst` object neatly organizes the data into required covariates (expected counts, observed counts, and timeperiod are required), and other covariates (omitted here). If you have additional covariates, additional covariates will be included in the model and will not be penalized under the LASSO (see below *Real Data Example with Covariates*).
 
 
 ```{r}
@@ -100,7 +102,7 @@ class(clst)
 str(clst)
 ```
 
-To perform the lasso cluster detection, we use the function `clusso()`. 
+
 
 The first argument is the `clst` object created above, which contains the observed counts, expected counts, and respective time period (as a categorical factor). These are part of the required data. If there are additional covariates we want to include in our model (to be excluded from being penalized by the lasso), then we can include them in the `toclusso()` function.
 
@@ -111,7 +113,7 @@ The fourth argument is the number of time periods measurements were taken during
 The fifth argument species that our coordinates are indeed UTM. The default is lat/lon coordinates.
 
 The sixth argument is `analysis`. The only current option is `both`, which will perform both the spatial and spatio-temporal analyses. 
-The final required argument is `maxclust`. This is the maximum number of actual clusters expected in the given area. This is based on scientific knowledge of the area. For the japanese breast cancer data, we set `maxclust=10`.
+The final required argument is `maxclust`. This is the maximum number of actual clusters expected in the given area. This is based on scientific knowledge of the area. For the japanese breast cancer data, we set `maxclust=11`. If the number of identified clusters exceeds `maxclust`, a warning will encourage you to increase your set `maxclust`.
 
 
 For additional functionality, if you do not have expected counts readily available, they can be calculated using the auxiliary function `calcexpected()`, from the `clusso` package.
@@ -120,6 +122,7 @@ For additional functionality, if you do not have expected counts readily availab
 head(calcexpected(jbc$death, factor(jbc$period), factor(jbc$id), family="poisson"))
 ```
 
+To perform the LASSO-based cluster detection, we use the function `clusso()`. 
 
 The output of `clusso()` is assigned to the object `resreal`. `resreal` is a large list of lists. The recommended way to explore the results is to explore the `names(resreal)` and select each sub-list of interest.
 
@@ -141,14 +144,17 @@ names(clussopretty(resreal, analysis="both", clusteridentify=TRUE))
 With the argument `clusteridentify=TRUE`, centroid indices (by time period) are extracted. Since these lists are very long, output is left to the user to explore:
 
 ```{r, eval=FALSE}
+#identify cluster IDs
 clussopretty(resreal, analysis="both", clusteridentify=TRUE)
+#identify cluster IDs where RR is greater or equal to 1.05
 clussopretty(resreal, analysis="both", clusteridentify=TRUE, clusterRR = 1.05)
+#identify cluster IDS that differ from the background rate
 clussopretty(resreal, analysis="both", clusteridentify=TRUE, clusterRR = "background")
 ```
 
 
 
-More importantly, however, if we have polygons and boundary files, we can use the `easyplot()` function.
+If we have polygons and boundary files, we can use the `easyplot()` function. *TODO: Current implementation only works for JBC dataset. Functions will be extended to be more generalizable in the future.*
 
 ### Maps
 
@@ -200,9 +206,7 @@ clussoplot(rescv, analysis="both", Time=5, cv=TRUE)
 
 ## Real Data Example with Covariates
 
-We can continue with the Japanese breast cancer dataset imported above. 
-
-We will again checkout the `head()` of the dataframe, `jbc`. 
+We continue with the Japanese breast cancer dataset imported above. We will again checkout the `head()` of the dataframe, `jbc`. 
 
 
 
@@ -234,7 +238,6 @@ clussopretty(rescovars, analysis="both", clusteridentify = FALSE)
 We can also extract the coefficients for the unpenalized terms and undo the log-link by exponentiating:
 
 ```{r}
-exp(rescovars$lassoresult.qp.st$lasso$beta[-(1:66870), rescovars$lassoresult.qp.st$selections$select.qaic])
 exp(rescovars$lassoresult.qp.st$lasso$beta[-(1:66870), rescovars$lassoresult.qp.st$selections$select.qbic])
 ```
 
@@ -251,6 +254,8 @@ pdfname <- paste0("outcovars", ".pdf")
 easyplot(japan.prefect2, japan.poly2 ,pdfname, rescovars$rrcolors, mods, space="both",
          probmap=FALSE, obs=TRUE,rr=TRUE)
 ```
+
+Coefficient paths for clusters (excluding unpenalized terms):
 
 ```{r}
 clussoplot(rescovars, analysis="both", Time=5)
