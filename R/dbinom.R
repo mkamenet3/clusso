@@ -1,16 +1,24 @@
 #' Binomial Function
 #' 
 #' @title dbinom
-#' @param 
-
-dbinom <- function(linpred){
-    x <- observed$observedsum#number of successes
-    n <- 5#number of trials
-    phat<- exp(linpred)/(1+exp(linpred))
+#' @param linpred
+#' @return Returns vector of Binomial log-likelihood for each proposed path of the LASSO tuning parameter values.
+#' 
+#' @example 
+#' set.seed(1)
+#' 
+dbinom <- function(x, n, phat){
+    #x <- observed$observedsum#number of successes
+    #n <- 5#number of trials
+    #phat<- exp(linpred)/(1+exp(linpred))
     loglik_i <- x*log(phat) + (n-x)*log(1-phat)
     return(sum(loglik_i))
 }
 
+invlogit <- function(linpred){
+    phat<- exp(linpred)/(1+exp(linpred))
+    return(phat)
+}
 # ccs <- c(0,0,1,0,1,0,1,1,1,1,0,1,0,1,1,0,1,0,1,1,
 #          0,1,1,1,1,0,1,0,0,0,1,0,1,0,1,1,0,0,1,1)
 # region <- rep(c("R1","R2", "R3","R4"), each=10)
