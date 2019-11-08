@@ -95,7 +95,7 @@ clusso <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("s
     if(length(analysis) > 1) stop("You must select either `space`, `spacetime`, or `both`")
     analysis <- match.arg(analysis, several.ok = FALSE)
     if(model=="poisson"){
-        print("poisson models initiate")
+        print("Poisson models initiated")
         switch(analysis, 
                space = clussoPois(analysis="space",x, y, rMax,period, expected, observed, covars, 
                                   Time, utm, longdat, maxclust,overdispfloor, cv, collapsetime),
@@ -105,7 +105,7 @@ clusso <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("s
                                  Time, utm, longdat, maxclust,overdispfloor, cv, collapsetime))
     }
     else if(model=="binomial"){
-        print("binom models initiate")
+        print("Binomial models initiated")
         switch(analysis, 
                space = clussoBinom(analysis="space",x, y, rMax,period, expected, observed, covars,
                                    Time, utm, longdat, maxclust, cv, collapsetime),
@@ -199,8 +199,10 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
     }
     #RUN LASSO
     if(analysis=="spacetime"){
-        lassoresult.qp.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,quasi=TRUE, maxclust, overdispfloor, cv)
-        lassoresult.p.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, spacetime=TRUE,quasi=FALSE, maxclust, overdispfloor, cv)
+        lassoresult.qp.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors,Time, 
+                                            quasi=TRUE, maxclust, overdispfloor, cv)
+        lassoresult.p.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, 
+                                           quasi=FALSE, maxclust, overdispfloor, cv)
         message("All models ran successfully")
         #space time
         ##risk ratios
@@ -219,8 +221,10 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
                     init.vec = vectors))
     }
     else if (analysis=="space"){
-        lassoresult.qp.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,quasi=TRUE, maxclust, overdispfloor,cv)
-        lassoresult.p.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,quasi=FALSE, maxclust, overdispfloor,cv)
+        lassoresult.qp.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
+                                           quasi=TRUE, maxclust, overdispfloor,cv)
+        lassoresult.p.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
+                                          quasi=FALSE, maxclust, overdispfloor,cv)
         message("All models ran successfully")
         #space only
         ##risk ratios
@@ -245,10 +249,14 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
     }
     else{
         #both
-        lassoresult.qp.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,quasi=TRUE, maxclust, overdispfloor, cv)
-        lassoresult.p.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, spacetime=TRUE,quasi=FALSE, maxclust, overdispfloor, cv)
-        lassoresult.qp.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,quasi=TRUE, maxclust, overdispfloor,cv)
-        lassoresult.p.s <- spacetimeLasso(model,sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,quasi=FALSE, maxclust, overdispfloor,cv)
+        lassoresult.qp.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors,Time, 
+                                            quasi=TRUE, maxclust, overdispfloor, cv)
+        lassoresult.p.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, 
+                                           quasi=FALSE, maxclust, overdispfloor, cv)
+        lassoresult.qp.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
+                                           quasi=TRUE, maxclust, overdispfloor,cv)
+        lassoresult.p.s <- spacetimeLasso(model,sparseMAT, n_uniq, vectors.s, Time, 
+                                          quasi=FALSE, maxclust, overdispfloor,cv)
         message("All models ran successfully")
         #space time
         ##risk ratios
@@ -337,10 +345,7 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
     #set up clusters and fitted values
     clusters <- clusters2df(x,y,rMax, utm=utm, length(x))
     n_uniq <- length(unique(clusters$center))
-    #n <- length(x)
     init <- setVectors(period, expected, observed, covars, Time, longdat) #TODO but ntrials=E0 and Y.vec=cases
-    #E1 <- init$E0
-    #Ex <- clusso::scale(init, Time)
     Yx <- init$Y.vec #ncases
     Ex <- init$E0 #ntrials
     #set vectors
@@ -356,7 +361,6 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
         vectors.s <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec, covars = covars)    
     }
     #create sparseMAT once and cache it   
-   # n_uniq <- length(unique(clusters$center))
     potClus <- n_uniq
     numCenters <- n_uniq
     #CREATE sparseMAT and cache it for use throughout this function
@@ -380,10 +384,10 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
     }
     #RUN LASSO
     if(analysis=="spacetime"){
-        lassoresult.p.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors,
-                                           Time, spacetime=TRUE,quasi=TRUE, maxclust, overdispfloor, cv)
-        lassoresult.qp.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors, 
-                                            Time, spacetime=TRUE,quasi=FALSE, maxclust, overdispfloor, cv)
+        lassoresult.p.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, 
+                                           quasi=TRUE, maxclust, overdispfloor, cv)
+        lassoresult.qp.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time,
+                                            quasi=FALSE, maxclust, overdispfloor, cv)
         message("All models ran successfully")
         #space time
         ##risk ratios
@@ -402,8 +406,10 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
                     init.vec = vectors))
     }
     else if (analysis=="space"){
-        lassoresult.p.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,quasi=TRUE, maxclust, overdispfloor,cv)
-        lassoresult.qp.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,quasi=FALSE, maxclust, overdispfloor,cv)
+        lassoresult.p.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
+                                          quasi=TRUE, maxclust, overdispfloor,cv)
+        lassoresult.qp.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
+                                           quasi=FALSE, maxclust, overdispfloor,cv)
         message("All models ran successfully")
         #space only
         ##risk ratios
@@ -428,10 +434,14 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
     }
     else{
         #both
-        lassoresult.p.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors,Time, spacetime=TRUE,quasi=TRUE, maxclust, overdispfloor, cv)
-        lassoresult.qp.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, spacetime=TRUE,quasi=FALSE, maxclust, overdispfloor, cv)
-        lassoresult.p.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,quasi=TRUE, maxclust, overdispfloor,cv)
-        lassoresult.qp.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, spacetime=TRUE,quasi=FALSE, maxclust, overdispfloor,cv)
+        lassoresult.p.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors,Time, 
+                                           quasi=TRUE, maxclust, overdispfloor, cv)
+        lassoresult.qp.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, 
+                                            quasi=FALSE, maxclust, overdispfloor, cv)
+        lassoresult.p.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
+                                          quasi=TRUE, maxclust, overdispfloor,cv)
+        lassoresult.qp.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
+                                           quasi=FALSE, maxclust, overdispfloor,cv)
         message("All models ran successfully")
         #space time
         ##risk ratios

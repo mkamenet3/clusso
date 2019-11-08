@@ -1,8 +1,8 @@
 ---
-title: "Running *clusso* with Real Data"
+title: "Running *clusso* with Areal Data"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Intro to clusso}
+  %\VignetteIndexEntry{Intro to clusso I}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
@@ -127,7 +127,7 @@ To perform the LASSO-based cluster detection, we use the function `clusso()`.
 The output of `clusso()` is assigned to the object `resreal`. `resreal` is a large list of lists. The recommended way to explore the results is to explore the `names(resreal)` and select each sub-list of interest.
 
 ```{r}
-system.time(resreal <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=11))
+system.time(resreal <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", model="poisson",maxclust=11))
 
 ```
 
