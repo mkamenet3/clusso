@@ -435,13 +435,13 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
     else{
         #both
         lassoresult.p.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors,Time, 
-                                           quasi=TRUE, maxclust, overdispfloor, cv)
+                                           quasi=FALSE, maxclust, overdispfloor, cv)
         lassoresult.qp.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, 
-                                            quasi=FALSE, maxclust, overdispfloor, cv)
+                                            quasi=TRUE, maxclust, overdispfloor, cv)
         lassoresult.p.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
-                                          quasi=TRUE, maxclust, overdispfloor,cv)
+                                          quasi=FALSE, maxclust, overdispfloor,cv)
         lassoresult.qp.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
-                                           quasi=FALSE, maxclust, overdispfloor,cv)
+                                           quasi=TRUE, maxclust, overdispfloor,cv)
         message("All models ran successfully")
         #space time
         ##risk ratios

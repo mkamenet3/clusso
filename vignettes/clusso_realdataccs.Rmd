@@ -96,6 +96,12 @@ str(clst)
 The output of `clusso()` is assigned to the object `resreal`. `resreal` is a large list of lists. The recommended way to explore the results is to explore the `names(resreal)` and select each sub-list of interest.
 
 ```{r}
-system.time(resccs <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=11))
+system.time(resccs <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", model="binomial",maxclust=11))
 
 ```
+
+
+
+
+
+
