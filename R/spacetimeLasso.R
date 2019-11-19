@@ -101,7 +101,7 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
             print("Binom post-process")
             phat <-  sapply(1:length(lasso$lambda), function(i) invlogit(xbetaPath[,i]))
             mu <- sapply(1:length(lasso$lambda), function(i) exp(xbetaPath[,i]))
-            loglike <- sapply(1:length(lasso$lambda), function(i) sum(dbinom(Yx, Ex, phat[,i])))
+            loglike <- sapply(1:length(lasso$lambda), function(i) sum(dbin(Yx, Ex, phat[,i])))
             res <- spacetimeLassoBinom(lasso,coefs.lasso.all, loglike, mu, K, covars,
                                        Yx, Ex, Period, Time, n_uniq, maxclust)
         }

@@ -1,0 +1,109 @@
+---
+title: "Running *clusso* with Case-Control Data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Intro to clusso II}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.height = 5, fig.width = 8, message = FALSE)
+```
+
+#Introduction
+
+This package is still under development. Please [report any bugs](https://github.com/mkamenet3/clusso/issues).
+
+Messages from `clusso` have been suppressed for this tutorial, but there are many messages generated that we hope the user will find helpful. Feedback is welcome [here](https://github.com/mkamenet3/clusso/issues).
+
+Load `clusso` package:
+
+```{r, message=FALSE, warning=FALSE}
+library("clusso")
+
+```
+
+
+## Using `clusso` with case-control data 
+
+### Prepare Data
+
+We load four datasets that comes with the `clusso` package:
+
+```{r}
+#load data
+data("ccsjbc")
+data("utmJapan")
+data("japan.poly2")
+data("japan.prefect2")
+
+```
+
+
+These datasets contain:
+
+1. `ccsjbc`: data set containting a unique identifier for each centroid (*id*), period of observation (categorical variable with 5 levels, *period*), number of cases per each geographic unit (*numcases*), the total number of cases and controls from each geographic unit (*n*). These data are simulated.
+1. `utmJapan`: data set containing a unique identifier for each centroid (*id*), x-coordinate in UTM (*utmx*), and y-coordinate in UTM (*utmy*)
+1. `japan.poly2`: polygon tesselations
+1. `japan.prefect2`: boundaries for the prefects (geographical boundaries) of the region.
+
+
+To explore the 4 data sets, we apply the `head()` function to each of the data sets.
+
+
+
+```{r}
+#inspect
+head(utmJapan)
+head(japan.poly2)
+head(japan.prefect2)
+head(ccsjbc)
+```
+
+### Set global conditions
+
+When using `clusso`, there are certain global parameters that need to be set.
+
+We take the easting and northing coordinates from the `utmJapan` dataset, set the easting coordinate, `utmx`, to `x` and the northing coordinate, `utmy`, to `y`. Each is divided by 1000 to change the scale from meters to kilometers.
+
+
+```{r}
+x <- utmJapan$utmx/1000
+y <- utmJapan$utmy/1000
+```
+
+Below, we set the maximum radius for a cluster to 20 km (`rMax=20`) based on scientific knowledge of the area and our definition of a meaningful cluster, set the number of unique time periods to 5 (`Time=5`). 
+
+
+```{r}
+rMax <- 20 
+Time <- 5
+```
+
+
+### Running the models
+
+The first step is to create a `clst` object using the `toclusso()` function. By applying `str()` to `clst`, we see that the `clst` object neatly organizes the data into required covariates (expected counts, observed counts, and timeperiod are required), and other covariates (omitted here). If you have additional covariates, additional covariates will be included in the model and will not be penalized under the LASSO (see below *Real Data Example with Covariates*).
+
+
+```{r}
+clst <- toclusso(ccsjbc, expected = n, observed=numcases,timeperiod = period)
+class(clst)
+str(clst)
+```
+
+The output of `clusso()` is assigned to the object `resreal`. `resreal` is a large list of lists. The recommended way to explore the results is to explore the `names(resreal)` and select each sub-list of interest.
+
+```{r}
+system.time(resccs <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", model="binomial",maxclust=11))
+
+```
+
+```{r}
+clussopretty(resccs, analysis="both", clusteridentify=FALSE)
+```
+
+
+
+
