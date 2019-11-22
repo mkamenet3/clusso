@@ -1,8 +1,8 @@
 ---
-title: "Running *clusso* with Real Data"
+title: "Running *clusso* with Areal Data"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Intro to clusso}
+  %\VignetteIndexEntry{Intro to clusso I}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
