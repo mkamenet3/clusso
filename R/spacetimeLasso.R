@@ -106,7 +106,7 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
             print("Binom post-process")
             phat <-  sapply(1:length(lasso$lambda), function(i) pihat(xbetaPath[,i]))
             loglike <- sapply(1:length(lasso$lambda), function(i) sum(dbin(Yx, Ex, phat[,i])))
-            res <- spacetimeLassoBinom(lasso,coefs.lasso.all, loglike, mu, K, covars,
+            res <- spacetimeLassoBinom(lasso,coefs.lasso.all, loglike, mu, K, quasi,covars,
                                        Yx, Ex, Period, Time, n_uniq, maxclust)
         }
         return(res)
@@ -244,6 +244,7 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
 #'@param coefs.lasso.all
 #'@param mu
 #'@param K
+#'@param quasi
 #'@param covars
 #'@param Yx
 #'@param Ex
@@ -251,38 +252,88 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
 #'@param Time
 #'@param n_uniq
 #'@param maxclust
-spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, covars, Yx, Ex, Period, Time, n_uniq, maxclust){    
-    #########################################################
-    #Space-Time, Binomial
-    #########################################################
-    #QBIC
-    PLL.qbic  <- -2*(loglike) + ((K)*log(min(sum(Yx),sum(Ex-Yx))))
-    select.qbic <- which.min(PLL.qbic)
-    E.qbic <- mu[,select.qbic]
-    exp_coefs_qbic <- c(exp(unique(lasso$beta[,select.qbic])),
-                        exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qbic]))
-    numclust.qbic <- K[select.qbic]-Time 
+spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,covars, Yx, Ex, Period, Time, n_uniq, maxclust){   
+    if(quasi==TRUE){
+        #message("Returning results for space-time Quasi-Poisson model")
+        if(!is.null(covars)){
+            offset_reg <- glm(cbind(Yx, (Ex-Yx))~ . + as.factor(Period),
+                              data = covars,family=quasibinomial)
+        }
+        else{
+            offset_reg <- glm(cbind(Yx, (Ex-Yx)) ~ 1 + as.factor(Period),
+                              family=quasibinomial)
+        }
+        overdisp.est <- overdisp(offset_reg, sim = FALSE, overdispfloor = overdispfloor)
+        message(paste("Overdispersion estimate:", round(overdisp.est,4)))
+        if(quasi == TRUE & is.null(overdisp.est)) warning("No overdispersion for quasi-Poisson model. Please check.")
+        #########################################################
+        #Space-Time, Binomial
+        #########################################################
+        #QBIC
+        PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(min(sum(Yx),sum(Ex-Yx))))
+        select.qbic <- which.min(PLL.qbic)
+        E.qbic <- mu[,select.qbic]
+        exp_coefs_qbic <- c(exp(unique(lasso$beta[,select.qbic])),
+                            exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qbic]))
+        numclust.qbic <- K[select.qbic]-Time 
+        
+        #QAIC
+        PLL.qaic <-  2*(K) - 2*(loglike/overdisp.est)
+        select.qaic <- which.min(PLL.qaic)
+        E.qaic <- mu[,select.qaic]
+        exp_coefs_qaic <- c(exp(unique(lasso$beta[,select.qaic])),
+                            exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaic]))
+        numclust.qaic <- K[select.qaic]-Time 
+        
+        #QAICc
+        PLL.qaicc <- 2*(K) - 2*(loglike/overdisp.est) +
+            ((2*K*(K + 1))/(min(sum(Yx),sum(Ex-Yx)) - K - 1))
+        select.qaicc <- which.min(PLL.qaicc)
+        E.qaicc <- mu[,select.qaicc]
+        exp_coefs_qaicc <- c(exp(unique(lasso$beta[,select.qaicc])),
+                             exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaicc]))
+        numclust.qaicc <- K[select.qaicc]-Time 
+        
+        selections <- list(select.qbic=select.qbic,
+                           select.qaic = select.qaic,
+                           select.qaicc = select.qaic)
+        
+        
+    }
+    else if (quasi==FALSE){
+        #########################################################
+        #Space-Time, Binomial
+        #########################################################
+        #QBIC
+        PLL.qbic  <- -2*(loglike) + ((K)*log(min(sum(Yx),sum(Ex-Yx))))
+        select.qbic <- which.min(PLL.qbic)
+        E.qbic <- mu[,select.qbic]
+        exp_coefs_qbic <- c(exp(unique(lasso$beta[,select.qbic])),
+                            exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qbic]))
+        numclust.qbic <- K[select.qbic]-Time 
+        
+        #QAIC
+        PLL.qaic <-  2*(K) - 2*(loglike)
+        select.qaic <- which.min(PLL.qaic)
+        E.qaic <- mu[,select.qaic]
+        exp_coefs_qaic <- c(exp(unique(lasso$beta[,select.qaic])),
+                            exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaic]))
+        numclust.qaic <- K[select.qaic]-Time 
+        
+        #QAICc
+        PLL.qaicc <- 2*(K) - 2*(loglike) +
+            ((2*K*(K + 1))/(min(sum(Yx),sum(Ex-Yx)) - K - 1))
+        select.qaicc <- which.min(PLL.qaicc)
+        E.qaicc <- mu[,select.qaicc]
+        exp_coefs_qaicc <- c(exp(unique(lasso$beta[,select.qaicc])),
+                             exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaicc]))
+        numclust.qaicc <- K[select.qaicc]-Time 
+        
+        selections <- list(select.qbic=select.qbic,
+                           select.qaic = select.qaic,
+                           select.qaicc = select.qaic)
+    }
     
-    #QAIC
-    PLL.qaic <-  2*(K) - 2*(loglike)
-    select.qaic <- which.min(PLL.qaic)
-    E.qaic <- mu[,select.qaic]
-    exp_coefs_qaic <- c(exp(unique(lasso$beta[,select.qaic])),
-                        exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaic]))
-    numclust.qaic <- K[select.qaic]-Time 
-    
-    #QAICc
-    PLL.qaicc <- 2*(K) - 2*(loglike) +
-        ((2*K*(K + 1))/(min(sum(Yx),sum(Ex-Yx)) - K - 1))
-    select.qaicc <- which.min(PLL.qaicc)
-    E.qaicc <- mu[,select.qaicc]
-    exp_coefs_qaicc <- c(exp(unique(lasso$beta[,select.qaicc])),
-                         exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaicc]))
-    numclust.qaicc <- K[select.qaicc]-Time 
-    
-    selections <- list(select.qbic=select.qbic,
-                       select.qaic = select.qaic,
-                       select.qaicc = select.qaic)
     
     #warning if numclust similar to maxclust
     if (numclust.qaic==(maxclust-Time)){
