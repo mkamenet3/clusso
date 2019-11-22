@@ -6,6 +6,7 @@
 #'This function takes the cluster detection results from the \code{clusso} function and creates a nice table of detected clusters.  
 #'@param outclusso Object with output from \code{clusso}.
 #'@param analysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}. 
+#'@param model A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"}.
 #'@param clusteridentify Whether specific clusters should be identified in output; default is FALSE
 #'@param clusterRR Risk ratio cut off for a cluster to be identified. Alternatively, a risk ratio can be provided (ex: 1.0, 1.25) that would serve as a cut off value for identifiying a cluster. Current default is 1.0. We define a cluster as being different from the background rate. 
 #'@param cv Boolean, default is FALSE. If TRUE, then this will assume that the cross-validation (and not information criteria) model selection was perfromed.
@@ -28,23 +29,32 @@
 #'  }
 
 
-clussopretty <- function(outclusso, analysis="both", clusteridentify=FALSE, clusterRR, cv=FALSE){
+clussopretty <- function(outclusso, analysis="both", model = c("poisson", "binomial"), clusteridentify=FALSE, clusterRR, cv=FALSE){
     err <- 1e-4
+    if(model=="poisson"){
+        model <- c("Poisson", "Quasi-Poisson")
+    }
+    else if (model=="binomial"){
+        model <- c("Binomial", "Quasi-Binomial")
+    }
+    else{
+        stop("You must select either `poisson` or `binomial`")
+    }
     if(cv==TRUE){
     #cv version
         if(analysis=="space"){
-            model <- c("Poisson", "Quasi-Poisson")
+            #model <- c("Poisson", "Quasi-Poisson")
             analysistype <- rep("Space",2)
             numclust.cv <- c(outclusso$lassoresult.p.s$numclust.cv,outclusso$lassoresult.qp.s$numclust.cv)
         }
         else if(analysis=="spacetime"){
-            model <- c("Poisson", "Quasi-Poisson")
+            #model <- c("Poisson", "Quasi-Poisson")
             analysistype <- rep("Space-Time",2)
             numclust.cv <- c(outclusso$lassoresult.p.st$numclust.cv, outclusso$lassoresult.qp.st$numclust.cv)
         }
         else{
             #both
-            model <- c(rep("Poisson",2), rep("Quasi-Poisson",2))
+            #model <- c(rep("Poisson",2), rep("Quasi-Poisson",2))
             analysistype <- rep(c("Space", "Space-Time"),2)
             numclust.cv <- c(outclusso$lassoresult.p.s$numclust.cv, outclusso$lassoresult.p.st$numclust.cv, 
                               outclusso$lassoresult.qp.s$numclust.cv, outclusso$lassoresult.qp.st$numclust.cv)
@@ -53,14 +63,14 @@ clussopretty <- function(outclusso, analysis="both", clusteridentify=FALSE, clus
     }
     else{
         if(analysis=="space"){
-            model <- c("Poisson", "Quasi-Poisson")
+            #model <- c("Poisson", "Quasi-Poisson")
             analysistype <- rep("Space",2)
             numclust.AIC <- c(outclusso$lassoresult.p.s$numclust.qaic,outclusso$lassoresult.qp.s$numclust.qaic)
             numclust.AICc <- c(outclusso$lassoresult.p.s$numclust.qaicc, outclusso$lassoresult.qp.s$numclust.qaicc)
             numclust.BIC <- c(outclusso$lassoresult.p.s$numclust.qbic, outclusso$lassoresult.qp.s$numclust.qbic)
         }
         else if(analysis=="spacetime"){
-            model <- c("Poisson", "Quasi-Poisson")
+            #model <- c("Poisson", "Quasi-Poisson")
             analysistype <- rep("Space-Time",2)
             numclust.AIC <- c(outclusso$lassoresult.p.st$numclust.qaic, outclusso$lassoresult.qp.st$numclust.qaic)
             numclust.AICc <- c(outclusso$lassoresult.p.st$numclust.qaicc, outclusso$lassoresult.qp.st$numclust.qaicc)
@@ -68,7 +78,7 @@ clussopretty <- function(outclusso, analysis="both", clusteridentify=FALSE, clus
         }
         else{
             #both
-            model <- c(rep("Poisson",2), rep("Quasi-Poisson",2))
+            #model <- c(rep("Poisson",2), rep("Quasi-Poisson",2))
             analysistype <- rep(c("Space", "Space-Time"),2)
             numclust.AIC <- c(outclusso$lassoresult.p.s$numclust.qaic, outclusso$lassoresult.p.st$numclust.qaic, 
                               outclusso$lassoresult.qp.s$numclust.qaic, outclusso$lassoresult.qp.st$numclust.qaic)
