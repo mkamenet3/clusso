@@ -120,7 +120,7 @@ clusso <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("s
 
 }
 
-    }
+    
 
 
 #' Detect a cluster in space or spacetime using the LASSO: Poisson model

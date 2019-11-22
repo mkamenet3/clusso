@@ -7,19 +7,20 @@
 #' @example 
 #' set.seed(1)
 #' 
-dbin <- function(x, n, phat){
-    loglik_i <- x*log(phat) + (n-x)*log(1-phat) 
-    return(sum(loglik_i))
-}
+# dbin <- function(x, n, phat){
+#     loglik_i <- x*log(phat) + (n-x)*log(1-phat) 
+#     return(sum(loglik_i))
+# }
 
-invlogit <- function(linpred){
-    phat<- exp(linpred)/(1+exp(linpred))
+phat <- function(xbeta){
+    #phat<- exp(linpred)/(1+exp(linpred))
+    phat <- 1/(1+exp(-xbeta))
     return(phat)
 }
 
-# logL <- function(Yx, Ex,p){
-#     sum(dbinom(Yx, Ex, p,log=TRUE))
-# }
+logL <- function(Yx, Ex,p){
+    sum(dbinom(Yx, Ex, p,log=TRUE))
+}
 # # 
 # # pseq <- seq(0.01, 0.99, 0.01)
 # # logL(pseq)

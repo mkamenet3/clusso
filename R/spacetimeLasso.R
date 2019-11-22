@@ -73,7 +73,7 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
         }
         else if(model=="binomial"){
             print("Model binomial selected in spacetimeLasso")
-            lasso <- glmnet::glmnet(sparseMAT, cbind(Yx,(Ex-Yx)), family=("binomial"), alpha=1, 
+            lasso <- glmnet::glmnet(sparseMAT, cbind((Ex-Yx),Yx), family=("binomial"), alpha=1, 
                                     nlambda = 2000,
                                     standardize = FALSE, intercept=FALSE,dfmax = maxclust,
                                     penalty.factor = penalty)    
@@ -105,8 +105,6 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
         else if(model=="binomial"){
             print("Binom post-process")
             phat <-  sapply(1:length(lasso$lambda), function(i) phat(xbetaPath[,i]))
-            mu <- sapply(1:length(lasso$lambda), function(i) exp(xbetaPath[,i]))
-
             loglike <- sapply(1:length(lasso$lambda), function(i) sum(dbin(Yx, Ex, phat[,i])))
             res <- spacetimeLassoBinom(lasso,coefs.lasso.all, loglike, mu, K, covars,
                                        Yx, Ex, Period, Time, n_uniq, maxclust)
@@ -150,7 +148,7 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
         if(quasi == TRUE & is.null(overdisp.est)) warning("No overdispersion for quasi-Poisson model. Please check.")
         
         #QBIC
-        PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(n_uniq*Time))
+        PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(sum(Yx)))
         select.qbic <- which.min(PLL.qbic)
         E.qbic <- mu[,select.qbic]
         exp_coefs_qbic <- c(exp(unique(lasso$beta[,select.qbic])),
@@ -167,7 +165,7 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
         
         #QAICc
         PLL.qaicc <- 2*(K) - 2*(loglike/overdisp.est) +
-            ((2*K*(K + 1))/(n_uniq*Time - K - 1))
+            ((2*K*(K + 1))/(sum(Yx) - K - 1))
         select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaicc]
         exp_coefs_qaicc <- c(exp(unique(lasso$beta[,select.qaicc])),
@@ -183,7 +181,7 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
     #########################################################
     else if(quasi==FALSE){
         #QBIC
-        PLL.qbic  <- -2*(loglike) + ((K)*log(n_uniq*Time))
+        PLL.qbic  <- -2*(loglike) + ((K)*log(sum(Yx)))
         select.qbic <- which.min(PLL.qbic)
         E.qbic <- mu[,select.qbic]
         exp_coefs_qbic <- c(exp(unique(lasso$beta[,select.qbic])),
@@ -200,7 +198,7 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
         
         #QAICc
         PLL.qaicc <- 2*(K) - 2*(loglike) +
-            ((2*K*(K + 1))/(n_uniq*Time - K - 1))
+            ((2*K*(K + 1))/(sum(Yx) - K - 1))
         select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaicc]
         exp_coefs_qaicc <- c(exp(unique(lasso$beta[,select.qaicc])),
@@ -258,7 +256,7 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, covars, 
     #Space-Time, Binomial
     #########################################################
     #QBIC
-    PLL.qbic  <- -2*(loglike) + ((K)*log(n_uniq*Time))
+    PLL.qbic  <- -2*(loglike) + ((K)*log(sum(Yx)))
     select.qbic <- which.min(PLL.qbic)
     E.qbic <- mu[,select.qbic]
     exp_coefs_qbic <- c(exp(unique(lasso$beta[,select.qbic])),
@@ -275,7 +273,7 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, covars, 
     
     #QAICc
     PLL.qaicc <- 2*(K) - 2*(loglike) +
-        ((2*K*(K + 1))/(n_uniq*Time - K - 1))
+        ((2*K*(K + 1))/(sum(Yx) - K - 1))
     select.qaicc <- which.min(PLL.qaicc)
     E.qaicc <- mu[,select.qaicc]
     exp_coefs_qaicc <- c(exp(unique(lasso$beta[,select.qaicc])),
@@ -290,28 +288,7 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, covars, 
     if (numclust.qaic==(maxclust-Time)){
         message("The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.")
     }
-        
-        #QAIC
-        PLL.qaic <-  2*(K) - 2*(loglike)
-        select.qaic <- which.min(PLL.qaic)
-        E.qaic <- mu[,select.qaic]
-        exp_coefs_qaic <- c(exp(unique(lasso$beta[,select.qaic])),
-                            exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaic]))
-        numclust.qaic <- K[select.qaic]-Time 
-        
-        #QAICc
-        PLL.qaicc <- 2*(K) - 2*(loglike) +
-            ((2*K*(K + 1))/(n_uniq*Time - K - 1))
-        select.qaicc <- which.min(PLL.qaicc)
-        E.qaicc <- mu[,select.qaicc]
-        exp_coefs_qaicc <- c(exp(unique(lasso$beta[,select.qaicc])),
-                             exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaicc]))
-        numclust.qaicc <- K[select.qaicc]-Time 
-        
-        selections <- list(select.qbic=select.qbic,
-                           select.qaic = select.qaic,
-                           select.qaicc = select.qaic)
-    }
+    #Add if quasi=TRUE for quasi-binomial
     #warning if numclust similar to maxclust
     if (numclust.qaic==(maxclust-Time)){
         message("The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.")
