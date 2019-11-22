@@ -256,7 +256,7 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, covars, 
     #Space-Time, Binomial
     #########################################################
     #QBIC
-    PLL.qbic  <- -2*(loglike) + ((K)*log(sum(Yx)))
+    PLL.qbic  <- -2*(loglike) + ((K)*log(min(sum(Yx),sum(Ex-Yx))))
     select.qbic <- which.min(PLL.qbic)
     E.qbic <- mu[,select.qbic]
     exp_coefs_qbic <- c(exp(unique(lasso$beta[,select.qbic])),
@@ -273,7 +273,7 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, covars, 
     
     #QAICc
     PLL.qaicc <- 2*(K) - 2*(loglike) +
-        ((2*K*(K + 1))/(sum(Yx) - K - 1))
+        ((2*K*(K + 1))/(min(sum(Yx),sum(Ex-Yx)) - K - 1))
     select.qaicc <- which.min(PLL.qaicc)
     E.qaicc <- mu[,select.qaicc]
     exp_coefs_qaicc <- c(exp(unique(lasso$beta[,select.qaicc])),
