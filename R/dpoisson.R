@@ -19,7 +19,8 @@
 dpoisson <- function(y, lambda, E0) {
     if (any(lambda == 0)) stop("Element of lambda is zero - log of zero will return -Inf. Make sure you exponentiated already")
     if (any(E0 == 0)) warning("At least one element of expected E0 is zero")
-    loglik_i <- y*log(lambda*E0) - (lambda*E0)
+    #loglik_i <- y*log(lambda*E0) - (lambda*E0)
+    loglik_i <- y*log(E0) - (lambda*E0)
     return(sum(loglik_i))
 }
 

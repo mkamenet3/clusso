@@ -101,6 +101,10 @@ system.time(resccs <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", m
 ```
 
 
+```{r}
+clussopretty(resccs, analysis="both", clusteridentify=FALSE)
+```
+
 
 
 

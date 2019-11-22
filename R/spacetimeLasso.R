@@ -47,9 +47,14 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
         }
         print("TODO")
         #lasso <- glmnet::cv.glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex), nlambda = 2000, 
+
                    #                standardize = FALSE, intercept=FALSE,dfmax = maxclust, 
                 #                   nfolds = cv, 
                  #                  penalty.factor = penalty) 
+
+        #                standardize = FALSE, intercept=FALSE,dfmax = maxclust, 
+        #                   nfolds = cv, 
+        #                  penalty.factor = penalty) 
     }
     else{
         message("Path selection: information criteria")
@@ -99,9 +104,10 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
         }
         else if(model=="binomial"){
             print("Binom post-process")
-            phat <-  sapply(1:length(lasso$lambda), function(i) invlogit(xbetaPath[,i]))
+            phat <-  sapply(1:length(lasso$lambda), function(i) phat(xbetaPath[,i]))
             mu <- sapply(1:length(lasso$lambda), function(i) exp(xbetaPath[,i]))
-            loglike <- sapply(1:length(lasso$lambda), function(i) sum(dbinom(Yx, Ex, phat[,i])))
+
+            loglike <- sapply(1:length(lasso$lambda), function(i) sum(dbin(Yx, Ex, phat[,i])))
             res <- spacetimeLassoBinom(lasso,coefs.lasso.all, loglike, mu, K, covars,
                                        Yx, Ex, Period, Time, n_uniq, maxclust)
         }
@@ -284,6 +290,32 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, covars, 
     if (numclust.qaic==(maxclust-Time)){
         message("The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.")
     }
+        
+        #QAIC
+        PLL.qaic <-  2*(K) - 2*(loglike)
+        select.qaic <- which.min(PLL.qaic)
+        E.qaic <- mu[,select.qaic]
+        exp_coefs_qaic <- c(exp(unique(lasso$beta[,select.qaic])),
+                            exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaic]))
+        numclust.qaic <- K[select.qaic]-Time 
+        
+        #QAICc
+        PLL.qaicc <- 2*(K) - 2*(loglike) +
+            ((2*K*(K + 1))/(n_uniq*Time - K - 1))
+        select.qaicc <- which.min(PLL.qaicc)
+        E.qaicc <- mu[,select.qaicc]
+        exp_coefs_qaicc <- c(exp(unique(lasso$beta[,select.qaicc])),
+                             exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaicc]))
+        numclust.qaicc <- K[select.qaicc]-Time 
+        
+        selections <- list(select.qbic=select.qbic,
+                           select.qaic = select.qaic,
+                           select.qaicc = select.qaic)
+    }
+    #warning if numclust similar to maxclust
+    if (numclust.qaic==(maxclust-Time)){
+        message("The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.")
+    }
     #Return only changepoints from lasso
     changepoints_ix <- which(diff(K)!=0) #Find lambda where new coef introduced
     lambda_changepoint <- lasso$lambda[changepoints_ix]
@@ -305,6 +337,8 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, covars, 
                 exp_coefs_qbic = exp_coefs_qbic, exp_coefs_qaic = exp_coefs_qaic, exp_coefs_qaicc = exp_coefs_qaicc,
                 selections = selections)
 }
+
+
 
 
 #' Selection via cross-validation

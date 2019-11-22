@@ -117,7 +117,11 @@ clusso <- function(clst, x,y,rMax, Time, utm=TRUE, longdat=TRUE, analysis = c("s
     else{
         warning("You have not specified a model. Please set 'model' argument to 'poisson' or 'binomial'.")
     }
+
 }
+
+    }
+
 
 #' Detect a cluster in space or spacetime using the LASSO: Poisson model
 #' @title
@@ -203,6 +207,7 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
                                             quasi=TRUE, maxclust, overdispfloor, cv)
         lassoresult.p.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, 
                                            quasi=FALSE, maxclust, overdispfloor, cv)
+
         message("All models ran successfully")
         #space time
         ##risk ratios
@@ -306,6 +311,7 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
         warning("Number of clusters detected by at least one criterion equals maxclust. Consider increasing maxclust.")
     }
 }
+
 
 #' Detect a cluster in space or spacetime using the LASSO: Binomial model
 #' @title
@@ -434,6 +440,7 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
     }
     else{
         #both
+
         lassoresult.p.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors,Time, 
                                            quasi=FALSE, maxclust, overdispfloor, cv)
         lassoresult.qp.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, 
@@ -493,8 +500,6 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
     
     
 }
-
-
 
 
 
