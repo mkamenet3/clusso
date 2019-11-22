@@ -1,30 +1,21 @@
 #' Binomial Function
-#' 
 #' @title dbinom
-#' @param linpred
+#' @param Yx Number of cases.
+#' @param Ex Total number of trials (or cases + controls).
+#' @param p Vector of stimated probability for each space-time location.
 #' @return Returns vector of Binomial log-likelihood for each proposed path of the LASSO tuning parameter values.
-#' 
 #' @example 
-#' set.seed(1)
 #' 
-# dbin <- function(x, n, phat){
-#     loglik_i <- x*log(phat) + (n-x)*log(1-phat) 
-#     return(sum(loglik_i))
-# }
+dbin <- function(Yx, Ex,p){
+    sum(dbinom(Yx, Ex, p,log=TRUE))
+}
 
-phat <- function(xbeta){
-    #phat<- exp(linpred)/(1+exp(linpred))
+
+#' Convert linear predictor to probability scale
+#' @title pihat
+#' @param xbeta Sparse matrix of potential space-time clusters times coefficient for each lasso path.
+#' @return Returns matrix of estimated probabilities for each space-time location by each lasso path.
+pihat <- function(xbeta){
     phat <- 1/(1+exp(-xbeta))
     return(phat)
 }
-
-logL <- function(Yx, Ex,p){
-    sum(dbinom(Yx, Ex, p,log=TRUE))
-}
-# # 
-# # pseq <- seq(0.01, 0.99, 0.01)
-# # logL(pseq)
-# # 
-# logL(0.5)
-# logL(0.4)
-# # test <- sapply(1:341, function(i) logL(phat[,i]))

@@ -104,7 +104,7 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
         }
         else if(model=="binomial"){
             print("Binom post-process")
-            phat <-  sapply(1:length(lasso$lambda), function(i) phat(xbetaPath[,i]))
+            phat <-  sapply(1:length(lasso$lambda), function(i) pihat(xbetaPath[,i]))
             loglike <- sapply(1:length(lasso$lambda), function(i) sum(dbin(Yx, Ex, phat[,i])))
             res <- spacetimeLassoBinom(lasso,coefs.lasso.all, loglike, mu, K, covars,
                                        Yx, Ex, Period, Time, n_uniq, maxclust)
