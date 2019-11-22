@@ -45,16 +45,18 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
         else{
             penalty <- c(rep(1,(ncol(sparseMAT)-Time)), rep(0,Time))    
         }
-        print("TODO")
-        #lasso <- glmnet::cv.glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex), nlambda = 2000, 
-
-                   #                standardize = FALSE, intercept=FALSE,dfmax = maxclust, 
-                #                   nfolds = cv, 
-                 #                  penalty.factor = penalty) 
-
-        #                standardize = FALSE, intercept=FALSE,dfmax = maxclust, 
-        #                   nfolds = cv, 
-        #                  penalty.factor = penalty) 
+        if(model=="poisson"){
+            lasso <- glmnet::cv.glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex), nlambda = 2000,
+                                       standardize = FALSE, intercept=FALSE,dfmax = maxclust,
+                                       nfolds = cv,
+                                       penalty.factor = penalty)
+        }
+        else if(model=="binomial"){
+            lasso <- glmnet::cv.glmnet(sparseMAT, cbind((Ex-Yx),Yx), family=("binomial"), alpha=1, nlambda = 2000,
+                                       standardize = FALSE, intercept=FALSE,dfmax = maxclust,
+                                       nfolds = cv,
+                                       penalty.factor = penalty)
+        }
     }
     else{
         message("Path selection: information criteria")
@@ -65,14 +67,14 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
             penalty <- c(rep(1,(ncol(sparseMAT)-Time)), rep(0,Time))    
         }
         if(model=="poisson"){
-            print("Model poisson selected in spacetimeLasso")
+            #print("Model poisson selected in spacetimeLasso")
             lasso <- glmnet::glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex), 
                                     nlambda = 2000,
                                     standardize = FALSE, intercept=FALSE,dfmax = maxclust,
                                     penalty.factor = penalty)    
         }
         else if(model=="binomial"){
-            print("Model binomial selected in spacetimeLasso")
+            #print("Model binomial selected in spacetimeLasso")
             lasso <- glmnet::glmnet(sparseMAT, cbind((Ex-Yx),Yx), family=("binomial"), alpha=1, 
                                     nlambda = 2000,
                                     standardize = FALSE, intercept=FALSE,dfmax = maxclust,
@@ -94,8 +96,8 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
     }
     #information criteria selection version:
     else{
-        print("Pois post-process")
-        print(paste0("quasi: ",quasi))
+        #print("Pois post-process")
+        #print(paste0("quasi: ",quasi))
         if(model=="poisson"){
             mu <- sapply(1:length(lasso$lambda), function(i) exp(xbetaPath[,i]))
             loglike <- sapply(1:length(lasso$lambda), function(i) sum(dpoisson(Yx, mu[,i],Ex)))
@@ -103,7 +105,7 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
                                       covars,Yx, Ex, Period, Time, n_uniq, overdispfloor, maxclust)
         }
         else if(model=="binomial"){
-            print("Binom post-process")
+            #print("Binom post-process")
             phat <-  sapply(1:length(lasso$lambda), function(i) pihat(xbetaPath[,i]))
             loglike <- sapply(1:length(lasso$lambda), function(i) sum(dbin(Yx, Ex, phat[,i])))
             res <- spacetimeLassoBinom(lasso,coefs.lasso.all, loglike, K, quasi,covars,
