@@ -93,48 +93,40 @@ overdispfloor <- TRUE
 
 ### Running the models
 
-The first step is to create a `clst` object using the `toclusso()` function. By applying `str()` to `clst`, we see that the `clst` object neatly organizes the data into required covariates (expected counts, observed counts, and timeperiod are required), and other covariates (omitted here). If you have additional covariates, additional covariates will be included in the model and will not be penalized under the LASSO (see below *Real Data Example with Covariates*).
 
 
-```{r}
-clst <- toclusso(jbc, expected = expdeath, observed=death,timeperiod = period)
-class(clst)
-str(clst)
-```
+If you do not have expected counts readily available, they can be calculated using the auxiliary function `calcexpected()`, from the `clusso` package.
 
-
-
-The first argument is the `clst` object created above, which contains the observed counts, expected counts, and respective time period (as a categorical factor). These are part of the required data. If there are additional covariates we want to include in our model (to be excluded from being penalized by the lasso), then we can include them in the `toclusso()` function.
-
-The next two arguments are `x` and `y`, which are the UTM easting and northing coordinates, scaled to be in kilometers. 
-
-The fourth argument is the number of time periods measurements were taken during (`Time`, or 5 in our data). 
-
-The fifth argument species that our coordinates are indeed UTM. The default is lat/lon coordinates.
-
-The sixth argument is `analysis`. The only current option is `both`, which will perform both the spatial and spatio-temporal analyses. 
-The final required argument is `maxclust`. This is the maximum number of actual clusters expected in the given area. This is based on scientific knowledge of the area. For the japanese breast cancer data, we set `maxclust=11`. If the number of identified clusters exceeds `maxclust`, a warning will encourage you to increase your set `maxclust`.
-
-
-For additional functionality, if you do not have expected counts readily available, they can be calculated using the auxiliary function `calcexpected()`, from the `clusso` package.
+As an example, we generate some data and apply `calcexpected()`. The output is a dataframe with an additional variable, `expected`, which contains the expected counts:
 
 ```{r}
-head(calcexpected(jbc$death, factor(jbc$period), factor(jbc$id), family="poisson"))
+set.seed(2)
+period <- rep(c("1","2"), times=5)
+observed <- MASS::rnegbin(n = length(period), mu=20, theta=2)
+pop <-  MASS::rnegbin(n = length(period), mu=200, theta=2)
+ids <- rep(1:5, each=2)
+
+calcexpected(observed, pop, period, ids)
 ```
 
-To perform the LASSO-based cluster detection, we use the function `clusso()`. 
+To perform the LASSO-based cluster detection, we use the function `clusso()`. In the first argument, we set the name of the dataframe, `df=jbc`. In the second argument we set the expected counts equal to the name of expected counts in the `jbc` dataframe (`expected = expdeath`). In the third argument, we set the observed counts equal to the name of the observed counts in the `jbc` dataframe (`observed = death`). In the fourth argument, we set the timeperiod equal to the name of the time periods in the `jbc` dataframe and also convert it to a factor in one step (`timeperiod = factor(period)`). In this example, we do not want to include other covariates as un-penalized terms in the model so we set `covars = FALSE`. 
+
+The next two arguments are `x` and `y`, which are the UTM easting and northing coordinates, scaled to be in kilometers. The next argument is the maximum radius (in km) for the potential clusters. We set `rMax = rMax`, which we defined above as 20km. 
+The argument `utm` specifies that our coordinates are indeed in UTM coordinates (`utm = TRUE`). For lat/lon coordinates, we would set `utm = FALSE`. The is `analysis` arugment defines the type of analysis to be performed. Options include `space`, `spacetime`, or `both`. Here, we set  `analysis` equal to "both", which will perform both the spatial and spatio-temporal analyses. The argument `model` is the type of model to be used. Currently (2019-11-25), either the Poisson or binomial models can be specified. In this example, we specify the Poisson model. The final required argument is `maxclust`. This is the maximum number of actual clusters expected in the given area. This is based on scientific knowledge of the area. For the Japanese breast cancer data, we set `maxclust=11`. If the number of identified clusters exceeds `maxclust`, a warning will encourage you to increase your set `maxclust`.
 
 The output of `clusso()` is assigned to the object `resreal`. `resreal` is a large list of lists. The recommended way to explore the results is to explore the `names(resreal)` and select each sub-list of interest.
 
 ```{r}
-system.time(resreal <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", model="poisson",maxclust=11))
+head(jbc)
 
+system.time(resreal <- clusso(df=jbc, expected = expdeath, observed=death,timeperiod = factor(period), covars=FALSE,
+             x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11))
 ```
 
 We can also use the function `clussopretty()` to create a nice table for the number of clusters detected:
 
 ```{r}
-clussopretty(resreal, analysis="both", clusteridentify=FALSE)
+clussopretty(resreal, analysis="both", model="poisson",clusteridentify=FALSE)
 
 names(clussopretty(resreal, analysis="both", clusteridentify=TRUE))
 
