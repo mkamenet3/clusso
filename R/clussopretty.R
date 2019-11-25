@@ -31,15 +31,17 @@
 
 clussopretty <- function(outclusso, analysis="both", model = c("poisson", "binomial"), clusteridentify=FALSE, clusterRR, cv=FALSE){
     err <- 1e-4
-    if(model=="poisson"){
-        model <- c("Poisson", "Quasi-Poisson")
-    }
-    else if (model=="binomial"){
-        model <- c("Binomial", "Quasi-Binomial")
-    }
-    else{
+    
+    if (length(model)>1){
         stop("You must select either `poisson` or `binomial`")
     }
+    else if(model=="poisson"){
+        model <- c("Poisson", "Quasi-Poisson")
+    }
+    else if(model=="binomial"){
+        model <- c("Binomial", "Quasi-Binomial")
+    }
+    else {stop("Unknown model type. If you think this was by error, please submit an issue.")}
     if(cv==TRUE){
     #cv version
         if(analysis=="space"){
