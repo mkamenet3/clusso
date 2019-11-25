@@ -29,7 +29,7 @@
 
 setVectors <- function(period, expect, observed, covars, Time, byrow=TRUE) {
     if (byrow==TRUE){
-        if(period[1] == period[2]) warning("Please check the format of the data, you may want longdat=FALSE. It appears that the time periods appear sequentially")
+        if(period[1] == period[2]) warning("Please check the format of the data, you may want sort data by geographic id and then time period. It appears that the data is sorted by time period only.")
         E0=as.vector(matrix(expect, byrow=TRUE, ncol=Time))
         Y.vec <- as.vector(matrix(observed,byrow=TRUE, ncol=Time))
         Year <- as.vector(matrix(period, byrow=TRUE, ncol=Time)) 
@@ -41,7 +41,6 @@ setVectors <- function(period, expect, observed, covars, Time, byrow=TRUE) {
         }
     }
     else {
-        if(period[1] != period[2]) warning("Please check the format of the data, you may want byrow=TRUE. It appears that the time periods do not appear sequentially")
         E0=as.vector(matrix(expect, ncol=Time))
         Y.vec <- as.vector(matrix(observed, ncol=Time))
         Year <- as.vector(matrix(period, ncol=Time))
