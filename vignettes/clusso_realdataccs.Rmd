@@ -84,25 +84,22 @@ Time <- 5
 
 ### Running the models
 
-The first step is to create a `clst` object using the `toclusso()` function. By applying `str()` to `clst`, we see that the `clst` object neatly organizes the data into required covariates (expected counts, observed counts, and timeperiod are required), and other covariates (omitted here). If you have additional covariates, additional covariates will be included in the model and will not be penalized under the LASSO (see below *Real Data Example with Covariates*).
 
-
-```{r}
-clst <- toclusso(ccsjbc, expected = n, observed=numcases,timeperiod = period)
-class(clst)
-str(clst)
-```
 
 The output of `clusso()` is assigned to the object `resreal`. `resreal` is a large list of lists. The recommended way to explore the results is to explore the `names(resreal)` and select each sub-list of interest.
 
 ```{r}
-system.time(resccs <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", model="binomial",maxclust=11))
+head(ccsjbc)
+
+system.time(resreal <- clusso(df=ccsjbc, expected = n, observed = numcases,timeperiod = factor(period), covars=FALSE,
+             x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="binomial",maxclust=11))
+#system.time(resccs <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", model="binomial",maxclust=11))
 
 ```
 
 
 ```{r}
-clussopretty(resccs, analysis="both", clusteridentify=FALSE)
+clussopretty(resccs, analysis="both", model="binomial",clusteridentify=FALSE)
 ```
 
 
