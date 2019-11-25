@@ -26,14 +26,14 @@ toclusso <- function(df, expected, observed, timeperiod, covars=FALSE, id=NULL){
     else{
         covars <- TRUE
     }
-    expect <- eval(substitute(expected),df)
-    observe <- eval(substitute(observed),df)
-    period <- eval(substitute(timeperiod),df)
+    # expect <- eval(substitute(expected),df)
+    # observe <- eval(substitute(observed),df)
+    # period <- eval(substitute(timeperiod),df)
     
-    if(inherits(df,"data.frame") == FALSE){
-        stop("Input must be a dataframe with clearly labeled covariates")
-    }
-    if(is.null(expect) | is.null(observe) | is.null(period)){
+    # if(inherits(df,"data.frame") == FALSE){
+    #     stop("Input must be a dataframe with clearly labeled covariates")
+    # }
+    if(is.null(expected) | is.null(observed) | is.null(timeperiod)){
         stop("Must supply expected, observed, and timeperiod data for clusso() to run.")
     }
     if(inherits(period, "factor") == FALSE){
@@ -42,31 +42,20 @@ toclusso <- function(df, expected, observed, timeperiod, covars=FALSE, id=NULL){
                       paste(as.character(unique(levels(period))), collapse = ","),
                       ". Please check that this is correct before proceeding."))
     }
-    if(length(expect) != length(observe) | length(expect) != length(period) | length(observe)!=length(period)){
+    if(length(expected) != length(observed) | length(expected) != length(timeperiod) | length(observed)!=length(timeperiod)){
         stop("Lengths of at least one of the three required parameters (expected, observed, timeperiod) are not equal. Please check your data.")
     }
     
-    # if(!is.null(id)){
-    #     ids <- substitute(id)
-    #     print('a')
-    # }
-    # else{
-    #     ids <- NULL
-    #     print('b')
-    # }
-    # print("id:", id)
+
     requiredcolNames <- c(substitute(expected),
       substitute(observed),
       substitute(timeperiod),
       substitute(id))
 
     reqix <- which(names(df) %in% requiredcolNames)
-    #print(requiredcolNames)
-    #print(names(df))
-    #print(reqix)
-    required_df <- cbind.data.frame(expected = expect, 
-                                    observed = observe,
-                                    timeperiod = period)
+    required_df <- cbind.data.frame(expected = expected, 
+                                    observed = observed,
+                                    timeperiod = timeperiod)
     if(covars==TRUE){
         othercovariates_df <- df[,-reqix]
     }
