@@ -215,24 +215,24 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
     if (numclust.qaic==(maxclust-Time)){
         message("The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.")
     }
-    #Return only changepoints from lasso
-    changepoints_ix <- which(diff(K)!=0) #Find lambda where new coef introduced
-    lambda_changepoint <- lasso$lambda[changepoints_ix]
-    #QIC
-    coefs_qbic <- coefs.lasso.all[which(coefs.lasso.all[,select.qbic]!=0), changepoints_ix]
-    coefs_qaic <-  coefs.lasso.all[which(coefs.lasso.all[,select.qaic]!=0), changepoints_ix]
-    coefs_qaicc <- coefs.lasso.all[which(coefs.lasso.all[,select.qaicc]!=0), changepoints_ix]
-    
-    lasso_out <- list(
-        lambdas = lambda_changepoint,
-        coefs_bic = coefs_qbic,
-        coefs_aic = coefs_qaic,
-        coefs_aicc = coefs_qaicc
-    )
+    # #Return only changepoints from lasso
+    # changepoints_ix <- which(diff(K)!=0) #Find lambda where new coef introduced
+    # lambda_changepoint <- lasso$lambda[changepoints_ix]
+    # #QIC
+    # coefs_qbic <- coefs.lasso.all[which(coefs.lasso.all[,select.qbic]!=0), changepoints_ix]
+    # coefs_qaic <-  coefs.lasso.all[which(coefs.lasso.all[,select.qaic]!=0), changepoints_ix]
+    # coefs_qaicc <- coefs.lasso.all[which(coefs.lasso.all[,select.qaicc]!=0), changepoints_ix]
+    # 
+    # lasso_out <- list(
+    #     lambdas = lambda_changepoint,
+    #     coefs_bic = coefs_qbic,
+    #     coefs_aic = coefs_qaic,
+    #     coefs_aicc = coefs_qaicc
+    # )
     
     res <- list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, numclust.qaic = numclust.qaic,
                 numclust.qaicc = numclust.qaicc, numclust.qbic= numclust.qbic, Ex = Ex, Yx = Yx, 
-                lasso = lasso, lasso_out=lasso_out,K = K, coefs.lasso.all = coefs.lasso.all,
+                lasso = lasso, K = K, coefs.lasso.all = coefs.lasso.all,
                 exp_coefs_qbic = exp_coefs_qbic, exp_coefs_qaic = exp_coefs_qaic, exp_coefs_qaicc = exp_coefs_qaicc,
                 selections = selections)
 }
@@ -347,23 +347,23 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, K, quasi,covars
         message("The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.")
     }
     #Return only changepoints from lasso
-    changepoints_ix <- which(diff(K)!=0) #Find lambda where new coef introduced
-    lambda_changepoint <- lasso$lambda[changepoints_ix]
-    #QIC
-    coefs_qbic <- coefs.lasso.all[which(coefs.lasso.all[,select.qbic]!=0), changepoints_ix]
-    coefs_qaic <-  coefs.lasso.all[which(coefs.lasso.all[,select.qaic]!=0), changepoints_ix]
-    coefs_qaicc <- coefs.lasso.all[which(coefs.lasso.all[,select.qaicc]!=0), changepoints_ix]
-    
-    lasso_out <- list(
-        lambdas = lambda_changepoint,
-        coefs_bic = coefs_qbic,
-        coefs_aic = coefs_qaic,
-        coefs_aicc = coefs_qaicc
-    )
+    # changepoints_ix <- which(diff(K)!=0) #Find lambda where new coef introduced
+    # lambda_changepoint <- lasso$lambda[changepoints_ix]
+    # #QIC
+    # coefs_qbic <- coefs.lasso.all[which(coefs.lasso.all[,select.qbic]!=0), changepoints_ix]
+    # coefs_qaic <-  coefs.lasso.all[which(coefs.lasso.all[,select.qaic]!=0), changepoints_ix]
+    # coefs_qaicc <- coefs.lasso.all[which(coefs.lasso.all[,select.qaicc]!=0), changepoints_ix]
+    # 
+    # lasso_out <- list(
+    #     lambdas = lambda_changepoint,
+    #     coefs_bic = coefs_qbic,
+    #     coefs_aic = coefs_qaic,
+    #     coefs_aicc = coefs_qaicc
+    # )
     
     res <- list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, numclust.qaic = numclust.qaic,
                 numclust.qaicc = numclust.qaicc, numclust.qbic= numclust.qbic, Ex = Ex, Yx = Yx, 
-                lasso = lasso, lasso_out=lasso_out,K = K, coefs.lasso.all = coefs.lasso.all,
+                lasso = lasso,K = K, coefs.lasso.all = coefs.lasso.all,
                 exp_coefs_qbic = exp_coefs_qbic, exp_coefs_qaic = exp_coefs_qaic, exp_coefs_qaicc = exp_coefs_qaicc,
                 selections = selections)
 }
