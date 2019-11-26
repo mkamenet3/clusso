@@ -6,18 +6,15 @@
 #' Creates \code{clst} object for creating potential spatial and spatio-temporal clusters. This function creates a \code{clst} 
 #' object which will contain the expected, observed, and timeperiod information necessary to run \pkg{clusso}.
 #' If dataframe is fed in, assumes panel format - see \code{vignette} for details. 
-#' @param df name of dataframe.
+#' @param df Name of dataframe.
 #' @param expected Name of variable that contains the expected counts.
 #' @param observed Name of variable that contains the observed counts.
 #' @param timeperiod Name of variable that contains the timeperiod in which counts were observed (as factor). 
 #' If spatial-only analysis, create a column that has a single value (ex: "Time1") and convert this to a factor.
-#' @param covars are there additional covariates in the dataframe beyond the three required? If so, set to \code{TRUE}. Default is \code{FALSE}.
+#' @param covars Are there additional covariates in the dataframe beyond the three required? If so, set to \code{TRUE}. Default is \code{FALSE}.
 #' @param id Optional. If your dataframe contains an ID variable that should not be a covariate, set the name here.
-#' @return \code{clst} object
+#' @return \code{clst} object; list of lists. First element of list (called required_df) contains the expected, observed, and time period vectors in a dataframe. The second element (called othercovariates_df) is a dataframe containing covariates that should not be penalized in the model. The second element is \code{NULL} if no other covariates are adjusted for in the model.
 #' @export
-#'@examples
-#'\donttest{
-#'clst <- toclusso(jbc, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)}
 
 toclusso <- function(df, expected, observed, timeperiod, covars=FALSE, id=NULL){
     if((missing(covars) | covars==FALSE)){
@@ -26,13 +23,7 @@ toclusso <- function(df, expected, observed, timeperiod, covars=FALSE, id=NULL){
     else{
         covars <- TRUE
     }
-    # expect <- eval(substitute(expected),df)
-    # observe <- eval(substitute(observed),df)
-    # period <- eval(substitute(timeperiod),df)
-    
-    # if(inherits(df,"data.frame") == FALSE){
-    #     stop("Input must be a dataframe with clearly labeled covariates")
-    # }
+
     if(is.null(expected) | is.null(observed) | is.null(timeperiod)){
         stop("Must supply expected, observed, and timeperiod data for clusso() to run.")
     }

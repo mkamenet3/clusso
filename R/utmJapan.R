@@ -10,8 +10,8 @@
 #' @format An object of class "data.frame" with 208 rows and 3 variables:
 #' \itemize{
 #'     \item id: identifier for each centroid location.
-#'     \item utmx: easting
-#'     \item utmy: northing
+#'     \item utmx: easting (x-coordinate).
+#'     \item utmy: northing (y-coordinate).
 #' }
 #' 
 #' @keywords datasets
