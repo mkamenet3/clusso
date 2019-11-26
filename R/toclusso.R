@@ -27,9 +27,9 @@ toclusso <- function(df, expected, observed, timeperiod, covars=FALSE, id=NULL){
     if(is.null(expected) | is.null(observed) | is.null(timeperiod)){
         stop("Must supply expected, observed, and timeperiod data for clusso() to run.")
     }
-    if(inherits(period, "factor") == FALSE){
-        period <- as.factor(period)
-        warning(paste("timeperiod argument was not supplied as a factor. I've converted it to have these levels:", 
+    if(inherits(timeperiod, "factor") == FALSE){
+        timeperiod <- as.factor(timeperiod)
+        warning(paste("Argument timeperiod was not supplied as a factor. I've converted it to have these levels:", 
                       paste(as.character(unique(levels(timeperiod))), collapse = ","),
                       ". Please check that this is correct before proceeding."))
     }
