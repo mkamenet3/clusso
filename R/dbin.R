@@ -2,7 +2,7 @@
 #' @title dbinom
 #' @param Yx Number of cases.
 #' @param Ex Total number of trials (or cases + controls).
-#' @param p Vector of stimated probability for each space-time location.
+#' @param p Vector of estimated probabilities for each space-time location.
 #' @return Returns vector of Binomial log-likelihood for each proposed path of the LASSO tuning parameter values.
 #' @example 
 #' 

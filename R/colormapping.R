@@ -2,7 +2,7 @@
 #' Color-mapping of risk ratios to red-blue gradient
 #' @description 
 #' This function establishes the spread of reds and blues for the risk ratios to be mapped to. Higher risk ratios will be deeper red colors and lower risk ratios will be deeper blue colors.
-#' @param x this will be the risk ratios shrunk to be on the scale of half risk to twice the risk as end points.
+#' @param x Risk ratios shrunk to be on the scale of half risk to twice the risk as end points.
 #' @export
 #' @return colors
 redblue=function(x) { 
@@ -15,7 +15,7 @@ redblue=function(x) {
 #' greys
 #' 
 #' This function establishes the spread of grey scale for probabilities to be mapped to. Higher probabilities will be darker and lower probabilities will be lighter colors.
-#' @param x vectors of probabilities to be mapped
+#' @param x Vector of probabilities to be mapped.
 #' @return colors
 greys=function(x) { 
     y=colorRamp(RColorBrewer::brewer.pal(9,"Greys")[1:9])(x); rgb(y[,1],y[,2],y[,3],maxColorValue = 255) 
@@ -26,7 +26,7 @@ greys=function(x) {
 #' reds
 #' 
 #' This function shows scale of red; used to create the legend for rr maps
-#' @param x vector to be mapped
+#' @param x Vector of probabilities to be mapped.
 #' @return colors
 reds=function(x) { 
     y=colorRamp(RColorBrewer::brewer.pal(9,"Reds")[1:9])(x); rgb(y[,1],y[,2],y[,3],maxColorValue = 255)
@@ -37,7 +37,7 @@ reds=function(x) {
 #' blues
 #' 
 #' This function shows scale of blue; used to create the legend for rr maps
-#' @param x vector to be mapped
+#' @param x Vector of probabilities to be mapped.
 #' @return colors
 blues=function(x) { 
     y=colorRamp(RColorBrewer::brewer.pal(9,"Blues")[1:9])(x); rgb(y[,1],y[,2],y[,3],maxColorValue = 255) 
@@ -47,14 +47,14 @@ blues=function(x) {
 #' colormapping
 #' 
 #' This function establishes the spread of reds and blues for the risk ratios to be mapped to. Higher risk ratios will be deeper red colors and lower risk ratios will be deeper blue colors.
-#' @param rate this will be the risk ratios shrunk to be on the scale of half risk to twice the risk as end points.
-#' @param Time how many time periods are in the model? If this is only a spatial model, then time is set to 1
-#' @param cv triggered if cross-validation model run on real data
-#' @param prob TRUE or FALSE depending on if you want to map probabilities or not (default is to map RR)
-#' @return returns vectors ofcolors for each time period, where risk ratios have been constrained to be between half risk and twice the risk
+#' @param rate Risk ratios shrunk to be on the scale of half risk to twice the risk as end points.
+#' @param Time Number of timeperiods in the dataset. This is calculated based on the number of unique timeperiods (factor levels) supplied to \code{clusso}.
+#' @param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
+#' @param prob If \code{TRUE}, probabilities will be mapped. If \code{FALSE}, risk ratios will be mapped. Default is \code{FALSE}.
+#' @return Returns vectors ofcolors for each time period, where risk ratios (or probabilities). 
 #' @export
 
-colormapping <- function(rate,Time,cv, prob) {
+colormapping <- function(rate,Time,cv, prob=FALSE) {
     if(!is.null(cv)){
         #assign
         rcv <- eval(rate)[[1]]
@@ -95,14 +95,6 @@ colormapping <- function(rate,Time,cv, prob) {
             color.qbic <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(rbic[,i],2)))/log(4)))
             color.qaic <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(raic[,i],2)))/log(4)))
             color.qaicc <- sapply(1:Time, function(i) redblue(log(2*pmax(1/2,pmin(raicc[,i],2)))/log(4)))
-            # color.obs <- sapply(1:Time, function(i) redblue(log(1.5 * pmax((1/1.5), pmin(robs[, i], 1.5)))/log(2.25)))
-            # color.qbic <- sapply(1:Time, function(i) redblue(log(1.5 * pmax((1/1.5), pmin(rbic[, i], 1.5)))/log(2.25)))
-            # color.qaic <- sapply(1:Time, function(i) redblue(log(1.5 * pmax((1/1.5), pmin(raic[, i], 1.5)))/log(2.25)))
-            # color.qaicc <- sapply(1:Time, function(i) redblue(log(1.5 * pmax((1/1.5), pmin(raicc[, i], 1.5)))/log(2.25)))
-            # color.obs <- sapply(1:Time, function(i) redblue(log(1.2 * pmax((1/1.2), pmin(robs[, i], 1.2)))/log(1.44)))
-            # color.qbic <- sapply(1:Time, function(i) redblue(log(1.2 * pmax((1/1.2), pmin(rbic[, i], 1.2)))/log(1.44)))
-            # color.qaic <- sapply(1:Time, function(i) redblue(log(1.2 * pmax((1/1.2), pmin(raic[, i], 1.2)))/log(1.44)))
-            # color.qaicc <- sapply(1:Time, function(i) redblue(log(1.2 * pmax((1/1.2), pmin(raicc[, i], 1.2)))/log(1.44)))
             res <- list(colors.obs = color.obs, color.qbic = color.qbic, color.qaic = color.qaic, color.qaicc = color.qaicc)
             
         }

@@ -9,7 +9,7 @@
 #'@param periods Vector of time periods matching observed counts. 
 #'@param ids Vector of centroid identifiers matching the observed counts.
 #'@export
-#'@return Returns a dataframe of geographic ids, time periods, observed counts, and expected counts.
+#'@return Returns a dataframe of geographic ids, time periods, population counts, observed counts, and expected counts.
 #'@examples
 #'\donttest{
 #'data(japanbreastcancer)
@@ -24,6 +24,6 @@ calcexpected <- function(observed, population,periods, ids){
     }
     rate <- sum(observed)/sum(population)
     expected <- population*rate
-    dat <- cbind.data.frame(ids, periods, observed, expected)
+    dat <- cbind.data.frame(ids, periods, population, observed, expected)
     return(dat)
 }

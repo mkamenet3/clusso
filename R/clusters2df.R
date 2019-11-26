@@ -2,11 +2,10 @@
 #' 
 #' @param xP vector of x coordinates (easting/latitude); if utm coordinates, scale to km.
 #' @param yP vector of y coordinates (northing/longitude); if utm coordinates, scale to km.
-#' @param r.max set max radius (in km)
-#' @param utm TRUE/FALSE as to whether or not the x and y coordinates are in UTM (TRUE) or LAT/LONG(FALSE)
-#' @param n Number of coordinate pairs/number of centers
-#' @return This function returns a dataframe that contains 
-#' @export
+#' @param r.max Maximum radius for potential clusters (in km).
+#' @param utm TRUE/FALSE as to whether or not the x and y coordinates are in UTM (TRUE) or LAT/LONG(FALSE).
+#' @param n Number of coordinate pairs/number of centers.
+#' @return This function returns a dataframe that contains. 
 #' @examples
 #' rMax = 20
 #' #utm example
