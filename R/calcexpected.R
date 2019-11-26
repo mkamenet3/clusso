@@ -5,11 +5,11 @@
 #' @description
 #' Expected counts can be estimated if not available, following selected distribution function
 #'@param observed Vector of observed counts.
-#'@param population vector of population sizes in each geographic unit.
+#'@param population Vector of population sizes in each geographic unit.
 #'@param periods Vector of time periods matching observed counts. 
 #'@param ids Vector of centroid identifiers matching the observed counts.
 #'@export
-#'@return returns vector of expected counts
+#'@return Returns a dataframe of geographic ids, time periods, observed counts, and expected counts.
 #'@examples
 #'\donttest{
 #'data(japanbreastcancer)

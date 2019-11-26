@@ -6,24 +6,24 @@
 #'clusso
 #' @description
 #' Runs helper function for both the space and space-time Lasso model on observed data. 
-#'@param df name of dataframe.
+#'@param df Name of dataframe.
 #'@param expected Name of variable that contains the expected counts.
 #'@param observed Name of variable that contains the observed counts.
 #'@param timeperiod Name of variable that contains the timeperiod in which counts were observed (as factor). If this is variable is not a factor in the dataframe, then it will be automatically converted to one by \code{clusso()} with a warning message.
 #'@param covars Boolean - are there additional covariates in the dataframe beyond the three required? If so, set to \code{TRUE}. Default is \code{FALSE}.
-#'@param id Optional. If your dataframe contains an ID variable that should not be a covariate, set the name here. If you have excluded the ID from the dataset already, then ignore.
+#'@param id Optional. If your dataframe contains an ID variable that should not be a covariate, set the name here. If you have excluded the ID from the dataset already, then ignore (or better, explicitly set to \code{NULL}).
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
 #'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
-#'@param rMax Set max radius (in km).
-#'@param utm Default is \code{TRUE}. If \code{FALSE}, then coordinates will be interpreted as Longitude/Latitude and the Haversine formula will be used to determine the distance between points.
-#'@param analysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}. 
-#'@param model A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"}.
-#'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{11}.
-#'@param overdispfloor overdispfloor default is \code{TRUE}. When TRUE, it limits \eqn{\phi1} (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under-dispersion in the model.
+#'@param rMax Set maximum radius for potential clusters (in km).
+#'@param utm Default is \code{TRUE} (coordinates are in the Universal Transverse Mercator (UTM) coordinate system). If \code{FALSE}, then coordinates will be interpreted as Longitude/Latitude and the Haversine formula will be used to determine the distance between points.
+#'@param analysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.  
+#'@param model A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.
+#'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in \code{glmnet}. If none supplied, default is \code{11}.
+#'@param overdispfloor Default is \code{TRUE}. When \code{TRUE}, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If \code{FALSE}, it will allow for under-dispersion in the model.
 #'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
 #'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time. 
 #'@export
-#'@return returns list of cluster detection results ready to plot
+#'@return Returns list of cluster detection results ready to analyze and plot.
 #'@examples
 #'\donttest{
 #'#load data
@@ -35,9 +35,7 @@
 #'x <- utmJapan$utmx/1000
 #'y <- utmJapan$utmy/1000
 #'rMax <- 20 
-#'Time <- 5
-#'overdispfloor <- TRUE
-#system.time(resreal2 <- clusso2(jbc, expected = expdeath, observed=death,timeperiod = factor(period), covars=FALSE, x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11))
+#system.time(resreal2 <- clusso(df=jbc, expected = expdeath, observed=death,timeperiod = factor(period), covars=FALSE,x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11))
 
 
 clusso <- function(df, expected, observed, timeperiod,covars,id= NULL,x,y,rMax, utm=TRUE, analysis = c("space","spacetime", "both"),model = c("poisson", "binomial"),maxclust = 11,overdispfloor=TRUE, cv = NULL, collapsetime=FALSE){
@@ -76,20 +74,11 @@ clusso <- function(df, expected, observed, timeperiod,covars,id= NULL,x,y,rMax, 
         message("Coordinates are assumed to be in lat/long coordinates. For UTM coordinates, please specify 'utm=TRUE' or leave empty for default (TRUE).")
         utm=FALSE
     }
-    # if((missing(longdat) | longdat==TRUE)){
-    #     longdat=TRUE
-    # }
-    # else{
-    #     longdat=FALSE
-    #     #message("Data assumed to be in panel data. To use vector data instead, please specify 'longdat=FALSE'")
-    # }
     if(missing(maxclust)){
         maxclust = 11 + Time
-        #print(maxclust)
     }
     else{
         maxclust = maxclust + Time
-        #print(maxclust)
     }
     if((missing(overdispfloor) | overdispfloor==TRUE)){
         overdispfloor <- TRUE
@@ -116,7 +105,6 @@ clusso <- function(df, expected, observed, timeperiod,covars,id= NULL,x,y,rMax, 
     if(length(analysis) > 1) stop("You must select either `space`, `spacetime`, or `both`")
     analysis <- match.arg(analysis, several.ok = FALSE)
     if(model=="poisson"){
-        #print("Poisson models initiated")
         switch(analysis, 
                space = clussoPois(analysis="space",x, y, rMax,period, expected, observed, covars, 
                                   Time, utm,  maxclust,overdispfloor, cv, collapsetime),
@@ -126,7 +114,6 @@ clusso <- function(df, expected, observed, timeperiod,covars,id= NULL,x,y,rMax, 
                                  Time, utm,  maxclust,overdispfloor, cv, collapsetime))
     }
     else if(model=="binomial"){
-        #print("Binomial models initiated")
         switch(analysis, 
                space = clussoBinom(analysis="space",x, y, rMax,period, expected, observed, covars,
                                    Time, utm, maxclust, cv, collapsetime),
@@ -139,7 +126,7 @@ clusso <- function(df, expected, observed, timeperiod,covars,id= NULL,x,y,rMax, 
         warning("You have not specified a model. Please set 'model' argument to 'poisson' or 'binomial'.")
     }
     
-    }
+}
 
 
 #' Detect a cluster in space or spacetime using the LASSO: Poisson model
@@ -148,18 +135,18 @@ clusso <- function(df, expected, observed, timeperiod,covars,id= NULL,x,y,rMax, 
 #' @description 
 #'This function runs both the space and space-time LASSO poisson model. This function is to be run on observed data. A separate function (clusso) is the helper function which will have 
 #'flexibility to specify the space or spacetime or both models to be run.
-#'@param analysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}. 
+#'@param analysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.  
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
 #'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
-#'@param rMax set max radius (in km)
-#'@param period vector of periods or years in data set. Should be imported as a factor.
-#'@param expected vector of expected counts. Expected counts must match up with the year and observed vectors.
-#'@param observed vector of observed counts. Observed counts must match up with the year and expected vectors.
-#'@param covars matrix of covariates.
-#'@param Time Number of time periods or years in your dataset. Must be declared as numeric.
-#'@param utm default is \code{TRUE}. If \code{FALSE}, then coordinates will be interpreted as Longitude/Latitude and the haversine formula will be used to determine the distance between points.
-#'@param overdispfloor overdispfloor default is \code{TRUE}. When TRUE, it limits \eqn{\phi1} (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under-dispersion in the model.
-#'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{11}.
+#'@param rMax Set maximum radius for potential clusters (in km).
+#'@param period Vector of timeperiods in the data set. If this is variable is not a factor in the dataframe, then it will be automatically converted to one by \code{clusso()} with a warning message.
+#'@param expected Vector of expected counts.
+#'@param observed Vector of observed counts. 
+#'@param covars Matrix of covariates.
+#'@param Time Number of timeperiods in the dataset. This is calculated based on the number of unique timeperiods (factor levels) supplied to \code{clusso}.
+#'@param utm Default is \code{TRUE} (coordinates are in the Universal Transverse Mercator (UTM) coordinate system). If \code{FALSE}, then coordinates will be interpreted as Longitude/Latitude and the Haversine formula will be used to determine the distance between points.
+#'@param overdispfloor Default is \code{TRUE}. When \code{TRUE}, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If \code{FALSE}, it will allow for under-dispersion in the model.
+#'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in \code{glmnet}. If none supplied, default is \code{11}.
 #'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
 #'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time. 
 #'@inheritParams clusso
@@ -337,17 +324,17 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
 #' @description 
 #'This function runs both the space and space-time LASSO binomial model. This function is to be run on observed data. A separate function (clusso) is the helper function which will have 
 #'flexibility to specify the space or spacetime or both models to be run .
-#'@param analysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}. 
+#'@param analysisanalysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.  
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
 #'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
-#'@param rMax set max radius (in km)
-#'@param period vector of periods or years in data set. Should be imported as a factor.
-#'@param numcases vector of number of cases (or successes).
-#'@param n Total number of both cases and controls (or number of trials)
-#'@param covars matrix of covariates.
-#'@param Time Number of time periods or years in your dataset. Must be declared as numeric.
-#'@param utm default is \code{TRUE}. If \code{FALSE}, then coordinates will be interpreted as Longitude/Latitude and the haversine formula will be used to determine the distance between points.
-#'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{11}.
+#'@param rMax Set maximum radius for potential clusters (in km).
+#'@param period Vector of timeperiods in the data set. If this is variable is not a factor in the dataframe, then it will be automatically converted to one by \code{clusso()} with a warning message.
+#'@param numcases Vector of number of cases (or successes).
+#'@param n Total number of both cases and controls (or number of trials).
+#'@param covars Matrix of covariates.
+#'@param Time Number of timeperiods in the dataset. This is calculated based on the number of unique timeperiods (factor levels) supplied to \code{clusso}.
+#'@param utm Default is \code{TRUE} (coordinates are in the Universal Transverse Mercator (UTM) coordinate system). If \code{FALSE}, then coordinates will be interpreted as Longitude/Latitude and the Haversine formula will be used to determine the distance between points.
+#'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in \code{glmnet}. If none supplied, default is \code{11}.
 #'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
 #'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time. 
 #'@inheritParams clusso
@@ -368,7 +355,7 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
     #set up clusters and fitted values
     clusters <- clusters2df(x,y,rMax, utm=utm, length(x))
     n_uniq <- length(unique(clusters$center))
-    init <- setVectors(period, expected, observed, covars, Time, byrow = TRUE) #TODO but ntrials=E0 and Y.vec=cases
+    init <- setVectors(period, expected, observed, covars, Time, byrow = TRUE) 
     Yx <- init$Y.vec #ncases
     Ex <- init$E0 #ntrials
     #set vectors
@@ -395,12 +382,10 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
         #add this to sparsemat
         sparseMAT <- cbind(sparseMAT, timeMat)
         SOAR::Store(sparseMAT)
-        #message("Space-time matrix created")
     }
     else {
         sparseMAT <- spaceMat(clusters, numCenters)
         SOAR::Store(sparseMAT)
-        #message("Creating space-only matrix")
         if(nrow(covars)==0){
             covars <- NULL
         }
