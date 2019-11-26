@@ -30,7 +30,7 @@ toclusso <- function(df, expected, observed, timeperiod, covars=FALSE, id=NULL){
     if(inherits(period, "factor") == FALSE){
         period <- as.factor(period)
         warning(paste("timeperiod argument was not supplied as a factor. I've converted it to have these levels:", 
-                      paste(as.character(unique(levels(period))), collapse = ","),
+                      paste(as.character(unique(levels(timeperiod))), collapse = ","),
                       ". Please check that this is correct before proceeding."))
     }
     if(length(expected) != length(observed) | length(expected) != length(timeperiod) | length(observed)!=length(timeperiod)){
