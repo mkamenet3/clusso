@@ -8,7 +8,7 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.height = 5, fig.width = 8, message = FALSE)
+knitr::opts_chunk$set(echo = TRUE, fig.height = 5, fig.width = 8)
 ```
 
 #Introduction
@@ -91,16 +91,106 @@ The output of `clusso()` is assigned to the object `resreal`. `resreal` is a lar
 ```{r}
 head(ccsjbc)
 
-system.time(resreal <- clusso(df=ccsjbc, expected = n, observed = numcases,timeperiod = factor(period), covars=FALSE,
+system.time(resrealccs <- clusso(df=ccsjbc, expected = n, observed = numcases,timeperiod = factor(period), covars=FALSE,
              x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="binomial",maxclust=11))
-#system.time(resccs <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", model="binomial",maxclust=11))
 
 ```
 
 
 ```{r}
-clussopretty(resccs, analysis="both", model="binomial",clusteridentify=FALSE)
+clussopretty(resrealccs, analysis="both", model="binomial",clusteridentify=FALSE)
 ```
+
+
+Lastly, we can create plots of the coefficient paths with the function `clussoplot()`:
+
+```{r}
+clussoplot(resrealccs, analysis="both", model="binomial",Time=5)
+```
+
+
+## Comparison to Cross-Validation
+
+We continue with the same dataset as above, but now explore results by $k$ fold cross-validation. All initial inputs are assumed to be the same.
+
+
+```{r}
+#perform clusso using cv (5 folds)
+system.time(resccscv <- clusso(ccsjbc, expected = n, observed = numcases,timeperiod = factor(period), covars=FALSE, 
+                               x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="binomial",maxclust=11, cv=5))
+clussopretty(resccscv, analysis="both", model="binomial",clusteridentify=FALSE, cv=TRUE)
+
+clussoplot(resccscv, analysis="both",model="binomial", Time=5, cv=TRUE)
+```
+
+## Real Data Example with Covariates
+
+We continue with the case-control data from Japan. We will again checkout the `head()` of the dataframe, `ccsjbc`. 
+
+
+```{r}
+head(ccsjbc)
+```
+
+
+There are 5 additional covariates, `covar1` - `covar5` that we will want to adjust for as unpenalized terms in the LASSO.
+
+
+We now set the argument `covars=TRUE` to tell `clusso()` to identify the covariates and to include them in as unpenalized terms in the LASSO model.
+
+
+
+```{r}
+system.time(resccscovars<- clusso(ccsjbc, expected = n, observed=numcases,timeperiod = factor(period), covars=TRUE, 
+                               x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="binomial",maxclust=11))
+
+```
+
+
+
+```{r}
+clussopretty(resccscovars, analysis="both", model="binomial",clusteridentify = FALSE)
+```
+
+
+We can also extract the coefficients for the unpenalized terms and undo the log-link by exponentiating:
+
+```{r}
+exp(resccscovars$lassoresult.qp.st$lasso$beta[-c(1:66870), resccscovars$lassoresult.qp.st$numclust.qbic+1])
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -83,16 +83,20 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
         
         
     }
-    message("Lasso complete - extracting estimates and paths")
-    coefs.lasso.all <- coef(lasso)[-1,]
-    xbetaPath<- sparseMAT%*%coefs.lasso.all
-    K <- lasso$df
+    # message("Lasso complete - extracting estimates and paths")
+    # coefs.lasso.all <- coef(lasso)[-1,]
+    # xbetaPath<- sparseMAT%*%coefs.lasso.all
+    # K <- lasso$df
     #if running cross-validation version:
     if(!is.null(cv)){
         res <- stLasso_cv(lasso, sparseMAT, Ex, Yx, Time)
     }
     #information criteria selection version:
     else{
+        message("Lasso complete - extracting estimates and paths")
+        coefs.lasso.all <- coef(lasso)[-1,]
+        xbetaPath<- sparseMAT%*%coefs.lasso.all
+        K <- lasso$df
         #print("Pois post-process")
         #print(paste0("quasi: ",quasi))
         if(model=="poisson"){
@@ -103,9 +107,10 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
         }
         else if(model=="binomial"){
             #print("Binom post-process")
+            mu <- sapply(1:length(lasso$lambda), function(i) exp(xbetaPath[,i]))
             phat <-  sapply(1:length(lasso$lambda), function(i) pihat(xbetaPath[,i]))
             loglike <- sapply(1:length(lasso$lambda), function(i) sum(dbin(Yx, Ex, phat[,i])))
-            res <- spacetimeLassoBinom(lasso,coefs.lasso.all, loglike, K, quasi,covars,
+            res <- spacetimeLassoBinom(lasso,coefs.lasso.all, loglike, mu, K, quasi,covars,
                                        Yx, Ex, Period, Time, n_uniq, overdispfloor,maxclust)
         }
         return(res)
@@ -115,8 +120,9 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
 
 #'@title spacetimeLassoPois
 #'@description
-#'@param loglike Loglikelihood for Poisson model
+#'@param lasso Output from \code{glmnet}.
 #'@param coefs.lasso.all Matrix of coefficient estimates for every lambda in lasso path.
+#'@param loglike Loglikelihood for Poisson model
 #'@param mu Estimated relative risk estimates (\code{\rho_i\E_i})
 #'@param K Vector of the number of K parameters estimated for every lambda in lasso path.
 #'@param quasi Boolean. \code{TRUE} indicates a quasi-Poisson model that accounts for overdispersion. \code{FALSE} indicates a Poisson model without adjustment for overdispersion.
@@ -203,8 +209,10 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
 
 #'@title spacetimeLassoBinom
 #'@description
-#'@param loglike Loglikelihood for binomial model.
+#'@param lasso Output from \code{glmnet}.
 #'@param coefs.lasso.all Matrix of coefficient estimates for every lambda in lasso path.
+#'@param loglike Loglikelihood for Poisson model
+#'@param mu Estimated odds of disease.
 #'@param K Vector of the number of K parameters estimated for every lambda in lasso path.
 #'@param quasi Boolean. \code{TRUE} indicates a quasi-Poisson model that accounts for overdispersion. \code{FALSE} indicates a Poisson model without adjustment for overdispersion.
 #'@param covars Dataframe of additional covariates to be included in the model that are un-penalized by the LASSO.
@@ -215,7 +223,7 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
 #'@param n_uniq Number of unique centroids in the study area.
 #'@param overdispfloor Default is \code{TRUE}. When TRUE, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under-dispersion in the model.  
 #'@param maxclust  Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{11}.
-spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, K, quasi,covars, Yx, Ex, Period, Time, n_uniq, overdispfloor,maxclust){   
+spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,covars, Yx, Ex, Period, Time, n_uniq, overdispfloor,maxclust){   
     if(quasi==TRUE){
         #message("Returning results for space-time Quasi-Poisson model")
         if(!is.null(covars)){
@@ -234,6 +242,7 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, K, quasi,covars
         #########################################################
         #QBIC
         PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(min(sum(Yx),sum(Ex-Yx))))
+        #print(select.qbic)
         select.qbic <- which.min(PLL.qbic)
         E.qbic <- mu[,select.qbic]
         numclust.qbic <- K[select.qbic]-Time 

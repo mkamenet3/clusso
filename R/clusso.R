@@ -38,7 +38,7 @@
 #'system.time(resreal <- clusso(df=jbc, expected = expdeath, observed=death,timeperiod = factor(period), covars=FALSE,x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11))}
 
 
-clusso <- function(df, expected, observed, timeperiod,covars,id= NULL,x,y,rMax, utm=TRUE, analysis = c("space","spacetime", "both"),model = c("poisson", "binomial"),maxclust = 11,overdispfloor=TRUE, cv = NULL, collapsetime=FALSE){
+clusso <- function(df, expected, observed, timeperiod,covars,id= NULL,x,y,rMax, utm=TRUE, analysis = c("space","spacetime", "both"),model = c("poisson", "binomial"),maxclust = 11,overdispfloor=TRUE, cv=NULL, collapsetime=FALSE){
     expected <- eval(substitute(expected),df)
     observed <- eval(substitute(observed),df)
     timeperiod <- eval(substitute(timeperiod),df)

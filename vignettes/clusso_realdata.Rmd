@@ -8,7 +8,7 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.height = 5, fig.width = 8, message = FALSE)
+knitr::opts_chunk$set(echo = TRUE, fig.height = 5, fig.width = 8, message = TRUE)
 ```
 
 #Introduction
@@ -63,14 +63,8 @@ head(jbc)
 
 ### Set global conditions
 
-When using `clusso`, there are certain global parameters that need to be set
+When using `clusso`, there are certain global parameters that need to be set.
 
-There are two types of models we want to run: a quasi-poisson and Poisson model. Specifying this argument will make the output nicer.
-
-```{r}
-#Initial inputs
-mods <- c("QuasiPoisson", "Poisson")
-```
 
 We take the easting and northing coordinates from the `utmJapan` dataset, set the easting coordinate, `utmx`, to `x` and the northing coordinate, `utmy`, to `y`. Each is divided by 1000 to change the scale from meters to kilometers.
 
@@ -119,8 +113,8 @@ The output of `clusso()` is assigned to the object `resreal`. `resreal` is a lar
 ```{r}
 head(jbc)
 
-system.time(resreal <- clusso(df=jbc, expected = expdeath, observed=death,timeperiod = factor(period), covars=FALSE,
-             x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11))
+system.time(resreal <- clusso(jbc, expected = expdeath, observed=death,timeperiod = factor(period), covars=FALSE, 
+                               x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11))
 ```
 
 We can also use the function `clussopretty()` to create a nice table for the number of clusters detected:
@@ -128,7 +122,7 @@ We can also use the function `clussopretty()` to create a nice table for the num
 ```{r}
 clussopretty(resreal, analysis="both", model="poisson",clusteridentify=FALSE)
 
-names(clussopretty(resreal, analysis="both", clusteridentify=TRUE))
+names(clussopretty(resreal, analysis="both", model="poisson",clusteridentify=TRUE))
 
 ```
 
@@ -137,11 +131,11 @@ With the argument `clusteridentify=TRUE`, centroid indices (by time period) are 
 
 ```{r, eval=FALSE}
 #identify cluster IDs
-clussopretty(resreal, analysis="both", clusteridentify=TRUE)
+clussopretty(resreal, analysis="both", model="poisson",clusteridentify=TRUE)
 #identify cluster IDs where RR is greater or equal to 1.05
-clussopretty(resreal, analysis="both", clusteridentify=TRUE, clusterRR = 1.05)
+clussopretty(resreal, analysis="both", model="poisson", clusteridentify=TRUE, clusterRR = 1.05)
 #identify cluster IDS that differ from the background rate
-clussopretty(resreal, analysis="both", clusteridentify=TRUE, clusterRR = "background")
+clussopretty(resreal, analysis="both", model="poisson", clusteridentify=TRUE, clusterRR = "background")
 ```
 
 
@@ -153,18 +147,14 @@ If we have polygons and boundary files, we can use the `easyplot()` function. *T
 Create maps using the `easyplot()` function.
 
 ```{r}
-pdfname <- paste0("out",".pdf")
+pdfname <- paste0("out20191126",".pdf")
+mods <- c("QuasiPoisson", "Poisson")
 easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal$rrcolors, mods, space="both", probmap=FALSE, obs=TRUE,rr=TRUE)
 easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal, mods, space="BIC", probmap=FALSE,rr=TRUE)
 
 
 ```
-
-Lastly, we can create plots of the coefficient paths with the function `clussoplot()`:
-
-```{r}
-clussoplot(resreal, analysis="both", Time=5)
-```
+ 
 
 
 
@@ -174,22 +164,20 @@ clussoplot(resreal, analysis="both", Time=5)
 We continue with the same dataset as above, but now explore results by $k$ fold cross-validation. All initial inputs are assumed to be the same.
 
 ```{r}
-#Initial inputs
-cv <- 10 #how many folds for cv
-
-#perform clusso using cv
-system.time(rescv<- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", cv=cv))
+#perform clusso using cv (5 folds)
+system.time(rescv <- clusso(jbc, expected = expdeath, observed=death,timeperiod = factor(period), covars=FALSE, 
+                               x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11, cv=5))
 
 ```
 
 ```{r}
-clussopretty(rescv, analysis="both", clusteridentify=FALSE, cv=TRUE)
+clussopretty(rescv, analysis="both", model="poisson",clusteridentify=FALSE, cv=TRUE)
 ```
 
 Lastly, we can plot the coefficient paths identified via cross-validation using `clussoplot()` by adding the argument `cv=TRUE`:
 
 ```{r}
-clussoplot(rescv, analysis="both", Time=5, cv=TRUE)
+clussoplot(rescv, analysis="both",model="poisson", Time=5, cv=TRUE)
 ```
 
 
@@ -211,26 +199,24 @@ head(jbc)
 There are 5 additional covariates, `covar1` - `covar5` that we will want to adjust for as unpenalized terms in the LASSO.
 
 
-We will need to recreate our `clst` object using the `toclusso()` function, setting the argument `covars=TRUE`.
+We now set the argument `covars=TRUE` to tell `clusso()` to identify the covariates and to include them in as unpenalized terms in the LASSO model.
 
 ```{r}
-clst <- toclusso(jbc, expected = expdeath, observed = death, timeperiod = period,
-                 covars=TRUE, id = id)
-str(clst)
-system.time(rescovars <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both"))
+system.time(rescovars<- clusso(jbc, expected = expdeath, observed=death,timeperiod = factor(period), covars=TRUE, 
+                               x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11))
 
 ```
 
 Use `clussopretty()` to create a nice table of clusters detected:
 
 ```{r}
-clussopretty(rescovars, analysis="both", clusteridentify = FALSE)
+clussopretty(rescovars, analysis="both", model="poisson",clusteridentify = FALSE)
 ```
 
-We can also extract the coefficients for the unpenalized terms and undo the log-link by exponentiating:
+We can also extract the coefficients for the unpenalized terms and undo the log-link by exponentiating. For example, we can look at the results from the quasi-poisson, space-time model:
 
 ```{r}
-exp(rescovars$lassoresult.qp.st$lasso$beta[-(1:66870), rescovars$lassoresult.qp.st$selections$select.qbic])
+exp(rescovars$lassoresult.qp.st$lasso$beta[-c(1:66870), rescovars$lassoresult.qp.st$numclust.qbic+1])
 ```
 
 
@@ -250,7 +236,7 @@ easyplot(japan.prefect2, japan.poly2 ,pdfname, rescovars$rrcolors, mods, space="
 Coefficient paths for clusters (excluding unpenalized terms):
 
 ```{r}
-clussoplot(rescovars, analysis="both", Time=5)
+clussoplot(rescovars, analysis="both", model="poisson",Time=5)
 
 ```
 
