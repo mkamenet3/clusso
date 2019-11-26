@@ -26,10 +26,8 @@
 #'system.time(resreal <- clusso(df=jbc, expected = expdeath, observed=death,timeperiod = factor(period), covars=FALSE,x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11))
 #'clussopretty(resreal, analysis="both", model="poisson",clusteridentify=FALSE)}
 
-
 clussopretty <- function(outclusso, analysis="both", model = c("poisson", "binomial"), clusteridentify=FALSE, clusterRR, cv=FALSE){
     err <- 1e-4
-    
     if (length(model)>1){
         stop("You must select either `poisson` or `binomial`")
     }

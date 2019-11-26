@@ -5,30 +5,41 @@
 #'@description Plot the coefficient paths from the LASSO-identified potential clusters.
 #'@param outclusso outclusso Object with output from \code{clusso}.
 #'@param analysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.  
+#'@param model A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.
 #'@param Time Number of time periods in the analysis.
 #'@param cv Boolean. Takes \code{TRUE} if cross-validation was used. Default is \code{FALSE}.
 #'@export
 #'@return Returns a ggplot.
 #'@examples
 #'\donttest{
-#'clussoplot(resreal, analysis="both", Time=5)
+#'clussoplot(resreal, analysis="both", model="poisson",Time=5)
 #'}
-clussoplot <- function(outclusso, analysis=c("space","spacetime","both"), Time, cv=FALSE){
+clussoplot <- function(outclusso, analysis=c("space","spacetime","both"), model = c("poisson", "binomial"), Time, cv=FALSE){
     analysis <- match.arg(analysis, several.ok = FALSE)
+    if (length(model)>1){
+        stop("You must select either `poisson` or `binomial`")
+    }
+    else if(model=="poisson"){
+        model <- c("Poisson", "Quasi-Poisson")
+    }
+    else if(model=="binomial"){
+        model <- c("Binomial", "Quasi-Binomial")
+    }
+    else {stop("Unknown model type. If you think this was by error, please submit an issue.")}
     if(cv==TRUE){
         maxdim <- dim(rescv$lassoresult.p.st$lasso$glmnet.fit$beta)[1]
         switch(analysis,
-               space = clussoplotCV(outclusso, analysistype=c("p.s", "qp.s"), Time, maxdim),
-               spacetime = clussoplotCV(outclusso, analysistype = c("p.st", "qp.st"), Time, maxdim),
-               both = clussoplotCV(outclusso, analysistype = c("p.s", "qp.s","p.st", "qp.st"), Time, maxdim))    
+               space = clussoplotCV(outclusso, analysistype=c("p.s", "qp.s"), model, Time, maxdim),
+               spacetime = clussoplotCV(outclusso, analysistype = c("p.st", "qp.st"), model,Time, maxdim),
+               both = clussoplotCV(outclusso, analysistype = c("p.s", "qp.s","p.st", "qp.st"), model,Time, maxdim))    
     }
     else{
         #dims
         maxdim <-dim(outclusso$lassoresult.qp.st$lasso$beta)[1]
         switch(analysis,
-               space = clussoplotIC(outclusso, analysistype=c("p.s", "qp.s"), Time, maxdim),
-               spacetime = clussoplotIC(outclusso, analysistype = c("p.st", "qp.st"), Time, maxdim),
-               both = clussoplotIC(outclusso, analysistype = c("p.s", "qp.s","p.st", "qp.st"), Time, maxdim))    
+               space = clussoplotIC(outclusso, analysistype=c("p.s", "qp.s"), model, Time, maxdim),
+               spacetime = clussoplotIC(outclusso, analysistype = c("p.st", "qp.st"), model, Time, maxdim),
+               both = clussoplotIC(outclusso, analysistype = c("p.s", "qp.s","p.st", "qp.st"), model, Time, maxdim))    
     }
     
 }
@@ -39,14 +50,16 @@ clussoplot <- function(outclusso, analysis=c("space","spacetime","both"), Time, 
 #'clussoplotIC 
 #'@description Plot the coefficient paths from the LASSO-identified potential clusters (based on information criteria).
 #'@param outclusso outclusso Object with output from \code{clusso}.
-#'@param analysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.  
+#'@param analysistype A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.  
+#'@param model A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.
 #'@param Time Number of time periods in the analysis.
 #'@param maxdim Maximum number of potential clusters.
 #'@return Returns plots based on information criteria.
-clussoplotIC <- function(outclusso, analysistype, Time, maxdim){
+clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
     for (i in 1:length(analysistype)){
         #Create labels for plots
-        labtype <- ifelse(substr(analysistype[i],1,1)=="p","Poisson", "Quasi-Poisson")
+        #labtype <- ifelse(substr(analysistype[i],1,1)=="p","Poisson", "Quasi-Poisson")
+        labtype <- ifelse(substr(analysistype[i],1,1)=="p",model[1], model[2])
         dimtype <- ifelse(substr(analysistype[i],(nchar(analysistype[i])+1)-1,
                                  nchar(analysistype[i]))=="s","Space", "Space-Time")
         prefix <- paste0("outclusso$lassoresult.",analysistype[i])
@@ -113,14 +126,16 @@ clussoplotIC <- function(outclusso, analysistype, Time, maxdim){
 #'clussoplotCV
 #'@description Plot the coefficient paths from the LASSO-identified potential clusters (based on cross-validation).
 #'@param outclusso outclusso Object with output from \code{clusso}.
-#'@param analysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.   
+#'@param analysistype A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.   
+#'@param model A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.
 #'@param Time Number of time periods in the analysis.
 #'@param maxdim maximum number of potential clusters.
 #'@return Returns plots based on cross-validation.
-clussoplotCV <- function(outclusso, analysistype, Time, maxdim){
+clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim){
     for (i in 1:length(analysistype)){
         #Create labels for plots
-        labtype <- ifelse(substr(analysistype[i],1,1)=="p","Poisson", "Quasi-Poisson")
+        #labtype <- ifelse(substr(analysistype[i],1,1)=="p","Poisson", "Quasi-Poisson")
+        labtype <- ifelse(substr(analysistype[i],1,1)=="p",model[1], model[2])
         dimtype <- ifelse(substr(analysistype[i],(nchar(analysistype[i])+1)-1,
                                  nchar(analysistype[i]))=="s","Space", "Space-Time")
         prefix <- paste0("outclusso$lassoresult.",analysistype[i])
