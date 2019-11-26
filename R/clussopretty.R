@@ -53,6 +53,7 @@ clussopretty <- function(outclusso, analysis="both", model = c("poisson", "binom
         else{
             #both
             #model <- c(rep("Poisson",2), rep("Quasi-Poisson",2))
+            model <- rep(model, each=2)
             analysistype <- rep(c("Space", "Space-Time"),2)
             numclust.cv <- c(outclusso$lassoresult.p.s$numclust.cv, outclusso$lassoresult.p.st$numclust.cv, 
                               outclusso$lassoresult.qp.s$numclust.cv, outclusso$lassoresult.qp.st$numclust.cv)
