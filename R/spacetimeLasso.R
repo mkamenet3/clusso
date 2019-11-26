@@ -1,22 +1,19 @@
-#' Spatial and Spatio-Temporal Lasso
+#' Spatial and Spatio-Temporal Cluster Detection Using the LASSO
 #' @title 
 #' spacetimeLasso
 #' 
 #' @description 
-#' This function runs the LASSOregularization technique on our large sparse matric of potential space or space-time clusters.
-#'@param model A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. 
-#' @param sparseMAT large sparse matrix created in \code{clusso} function.
-#' @param n_uniq number of unique polygons (ex: counties, zip code, etc). Inherited from \code{clusso}.
-#' @param vectors takes in the list of expected and observed counts from setVectors function
-#' @param Time number of time periods in the dataset
-#' @param model A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"}.
-#' @param quasi Whether or not the Quasi-Poisson or Poisson model should be run. Default is quasi=FALSE (default is Poisson model is to be run)
-#' @param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{11}.
-#' @param overdispfloor default is TRUE. If TRUE, does not allow for underdispersion. If FALSE, allows for underdispersion (phi < 1)
-#' @param cv option for cross-validation instead of AIC/BIC. Default is set to FALSE
-#' @return This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
-#' a list of observed counts (Yx), the lasso object, a list of K values (number of unique values in each decision path), and n (length of unique centers in the clusters dataframe)
-#' @export
+#' This function runs the LASSO regularization technique on the large sparse matrix of potential space or space-time clusters.
+#'@param model A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.
+#' @param sparseMAT Large sparse matrix of indicators of space-time potential clusters.
+#' @param n_uniq Number of unique geographic subregions/centroids (ex: counties, zip code, ,etc). Calculated as the number of unique geographic identifiers.
+#' @param vectors List of expected and observed counts inherited from \code{setVectors}.
+#' @param Time Number of timeperiods in the dataset. This is calculated based on the number of unique timeperiods (factor levels) supplied to \code{clusso}.
+#' @param quasi Whether or not quasi- models for the Poisson and Binomial models should be executed. Default is quasi=FALSE.
+#' @param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in \code{glmnet}. If none supplied, default is \code{11}.
+#' @param overdispfloor Default is \code{TRUE}. When \code{TRUE}, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If \code{FALSE}, it will allow for under-dispersion in the model.
+#' @param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
+#' @return Returns a list of lists with the 1) estimated relative risks for each geographic subregion-time period based on selection by (Q)BIC, (Q)AIC, (Q)AICc, 2) number of identified clusters by (Q)BIC, (Q)AIC, (Q)AICc, 3) original expected counts (Ex), 4) original observed counts (Yx),5) the LASSO object, 6)  list of K values (number of unique values in each LASSO path), 7) and the estimated coefficients from all estimated lambdas.
 
 spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust, overdispfloor, cv){
     #check for covariates
@@ -153,16 +150,12 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
         PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(sum(Yx)))
         select.qbic <- which.min(PLL.qbic)
         E.qbic <- mu[,select.qbic]
-        exp_coefs_qbic <- c(exp(unique(lasso$beta[,select.qbic])),
-                            exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qbic]))
         numclust.qbic <- K[select.qbic]-Time 
         
         #QAIC
         PLL.qaic <-  2*(K) - 2*(loglike/overdisp.est)
         select.qaic <- which.min(PLL.qaic)
         E.qaic <- mu[,select.qaic]
-        exp_coefs_qaic <- c(exp(unique(lasso$beta[,select.qaic])),
-                            exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaic]))
         numclust.qaic <- K[select.qaic]-Time 
         
         #QAICc
@@ -170,13 +163,8 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
             ((2*K*(K + 1))/(sum(Yx) - K - 1))
         select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaicc]
-        exp_coefs_qaicc <- c(exp(unique(lasso$beta[,select.qaicc])),
-                             exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaicc]))
         numclust.qaicc <- K[select.qaicc]-Time 
-        
-        selections <- list(select.qbic=select.qbic,
-                           select.qaic = select.qaic,
-                           select.qaicc = select.qaic)
+
     }
     #########################################################
     #Poisson only (no overdispersion)
@@ -186,16 +174,12 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
         PLL.qbic  <- -2*(loglike) + ((K)*log(sum(Yx)))
         select.qbic <- which.min(PLL.qbic)
         E.qbic <- mu[,select.qbic]
-        exp_coefs_qbic <- c(exp(unique(lasso$beta[,select.qbic])),
-                            exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qbic]))
         numclust.qbic <- K[select.qbic]-Time 
         
         #QAIC
         PLL.qaic <-  2*(K) - 2*(loglike)
         select.qaic <- which.min(PLL.qaic)
         E.qaic <- mu[,select.qaic]
-        exp_coefs_qaic <- c(exp(unique(lasso$beta[,select.qaic])),
-                            exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaic]))
         numclust.qaic <- K[select.qaic]-Time 
         
         #QAICc
@@ -203,38 +187,15 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
             ((2*K*(K + 1))/(sum(Yx) - K - 1))
         select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaicc]
-        exp_coefs_qaicc <- c(exp(unique(lasso$beta[,select.qaicc])),
-                             exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaicc]))
         numclust.qaicc <- K[select.qaicc]-Time 
-        
-        selections <- list(select.qbic=select.qbic,
-                           select.qaic = select.qaic,
-                           select.qaicc = select.qaic)
     }
     #warning if numclust similar to maxclust
     if (numclust.qaic==(maxclust-Time)){
         message("The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.")
     }
-    # #Return only changepoints from lasso
-    # changepoints_ix <- which(diff(K)!=0) #Find lambda where new coef introduced
-    # lambda_changepoint <- lasso$lambda[changepoints_ix]
-    # #QIC
-    # coefs_qbic <- coefs.lasso.all[which(coefs.lasso.all[,select.qbic]!=0), changepoints_ix]
-    # coefs_qaic <-  coefs.lasso.all[which(coefs.lasso.all[,select.qaic]!=0), changepoints_ix]
-    # coefs_qaicc <- coefs.lasso.all[which(coefs.lasso.all[,select.qaicc]!=0), changepoints_ix]
-    # 
-    # lasso_out <- list(
-    #     lambdas = lambda_changepoint,
-    #     coefs_bic = coefs_qbic,
-    #     coefs_aic = coefs_qaic,
-    #     coefs_aicc = coefs_qaicc
-    # )
-    
     res <- list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, numclust.qaic = numclust.qaic,
                 numclust.qaicc = numclust.qaicc, numclust.qbic= numclust.qbic, Ex = Ex, Yx = Yx, 
-                lasso = lasso, K = K, coefs.lasso.all = coefs.lasso.all,
-                exp_coefs_qbic = exp_coefs_qbic, exp_coefs_qaic = exp_coefs_qaic, exp_coefs_qaicc = exp_coefs_qaicc,
-                selections = selections)
+                lasso = lasso, K = K, coefs.lasso.all = coefs.lasso.all)
 }
 
 
@@ -275,16 +236,12 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, K, quasi,covars
         PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(min(sum(Yx),sum(Ex-Yx))))
         select.qbic <- which.min(PLL.qbic)
         E.qbic <- mu[,select.qbic]
-        exp_coefs_qbic <- c(exp(unique(lasso$beta[,select.qbic])),
-                            exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qbic]))
         numclust.qbic <- K[select.qbic]-Time 
         
         #QAIC
         PLL.qaic <-  2*(K) - 2*(loglike/overdisp.est)
         select.qaic <- which.min(PLL.qaic)
         E.qaic <- mu[,select.qaic]
-        exp_coefs_qaic <- c(exp(unique(lasso$beta[,select.qaic])),
-                            exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaic]))
         numclust.qaic <- K[select.qaic]-Time 
         
         #QAICc
@@ -292,15 +249,8 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, K, quasi,covars
             ((2*K*(K + 1))/(min(sum(Yx),sum(Ex-Yx)) - K - 1))
         select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaicc]
-        exp_coefs_qaicc <- c(exp(unique(lasso$beta[,select.qaicc])),
-                             exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaicc]))
         numclust.qaicc <- K[select.qaicc]-Time 
-        
-        selections <- list(select.qbic=select.qbic,
-                           select.qaic = select.qaic,
-                           select.qaicc = select.qaic)
-        
-        
+
     }
     else if (quasi==FALSE){
         #########################################################
@@ -310,16 +260,12 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, K, quasi,covars
         PLL.qbic  <- -2*(loglike) + ((K)*log(min(sum(Yx),sum(Ex-Yx))))
         select.qbic <- which.min(PLL.qbic)
         E.qbic <- mu[,select.qbic]
-        exp_coefs_qbic <- c(exp(unique(lasso$beta[,select.qbic])),
-                            exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qbic]))
         numclust.qbic <- K[select.qbic]-Time 
         
         #QAIC
         PLL.qaic <-  2*(K) - 2*(loglike)
         select.qaic <- which.min(PLL.qaic)
         E.qaic <- mu[,select.qaic]
-        exp_coefs_qaic <- c(exp(unique(lasso$beta[,select.qaic])),
-                            exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaic]))
         numclust.qaic <- K[select.qaic]-Time 
         
         #QAICc
@@ -327,13 +273,9 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, K, quasi,covars
             ((2*K*(K + 1))/(min(sum(Yx),sum(Ex-Yx)) - K - 1))
         select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaicc]
-        exp_coefs_qaicc <- c(exp(unique(lasso$beta[,select.qaicc])),
-                             exp(lasso$beta[(nrow(lasso$beta)-Time+1):nrow(lasso$beta),select.qaicc]))
+
         numclust.qaicc <- K[select.qaicc]-Time 
-        
-        selections <- list(select.qbic=select.qbic,
-                           select.qaic = select.qaic,
-                           select.qaicc = select.qaic)
+
     }
     
     
@@ -346,26 +288,10 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, K, quasi,covars
     if (numclust.qaic==(maxclust-Time)){
         message("The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.")
     }
-    #Return only changepoints from lasso
-    # changepoints_ix <- which(diff(K)!=0) #Find lambda where new coef introduced
-    # lambda_changepoint <- lasso$lambda[changepoints_ix]
-    # #QIC
-    # coefs_qbic <- coefs.lasso.all[which(coefs.lasso.all[,select.qbic]!=0), changepoints_ix]
-    # coefs_qaic <-  coefs.lasso.all[which(coefs.lasso.all[,select.qaic]!=0), changepoints_ix]
-    # coefs_qaicc <- coefs.lasso.all[which(coefs.lasso.all[,select.qaicc]!=0), changepoints_ix]
-    # 
-    # lasso_out <- list(
-    #     lambdas = lambda_changepoint,
-    #     coefs_bic = coefs_qbic,
-    #     coefs_aic = coefs_qaic,
-    #     coefs_aicc = coefs_qaicc
-    # )
-    
+
     res <- list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, numclust.qaic = numclust.qaic,
                 numclust.qaicc = numclust.qaicc, numclust.qbic= numclust.qbic, Ex = Ex, Yx = Yx, 
-                lasso = lasso,K = K, coefs.lasso.all = coefs.lasso.all,
-                exp_coefs_qbic = exp_coefs_qbic, exp_coefs_qaic = exp_coefs_qaic, exp_coefs_qaicc = exp_coefs_qaicc,
-                selections = selections)
+                lasso = lasso,K = K, coefs.lasso.all = coefs.lasso.all)
 }
 
 
