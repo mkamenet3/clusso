@@ -5,7 +5,7 @@
 \title{clussoBinom}
 \usage{
 clussoBinom(analysis, x, y, rMax, period, expected, observed, covars, Time,
-  utm, maxclust, cv, collapsetime)
+  utm, maxclust, overdispfloor, cv, collapsetime)
 }
 \arguments{
 \item{x}{x coordinates (easting/latitude); if utm coordinates, scale to km.}
@@ -23,6 +23,8 @@ clussoBinom(analysis, x, y, rMax, period, expected, observed, covars, Time,
 \item{utm}{Default is \code{TRUE} (coordinates are in the Universal Transverse Mercator (UTM) coordinate system). If \code{FALSE}, then coordinates will be interpreted as Longitude/Latitude and the Haversine formula will be used to determine the distance between points.}
 
 \item{maxclust}{Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in \code{glmnet}. If none supplied, default is \code{11}.}
+
+\item{overdispfloor}{Default is \code{TRUE}. When \code{TRUE}, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If \code{FALSE}, it will allow for under-dispersion in the model.}
 
 \item{cv}{Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.}
 
