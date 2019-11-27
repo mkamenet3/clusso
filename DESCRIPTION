@@ -37,5 +37,5 @@ Maintainer: Maria Kamenetsky <maria.kamenetsky@gmail.com>
 BugReports: https://github.com/mkamenet3/clusso/issues
 LazyData: true
 Roxygen: list(markdown = TRUE, roclets = c("rd", "namespace", "collate"))
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.1
 Suggests: testthat
