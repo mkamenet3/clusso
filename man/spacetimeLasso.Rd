@@ -4,35 +4,34 @@
 \alias{spacetimeLasso}
 \title{spacetimeLasso}
 \usage{
-spacetimeLasso(sparseMAT, n_uniq, vectors, Time, spacetime = TRUE,
-  pois = FALSE, maxclust, overdispfloor, cv)
+spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, quasi, maxclust,
+  overdispfloor, cv)
 }
 \arguments{
-\item{sparseMAT}{large sparse matrix created in \code{clusso} function.}
+\item{model}{A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.}
 
-\item{n_uniq}{number of unique polygons (ex: counties, zip code, etc). Inherited from \code{clusso}.}
+\item{sparseMAT}{Large sparse matrix of indicators of space-time potential clusters.}
 
-\item{vectors}{takes in the list of expected and observed counts from setVectors function}
+\item{n_uniq}{Number of unique geographic subregions/centroids (ex: counties, zip code, ,etc). Calculated as the number of unique geographic identifiers.}
 
-\item{Time}{number of time periods in the dataset}
+\item{vectors}{List of expected and observed counts inherited from \code{setVectors}.}
 
-\item{spacetime}{indicator of whether the cluster detection method should be run on all space-time clusters(default) or on only the potential space clusters.}
+\item{Time}{Number of timeperiods in the dataset. This is calculated based on the number of unique timeperiods (factor levels) supplied to \code{clusso}.}
 
-\item{pois}{whether or not the Quasi-Poisson or Poisson model should be run. Default is pois=FALSE (default is Quasi-Poisson model is to be run)}
+\item{quasi}{Whether or not quasi- models for the Poisson and Binomial models should be executed. Default is quasi=FALSE.}
 
-\item{maxclust}{Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{11}.}
+\item{maxclust}{Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in \code{glmnet}. If none supplied, default is \code{11}.}
 
-\item{overdispfloor}{default is TRUE. If TRUE, does not allow for underdispersion. If FALSE, allows for underdispersion (phi < 1)}
+\item{overdispfloor}{Default is \code{TRUE}. When \code{TRUE}, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If \code{FALSE}, it will allow for under-dispersion in the model.}
 
-\item{cv}{option for cross-validation instead of AIC/BIC. Default is set to FALSE}
+\item{cv}{Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.}
 }
 \value{
-This function will return a list with the expected counts as selected by QBIC, QAIC, QAICc, a list of original expected counts (Ex),
-a list of observed counts (Yx), the lasso object, a list of K values (number of unique values in each decision path), and n (length of unique centers in the clusters dataframe)
+Returns a list of lists with the 1) estimated relative risks for each geographic subregion-time period based on selection by (Q)BIC, (Q)AIC, (Q)AICc, 2) number of identified clusters by (Q)BIC, (Q)AIC, (Q)AICc, 3) original expected counts (Ex), 4) original observed counts (Yx),5) the LASSO object, 6)  list of K values (number of unique values in each LASSO path), 7) and the estimated coefficients from all estimated lambdas.
 }
 \description{
-This function runs the Lasso regularization technique on our large sparse matric of potential space or space-time clusters.
+This function runs the LASSO regularization technique on the large sparse matrix of potential space or space-time clusters.
 }
 \details{
-Spatial and Spatio-Temporal Lasso
+Spatial and Spatio-Temporal Cluster Detection Using the LASSO
 }

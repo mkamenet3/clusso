@@ -7,7 +7,7 @@
 redblue(x)
 }
 \arguments{
-\item{x}{this will be the risk ratios shrunk to be on the scale of half risk to twice the risk as end points.}
+\item{x}{Risk ratios shrunk to be on the scale of half risk to twice the risk as end points.}
 }
 \value{
 colors

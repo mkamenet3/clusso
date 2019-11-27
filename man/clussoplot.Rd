@@ -4,20 +4,22 @@
 \alias{clussoplot}
 \title{clussoplot}
 \usage{
-clussoplot(outclusso, analysis = c("space", "spacetime", "both"), Time,
-  cv = FALSE)
+clussoplot(outclusso, analysis = c("space", "spacetime", "both"),
+  model = c("poisson", "binomial"), Time, cv = FALSE)
 }
 \arguments{
 \item{outclusso}{outclusso Object with output from \code{clusso}.}
 
-\item{analysis}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis  should be executed.}
+\item{analysis}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.}
 
-\item{Time}{Number of time periods in the analysis}
+\item{model}{A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.}
 
-\item{cv}{Boolean. Takes TRUE if cross-validation was used. Default is FALSE.}
+\item{Time}{Number of time periods in the analysis.}
+
+\item{cv}{Boolean. Takes \code{TRUE} if cross-validation was used. Default is \code{FALSE}.}
 }
 \value{
-Returns a plot
+Returns a ggplot.
 }
 \description{
 Plot the coefficient paths from the LASSO-identified potential clusters.
@@ -27,6 +29,6 @@ Plot coefficient paths from clusso
 }
 \examples{
 \donttest{
-clussoplot(resreal, analysis="both", Time=5)
+clussoplot(resreal, analysis="both", model="poisson",Time=5)
 }
 }

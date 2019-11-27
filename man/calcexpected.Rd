@@ -4,19 +4,19 @@
 \alias{calcexpected}
 \title{calcexpected}
 \usage{
-calcexpected(observed, periods, ids, family = c("poisson", "binomial"))
+calcexpected(observed, population, periods, ids)
 }
 \arguments{
-\item{observed}{Vector of observed counts}
+\item{observed}{Vector of observed counts.}
 
-\item{periods}{Cector of time periods matching observed counts}
+\item{population}{Vector of population sizes in each geographic unit.}
+
+\item{periods}{Vector of time periods matching observed counts.}
 
 \item{ids}{Vector of centroid identifiers matching the observed counts.}
-
-\item{family}{Must be provided. Can either be specified as \code{poisson} or \code{binomial}.}
 }
 \value{
-returns vector of expected counts
+Returns a dataframe of geographic ids, time periods, population counts, observed counts, and expected counts.
 }
 \description{
 Expected counts can be estimated if not available, following selected distribution function

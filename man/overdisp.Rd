@@ -7,14 +7,14 @@
 overdisp(offset_reg, sim = TRUE, overdispfloor = TRUE)
 }
 \arguments{
-\item{offset_reg}{object of class glm}
+\item{offset_reg}{Object of class glm.}
 
-\item{sim}{for a simulation run this takes on TRUE, else it should be FALSE. Default is set to TRUE.}
+\item{sim}{For simulation run this takes on \code{TRUE}, else it should be \code{FALSE}. Default is set to \code{TRUE}.}
 
-\item{overdispfloor}{Default is set to TRUE so model will not estimate any under-dispersion where phi < 1. The overdispfloor is set for phi to be 1. In a case where this}
+\item{overdispfloor}{Default is \code{TRUE}. When \code{TRUE}, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If \code{FALSE}, it will allow for under-dispersion in the model.}
 }
 \value{
-returns phi overdispersion parameter
+returns \eqn{\phi} overdispersion parameter.
 }
 \description{
 This function calculates the overdispersion parameter for the QIC 'c' overdispersion parameter.
