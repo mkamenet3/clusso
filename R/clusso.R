@@ -116,11 +116,11 @@ clusso <- function(df, expected, observed, timeperiod,covars,id= NULL,x,y,rMax, 
     else if(model=="binomial"){
         switch(analysis, 
                space = clussoBinom(analysis="space",x, y, rMax,period, expected, observed, covars,
-                                   Time, utm, maxclust, cv, collapsetime),
+                                   Time, utm, maxclust, overdispfloor,cv, collapsetime),
                spacetime = clussoBinom(analysis="spacetime",x, y, rMax,period, expected, observed, covars,
-                                       Time, utm,  maxclust, cv, collapsetime),
+                                       Time, utm,  maxclust, overdispfloor,cv, collapsetime),
                both = clussoBinom(analysis="both",x, y, rMax,period, expected, observed, covars, 
-                                  Time, utm,  maxclust, cv, collapsetime))
+                                  Time, utm,  maxclust, overdispfloor,cv, collapsetime))
     }
     else{
         warning("You have not specified a model. Please set 'model' argument to 'poisson' or 'binomial'.")
@@ -334,11 +334,12 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
 #'@param Time Number of timeperiods in the dataset. This is calculated based on the number of unique timeperiods (factor levels) supplied to \code{clusso}.
 #'@param utm Default is \code{TRUE} (coordinates are in the Universal Transverse Mercator (UTM) coordinate system). If \code{FALSE}, then coordinates will be interpreted as Longitude/Latitude and the Haversine formula will be used to determine the distance between points.
 #'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in \code{glmnet}. If none supplied, default is \code{11}.
+#'@param overdispfloor Default is \code{TRUE}. When \code{TRUE}, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If \code{FALSE}, it will allow for under-dispersion in the model.
 #'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
 #'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time. 
 #'@return list of lists output from detection
 
-clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Time, utm, maxclust,cv, collapsetime){  
+clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Time, utm, maxclust,overdispfloor, cv, collapsetime){  
     model <- "binomial"
     if(analysis=="space"){
         analysis_name<-"spatial"

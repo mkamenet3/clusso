@@ -27,7 +27,7 @@ clussoplot <- function(outclusso, analysis=c("space","spacetime","both"), model 
     }
     else {stop("Unknown model type. If you think this was by error, please submit an issue.")}
     if(cv==TRUE){
-        maxdim <- dim(rescv$lassoresult.p.st$lasso$glmnet.fit$beta)[1]
+        maxdim <- dim(outclusso$lassoresult.p.st$lasso$glmnet.fit$beta)[1]
         switch(analysis,
                space = clussoplotCV(outclusso, analysistype=c("p.s", "qp.s"), model, Time, maxdim),
                spacetime = clussoplotCV(outclusso, analysistype = c("p.st", "qp.st"), model,Time, maxdim),
