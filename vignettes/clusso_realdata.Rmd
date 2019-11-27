@@ -139,6 +139,13 @@ clussopretty(resreal, analysis="both", model="poisson", clusteridentify=TRUE, cl
 ```
 
 
+We can also plot the output using `clussoplot()` to visualize the identified clusters along the coefficient path:
+
+```{r}
+clussoplot(resreal, analysis="both",model="poisson", Time=5, cv=FALSE)
+```
+
+
 
 If we have polygons and boundary files, we can use the `easyplot()` function. *TODO: Current implementation only works for JBC dataset. Functions will be extended to be more generalizable in the future.*
 
@@ -147,7 +154,7 @@ If we have polygons and boundary files, we can use the `easyplot()` function. *T
 Create maps using the `easyplot()` function.
 
 ```{r}
-pdfname <- paste0("out20191126",".pdf")
+pdfname <- paste0("out",".pdf")
 mods <- c("QuasiPoisson", "Poisson")
 easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal$rrcolors, mods, space="both", probmap=FALSE, obs=TRUE,rr=TRUE)
 easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal, mods, space="BIC", probmap=FALSE,rr=TRUE)
@@ -233,10 +240,4 @@ easyplot(japan.prefect2, japan.poly2 ,pdfname, rescovars$rrcolors, mods, space="
          probmap=FALSE, obs=TRUE,rr=TRUE)
 ```
 
-Coefficient paths for clusters (excluding unpenalized terms):
-
-```{r}
-clussoplot(rescovars, analysis="both", model="poisson",Time=5)
-
-```
 
