@@ -122,8 +122,8 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
 #'@description
 #'@param lasso Output from \code{glmnet}.
 #'@param coefs.lasso.all Matrix of coefficient estimates for every lambda in lasso path.
-#'@param loglike Loglikelihood for Poisson model
-#'@param mu Estimated relative risk estimates (\code{\rho_i\E_i})
+#'@param loglike Loglikelihood for Poisson model.
+#'@param mu Estimated relative risk estimates (\eqn{\rhoi E_i}).
 #'@param K Vector of the number of K parameters estimated for every lambda in lasso path.
 #'@param quasi Boolean. \code{TRUE} indicates a quasi-Poisson model that accounts for overdispersion. \code{FALSE} indicates a Poisson model without adjustment for overdispersion.
 #'@param covars Dataframe of additional covariates to be included in the model that are un-penalized by the LASSO.
