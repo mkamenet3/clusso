@@ -4,22 +4,24 @@
 \alias{clussopretty}
 \title{clussopretty}
 \usage{
-clussopretty(outclusso, analysis = "both", clusteridentify = FALSE,
-  clusterRR, cv = FALSE)
+clussopretty(outclusso, analysis = "both", model = c("poisson",
+  "binomial"), clusteridentify = FALSE, clusterRR, cv = FALSE)
 }
 \arguments{
 \item{outclusso}{Object with output from \code{clusso}.}
 
-\item{analysis}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}.}
+\item{analysis}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.}
 
-\item{clusteridentify}{Whether specific clusters should be identified in output; default is FALSE}
+\item{model}{A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.}
+
+\item{clusteridentify}{Whether specific clusters should be identified in output; default is \code{FALSE}.}
 
 \item{clusterRR}{Risk ratio cut off for a cluster to be identified. Alternatively, a risk ratio can be provided (ex: 1.0, 1.25) that would serve as a cut off value for identifiying a cluster. Current default is 1.0. We define a cluster as being different from the background rate.}
 
-\item{cv}{Boolean, default is FALSE. If TRUE, then this will assume that the cross-validation (and not information criteria) model selection was perfromed.}
+\item{cv}{Boolean, default is \code{FALSE}. If \code{TRUE}, then this will assume that the cross-validation (and not information criteria) model selection was perfromed.}
 }
 \value{
-Data frame of output that can be sent to a csv or list of data frames (if clusteridentify set to TRUE).
+Data frame of output that can be sent to a comma-separated values file (csv) or list of data frames (if \code{clusteridentify} set to \code{TRUE}).
 }
 \description{
 This function takes the cluster detection results from the \code{clusso} function and creates a nice table of detected clusters.
@@ -29,17 +31,15 @@ Create pretty table from \code{clusso} output
 }
 \examples{
 \donttest{
-data(japanbreastcancer)
-#Set Some Initial Conditions
-x1=utmJapan$utmx/1000
-y1=utmJapan$utmy/1000
+#load data
+data("jbc")
+data("utmJapan")
+data("japan.poly2")
+data("japan.prefect2")
+#Initial inputs
+x <- utmJapan$utmx/1000
+y <- utmJapan$utmy/1000
 rMax <- 20 
-Time=5
-japanbreastcancer <- japanbreastcancer[,-1] #get rid of indicator column
-clst <- toclusso(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period)
-system.time(outclusso <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=10))
-clussopretty(outclusso, analysis="both")
-clussopretty(outclusso, analysis="both", clusteridentify=TRUE)
-clussopretty(outclusso, analysis="both", clusteridentify=TRUE, clusterRR = 1.05)
- }
+system.time(resreal <- clusso(df=jbc, expected = expdeath, observed=death,timeperiod = factor(period), covars=FALSE,x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11))
+clussopretty(resreal, analysis="both", model="poisson",clusteridentify=FALSE)}
 }

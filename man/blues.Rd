@@ -7,7 +7,7 @@
 blues(x)
 }
 \arguments{
-\item{x}{vector to be mapped}
+\item{x}{Vector of probabilities to be mapped.}
 }
 \value{
 colors

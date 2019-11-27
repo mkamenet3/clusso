@@ -4,19 +4,19 @@
 \alias{colormapping}
 \title{colormapping}
 \usage{
-colormapping(rate, Time, cv, prob)
+colormapping(rate, Time, cv, prob = FALSE)
 }
 \arguments{
-\item{rate}{this will be the risk ratios shrunk to be on the scale of half risk to twice the risk as end points.}
+\item{rate}{Risk ratios shrunk to be on the scale of half risk to twice the risk as end points.}
 
-\item{Time}{how many time periods are in the model? If this is only a spatial model, then time is set to 1}
+\item{Time}{Number of timeperiods in the dataset. This is calculated based on the number of unique timeperiods (factor levels) supplied to \code{clusso}.}
 
-\item{cv}{triggered if cross-validation model run on real data}
+\item{cv}{Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.}
 
-\item{prob}{TRUE or FALSE depending on if you want to map probabilities or not (default is to map RR)}
+\item{prob}{If \code{TRUE}, probabilities will be mapped. If \code{FALSE}, risk ratios will be mapped. Default is \code{FALSE}.}
 }
 \value{
-returns vectors ofcolors for each time period, where risk ratios have been constrained to be between half risk and twice the risk
+Returns vectors ofcolors for each time period, where risk ratios (or probabilities).
 }
 \description{
 This function establishes the spread of reds and blues for the risk ratios to be mapped to. Higher risk ratios will be deeper red colors and lower risk ratios will be deeper blue colors.

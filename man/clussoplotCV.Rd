@@ -4,19 +4,21 @@
 \alias{clussoplotCV}
 \title{clussoplotCV}
 \usage{
-clussoplotCV(outclusso, analysistype, Time, maxdim)
+clussoplotCV(outclusso, analysistype, model, Time, maxdim)
 }
 \arguments{
 \item{outclusso}{outclusso Object with output from \code{clusso}.}
 
-\item{Time}{Number of time periods in the analysis}
+\item{analysistype}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.}
 
-\item{maxdim}{maximum number of potential clusters}
+\item{model}{A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.}
 
-\item{analysis}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.}
+\item{Time}{Number of time periods in the analysis.}
+
+\item{maxdim}{maximum number of potential clusters.}
 }
 \value{
-Returns plots
+Returns plots based on cross-validation.
 }
 \description{
 Plot the coefficient paths from the LASSO-identified potential clusters (based on cross-validation).

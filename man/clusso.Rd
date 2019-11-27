@@ -6,37 +6,46 @@
 \alias{clusso-package}
 \title{clusso: Spatial cluster detection using LASSO}
 \usage{
-clusso(clst, x, y, rMax, Time, utm = TRUE, longdat = TRUE,
-  analysis = c("space", "spacetime", "both"), maxclust = 11,
+clusso(df, expected, observed, timeperiod, covars, id = NULL, x, y, rMax,
+  utm = TRUE, analysis = c("space", "spacetime", "both"),
+  model = c("poisson", "binomial"), maxclust = 11,
   overdispfloor = TRUE, cv = NULL, collapsetime = FALSE)
 }
 \arguments{
-\item{clst}{list; output from \code{toclusso} function. Must be of class \code{clst}.}
+\item{df}{Name of dataframe.}
+
+\item{expected}{Name of variable that contains the expected counts.}
+
+\item{observed}{Name of variable that contains the observed counts.}
+
+\item{timeperiod}{Name of variable that contains the timeperiod in which counts were observed (as factor). If this is variable is not a factor in the dataframe, then it will be automatically converted to one by \code{clusso()} with a warning message.}
+
+\item{covars}{Boolean - are there additional covariates in the dataframe beyond the three required? If so, set to \code{TRUE}. Default is \code{FALSE}.}
+
+\item{id}{Optional. If your dataframe contains an ID variable that should not be a covariate, set the name here. If you have excluded the ID from the dataset already, then ignore (or better, explicitly set to \code{NULL}).}
 
 \item{x}{x coordinates (easting/latitude); if utm coordinates, scale to km.}
 
 \item{y}{y coordinates (northing/longitude); if utm coordinates, scale to km.}
 
-\item{rMax}{set max radius (in km).}
+\item{rMax}{Set maximum radius for potential clusters (in km).}
 
-\item{Time}{Number of time periods or years in your dataset. Must be declared as numeric.}
+\item{utm}{Default is \code{TRUE} (coordinates are in the Universal Transverse Mercator (UTM) coordinate system). If \code{FALSE}, then coordinates will be interpreted as Longitude/Latitude and the Haversine formula will be used to determine the distance between points.}
 
-\item{utm}{default is \code{TRUE}. If \code{FALSE}, then coordinates will be interpreted as Longitude/Latitude and the haversine formula will be used to determine the distance between points.}
+\item{analysis}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.}
 
-\item{longdat}{Is the data in panel/long format? Default is \code{TRUE}. For wide format, specify \code{FALSE} (TODO).}
+\item{model}{A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.}
 
-\item{analysis}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed. Default is \code{"both"}.}
+\item{maxclust}{Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in \code{glmnet}. If none supplied, default is \code{11}.}
 
-\item{maxclust}{Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{11}.}
-
-\item{overdispfloor}{overdispfloor default is \code{TRUE}. When TRUE, it limits \eqn{\phi1} (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under-dispersion in the model.}
+\item{overdispfloor}{Default is \code{TRUE}. When \code{TRUE}, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If \code{FALSE}, it will allow for under-dispersion in the model.}
 
 \item{cv}{Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.}
 
-\item{collapsetime}{Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time. TODO}
+\item{collapsetime}{Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time.}
 }
 \value{
-returns list of cluster detection results ready to plot
+Returns list of cluster detection results ready to analyze and plot.
 }
 \description{
 Runs helper function for both the space and space-time Lasso model on observed data.
@@ -48,14 +57,14 @@ Set up for clusso
 }
 \examples{
 \donttest{
-data(japanbreastcancer)
-#Set Some Initial Conditions
-x1=utmJapan$utmx/1000
-y1=utmJapan$utmy/1000
+#load data
+data("jbc")
+data("utmJapan")
+data("japan.poly2")
+data("japan.prefect2")
+#Initial inputs
+x <- utmJapan$utmx/1000
+y <- utmJapan$utmy/1000
 rMax <- 20 
-Time=5
-japanbreastcancer <- japanbreastcancer[,-1] #get rid of indicator column
-clst <- toclusso(japanbreastcancer, expected = expdeath, observed=death,timeperiod = period)
-system.time(resreal <- clusso(clst, x,y, rMax, Time, utm=TRUE, analysis="both", maxclust=10))
- }
+system.time(resreal <- clusso(df=jbc, expected = expdeath, observed=death,timeperiod = factor(period), covars=FALSE,x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11))}
 }

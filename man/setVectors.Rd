@@ -7,20 +7,17 @@
 setVectors(period, expect, observed, covars, Time, byrow = TRUE)
 }
 \arguments{
-\item{period}{vector of periods or years in dataset. Should be imported as a factor.}
+\item{period}{Vector of timeperiods in the data set. If this is variable is not a factor in the dataframe, then it will be automatically converted to one by \code{clusso()} with a warning message. Periods must match up with observed and expected vectors.}
 
-\item{expect}{vector of expected counts. Expected counts must match up with the year and observed vectors.}
+\item{expect}{Vector of expected counts. Expected counts must match up with period and observed vectors.}
 
-\item{observed}{vector of observed counts. Observed counts must match up with the year and expected vectors.}
+\item{observed}{Vector of observed counts. Observed counts must match up with period and expected vectors.}
 
-\item{covars}{dataframe of covariates. NULL if no covariates supplied. Inherits this argument from \code{clusso} or \code{clusso_sim} functions}
+\item{covars}{Dataframe of covariates. \code{NULL} if no covariates supplied.}
 
-\item{Time}{Number of time periods or years in your dataset. Must be declared as numeric.}
+\item{Time}{Number of timeperiods in the dataset. This is calculated based on the number of unique timeperiods (factor levels) supplied to \code{clusso}.}
 
-\item{byrow}{default is set to TRUE. Data from the dataset should be imported by row. This is most often the case
-when you have a dataframe ordered by an identifier and then the period/time frame within that id listed chronologically (in panel format by identifier).
-If you are simulating data and have each observed/expected vector separate and create the period vector with repetitions of each time
-period by group, this should be set to false.}
+\item{byrow}{Set to \code{TRUE}. Data from the dataset should be imported by row, meaning that data must be sorted by geographic identifier, with repeated measurements for each geographic unit repeated.}
 }
 \value{
 This function returns a list of expected and observed counts along with the period.
@@ -30,11 +27,9 @@ Creates a List Arranged by Time Period with Expected and Observed Counts and Tim
 }
 \examples{
 period1 <- c(rep("1",5),rep("2",5))
-period2 <- rep(seq(1,2),5)
 expected <- MASS::rnegbin(n = 10,mu = 15,theta = 1000)
 observed <- MASS::rnegbin(expected, theta=1000)
 Time = 2
 covars <- NULL
 setVectors(period1, expected, observed, covars, Time, byrow=TRUE)
-setVectors(period2, expected, observed, covars, Time, byrow=FALSE)
 }

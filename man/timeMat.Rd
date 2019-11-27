@@ -7,12 +7,12 @@
 timeMat(Time)
 }
 \arguments{
-\item{Time}{Number of time periods in the data}
+\item{Time}{Number of timeperiods in the dataset. This is calculated based on the number of unique timeperiods (factor levels) supplied to \code{clusso}.}
 }
 \value{
-returns sparse matrix of 1's as indicators of membership in the time cluster
+Returns sparse matrix of 1's as indicators of membership in the time dimension.
 }
 \description{
-This function creates a sparse matrix of 1's of all of the potential time periods for the cluster to be in. The number of
+This function creates a sparse matrix of 1's indicating  all of the time periods a potential cluster could be in. The number of
 potential time periods is determined by \code{[(Time*(Time-1))]/2}.
 }

@@ -7,7 +7,7 @@
 greys(x)
 }
 \arguments{
-\item{x}{vectors of probabilities to be mapped}
+\item{x}{Vector of probabilities to be mapped.}
 }
 \value{
 colors

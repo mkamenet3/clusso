@@ -9,7 +9,7 @@ Creates \code{clst} object.}
 toclusso(df, expected, observed, timeperiod, covars = FALSE, id = NULL)
 }
 \arguments{
-\item{df}{name of dataframe.}
+\item{df}{Name of dataframe.}
 
 \item{expected}{Name of variable that contains the expected counts.}
 
@@ -18,19 +18,15 @@ toclusso(df, expected, observed, timeperiod, covars = FALSE, id = NULL)
 \item{timeperiod}{Name of variable that contains the timeperiod in which counts were observed (as factor).
 If spatial-only analysis, create a column that has a single value (ex: "Time1") and convert this to a factor.}
 
-\item{covars}{are there additional covariates in the dataframe beyond the three required? If so, set to \code{TRUE}. Default is \code{FALSE}.}
+\item{covars}{Are there additional covariates in the dataframe beyond the three required? If so, set to \code{TRUE}. Default is \code{FALSE}.}
 
 \item{id}{Optional. If your dataframe contains an ID variable that should not be a covariate, set the name here.}
 }
 \value{
-\code{clst} object
+\code{clst} object; list of lists. First element of list (called required_df) contains the expected, observed, and time period vectors in a dataframe. The second element (called othercovariates_df) is a dataframe containing covariates that should not be penalized in the model. The second element is \code{NULL} if no other covariates are adjusted for in the model.
 }
 \description{
 Creates \code{clst} object for creating potential spatial and spatio-temporal clusters. This function creates a \code{clst}
 object which will contain the expected, observed, and timeperiod information necessary to run \pkg{clusso}.
 If dataframe is fed in, assumes panel format - see \code{vignette} for details.
-}
-\examples{
-\donttest{
-clst <- toclusso(jbc, expected = expdeath, observed=death,timeperiod = period, covars = FALSE)}
 }

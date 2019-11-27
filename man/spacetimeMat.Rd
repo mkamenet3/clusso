@@ -7,15 +7,15 @@
 spacetimeMat(clusters, numCenters, Time)
 }
 \arguments{
-\item{clusters}{the potential clusters dataframe created by \code{clusters2df}}
+\item{clusters}{Clusters dataframe that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster).}
 
-\item{numCenters}{number of centroids in space matrix}
+\item{numCenters}{Number of geographic regions/centroids.}
 
-\item{Time}{number of time periods}
+\item{Time}{Number of timeperiods in the dataset. This is calculated based on the number of unique timeperiods (factor levels) supplied to \code{clusso}.}
 }
 \value{
-Returns sparse space time matrix
+Returns sparse space time matrix.
 }
 \description{
-This function takes the Kronecker product of the space and time matrices to create the space-time matrix
+This function takes the Kronecker product of the space and time matrices to create the space-time matrix.
 }
