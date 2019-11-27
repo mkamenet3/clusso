@@ -50,6 +50,11 @@ set_rr<- function(lassoresult, vectors, Time, sim=FALSE){
 get_rr <- function(lassoresult,vectors.sim,init,E1, Time, sim=TRUE, cv){
     if(!is.null(cv)){
         RRobs <- matrix(as.vector(vectors.sim$Y.vec)/as.vector(vectors.sim$E0),ncol=Time)
+        if (any(is.infinite(RRobs) | is.na(RRobs))){
+            ix <- which(is.na(RRobs)|is.infinite(RRobs))
+            RRobs[ix] <- 1
+            
+        }
         #message("Returning CV results for real (non-sim) data")
         res <- list(RRcv = matrix(lassoresult$E.cv, ncol=Time),
             RRobs = RRobs)
@@ -60,6 +65,11 @@ get_rr <- function(lassoresult,vectors.sim,init,E1, Time, sim=TRUE, cv){
         }
         if(sim==FALSE){
             RRobs <- matrix(as.vector(vectors.sim$Y.vec)/as.vector(vectors.sim$E0),ncol=Time)
+            if (any(is.infinite(RRobs) | is.na(RRobs))){
+                ix <- which(is.na(RRobs)|is.infinite(RRobs))
+                RRobs[ix] <- 1 
+                
+            }
            # message("Returning results for real (non-sim) data")
         }
         res <- list(RRbic=matrix(lassoresult$E.qbic,ncol=Time),

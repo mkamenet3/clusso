@@ -1,11 +1,10 @@
 #' Calculate overdispersion for quasi-likelihood models
 #' 
 #' This function calculates the overdispersion parameter for the QIC 'c' overdispersion parameter.
-#' @param offset_reg object of class glm
-#' @param sim for a simulation run this takes on TRUE, else it should be FALSE. Default is set to TRUE.
-#' @param overdispfloor Default is set to TRUE so model will not estimate any under-dispersion where phi < 1. The overdispfloor is set for phi to be 1. In a case where this 
-#' @return returns phi overdispersion parameter
-#' @export
+#' @param offset_reg Object of class glm.
+#' @param sim For simulation run this takes on \code{TRUE}, else it should be \code{FALSE}. Default is set to \code{TRUE}.
+#' @param overdispfloor  Default is \code{TRUE}. When \code{TRUE}, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If \code{FALSE}, it will allow for under-dispersion in the model.
+#' @return returns \eqn{\phi} overdispersion parameter.
 
 overdisp <- function(offset_reg, sim = TRUE, overdispfloor = TRUE) {
     if(sim==TRUE){
