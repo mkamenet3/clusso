@@ -149,7 +149,6 @@ clusso <- function(df, expected, observed, timeperiod,covars,id= NULL,x,y,rMax, 
 #'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in \code{glmnet}. If none supplied, default is \code{11}.
 #'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
 #'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time. 
-#'@inheritParams clusso
 #'@return list of lists output from detection
 
 clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Time, utm, maxclust, overdispfloor, cv, collapsetime){
@@ -337,7 +336,6 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
 #'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in \code{glmnet}. If none supplied, default is \code{11}.
 #'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
 #'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time. 
-#'@inheritParams clusso
 #'@return list of lists output from detection
 
 clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Time, utm, maxclust,cv, collapsetime){  
