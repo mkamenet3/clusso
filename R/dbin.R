@@ -1,5 +1,5 @@
 #' Binomial Function
-#' @title dbinom
+#' @title dbin
 #' @param Yx Number of cases.
 #' @param Ex Total number of trials (or cases + controls).
 #' @param p Vector of estimated probabilities for each space-time location.
