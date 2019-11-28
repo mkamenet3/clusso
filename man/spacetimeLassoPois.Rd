@@ -5,7 +5,7 @@
 \title{spacetimeLassoPois}
 \usage{
 spacetimeLassoPois(lasso, coefs.lasso.all, loglike, mu, K, quasi, covars,
-  Yx, Ex, Period, Time, n_uniq, overdispfloor, maxclust)
+  Yx, Ex, Period, Time, n_uniq, overdispfloor, maxclust, nsize)
 }
 \arguments{
 \item{lasso}{Output from \code{glmnet}.}
@@ -35,6 +35,11 @@ spacetimeLassoPois(lasso, coefs.lasso.all, loglike, mu, K, quasi, covars,
 \item{overdispfloor}{Default is \code{TRUE}. When TRUE, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under-dispersion in the model.}
 
 \item{maxclust}{Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{11}.}
+
+\item{nsize}{Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.}
+}
+\value{
+List of results from Poisson/quasi-Poisson models.
 }
 \description{
 spacetimeLassoPois

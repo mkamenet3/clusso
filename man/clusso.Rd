@@ -9,7 +9,8 @@
 clusso(df, expected, observed, timeperiod, covars, id = NULL, x, y, rMax,
   utm = TRUE, analysis = c("space", "spacetime", "both"),
   model = c("poisson", "binomial"), maxclust = 11,
-  overdispfloor = TRUE, cv = NULL, collapsetime = FALSE)
+  overdispfloor = TRUE, cv = NULL, collapsetime = FALSE,
+  nsize = NULL)
 }
 \arguments{
 \item{df}{Name of dataframe.}
@@ -43,6 +44,8 @@ clusso(df, expected, observed, timeperiod, covars, id = NULL, x, y, rMax,
 \item{cv}{Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.}
 
 \item{collapsetime}{Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time.}
+
+\item{nsize}{Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.}
 }
 \value{
 Returns list of cluster detection results ready to analyze and plot.
