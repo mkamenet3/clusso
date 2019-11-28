@@ -5,7 +5,7 @@
 \title{clussoBinom}
 \usage{
 clussoBinom(analysis, x, y, rMax, period, expected, observed, covars, Time,
-  utm, maxclust, overdispfloor, cv, collapsetime)
+  utm, maxclust, overdispfloor, cv, collapsetime, nsize)
 }
 \arguments{
 \item{x}{x coordinates (easting/latitude); if utm coordinates, scale to km.}
@@ -30,6 +30,8 @@ clussoBinom(analysis, x, y, rMax, period, expected, observed, covars, Time,
 
 \item{collapsetime}{Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time.}
 
+\item{nsize}{Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.}
+
 \item{analysisanalysis}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.}
 
 \item{numcases}{Vector of number of cases (or successes).}
@@ -37,7 +39,7 @@ clussoBinom(analysis, x, y, rMax, period, expected, observed, covars, Time,
 \item{n}{Total number of both cases and controls (or number of trials).}
 }
 \value{
-list of lists output from detection
+List of lists output from detection.
 }
 \description{
 This function runs both the space and space-time LASSO binomial model. This function is to be run on observed data. A separate function (clusso) is the helper function which will have
