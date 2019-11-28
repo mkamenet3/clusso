@@ -85,7 +85,7 @@ clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
         outclussodframe$lams <- lams[changepoints_ix]
         outclussodframe$k <- eval(parse(text=paste0(prefix, "$lasso$df")))[changepoints_ix]-Time
         #convert to long and exclude unpenalized time
-        outclusso_long <- tidyr::gather(outclussodframe, s, var, -c("lams", "k"), factor_key = TRUE) %>%
+        outclusso_long <- tidyr::gather(outclussodframe, s, var, -c("lams", "k"), factor_key = TRUE) dplyr::`%>%`
             dplyr::filter(!(s %in% (maxdim-Time):maxdim))
         #extract nclusters identified by AIC, AICc, and BIC
         numclust.qaic <- eval(parse(text=paste0(prefix,"$numclust.qaic")))
@@ -96,25 +96,25 @@ clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
         kbic <- outclusso_long$lams[which(outclusso_long$k==numclust.qbic)][1]
 
         #PLOT!
-        p <- ggplot2::ggplot(outclusso_long,aes(x=lams, y=var, color=s)) +
-            geom_line(size=1.5) +
-            theme_bw() +
-            ylab("Coefficients") +
-            xlab(parse(text=paste0('"(log)"', ' ~ lambda '))) +
-            ggtitle(paste0("Solution Paths - Potential Clusters: ",labtype,", ",  dimtype)) +
-            geom_hline(yintercept=0, lwd=1.5) +
-            theme(plot.title = element_text(hjust = 0.5, size=14),
-                  legend.title = element_blank(),
+        p <- ggplot2::ggplot(outclusso_long,ggplot2::aes(x=lams, y=var, color=s)) +
+            ggplot2::geom_line(size=1.5) +
+            ggplot2::theme_bw() +
+            ggplot2::ylab("Coefficients") +
+            ggplot2::xlab(parse(text=paste0('"(log)"', ' ~ lambda '))) +
+            ggplot2::ggtitle(paste0("Solution Paths - Potential Clusters: ",labtype,", ",  dimtype)) +
+            ggplot2::geom_hline(yintercept=0, lwd=1.5) +
+            ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5, size=14),
+                  legend.title = ggplot2::element_blank(),
                   legend.position="bottom",
-                  legend.text=element_text(size=14),
-                  text = element_text(size=14)) +
-            scale_x_reverse() +
-            geom_vline(xintercept=kaic, linetype=2, lwd=1.5) +
-            geom_vline(xintercept=kaicc, linetype=2, lwd=1.5) +
-            geom_vline(xintercept=kbic, linetype=2, lwd=1.5) +
-            annotate("text", x=kaic, y= 0.11,hjust=-0.25,vjust=0.8,label = paste0("(Q)AIC\n  k=", numclust.qaic)) +
-            annotate("text", x=kaicc, y= -0.03,hjust=-0.25,vjust=0.8,label = paste0("(Q)AICc\n  k=", numclust.qaicc)) +
-            annotate("text", x=kbic, y= 0.11,hjust=-0.25,vjust=0.8,label = paste0("(Q)BIC\n  k=", numclust.qbic)) 
+                  legend.text=ggplot2::element_text(size=14),
+                  text = ggplot2::element_text(size=14)) +
+            ggplot2::scale_x_reverse() +
+            ggplot2::geom_vline(xintercept=kaic, linetype=2, lwd=1.5) +
+            ggplot2::geom_vline(xintercept=kaicc, linetype=2, lwd=1.5) +
+            ggplot2::geom_vline(xintercept=kbic, linetype=2, lwd=1.5) +
+            ggplot2::annotate("text", x=kaic, y= 0.11,hjust=-0.25,vjust=0.8,label = paste0("(Q)AIC\n  k=", numclust.qaic)) +
+            ggplot2::annotate("text", x=kaicc, y= -0.03,hjust=-0.25,vjust=0.8,label = paste0("(Q)AICc\n  k=", numclust.qaicc)) +
+            ggplot2::annotate("text", x=kbic, y= 0.11,hjust=-0.25,vjust=0.8,label = paste0("(Q)BIC\n  k=", numclust.qbic)) 
         print(p)
     }
 }
@@ -161,7 +161,7 @@ clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim){
         outclussodframe$lams <- lams[changepoints_ix]
         outclussodframe$k <- eval(parse(text=paste0(prefix, "$lasso$glmnet.fit$df")))[changepoints_ix]-Time
         #convert to long and exclude unpenalized time
-        outclusso_long <- tidyr::gather(outclussodframe, s, var, -c("lams", "k"), factor_key = TRUE) %>%
+        outclusso_long <- tidyr::gather(outclussodframe, s, var, -c("lams", "k"), factor_key = TRUE) dplyr::`%>%`
             dplyr::filter(!(s %in% (maxdim-Time):maxdim))
         numclust.cv <- eval(parse(text=paste0(prefix,"$numclust.cv")))
         kcv <- outclusso_long$lams[which(outclusso_long$k==numclust.cv)][1]
@@ -172,25 +172,25 @@ clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim){
         }
         
         #PLOT!
-        p <- ggplot2::ggplot(outclusso_long,aes(x=lams, y=var, color=s)) +
-            geom_line(size=1.5) +
-            theme_bw() +
-            ylab("Coefficients") +
-            xlab(parse(text=paste0('"(log)"', ' ~ lambda '))) +
-            ggtitle(paste0("Solution Paths - Potential Clusters: ",labtype,", ",  dimtype)) +
-            geom_hline(yintercept=0, lwd=1.5) +
-            theme(plot.title = element_text(hjust = 0.5, size=14),
-                  legend.title = element_blank(),
+        p <- ggplot2::ggplot(outclusso_long,ggplot2::aes(x=lams, y=var, color=s)) +
+            ggplot2::geom_line(size=1.5) +
+            ggplot2::theme_bw() +
+            ggplot2::ylab("Coefficients") +
+            ggplot2::xlab(parse(text=paste0('"(log)"', ' ~ lambda '))) +
+            ggplot2::ggtitle(paste0("Solution Paths - Potential Clusters: ",labtype,", ",  dimtype)) +
+            ggplot2::geom_hline(yintercept=0, lwd=1.5) +
+            ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5, size=14),
+                  legend.title = ggplot2::element_blank(),
                   legend.position="bottom",
-                  legend.text=element_text(size=14),
-                  text = element_text(size=14)) +
-            scale_x_reverse() +
-            geom_vline(xintercept=kcv, linetype=2, lwd=1.5) +
-            #geom_vline(xintercept=kaicc, linetype=2, lwd=1.5) +
-            #geom_vline(xintercept=kbic, linetype=2, lwd=1.5) +
-            annotate("text", x=kcv, y= 0.11,hjust=-0.25,vjust=0.8,label = paste0("CV\n  k=", numclust.cv)) 
-            #annotate("text", x=kaicc, y= -0.03,hjust=-0.25,vjust=0.8,label = paste0("(Q)AICc\n  k=", numclust.qaicc)) +
-            #annotate("text", x=kbic, y= 0.11,hjust=-0.25,vjust=0.8,label = paste0("(Q)BIC\n  k=", numclust.qbic)) 
+                  legend.text=ggplot2::element_text(size=14),
+                  text = ggplot2::element_text(size=14)) +
+            ggplot2::scale_x_reverse() +
+            ggplot2::geom_vline(xintercept=kcv, linetype=2, lwd=1.5) +
+            #ggplot2::geom_vline(xintercept=kaicc, linetype=2, lwd=1.5) +
+            #ggplot2::geom_vline(xintercept=kbic, linetype=2, lwd=1.5) +
+            ggplot2::annotate("text", x=kcv, y= 0.11,hjust=-0.25,vjust=0.8,label = paste0("CV\n  k=", numclust.cv)) 
+            #ggplot2::annotate("text", x=kaicc, y= -0.03,hjust=-0.25,vjust=0.8,label = paste0("(Q)AICc\n  k=", numclust.qaicc)) +
+            #ggplot2::annotate("text", x=kbic, y= 0.11,hjust=-0.25,vjust=0.8,label = paste0("(Q)BIC\n  k=", numclust.qbic)) 
         print(p)
     }
 }

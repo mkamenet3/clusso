@@ -370,7 +370,7 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
     n_uniq <- length(unique(clusters$center))
     init <- setVectors(period, expected, observed, covars, Time, byrow = TRUE) 
     Yx <- init$Y.vec #ncases
-    Ex <- init$E0 #ntrials
+    Ex <- E1 <- init$E0 #ntrials
     #set vectors
     if(analysis=="spacetime"){
         vectors <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec, covars = covars)    
