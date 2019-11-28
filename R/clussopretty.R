@@ -9,7 +9,8 @@
 #'@param model A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.
 #'@param clusteridentify Whether specific clusters should be identified in output; default is \code{FALSE}.
 #'@param clusterRR Risk ratio cut off for a cluster to be identified. Alternatively, a risk ratio can be provided (ex: 1.0, 1.25) that would serve as a cut off value for identifiying a cluster. Current default is 1.0. We define a cluster as being different from the background rate. 
-#'@param cv Boolean, default is \code{FALSE}. If \code{TRUE}, then this will assume that the cross-validation (and not information criteria) model selection was perfromed.
+#'@param cv Boolean, default is \code{FALSE}. If \code{TRUE}, then this will assume that the cross-validation (and not information criteria) model selection was performed.
+#'@param covars Default is FALSE (time main effects and covariate estimates suppressed). If \code{TRUE}, then results reported for time main effects and covariate estimates. Results reported as both raw and exponentiated estimates.
 #'@return Data frame of output that can be sent to a comma-separated values file (csv) or list of data frames (if \code{clusteridentify} set to \code{TRUE}).
 #'@export
 #'@examples
@@ -26,9 +27,15 @@
 #'system.time(resreal <- clusso(df=jbc, expected = expdeath, observed=death,
 #'    timeperiod = factor(period), covars=FALSE,x= x,y = y, rMax =  rMax, 
 #'    utm=TRUE, analysis="both", model="poisson",maxclust=11))
-#'clussopretty(resreal, analysis="both", model="poisson",clusteridentify=FALSE)}
+#'clussopretty(resreal, analysis="both", model="poisson",clusteridentify=FALSE)
+#'
+#'#example with including covariates
+#'system.time(resreal <- clusso(df=jbc, expected = expdeath, observed=death,
+#'    timeperiod = factor(period), covars=TRUE, id=id,x= x,y = y, rMax =  rMax, 
+#'    utm=TRUE, analysis="both", model="poisson",maxclust=11))
+#'}
 
-clussopretty <- function(outclusso, analysis="both", model = c("poisson", "binomial"), clusteridentify=FALSE, clusterRR, cv=FALSE){
+clussopretty <- function(outclusso, analysis="both", model = c("poisson", "binomial"), clusteridentify=FALSE, clusterRR, cv=FALSE, covars=FALSE){
     err <- 1e-4
     if (length(model)>1){
         stop("You must select either `poisson` or `binomial`")
@@ -91,8 +98,87 @@ clussopretty <- function(outclusso, analysis="both", model = c("poisson", "binom
         }
         table.clusters <- cbind.data.frame(model, analysistype, numclust.AIC, numclust.AICc, numclust.BIC)
     }
+    ####
+    if(covars==TRUE){
+        if(analysis=="space"){
+            analysistype <- rep("Space",2)
+            #AIC
+            ix.AIC <- which(names(outclusso$lassoresult.p.s$coefs.lasso.all[,outclusso$lassoresult.p.s$selections$select.qaic]) != "")
+            ix.AIC.q <- which(names(outclusso$lassoresult.qp.s$coefs.lasso.all[,outclusso$lassoresult.qp.s$selections$select.qaic]) != "")
+            coefs.AIC <- rbind(outclusso$lassoresult.p.s$coefs.lasso.all[ix.AIC, outclusso$lassoresult.p.s$selections$select.qaic],
+                               outclusso$lassoresult.qp.s$coefs.lasso.all[ix.AIC.q, outclusso$lassoresult.qp.s$selections$select.qaic])
+            #AICc
+            ix.AICc <- which(names(outclusso$lassoresult.p.s$coefs.lasso.all[,outclusso$lassoresult.p.s$selections$select.qaicc]) != "")
+            ix.AICc.q <- which(names(outclusso$lassoresult.qp.s$coefs.lasso.all[,outclusso$lassoresult.qp.s$selections$select.qaicc]) != "")
+            coefs.AICc <- rbind(outclusso$lassoresult.p.s$coefs.lasso.all[ix.AICc, outclusso$lassoresult.p.s$selections$select.qaicc],
+                               outclusso$lassoresult.qp.s$coefs.lasso.all[ix.AICc.q, outclusso$lassoresult.qp.s$selections$select.qaicc])
+            #BIC
+            ix.BIC <- which(names(outclusso$lassoresult.p.s$coefs.lasso.all[,outclusso$lassoresult.p.s$selections$select.qbic]) != "")
+            ix.BIC.q <- which(names(outclusso$lassoresult.qp.s$coefs.lasso.all[,outclusso$lassoresult.qp.s$selections$select.qbic]) != "")
+            coefs.BIC <- rbind(outclusso$lassoresult.p.s$coefs.lasso.all[ix.BIC, outclusso$lassoresult.p.s$selections$select.qbic],
+                               outclusso$lassoresult.qp.s$coefs.lasso.all[ix.BIC.q, outclusso$lassoresult.qp.s$selections$select.qbic])
+        }
+        #table.coefs <- cbind(model, analysistype,rbind.data.frame(coefs.AIC, coefs.AICc, coefs.BIC))
+        #outclusso
+        #ix <- which(names(resrealcovars$lassoresult.p.st$coefs.lasso.all[,resrealcovars$lassoresult.p.st$selections$select.qaic]) != "")
+        else if(analysis=="spacetime"){
+            analysistype <- rep("Spacetime",2)
+            #AIC
+            ix.AIC <- which(names(outclusso$lassoresult.p.st$coefs.lasso.all[,outclusso$lassoresult.p.st$selections$select.qaic]) != "")
+            ix.AIC.q <- which(names(outclusso$lassoresult.qp.st$coefs.lasso.all[,outclusso$lassoresult.qp.st$selections$select.qaic]) != "")
+            coefs.AIC <- rbind(outclusso$lassoresult.p.st$coefs.lasso.all[ix.AIC, outclusso$lassoresult.p.st$selections$select.qaic],
+                               outclusso$lassoresult.qp.st$coefs.lasso.all[ix.AIC.q, outclusso$lassoresult.qp.st$selections$select.qaic])
+            #AICc
+            ix.AICc <- which(names(outclusso$lassoresult.p.st$coefs.lasso.all[,outclusso$lassoresult.p.st$selections$select.qaicc]) != "")
+            ix.AICc.q <- which(names(outclusso$lassoresult.qp.st$coefs.lasso.all[,outclusso$lassoresult.qp.st$selections$select.qaicc]) != "")
+            coefs.AICc <- rbind(outclusso$lassoresult.p.st$coefs.lasso.all[ix.AICc, outclusso$lassoresult.p.st$selections$select.qaicc],
+                                outclusso$lassoresult.qp.st$coefs.lasso.all[ix.AICc.q, outclusso$lassoresult.qp.st$selections$select.qaicc])
+            #BIC
+            ix.BIC <- which(names(outclusso$lassoresult.p.st$coefs.lasso.all[,outclusso$lassoresult.p.st$selections$select.qbic]) != "")
+            ix.BIC.q <- which(names(outclusso$lassoresult.qp.st$coefs.lasso.all[,outclusso$lassoresult.qp.st$selections$select.qbic]) != "")
+            coefs.BIC <- rbind(outclusso$lassoresult.p.st$coefs.lasso.all[ix.BIC, outclusso$lassoresult.p.st$selections$select.qbic],
+                               outclusso$lassoresult.qp.st$coefs.lasso.all[ix.BIC.q, outclusso$lassoresult.qp.st$selections$select.qbic])
+        }
+        else{
+            model <- rep(model, each=2)
+            analysistype <- rep(c("Space", "Space-Time"),2)
+            #AIC
+            ix.AIC <- which(names(outclusso$lassoresult.p.s$coefs.lasso.all[,outclusso$lassoresult.p.s$selections$select.qaic]) != "")
+            ix.AIC.q <- which(names(outclusso$lassoresult.qp.s$coefs.lasso.all[,outclusso$lassoresult.qp.s$selections$select.qaic]) != "")
+            ixt.AIC <- which(names(outclusso$lassoresult.p.st$coefs.lasso.all[,outclusso$lassoresult.p.st$selections$select.qaic]) != "")
+            ixt.AIC.q <- which(names(outclusso$lassoresult.qp.st$coefs.lasso.all[,outclusso$lassoresult.qp.st$selections$select.qaic]) != "")
+            
+            coefs.AIC <- rbind(outclusso$lassoresult.p.s$coefs.lasso.all[ix.AIC, outclusso$lassoresult.p.s$selections$select.qaic],
+                               outclusso$lassoresult.qp.s$coefs.lasso.all[ix.AIC.q, outclusso$lassoresult.qp.s$selections$select.qaic],
+                               outclusso$lassoresult.p.st$coefs.lasso.all[ixt.AIC, outclusso$lassoresult.p.st$selections$select.qaic],
+                               outclusso$lassoresult.qp.st$coefs.lasso.all[ixt.AIC.q, outclusso$lassoresult.qp.st$selections$select.qaic])
+            #AICc
+            ix.AICc <- which(names(outclusso$lassoresult.p.s$coefs.lasso.all[,outclusso$lassoresult.p.s$selections$select.qaicc]) != "")
+            ix.AICc.q <- which(names(outclusso$lassoresult.qp.s$coefs.lasso.all[,outclusso$lassoresult.qp.s$selections$select.qaicc]) != "")
+            ixt.AICc <- which(names(outclusso$lassoresult.p.st$coefs.lasso.all[,outclusso$lassoresult.p.st$selections$select.qaicc]) != "")
+            ixt.AICc.q <- which(names(outclusso$lassoresult.qp.st$coefs.lasso.all[,outclusso$lassoresult.qp.st$selections$select.qaicc]) != "")
+            
+            coefs.AICc <- rbind(outclusso$lassoresult.p.s$coefs.lasso.all[ix.AICc, outclusso$lassoresult.p.s$selections$select.qaicc],
+                                outclusso$lassoresult.qp.s$coefs.lasso.all[ix.AICc.q, outclusso$lassoresult.qp.s$selections$select.qaicc],
+                                outclusso$lassoresult.p.st$coefs.lasso.all[ixt.AICc, outclusso$lassoresult.p.st$selections$select.qaicc],
+                                outclusso$lassoresult.qp.st$coefs.lasso.all[ixt.AICc.q, outclusso$lassoresult.qp.st$selections$select.qaicc])
+            #BIC
+            ix.BIC <- which(names(outclusso$lassoresult.p.s$coefs.lasso.all[,outclusso$lassoresult.p.s$selections$select.qbic]) != "")
+            ix.BIC.q <- which(names(outclusso$lassoresult.qp.s$coefs.lasso.all[,outclusso$lassoresult.qp.s$selections$select.qbic]) != "")
+            ixt.BIC <- which(names(outclusso$lassoresult.p.st$coefs.lasso.all[,outclusso$lassoresult.p.st$selections$select.qbic]) != "")
+            ixt.BIC.q <- which(names(outclusso$lassoresult.qp.st$coefs.lasso.all[,outclusso$lassoresult.qp.st$selections$select.qbic]) != "")
+            
+            coefs.BIC <- rbind(outclusso$lassoresult.p.s$coefs.lasso.all[ix.BIC, outclusso$lassoresult.p.s$selections$select.qbic],
+                               outclusso$lassoresult.qp.s$coefs.lasso.all[ix.BIC.q, outclusso$lassoresult.qp.s$selections$select.qbic],
+                               outclusso$lassoresult.p.st$coefs.lasso.all[ixt.BIC, outclusso$lassoresult.p.st$selections$select.qbic],
+                               outclusso$lassoresult.qp.st$coefs.lasso.all[ixt.BIC.q, outclusso$lassoresult.qp.st$selections$select.qbic])
+  
+            
+        }
+        table.coefs <- cbind(IC=rep(c("(Q)AIC", "(Q)AICc", "(Q)BIC"),each=4),model, analysistype,rbind.data.frame(coefs.AIC, coefs.AICc, coefs.BIC))
+    }
     
-    
+    ####
     if(clusteridentify==FALSE){
         return(table.clusters)
     }
