@@ -5,8 +5,9 @@ importFrom("graphics", "par", "plot", "polygon", "rect", "segments",
                 "text")	
 importFrom("methods", "as", "is")	
 importFrom("stats", "coef", "deviance", "df.residual", "dist",	
-                "fitted", "glm", "model.matrix", "poisson", "quasipoisson")	
+                "fitted", "glm", "model.matrix", "poisson", "quasipoisson",
+           "binomial", "quasibinomial", "dbinom")	
 importFrom("Matrix","sparseVector")
 importFrom(Rcpp,sourceCpp)
-importFrom("dplyr", "%>%")
+importFrom(magrittr, "%>%")
 useDynLib(clusso)
