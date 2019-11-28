@@ -115,7 +115,7 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
 #'@param lasso Output from \code{glmnet}.
 #'@param coefs.lasso.all Matrix of coefficient estimates for every lambda in lasso path.
 #'@param loglike Loglikelihood for Poisson model.
-#'@param mu Estimated relative risk estimates (\eqn{\rhoi E_i}).
+#'@param mu Estimated relative risk estimates (\eqn{\rho_i E_i}).
 #'@param K Vector of the number of K parameters estimated for every lambda in lasso path.
 #'@param quasi Boolean. \code{TRUE} indicates a quasi-Poisson model that accounts for overdispersion. \code{FALSE} indicates a Poisson model without adjustment for overdispersion.
 #'@param covars Dataframe of additional covariates to be included in the model that are un-penalized by the LASSO.
@@ -167,6 +167,11 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
         select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaicc]
         numclust.qaicc <- K[select.qaicc]-Time 
+        
+        #save selections
+        selections <- list(select.qbic = select.qbic,
+                           select.qaic = select.qaic,
+                           select.qaicc = select.qaic)
 
     }
     #########################################################
@@ -194,6 +199,11 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
         select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaicc]
         numclust.qaicc <- K[select.qaicc]-Time 
+        
+        #save selections
+        selections <- list(select.qbic = select.qbic,
+                           select.qaic = select.qaic,
+                           select.qaicc = select.qaic)
     }
     #warning if numclust similar to maxclust
     if (numclust.qaic==(maxclust-Time)){
@@ -201,7 +211,7 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
     }
     res <- list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, numclust.qaic = numclust.qaic,
                 numclust.qaicc = numclust.qaicc, numclust.qbic= numclust.qbic, Ex = Ex, Yx = Yx, 
-                lasso = lasso, K = K, coefs.lasso.all = coefs.lasso.all)
+                lasso = lasso, K = K, coefs.lasso.all = coefs.lasso.all, selections = selections)
 }
 
 
@@ -263,6 +273,11 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,co
         select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaicc]
         numclust.qaicc <- K[select.qaicc]-Time 
+        
+        #save selections
+        selections <- list(select.qbic = select.qbic,
+                           select.qaic = select.qaic,
+                           select.qaicc = select.qaic)
 
     }
     else if (quasi==FALSE){
@@ -289,8 +304,12 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,co
             ((2*K*(K + 1))/(nsize - K - 1))
         select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaicc]
-
         numclust.qaicc <- K[select.qaicc]-Time 
+        
+        #Save selections
+        selections <- list(select.qbic = select.qbic,
+                           select.qaic = select.qaic,
+                           select.qaicc = select.qaic)
 
     }
     
@@ -307,7 +326,7 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,co
 
     res <- list(E.qbic = E.qbic, E.qaic = E.qaic, E.qaicc = E.qaicc, numclust.qaic = numclust.qaic,
                 numclust.qaicc = numclust.qaicc, numclust.qbic= numclust.qbic, Ex = Ex, Yx = Yx, 
-                lasso = lasso,K = K, coefs.lasso.all = coefs.lasso.all)
+                lasso = lasso,K = K, coefs.lasso.all = coefs.lasso.all, selections = selections)
 }
 
 

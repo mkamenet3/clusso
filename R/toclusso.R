@@ -13,10 +13,10 @@
 #' If spatial-only analysis, create a column that has a single value (ex: "Time1") and convert this to a factor.
 #' @param covars Are there additional covariates in the dataframe beyond the three required? If so, set to \code{TRUE}. Default is \code{FALSE}.
 #' @param id Optional. If your dataframe contains an ID variable that should not be a covariate, set the name here.
+#' @param requiredcolNames Vector of required variable names (not covariates) as extracted from \code{clusso()} arguments: \code{expected}, \code{observed}, and \code{timeperiod}.
 #' @return \code{clst} object; list of lists. First element of list (called required_df) contains the expected, observed, and time period vectors in a dataframe. The second element (called othercovariates_df) is a dataframe containing covariates that should not be penalized in the model. The second element is \code{NULL} if no other covariates are adjusted for in the model.
 #' @export
-
-toclusso <- function(df, expected, observed, timeperiod, covars=FALSE, id=NULL){
+toclusso <- function(df, expected, observed, timeperiod, covars, id=NULL, requiredcolNames){
     if((missing(covars) | covars==FALSE)){
         covars <- FALSE
     }
@@ -36,13 +36,6 @@ toclusso <- function(df, expected, observed, timeperiod, covars=FALSE, id=NULL){
     if(length(expected) != length(observed) | length(expected) != length(timeperiod) | length(observed)!=length(timeperiod)){
         stop("Lengths of at least one of the three required parameters (expected, observed, timeperiod) are not equal. Please check your data.")
     }
-    
-
-    requiredcolNames <- c(substitute(expected),
-      substitute(observed),
-      substitute(timeperiod),
-      substitute(id))
-
     reqix <- which(names(df) %in% requiredcolNames)
     required_df <- cbind.data.frame(expected = expected, 
                                     observed = observed,
