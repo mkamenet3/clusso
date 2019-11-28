@@ -8,4 +8,5 @@ importFrom("stats", "coef", "deviance", "df.residual", "dist",
                 "fitted", "glm", "model.matrix", "poisson", "quasipoisson")	
 importFrom("Matrix","sparseVector")
 importFrom(Rcpp,sourceCpp)
+importFrom("dplyr", "%>%")
 useDynLib(clusso)

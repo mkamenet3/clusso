@@ -85,7 +85,7 @@ clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
         outclussodframe$lams <- lams[changepoints_ix]
         outclussodframe$k <- eval(parse(text=paste0(prefix, "$lasso$df")))[changepoints_ix]-Time
         #convert to long and exclude unpenalized time
-        outclusso_long <- tidyr::gather(outclussodframe, s, var, -c("lams", "k"), factor_key = TRUE) dplyr::`%>%`
+        outclusso_long <- tidyr::gather(outclussodframe, s, var, -c("lams", "k"), factor_key = TRUE) %>%
             dplyr::filter(!(s %in% (maxdim-Time):maxdim))
         #extract nclusters identified by AIC, AICc, and BIC
         numclust.qaic <- eval(parse(text=paste0(prefix,"$numclust.qaic")))
@@ -161,7 +161,7 @@ clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim){
         outclussodframe$lams <- lams[changepoints_ix]
         outclussodframe$k <- eval(parse(text=paste0(prefix, "$lasso$glmnet.fit$df")))[changepoints_ix]-Time
         #convert to long and exclude unpenalized time
-        outclusso_long <- tidyr::gather(outclussodframe, s, var, -c("lams", "k"), factor_key = TRUE) dplyr::`%>%`
+        outclusso_long <- tidyr::gather(outclussodframe, s, var, -c("lams", "k"), factor_key = TRUE) %>%
             dplyr::filter(!(s %in% (maxdim-Time):maxdim))
         numclust.cv <- eval(parse(text=paste0(prefix,"$numclust.cv")))
         kcv <- outclusso_long$lams[which(outclusso_long$k==numclust.cv)][1]
