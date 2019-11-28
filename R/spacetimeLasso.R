@@ -13,9 +13,10 @@
 #' @param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in \code{glmnet}. If none supplied, default is \code{11}.
 #' @param overdispfloor Default is \code{TRUE}. When \code{TRUE}, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If \code{FALSE}, it will allow for under-dispersion in the model.
 #' @param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
+#'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
 #' @return Returns a list of lists with the 1) estimated relative risks for each geographic subregion-time period based on selection by (Q)BIC, (Q)AIC, (Q)AICc, 2) number of identified clusters by (Q)BIC, (Q)AIC, (Q)AICc, 3) original expected counts (Ex), 4) original observed counts (Yx),5) the LASSO object, 6)  list of K values (number of unique values in each LASSO path), 7) and the estimated coefficients from all estimated lambdas.
 
-spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust, overdispfloor, cv){
+spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust, overdispfloor, cv, nsize){
     #check for covariates
     covars <- vectors$covars
     if(!is.null(covars)){
@@ -37,7 +38,6 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
         message("Path selection: cross-validation")
         if(!is.null(covars)){
             penalty <- c(rep(1,(ncol(sparseMAT)-Time)), rep(0,(Time+ncol(covarMAT))))   
-            # #print(table(penalty))
         }
         else{
             penalty <- c(rep(1,(ncol(sparseMAT)-Time)), rep(0,Time))    
@@ -64,14 +64,12 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
             penalty <- c(rep(1,(ncol(sparseMAT)-Time)), rep(0,Time))    
         }
         if(model=="poisson"){
-            #print("Model poisson selected in spacetimeLasso")
             lasso <- glmnet::glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex), 
                                     nlambda = 2000,
                                     standardize = FALSE, intercept=FALSE,dfmax = maxclust,
                                     penalty.factor = penalty)    
         }
         else if(model=="binomial"){
-            #print("Model binomial selected in spacetimeLasso")
             lasso <- glmnet::glmnet(sparseMAT, cbind((Ex-Yx),Yx), family=("binomial"), alpha=1, 
                                     nlambda = 2000,
                                     standardize = FALSE, intercept=FALSE,dfmax = maxclust,
@@ -83,10 +81,7 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
         
         
     }
-    # message("Lasso complete - extracting estimates and paths")
-    # coefs.lasso.all <- coef(lasso)[-1,]
-    # xbetaPath<- sparseMAT%*%coefs.lasso.all
-    # K <- lasso$df
+
     #if running cross-validation version:
     if(!is.null(cv)){
         res <- stLasso_cv(lasso, sparseMAT, Ex, Yx, Time)
@@ -97,21 +92,18 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
         coefs.lasso.all <- coef(lasso)[-1,]
         xbetaPath<- sparseMAT%*%coefs.lasso.all
         K <- lasso$df
-        #print("Pois post-process")
-        #print(paste0("quasi: ",quasi))
         if(model=="poisson"){
             mu <- sapply(1:length(lasso$lambda), function(i) exp(xbetaPath[,i]))
             loglike <- sapply(1:length(lasso$lambda), function(i) sum(dpoisson(Yx, mu[,i],Ex)))
             res <- spacetimeLassoPois(lasso, coefs.lasso.all,loglike,mu,K, quasi, 
-                                      covars,Yx, Ex, Period, Time, n_uniq, overdispfloor, maxclust)
+                                      covars,Yx, Ex, Period, Time, n_uniq, overdispfloor, maxclust, nsize)
         }
         else if(model=="binomial"){
-            #print("Binom post-process")
             mu <- sapply(1:length(lasso$lambda), function(i) exp(xbetaPath[,i]))
             phat <-  sapply(1:length(lasso$lambda), function(i) pihat(xbetaPath[,i]))
             loglike <- sapply(1:length(lasso$lambda), function(i) sum(dbin(Yx, Ex, phat[,i])))
             res <- spacetimeLassoBinom(lasso,coefs.lasso.all, loglike, mu, K, quasi,covars,
-                                       Yx, Ex, Period, Time, n_uniq, overdispfloor,maxclust)
+                                       Yx, Ex, Period, Time, n_uniq, overdispfloor,maxclust, nsize)
         }
         return(res)
     }
@@ -134,7 +126,9 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
 #'@param n_uniq Number of unique centroids in the study area.
 #'@param overdispfloor Default is \code{TRUE}. When TRUE, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under-dispersion in the model.  
 #'@param maxclust  Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{11}.
-spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, covars,Yx, Ex, Period, Time, n_uniq, overdispfloor, maxclust){    
+#'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
+#'@return List of results from Poisson/quasi-Poisson models.
+spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, covars,Yx, Ex, Period, Time, n_uniq, overdispfloor, maxclust, nsize){    
     #########################################################
     #Quasi-Poisson only (yes overdispersion)
     #########################################################
@@ -153,7 +147,8 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
         if(quasi == TRUE & is.null(overdisp.est)) warning("No overdispersion for quasi-Poisson model. Please check.")
         
         #QBIC
-        PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(sum(Yx)))
+        #PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(sum(Yx)))
+        PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(nsize))
         select.qbic <- which.min(PLL.qbic)
         E.qbic <- mu[,select.qbic]
         numclust.qbic <- K[select.qbic]-Time 
@@ -165,8 +160,10 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
         numclust.qaic <- K[select.qaic]-Time 
         
         #QAICc
+        # PLL.qaicc <- 2*(K) - 2*(loglike/overdisp.est) +
+        #     ((2*K*(K + 1))/(sum(Yx) - K - 1))
         PLL.qaicc <- 2*(K) - 2*(loglike/overdisp.est) +
-            ((2*K*(K + 1))/(sum(Yx) - K - 1))
+            ((2*K*(K + 1))/(nsize - K - 1))
         select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaicc]
         numclust.qaicc <- K[select.qaicc]-Time 
@@ -177,7 +174,8 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
     #########################################################
     else if(quasi==FALSE){
         #QBIC
-        PLL.qbic  <- -2*(loglike) + ((K)*log(sum(Yx)))
+        #PLL.qbic  <- -2*(loglike) + ((K)*log(sum(Yx)))
+        PLL.qbic  <- -2*(loglike) + ((K)*log(nsize))
         select.qbic <- which.min(PLL.qbic)
         E.qbic <- mu[,select.qbic]
         numclust.qbic <- K[select.qbic]-Time 
@@ -189,8 +187,10 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
         numclust.qaic <- K[select.qaic]-Time 
         
         #QAICc
+        # PLL.qaicc <- 2*(K) - 2*(loglike) +
+        #     ((2*K*(K + 1))/(sum(Yx) - K - 1))
         PLL.qaicc <- 2*(K) - 2*(loglike) +
-            ((2*K*(K + 1))/(sum(Yx) - K - 1))
+            ((2*K*(K + 1))/(nsize - K - 1))
         select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaicc]
         numclust.qaicc <- K[select.qaicc]-Time 
@@ -223,7 +223,9 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
 #'@param n_uniq Number of unique centroids in the study area.
 #'@param overdispfloor Default is \code{TRUE}. When TRUE, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under-dispersion in the model.  
 #'@param maxclust  Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{11}.
-spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,covars, Yx, Ex, Period, Time, n_uniq, overdispfloor,maxclust){   
+#'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
+#'@return List of results for binomial/quasi-binomial models.
+spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,covars, Yx, Ex, Period, Time, n_uniq, overdispfloor,maxclust, nsize){   
     if(quasi==TRUE){
         #message("Returning results for space-time Quasi-Poisson model")
         if(!is.null(covars)){
@@ -241,8 +243,8 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,co
         #Space-Time, Binomial
         #########################################################
         #QBIC
-        PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(min(sum(Yx),sum(Ex-Yx))))
-        #print(select.qbic)
+        #PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(min(sum(Yx),sum(Ex-Yx))))
+        PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(nsize))
         select.qbic <- which.min(PLL.qbic)
         E.qbic <- mu[,select.qbic]
         numclust.qbic <- K[select.qbic]-Time 
@@ -255,7 +257,9 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,co
         
         #QAICc
         PLL.qaicc <- 2*(K) - 2*(loglike/overdisp.est) +
-            ((2*K*(K + 1))/(min(sum(Yx),sum(Ex-Yx)) - K - 1))
+            ((2*K*(K + 1))/(nsize - K - 1))
+        #PLL.qaicc <- 2*(K) - 2*(loglike/overdisp.est) +
+         #   ((2*K*(K + 1))/(min(sum(Yx),sum(Ex-Yx)) - K - 1))
         select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaicc]
         numclust.qaicc <- K[select.qaicc]-Time 
@@ -266,7 +270,8 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,co
         #Space-Time, Binomial
         #########################################################
         #QBIC
-        PLL.qbic  <- -2*(loglike) + ((K)*log(min(sum(Yx),sum(Ex-Yx))))
+        #PLL.qbic  <- -2*(loglike) + ((K)*log(min(sum(Yx),sum(Ex-Yx))))
+        PLL.qbic  <- -2*(loglike) + ((K)*log(nsize))
         select.qbic <- which.min(PLL.qbic)
         E.qbic <- mu[,select.qbic]
         numclust.qbic <- K[select.qbic]-Time 
@@ -278,8 +283,10 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,co
         numclust.qaic <- K[select.qaic]-Time 
         
         #QAICc
+        # PLL.qaicc <- 2*(K) - 2*(loglike) +
+        #     ((2*K*(K + 1))/(min(sum(Yx),sum(Ex-Yx)) - K - 1))
         PLL.qaicc <- 2*(K) - 2*(loglike) +
-            ((2*K*(K + 1))/(min(sum(Yx),sum(Ex-Yx)) - K - 1))
+            ((2*K*(K + 1))/(nsize - K - 1))
         select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaicc]
 

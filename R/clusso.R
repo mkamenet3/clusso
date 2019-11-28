@@ -22,6 +22,7 @@
 #'@param overdispfloor Default is \code{TRUE}. When \code{TRUE}, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If \code{FALSE}, it will allow for under-dispersion in the model.
 #'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
 #'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time. 
+#'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
 #'@export
 #'@return Returns list of cluster detection results ready to analyze and plot.
 #'@examples
@@ -36,9 +37,7 @@
 #'y <- utmJapan$utmy/1000
 #'rMax <- 20 
 #'system.time(resreal <- clusso(df=jbc, expected = expdeath, observed=death,timeperiod = factor(period), covars=FALSE,x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11))}
-
-
-clusso <- function(df, expected, observed, timeperiod,covars,id= NULL,x,y,rMax, utm=TRUE, analysis = c("space","spacetime", "both"),model = c("poisson", "binomial"),maxclust = 11,overdispfloor=TRUE, cv=NULL, collapsetime=FALSE){
+clusso <- function(df, expected, observed, timeperiod,covars,id= NULL,x,y,rMax, utm=TRUE, analysis = c("space","spacetime", "both"),model = c("poisson", "binomial"),maxclust = 11,overdispfloor=TRUE, cv=NULL, collapsetime=FALSE, nsize=NULL){
     expected <- eval(substitute(expected),df)
     observed <- eval(substitute(observed),df)
     timeperiod <- eval(substitute(timeperiod),df)
@@ -105,22 +104,35 @@ clusso <- function(df, expected, observed, timeperiod,covars,id= NULL,x,y,rMax, 
     if(length(analysis) > 1) stop("You must select either `space`, `spacetime`, or `both`")
     analysis <- match.arg(analysis, several.ok = FALSE)
     if(model=="poisson"){
+        #set nsize
+        if(!is.null(nsize)){
+            nsize = nsize
+        }
+        else {
+            nsize = sum(observed)
+        }
         switch(analysis, 
                space = clussoPois(analysis="space",x, y, rMax,period, expected, observed, covars, 
-                                  Time, utm,  maxclust,overdispfloor, cv, collapsetime),
+                                  Time, utm,  maxclust,overdispfloor, cv, collapsetime, nsize),
                spacetime = clussoPois(analysis="spacetime",x, y, rMax,period, expected, observed, covars, 
-                                      Time, utm, maxclust,overdispfloor, cv, collapsetime),
+                                      Time, utm, maxclust,overdispfloor, cv, collapsetime, nsize),
                both = clussoPois(analysis="both",x, y, rMax,period, expected, observed, covars, 
-                                 Time, utm,  maxclust,overdispfloor, cv, collapsetime))
+                                 Time, utm,  maxclust,overdispfloor, cv, collapsetime, nsize))
     }
     else if(model=="binomial"){
+        if(!is.null(nsize)){
+            
+        }
+        else{
+            nsize = min(sum(observed), sum(expected))
+        }
         switch(analysis, 
                space = clussoBinom(analysis="space",x, y, rMax,period, expected, observed, covars,
-                                   Time, utm, maxclust, overdispfloor,cv, collapsetime),
+                                   Time, utm, maxclust, overdispfloor,cv, collapsetime, nsize),
                spacetime = clussoBinom(analysis="spacetime",x, y, rMax,period, expected, observed, covars,
-                                       Time, utm,  maxclust, overdispfloor,cv, collapsetime),
+                                       Time, utm,  maxclust, overdispfloor,cv, collapsetime, nsize),
                both = clussoBinom(analysis="both",x, y, rMax,period, expected, observed, covars, 
-                                  Time, utm,  maxclust, overdispfloor,cv, collapsetime))
+                                  Time, utm,  maxclust, overdispfloor,cv, collapsetime, nsize))
     }
     else{
         warning("You have not specified a model. Please set 'model' argument to 'poisson' or 'binomial'.")
@@ -149,9 +161,10 @@ clusso <- function(df, expected, observed, timeperiod,covars,id= NULL,x,y,rMax, 
 #'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in \code{glmnet}. If none supplied, default is \code{11}.
 #'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
 #'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time. 
-#'@return list of lists output from detection
+#'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
+#'@return List of lists output from detection.
 
-clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Time, utm, maxclust, overdispfloor, cv, collapsetime){
+clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Time, utm, maxclust, overdispfloor, cv, collapsetime, nsize){
     model <- "poisson"
     if(analysis=="space"){
         analysis_name<-"spatial"
@@ -208,9 +221,9 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
     #RUN LASSO
     if(analysis=="spacetime"){
         lassoresult.qp.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors,Time, 
-                                            quasi=TRUE, maxclust, overdispfloor, cv)
+                                            quasi=TRUE, maxclust, overdispfloor, cv, nsize)
         lassoresult.p.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, 
-                                           quasi=FALSE, maxclust, overdispfloor, cv)
+                                           quasi=FALSE, maxclust, overdispfloor, cv, nsize)
 
         message("All models ran successfully")
         #space time
@@ -231,9 +244,9 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
     }
     else if (analysis=="space"){
         lassoresult.qp.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
-                                           quasi=TRUE, maxclust, overdispfloor,cv)
+                                           quasi=TRUE, maxclust, overdispfloor,cv, nsize)
         lassoresult.p.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
-                                          quasi=FALSE, maxclust, overdispfloor,cv)
+                                          quasi=FALSE, maxclust, overdispfloor,cv, nsize)
         message("All models ran successfully")
         #space only
         ##risk ratios
@@ -259,13 +272,13 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
     else{
         #both
         lassoresult.qp.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors,Time, 
-                                            quasi=TRUE, maxclust, overdispfloor, cv)
+                                            quasi=TRUE, maxclust, overdispfloor, cv, nsize)
         lassoresult.p.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, 
-                                           quasi=FALSE, maxclust, overdispfloor, cv)
+                                           quasi=FALSE, maxclust, overdispfloor, cv, nsize)
         lassoresult.qp.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
-                                           quasi=TRUE, maxclust, overdispfloor,cv)
+                                           quasi=TRUE, maxclust, overdispfloor,cv, nsize)
         lassoresult.p.s <- spacetimeLasso(model,sparseMAT, n_uniq, vectors.s, Time, 
-                                          quasi=FALSE, maxclust, overdispfloor,cv)
+                                          quasi=FALSE, maxclust, overdispfloor,cv, nsize)
         message("All models ran successfully")
         #space time
         ##risk ratios
@@ -337,9 +350,10 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
 #'@param overdispfloor Default is \code{TRUE}. When \code{TRUE}, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If \code{FALSE}, it will allow for under-dispersion in the model.
 #'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
 #'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time. 
-#'@return list of lists output from detection
+#'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
+#'@return List of lists output from detection.
 
-clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Time, utm, maxclust,overdispfloor, cv, collapsetime){  
+clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Time, utm, maxclust,overdispfloor, cv, collapsetime, nsize){  
     model <- "binomial"
     if(analysis=="space"){
         analysis_name<-"spatial"
@@ -392,9 +406,9 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
     #RUN LASSO
     if(analysis=="spacetime"){
         lassoresult.p.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, 
-                                           quasi=FALSE, maxclust, overdispfloor, cv)
+                                           quasi=FALSE, maxclust, overdispfloor, cv, nsize)
         lassoresult.qp.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time,
-                                            quasi=TRUE, maxclust, overdispfloor, cv)
+                                            quasi=TRUE, maxclust, overdispfloor, cv, nsize)
         message("All models ran successfully")
         #space time
         ##risk ratios
@@ -414,9 +428,9 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
     }
     else if (analysis=="space"){
         lassoresult.p.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
-                                          quasi=FALSE, maxclust, overdispfloor,cv)
+                                          quasi=FALSE, maxclust, overdispfloor,cv, nsize)
         lassoresult.qp.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
-                                           quasi=TRUE, maxclust, overdispfloor,cv)
+                                           quasi=TRUE, maxclust, overdispfloor,cv, nsize)
         message("All models ran successfully")
         #space only
         ##risk ratios
@@ -443,13 +457,13 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
         #both
 
         lassoresult.p.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors,Time, 
-                                           quasi=FALSE, maxclust, overdispfloor, cv)
+                                           quasi=FALSE, maxclust, overdispfloor, cv, nsize)
         lassoresult.qp.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, 
-                                            quasi=TRUE, maxclust, overdispfloor, cv)
+                                            quasi=TRUE, maxclust, overdispfloor, cv, nsize)
         lassoresult.p.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
-                                          quasi=FALSE, maxclust, overdispfloor,cv)
+                                          quasi=FALSE, maxclust, overdispfloor,cv, nsize)
         lassoresult.qp.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
-                                           quasi=TRUE, maxclust, overdispfloor,cv)
+                                           quasi=TRUE, maxclust, overdispfloor,cv, nsize)
         message("All models ran successfully")
         #space time
         ##risk ratios
