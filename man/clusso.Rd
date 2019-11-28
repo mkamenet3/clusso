@@ -14,9 +14,9 @@ clusso(df, expected, observed, timeperiod, covars, id = NULL, x, y, rMax,
 \arguments{
 \item{df}{Name of dataframe.}
 
-\item{expected}{Name of variable that contains the expected counts.}
+\item{expected}{Name of variable that contains the expected counts (Poisson models). Number of trials/sum of cases + controls (binomial case).}
 
-\item{observed}{Name of variable that contains the observed counts.}
+\item{observed}{Name of variable that contains the observed counts (Poisson models). Number of successes/cases (binomial case).}
 
 \item{timeperiod}{Name of variable that contains the timeperiod in which counts were observed (as factor). If this is variable is not a factor in the dataframe, then it will be automatically converted to one by \code{clusso()} with a warning message.}
 

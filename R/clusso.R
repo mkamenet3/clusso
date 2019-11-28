@@ -7,8 +7,8 @@
 #' @description
 #' Runs helper function for both the space and space-time Lasso model on observed data. 
 #'@param df Name of dataframe.
-#'@param expected Name of variable that contains the expected counts.
-#'@param observed Name of variable that contains the observed counts.
+#'@param expected Name of variable that contains the expected counts (Poisson models). Number of trials/sum of cases + controls (binomial case).
+#'@param observed Name of variable that contains the observed counts (Poisson models). Number of successes/cases (binomial case).
 #'@param timeperiod Name of variable that contains the timeperiod in which counts were observed (as factor). If this is variable is not a factor in the dataframe, then it will be automatically converted to one by \code{clusso()} with a warning message.
 #'@param covars Boolean - are there additional covariates in the dataframe beyond the three required? If so, set to \code{TRUE}. Default is \code{FALSE}.
 #'@param id Optional. If your dataframe contains an ID variable that should not be a covariate, set the name here. If you have excluded the ID from the dataset already, then ignore (or better, explicitly set to \code{NULL}).
