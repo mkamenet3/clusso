@@ -142,7 +142,8 @@ We now set the argument `covars=TRUE` to tell `clusso()` to identify the covaria
 
 ```{r}
 system.time(resccscovars<- clusso(ccsjbc, expected = n, observed=numcases,timeperiod = factor(period), covars=TRUE, 
-                               x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="binomial",maxclust=11))
+                                  id=id,x= x,y = y, rMax =  rMax, utm=TRUE,
+                                  analysis="both", model="binomial",maxclust=11))
 
 ```
 
