@@ -18,7 +18,7 @@ spacetimeLassoBinom(lasso, coefs.lasso.all, loglike, mu, K, quasi, covars,
 
 \item{K}{Vector of the number of K parameters estimated for every lambda in lasso path.}
 
-\item{quasi}{Boolean. \code{TRUE} indicates a quasi-Poisson model that accounts for overdispersion. \code{FALSE} indicates a Poisson model without adjustment for overdispersion.}
+\item{quasi}{Boolean. \code{TRUE} indicates a quasi-binomial model that accounts for overdispersion. \code{FALSE} indicates a binomial model without adjustment for overdispersion.}
 
 \item{covars}{Dataframe of additional covariates to be included in the model that are un-penalized by the LASSO.}
 
