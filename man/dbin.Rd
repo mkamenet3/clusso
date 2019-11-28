@@ -2,7 +2,7 @@
 % Please edit documentation in R/dbin.R
 \name{dbin}
 \alias{dbin}
-\title{dbinom}
+\title{dbin}
 \usage{
 dbin(Yx, Ex, p)
 }

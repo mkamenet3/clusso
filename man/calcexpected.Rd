@@ -27,5 +27,6 @@ Estimate expected counts if data not available
 \examples{
 \donttest{
 data(japanbreastcancer)
-calcexpected(japanbreastcancer$observed, japanbreastcancer$period, japanbreastcancer$id, family="poisson") }
+calcexpected(japanbreastcancer$observed, japanbreastcancer$period, 
+   japanbreastcancer$id, family="poisson") }
 }

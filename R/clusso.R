@@ -36,7 +36,9 @@
 #'x <- utmJapan$utmx/1000
 #'y <- utmJapan$utmy/1000
 #'rMax <- 20 
-#'system.time(resreal <- clusso(df=jbc, expected = expdeath, observed=death,timeperiod = factor(period), covars=FALSE,x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11))}
+#'system.time(resreal <- clusso(df=jbc, expected = expdeath, observed=death,
+#'    timeperiod = factor(period), covars=FALSE,x= x,y = y, rMax =  rMax, 
+#'    utm=TRUE, analysis="both", model="poisson",maxclust=11))}
 clusso <- function(df, expected, observed, timeperiod,covars,id= NULL,x,y,rMax, utm=TRUE, analysis = c("space","spacetime", "both"),model = c("poisson", "binomial"),maxclust = 11,overdispfloor=TRUE, cv=NULL, collapsetime=FALSE, nsize=NULL){
     expected <- eval(substitute(expected),df)
     observed <- eval(substitute(observed),df)
@@ -336,13 +338,13 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
 #' @description 
 #'This function runs both the space and space-time LASSO binomial model. This function is to be run on observed data. A separate function (clusso) is the helper function which will have 
 #'flexibility to specify the space or spacetime or both models to be run .
-#'@param analysisanalysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.  
+#'@param analysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.  
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
 #'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
 #'@param rMax Set maximum radius for potential clusters (in km).
 #'@param period Vector of timeperiods in the data set. If this is variable is not a factor in the dataframe, then it will be automatically converted to one by \code{clusso()} with a warning message.
-#'@param numcases Vector of number of cases (or successes).
-#'@param n Total number of both cases and controls (or number of trials).
+#'@param expected Total number of both cases and controls (or number of trials).
+#'@param observed Vector of number of cases (or successes).
 #'@param covars Matrix of covariates.
 #'@param Time Number of timeperiods in the dataset. This is calculated based on the number of unique timeperiods (factor levels) supplied to \code{clusso}.
 #'@param utm Default is \code{TRUE} (coordinates are in the Universal Transverse Mercator (UTM) coordinate system). If \code{FALSE}, then coordinates will be interpreted as Longitude/Latitude and the Haversine formula will be used to determine the distance between points.
@@ -370,7 +372,7 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
     n_uniq <- length(unique(clusters$center))
     init <- setVectors(period, expected, observed, covars, Time, byrow = TRUE) 
     Yx <- init$Y.vec #ncases
-    Ex <- init$E0 #ntrials
+    Ex <- E1 <- init$E0 #ntrials
     #set vectors
     if(analysis=="spacetime"){
         vectors <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec, covars = covars)    

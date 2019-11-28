@@ -8,6 +8,8 @@ clussoBinom(analysis, x, y, rMax, period, expected, observed, covars, Time,
   utm, maxclust, overdispfloor, cv, collapsetime, nsize)
 }
 \arguments{
+\item{analysis}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.}
+
 \item{x}{x coordinates (easting/latitude); if utm coordinates, scale to km.}
 
 \item{y}{y coordinates (northing/longitude); if utm coordinates, scale to km.}
@@ -15,6 +17,10 @@ clussoBinom(analysis, x, y, rMax, period, expected, observed, covars, Time,
 \item{rMax}{Set maximum radius for potential clusters (in km).}
 
 \item{period}{Vector of timeperiods in the data set. If this is variable is not a factor in the dataframe, then it will be automatically converted to one by \code{clusso()} with a warning message.}
+
+\item{expected}{Total number of both cases and controls (or number of trials).}
+
+\item{observed}{Vector of number of cases (or successes).}
 
 \item{covars}{Matrix of covariates.}
 
@@ -31,12 +37,6 @@ clussoBinom(analysis, x, y, rMax, period, expected, observed, covars, Time,
 \item{collapsetime}{Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time.}
 
 \item{nsize}{Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.}
-
-\item{analysisanalysis}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.}
-
-\item{numcases}{Vector of number of cases (or successes).}
-
-\item{n}{Total number of both cases and controls (or number of trials).}
 }
 \value{
 List of lists output from detection.

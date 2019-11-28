@@ -214,7 +214,7 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
 #'@param loglike Loglikelihood for Poisson model
 #'@param mu Estimated odds of disease.
 #'@param K Vector of the number of K parameters estimated for every lambda in lasso path.
-#'@param quasi Boolean. \code{TRUE} indicates a quasi-Poisson model that accounts for overdispersion. \code{FALSE} indicates a Poisson model without adjustment for overdispersion.
+#'@param quasi Boolean. \code{TRUE} indicates a quasi-binomial model that accounts for overdispersion. \code{FALSE} indicates a binomial model without adjustment for overdispersion.
 #'@param covars Dataframe of additional covariates to be included in the model that are un-penalized by the LASSO.
 #'@param Yx Number of observed cases for each space-time location.
 #'@param Ex Total number of trials (cases + controls) for each space-time location.
@@ -230,7 +230,7 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,co
         #message("Returning results for space-time Quasi-Poisson model")
         if(!is.null(covars)){
             offset_reg <- glm(cbind(Yx, (Ex-Yx))~ . + as.factor(Period),
-                              data = covars,family=quasibinomial)
+                              data = covars,family="quasibinomial")
         }
         else{
             offset_reg <- glm(cbind(Yx, (Ex-Yx)) ~ 1 + as.factor(Period),
