@@ -13,7 +13,8 @@
 #'@examples
 #'\donttest{
 #'data(japanbreastcancer)
-#'calcexpected(japanbreastcancer$observed, japanbreastcancer$period, japanbreastcancer$id, family="poisson") }
+#'calcexpected(japanbreastcancer$observed, japanbreastcancer$period, 
+#'    japanbreastcancer$id, family="poisson") }
 
 calcexpected <- function(observed, population,periods, ids){
     if(is.character(periods)){
