@@ -40,6 +40,10 @@
 #'    timeperiod = factor(period), covars=FALSE,x= x,y = y, rMax =  rMax, 
 #'    utm=TRUE, analysis="both", model="poisson",maxclust=11))}
 clusso <- function(df, expected, observed, timeperiod,covars,id= NULL,x,y,rMax, utm=TRUE, analysis = c("space","spacetime", "both"),model = c("poisson", "binomial"),maxclust = 11,overdispfloor=TRUE, cv=NULL, collapsetime=FALSE, nsize=NULL){
+    requiredcolNames <- c(deparse(substitute(expected)),
+                          deparse(substitute(observed)),
+                          deparse(substitute(timeperiod)),
+                          deparse(substitute(id)))
     expected <- eval(substitute(expected),df)
     observed <- eval(substitute(observed),df)
     timeperiod <- eval(substitute(timeperiod),df)
@@ -55,7 +59,7 @@ clusso <- function(df, expected, observed, timeperiod,covars,id= NULL,x,y,rMax, 
     else{
         covars <- TRUE
     }
-    clst <- toclusso(df, expected, observed,timeperiod, covars, id)
+    clst <- toclusso(df, expected, observed,timeperiod, covars, id, requiredcolNames)
     expected <- clst$required_df$expected
     observed <- clst$required_df$observed
     period <- clst$required_df$timeperiod

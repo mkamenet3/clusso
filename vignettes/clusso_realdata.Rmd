@@ -209,7 +209,8 @@ There are 5 additional covariates, `covar1` - `covar5` that we will want to adju
 We now set the argument `covars=TRUE` to tell `clusso()` to identify the covariates and to include them in as unpenalized terms in the LASSO model.
 
 ```{r}
-system.time(rescovars<- clusso(jbc, expected = expdeath, observed=death,timeperiod = factor(period), covars=TRUE, 
+system.time(rescovars<- clusso(jbc, expected = expdeath, observed=death,
+                               timeperiod = period, covars=TRUE, id=id,
                                x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11))
 
 ```
