@@ -5,7 +5,8 @@
 \title{clussopretty}
 \usage{
 clussopretty(outclusso, analysis = "both", model = c("poisson",
-  "binomial"), clusteridentify = FALSE, clusterRR, cv = FALSE)
+  "binomial"), clusteridentify = FALSE, clusterRR, cv = FALSE,
+  covars = FALSE)
 }
 \arguments{
 \item{outclusso}{Object with output from \code{clusso}.}
@@ -18,7 +19,9 @@ clussopretty(outclusso, analysis = "both", model = c("poisson",
 
 \item{clusterRR}{Risk ratio cut off for a cluster to be identified. Alternatively, a risk ratio can be provided (ex: 1.0, 1.25) that would serve as a cut off value for identifiying a cluster. Current default is 1.0. We define a cluster as being different from the background rate.}
 
-\item{cv}{Boolean, default is \code{FALSE}. If \code{TRUE}, then this will assume that the cross-validation (and not information criteria) model selection was perfromed.}
+\item{cv}{Boolean, default is \code{FALSE}. If \code{TRUE}, then this will assume that the cross-validation (and not information criteria) model selection was performed.}
+
+\item{covars}{Default is FALSE (time main effects and covariate estimates suppressed). If \code{TRUE}, then results reported for time main effects and covariate estimates. Results reported as both raw and exponentiated estimates.}
 }
 \value{
 Data frame of output that can be sent to a comma-separated values file (csv) or list of data frames (if \code{clusteridentify} set to \code{TRUE}).
@@ -43,5 +46,11 @@ rMax <- 20
 system.time(resreal <- clusso(df=jbc, expected = expdeath, observed=death,
    timeperiod = factor(period), covars=FALSE,x= x,y = y, rMax =  rMax, 
    utm=TRUE, analysis="both", model="poisson",maxclust=11))
-clussopretty(resreal, analysis="both", model="poisson",clusteridentify=FALSE)}
+clussopretty(resreal, analysis="both", model="poisson",clusteridentify=FALSE)
+
+#example with including covariates
+system.time(resreal <- clusso(df=jbc, expected = expdeath, observed=death,
+   timeperiod = factor(period), covars=TRUE, id=id,x= x,y = y, rMax =  rMax, 
+   utm=TRUE, analysis="both", model="poisson",maxclust=11))
+}
 }

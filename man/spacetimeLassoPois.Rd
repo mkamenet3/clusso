@@ -14,7 +14,7 @@ spacetimeLassoPois(lasso, coefs.lasso.all, loglike, mu, K, quasi, covars,
 
 \item{loglike}{Loglikelihood for Poisson model.}
 
-\item{mu}{Estimated relative risk estimates (\eqn{\rhoi E_i}).}
+\item{mu}{Estimated relative risk estimates (\eqn{\rho_i E_i}).}
 
 \item{K}{Vector of the number of K parameters estimated for every lambda in lasso path.}
 
