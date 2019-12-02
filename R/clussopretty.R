@@ -86,7 +86,6 @@ clussopretty <- function(outclusso, analysis="both", model = c("poisson", "binom
         }
         else{
             #both
-            #model <- c(rep("Poisson",2), rep("Quasi-Poisson",2))
             model <- rep(model, each=2)
             analysistype <- rep(c("Space", "Space-Time"),2)
             numclust.AIC <- c(outclusso$lassoresult.p.s$numclust.qaic, outclusso$lassoresult.p.st$numclust.qaic, 
@@ -140,8 +139,8 @@ clussopretty <- function(outclusso, analysis="both", model = c("poisson", "binom
                                outclusso$lassoresult.qp.st$coefs.lasso.all[ix.BIC.q, outclusso$lassoresult.qp.st$selections$select.qbic])
         }
         else{
-            model <- rep(model, each=2)
-            analysistype <- rep(c("Space", "Space-Time"),2)
+            model <- rep(rep(model, each=2),times=3)
+            analysistype <- rep(c("Space", "Space-Time"),6)
             #AIC
             ix.AIC <- which(names(outclusso$lassoresult.p.s$coefs.lasso.all[,outclusso$lassoresult.p.s$selections$select.qaic]) != "")
             ix.AIC.q <- which(names(outclusso$lassoresult.qp.s$coefs.lasso.all[,outclusso$lassoresult.qp.s$selections$select.qaic]) != "")
@@ -176,6 +175,10 @@ clussopretty <- function(outclusso, analysis="both", model = c("poisson", "binom
             
         }
         table.coefs <- cbind(IC=rep(c("(Q)AIC", "(Q)AICc", "(Q)BIC"),each=4),model, analysistype,rbind.data.frame(coefs.AIC, coefs.AICc, coefs.BIC))
+        table.expcoefs <- cbind(IC=rep(c("(Q)AIC", "(Q)AICc", "(Q)BIC"),each=4),model, analysistype,exp(rbind.data.frame(coefs.AIC, coefs.AICc, coefs.BIC)))
+        return(list(table.clusters = table.clusters,
+                    table.coefs= table.coefs,
+                    table.expcoefs = table.expcoefs))
     }
     
     ####
