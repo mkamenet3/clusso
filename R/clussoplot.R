@@ -9,6 +9,7 @@
 #'@param Time Number of time periods in the analysis.
 #'@param cv Boolean. Takes \code{TRUE} if cross-validation was used. Default is \code{FALSE}.
 #'@export
+#'@import data.table
 #'@return Returns a ggplot.
 #'@examples
 #'\donttest{
@@ -54,6 +55,7 @@ clussoplot <- function(outclusso, analysis=c("space","spacetime","both"), model 
 #'@param model A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.
 #'@param Time Number of time periods in the analysis.
 #'@param maxdim Maximum number of potential clusters.
+#'@import data.table
 #'@return Returns plots based on information criteria.
 clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
     for (i in 1:length(analysistype)){
@@ -130,6 +132,7 @@ clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
 #'@param model A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.
 #'@param Time Number of time periods in the analysis.
 #'@param maxdim maximum number of potential clusters.
+#'@import data.table
 #'@return Returns plots based on cross-validation.
 clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim){
     for (i in 1:length(analysistype)){
