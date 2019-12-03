@@ -134,7 +134,6 @@ clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
 #'@param Time Number of time periods in the analysis.
 #'@param maxdim maximum number of potential clusters.
 #'@import data.table
-#'@importFrom rlang .data
 #'@return Returns plots based on cross-validation.
 clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim){
     for (i in 1:length(analysistype)){
