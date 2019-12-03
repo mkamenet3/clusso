@@ -87,7 +87,7 @@ clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
         outclussodframe$lams <- lams[changepoints_ix]
         outclussodframe$k <- eval(parse(text=paste0(prefix, "$lasso$df")))[changepoints_ix]-Time
         #convert to long and exclude unpenalized time
-        outclusso_long <- tidyr::gather(outclussodframe, path, variable, -c("lams", "k"), factor_key = TRUE) %>%
+        outclusso_long <- tidyr::gather(outclussodframe, key = "path", value = "variable", -c("lams", "k"), factor_key = TRUE) %>%
             dplyr::filter(!(path %in% (maxdim-Time):maxdim))
         #extract nclusters identified by AIC, AICc, and BIC
         numclust.qaic <- eval(parse(text=paste0(prefix,"$numclust.qaic")))
@@ -134,7 +134,7 @@ clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
 #'@param maxdim maximum number of potential clusters.
 #'@import data.table
 #'@return Returns plots based on cross-validation.
-clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim){
+clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim, path){
     for (i in 1:length(analysistype)){
         #Create labels for plots
         #labtype <- ifelse(substr(analysistype[i],1,1)=="p","Poisson", "Quasi-Poisson")
@@ -164,7 +164,7 @@ clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim){
         outclussodframe$lams <- lams[changepoints_ix]
         outclussodframe$k <- eval(parse(text=paste0(prefix, "$lasso$glmnet.fit$df")))[changepoints_ix]-Time
         #convert to long and exclude unpenalized time
-        outclusso_long <- tidyr::gather(outclussodframe, path, variable, -c("lams", "k"), factor_key = TRUE) %>%
+        outclusso_long <- tidyr::gather(outclussodframe, key = "path", value="variable", -c("lams", "k"), factor_key = TRUE) %>%
             dplyr::filter(!(path %in% (maxdim-Time):maxdim))
         numclust.cv <- eval(parse(text=paste0(prefix,"$numclust.cv")))
         kcv <- outclusso_long$lams[which(outclusso_long$k==numclust.cv)][1]
