@@ -87,8 +87,8 @@ clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
         outclussodframe$lams <- lams[changepoints_ix]
         outclussodframe$k <- eval(parse(text=paste0(prefix, "$lasso$df")))[changepoints_ix]-Time
         #convert to long and exclude unpenalized time
-        outclusso_long <- tidyr::gather(outclussodframe, s, var, -c("lams", "k"), factor_key = TRUE) %>%
-            dplyr::filter(!(s %in% (maxdim-Time):maxdim))
+        outclusso_long <- tidyr::gather(outclussodframe, path, variable, -c("lams", "k"), factor_key = TRUE) %>%
+            dplyr::filter(!(path %in% (maxdim-Time):maxdim))
         #extract nclusters identified by AIC, AICc, and BIC
         numclust.qaic <- eval(parse(text=paste0(prefix,"$numclust.qaic")))
         numclust.qaicc <- eval(parse(text=paste0(prefix,"$numclust.qaicc")))
@@ -98,7 +98,7 @@ clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
         kbic <- outclusso_long$lams[which(outclusso_long$k==numclust.qbic)][1]
 
         #PLOT!
-        p <- ggplot2::ggplot(outclusso_long,ggplot2::aes(x=lams, y=var, color=s)) +
+        p <- ggplot2::ggplot(outclusso_long,ggplot2::aes(x=lams, y=variable, color=path)) +
             ggplot2::geom_line(size=1.5) +
             ggplot2::theme_bw() +
             ggplot2::ylab("Coefficients") +
@@ -164,8 +164,8 @@ clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim){
         outclussodframe$lams <- lams[changepoints_ix]
         outclussodframe$k <- eval(parse(text=paste0(prefix, "$lasso$glmnet.fit$df")))[changepoints_ix]-Time
         #convert to long and exclude unpenalized time
-        outclusso_long <- tidyr::gather(outclussodframe, s, var, -c("lams", "k"), factor_key = TRUE) %>%
-            dplyr::filter(!(s %in% (maxdim-Time):maxdim))
+        outclusso_long <- tidyr::gather(outclussodframe, path, variable, -c("lams", "k"), factor_key = TRUE) %>%
+            dplyr::filter(!(path %in% (maxdim-Time):maxdim))
         numclust.cv <- eval(parse(text=paste0(prefix,"$numclust.cv")))
         kcv <- outclusso_long$lams[which(outclusso_long$k==numclust.cv)][1]
         if(is.na(kcv)){
@@ -175,7 +175,7 @@ clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim){
         }
         
         #PLOT!
-        p <- ggplot2::ggplot(outclusso_long,ggplot2::aes(x=lams, y=var, color=s)) +
+        p <- ggplot2::ggplot(outclusso_long,ggplot2::aes(x=lams, y=variable, color=path)) +
             ggplot2::geom_line(size=1.5) +
             ggplot2::theme_bw() +
             ggplot2::ylab("Coefficients") +
