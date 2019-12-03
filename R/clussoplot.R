@@ -99,7 +99,7 @@ clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
         kbic <- outclusso_long$lams[which(outclusso_long$k==numclust.qbic)][1]
 
         #PLOT!
-        p <- ggplot2::ggplot(outclusso_long,ggplot2::aes(x=lams, y=variable, color=path)) +
+        p <- ggplot2::ggplot(outclusso_long,ggplot2::aes(x=lams, y=.data$var, color=.data$s)) +
             ggplot2::geom_line(size=1.5) +
             ggplot2::theme_bw() +
             ggplot2::ylab("Coefficients") +
@@ -136,7 +136,7 @@ clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
 #'@import data.table
 #'@importFrom rlang .data
 #'@return Returns plots based on cross-validation.
-clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim, path){
+clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim){
     for (i in 1:length(analysistype)){
         #Create labels for plots
         #labtype <- ifelse(substr(analysistype[i],1,1)=="p","Poisson", "Quasi-Poisson")
@@ -177,7 +177,7 @@ clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim, path){
         }
         
         #PLOT!
-        p <- ggplot2::ggplot(outclusso_long,ggplot2::aes(x=lams, y=variable, color=path)) +
+        p <- ggplot2::ggplot(outclusso_long,ggplot2::aes(x=lams, y=.data$var, color=.data$s)) +
             ggplot2::geom_line(size=1.5) +
             ggplot2::theme_bw() +
             ggplot2::ylab("Coefficients") +
