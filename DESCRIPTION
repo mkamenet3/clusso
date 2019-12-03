@@ -9,14 +9,14 @@ Description:    This package efficiently detects across space and space-time usi
     clusters in the study region. 
 Depends:
     R (>= 3.6.1),
+Imports:
     glmnet (>= 3.0.1),
     ggplot2 (>= 3.2.1),
     dplyr (>= 0.8.3),
     tidyr (>= 1.0.0),
     magrittr (>= 1.5),
     Matrix (>= 1.2-17),
-    data.table (>= 1.12.6)
-Imports:
+    data.table (>= 1.12.6),
     geosphere (>= 1.5-10),
     MASS (>= 7.3-51.4),
     RColorBrewer (>= 1.1-2),
