@@ -23,7 +23,9 @@ The main function in this package is ```clusso()```, which performs both spatial
 
 Package dependencies include:
 
-- tidyverse (>= 1.3.0)
+- ggplot2 (>= 3.2.1),
+- dplyr (>= 0.8.3),
+- tidyr (>= 1.0.0),
 - glmnet (>= 3.0.1)
 - Matrix (>= 1.2-17)
 - data.table (>= 1.12.6)

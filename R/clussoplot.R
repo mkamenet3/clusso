@@ -9,6 +9,7 @@
 #'@param Time Number of time periods in the analysis.
 #'@param cv Boolean. Takes \code{TRUE} if cross-validation was used. Default is \code{FALSE}.
 #'@export
+#'@import data.table
 #'@return Returns a ggplot.
 #'@examples
 #'\donttest{
@@ -54,6 +55,7 @@ clussoplot <- function(outclusso, analysis=c("space","spacetime","both"), model 
 #'@param model A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.
 #'@param Time Number of time periods in the analysis.
 #'@param maxdim Maximum number of potential clusters.
+#'@import data.table
 #'@return Returns plots based on information criteria.
 clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
     for (i in 1:length(analysistype)){
@@ -85,8 +87,8 @@ clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
         outclussodframe$lams <- lams[changepoints_ix]
         outclussodframe$k <- eval(parse(text=paste0(prefix, "$lasso$df")))[changepoints_ix]-Time
         #convert to long and exclude unpenalized time
-        outclusso_long <- tidyr::gather(outclussodframe, s, var, -c("lams", "k"), factor_key = TRUE) %>%
-            dplyr::filter(!(s %in% (maxdim-Time):maxdim))
+        outclusso_long <- tidyr::gather(outclussodframe, path, variable, -c("lams", "k"), factor_key = TRUE) %>%
+            dplyr::filter(!(path %in% (maxdim-Time):maxdim))
         #extract nclusters identified by AIC, AICc, and BIC
         numclust.qaic <- eval(parse(text=paste0(prefix,"$numclust.qaic")))
         numclust.qaicc <- eval(parse(text=paste0(prefix,"$numclust.qaicc")))
@@ -96,7 +98,7 @@ clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
         kbic <- outclusso_long$lams[which(outclusso_long$k==numclust.qbic)][1]
 
         #PLOT!
-        p <- ggplot2::ggplot(outclusso_long,ggplot2::aes(x=lams, y=var, color=s)) +
+        p <- ggplot2::ggplot(outclusso_long,ggplot2::aes(x=lams, y=variable, color=path)) +
             ggplot2::geom_line(size=1.5) +
             ggplot2::theme_bw() +
             ggplot2::ylab("Coefficients") +
@@ -130,6 +132,7 @@ clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
 #'@param model A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.
 #'@param Time Number of time periods in the analysis.
 #'@param maxdim maximum number of potential clusters.
+#'@import data.table
 #'@return Returns plots based on cross-validation.
 clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim){
     for (i in 1:length(analysistype)){
@@ -161,8 +164,8 @@ clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim){
         outclussodframe$lams <- lams[changepoints_ix]
         outclussodframe$k <- eval(parse(text=paste0(prefix, "$lasso$glmnet.fit$df")))[changepoints_ix]-Time
         #convert to long and exclude unpenalized time
-        outclusso_long <- tidyr::gather(outclussodframe, s, var, -c("lams", "k"), factor_key = TRUE) %>%
-            dplyr::filter(!(s %in% (maxdim-Time):maxdim))
+        outclusso_long <- tidyr::gather(outclussodframe, path, variable, -c("lams", "k"), factor_key = TRUE) %>%
+            dplyr::filter(!(path %in% (maxdim-Time):maxdim))
         numclust.cv <- eval(parse(text=paste0(prefix,"$numclust.cv")))
         kcv <- outclusso_long$lams[which(outclusso_long$k==numclust.cv)][1]
         if(is.na(kcv)){
@@ -172,7 +175,7 @@ clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim){
         }
         
         #PLOT!
-        p <- ggplot2::ggplot(outclusso_long,ggplot2::aes(x=lams, y=var, color=s)) +
+        p <- ggplot2::ggplot(outclusso_long,ggplot2::aes(x=lams, y=variable, color=path)) +
             ggplot2::geom_line(size=1.5) +
             ggplot2::theme_bw() +
             ggplot2::ylab("Coefficients") +

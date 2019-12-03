@@ -8,3 +8,10 @@ tests_simulation/*
 clustSIMULATION/tests_simulation
 .gitignore
 .Rbuildignore
+.R_Cache/
+.Rhistory
+out/*
+tests/.Rhistory
+vignettes/.R_Cache/*
+vignettes/.Rhistory
+
