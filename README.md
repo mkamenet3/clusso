@@ -32,6 +32,7 @@ Package dependencies include:
 
 Package imports include:
 
+- rlang (>= 0.4.2)
 - geosphere (>= 1.5-10)
 - MASS  (>= 7.3-51.4)
 - RColorBrewer (>= 1.1-2)
