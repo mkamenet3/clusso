@@ -3,3 +3,6 @@
 clustSIMULATION/*
 vignettes/*
 data/*.csv
+.R_Cache/*
+out/*
+tests/.Rhistory
