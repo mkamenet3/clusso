@@ -56,7 +56,6 @@ clussoplot <- function(outclusso, analysis=c("space","spacetime","both"), model 
 #'@param Time Number of time periods in the analysis.
 #'@param maxdim Maximum number of potential clusters.
 #'@import data.table
-#'@importFrom rlang .data
 #'@return Returns plots based on information criteria.
 clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
     for (i in 1:length(analysistype)){
@@ -88,8 +87,9 @@ clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
         outclussodframe$lams <- lams[changepoints_ix]
         outclussodframe$k <- eval(parse(text=paste0(prefix, "$lasso$df")))[changepoints_ix]-Time
         #convert to long and exclude unpenalized time
-        outclusso_long <- tidyr::gather(outclussodframe, .data$s, .data$var , -c("lams", "k"), factor_key = TRUE) %>%
-            dplyr::filter(!(.data$s %in% (maxdim-Time):maxdim))
+        s <- var <- NULL
+        outclusso_long <- tidyr::gather(outclussodframe, s, var , -c("lams", "k"), factor_key = TRUE) %>%
+            dplyr::filter(!(s %in% (maxdim-Time):maxdim))
         #extract nclusters identified by AIC, AICc, and BIC
         numclust.qaic <- eval(parse(text=paste0(prefix,"$numclust.qaic")))
         numclust.qaicc <- eval(parse(text=paste0(prefix,"$numclust.qaicc")))
@@ -99,7 +99,7 @@ clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
         kbic <- outclusso_long$lams[which(outclusso_long$k==numclust.qbic)][1]
 
         #PLOT!
-        p <- ggplot2::ggplot(outclusso_long,ggplot2::aes(x=lams, y=.data$var, color=.data$s)) +
+        p <- ggplot2::ggplot(outclusso_long,ggplot2::aes(x=lams, y=var, color=s)) +
             ggplot2::geom_line(size=1.5) +
             ggplot2::theme_bw() +
             ggplot2::ylab("Coefficients") +
@@ -166,8 +166,9 @@ clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim){
         outclussodframe$lams <- lams[changepoints_ix]
         outclussodframe$k <- eval(parse(text=paste0(prefix, "$lasso$glmnet.fit$df")))[changepoints_ix]-Time
         #convert to long and exclude unpenalized time
-        outclusso_long <- tidyr::gather(outclussodframe, .data$s, .data$var, -c("lams", "k"), factor_key = TRUE) %>%
-            dplyr::filter(!(.data$s %in% (maxdim-Time):maxdim))
+        s <- var <- NULL
+        outclusso_long <- tidyr::gather(outclussodframe, s, var, -c("lams", "k"), factor_key = TRUE) %>%
+            dplyr::filter(!(s %in% (maxdim-Time):maxdim))
         numclust.cv <- eval(parse(text=paste0(prefix,"$numclust.cv")))
         kcv <- outclusso_long$lams[which(outclusso_long$k==numclust.cv)][1]
         if(is.na(kcv)){
@@ -177,7 +178,7 @@ clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim){
         }
         
         #PLOT!
-        p <- ggplot2::ggplot(outclusso_long,ggplot2::aes(x=lams, y=.data$var, color=.data$s)) +
+        p <- ggplot2::ggplot(outclusso_long,ggplot2::aes(x=lams, y=var, color=s)) +
             ggplot2::geom_line(size=1.5) +
             ggplot2::theme_bw() +
             ggplot2::ylab("Coefficients") +
