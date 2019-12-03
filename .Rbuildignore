@@ -6,3 +6,6 @@ data/*.csv
 .R_Cache/*
 out/*
 tests/.Rhistory
+.Rhistory
+vignettes/.R_Cache/
+vignettes/.Rhistory
