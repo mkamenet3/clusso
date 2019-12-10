@@ -34,7 +34,7 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
         message("Threshold detection function is still in development. Stay tuned!")
     }
     ##(Q)BIC
-    selected <- lassoresult$select.qbic
+    selected <- lassoresult$selections$select.qbic
     #Take out the time vectors - only keep cluster part of matrix
     sparseMAT_clusteronly <- sparseMAT[,-c(ncol(sparseMAT)-Time+1:ncol(sparseMAT))]
     #select out my betas for each sim
@@ -66,7 +66,7 @@ prob_clusteroverlap <- function(sparseMAT,lassoresult,rr, risk.ratio,x,y,rMax,ns
         outperc.qbic <- paste0((sum(unlist(outcluster_sim_bin))/nsim)*100, "%")
     }
     ##(Q)AIC
-    selected <- lassoresult$select.qaic
+    selected <- lassoresult$selections$select.qaic
     #Take out the time vectors - only keep cluster part of matrix
     sparseMAT_clusteronly <- sparseMAT[,-c(ncol(sparseMAT)-Time+1:ncol(sparseMAT))]
     #select out my betas for each sim
@@ -206,7 +206,6 @@ prob_incluster <- function(select_mu, ncentroids, Time, nsim, background=NULL){
                                                   function(j) as.numeric(names(which.max(table(matrix(as.vector(select_mu[[i]]),
                                                                                                       ncol=Time)[,j]))))))
     bgRate <- lapply(1:nsim, function(i) rep(bgRate_i[[i]], each = ncentroids))
-    #ix <- lapply(1:nsim, function(i) which(abs(log(as.vector(select_mu[[i]])) - log(bgRate[[i]]))>=10^-3))
     ix <- lapply(1:nsim, function(i) which(abs(as.vector(select_mu[[i]]) - bgRate[[i]])>=10^-3))
     #quick function to recode
     reval <- function(probs, ix){
