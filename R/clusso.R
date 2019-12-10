@@ -11,7 +11,7 @@
 #'@param observed Name of variable that contains the observed counts (Poisson models). Number of successes/cases (binomial case).
 #'@param timeperiod Name of variable that contains the timeperiod in which counts were observed (as factor). If this is variable is not a factor in the dataframe, then it will be automatically converted to one by \code{clusso()} with a warning message.
 #'@param covars Boolean - are there additional covariates in the dataframe beyond the three required? If so, set to \code{TRUE}. Default is \code{FALSE}.
-#'@param id Optional. If your dataframe contains an ID variable that should not be a covariate, set the name here. If you have excluded the ID from the dataset already, then ignore (or better, explicitly set to \code{NULL}).
+#'@param id If your dataframe contains an ID variable that should not be a covariate, set the name here. If you have excluded the ID from the dataset already, then set to \code{NULL}.
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
 #'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
 #'@param rMax Set maximum radius for potential clusters (in km).
@@ -21,8 +21,9 @@
 #'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in \code{glmnet}. If none supplied, default is \code{11}.
 #'@param overdispfloor Default is \code{TRUE}. When \code{TRUE}, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If \code{FALSE}, it will allow for under-dispersion in the model.
 #'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
-#'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time. 
+#'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time.
 #'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
+#'@details The data frame used in \code{clusso} must have a partiular format (TODO). Aside from the required variables (\code{df},\code{expected}, \code{observed}, \code{timeperiod}) and optional variables (covariates, \code{id}), no other variables should be present in your data frame. Any variables not specified in these slots will be considered to be covariates and will be included in the analysis as un-penalized terms. This may lead to incorrect or null results.
 #'@export
 #'@return Returns list of cluster detection results ready to analyze and plot.
 #'@examples
@@ -39,7 +40,7 @@
 #'system.time(resreal <- clusso(df=jbc, expected = expdeath, observed=death,
 #'    timeperiod = factor(period), covars=FALSE,x= x,y = y, rMax =  rMax, 
 #'    utm=TRUE, analysis="both", model="poisson",maxclust=11))}
-clusso <- function(df, expected, observed, timeperiod,covars,id= NULL,x,y,rMax, utm=TRUE, analysis = c("space","spacetime", "both"),model = c("poisson", "binomial"),maxclust = 11,overdispfloor=TRUE, cv=NULL, collapsetime=FALSE, nsize=NULL){
+clusso <- function(df, expected, observed, timeperiod,covars,id=NULL,x,y,rMax, utm=TRUE, analysis = c("space","spacetime", "both"),model = c("poisson", "binomial"),maxclust = 11,overdispfloor=TRUE, cv=NULL, collapsetime=FALSE, nsize=NULL){
     requiredcolNames <- c(deparse(substitute(expected)),
                           deparse(substitute(observed)),
                           deparse(substitute(timeperiod)),
@@ -47,11 +48,15 @@ clusso <- function(df, expected, observed, timeperiod,covars,id= NULL,x,y,rMax, 
     expected <- eval(substitute(expected),df)
     observed <- eval(substitute(observed),df)
     timeperiod <- eval(substitute(timeperiod),df)
+    id <- eval(substitute(id),df)
+    print(requiredcolNames)
     if(!is.null(id)){
         id<- eval(substitute(id),df)
+        print(head(id))
     }
     else{
         id <- NULL
+        print(head(id))
     }
     if((missing(covars) | covars==FALSE)){
         covars <- FALSE
