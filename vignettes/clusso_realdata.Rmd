@@ -188,13 +188,6 @@ system.time(rescv <- clusso(jbc, expected = expdeath, observed=death,timeperiod 
 clussopretty(rescv, analysis="both", model="poisson",clusteridentify=FALSE, cv=TRUE)
 ```
 
-Lastly, we can plot the coefficient paths identified via cross-validation using `clussoplot()` by adding the argument `cv=TRUE`:
-
-```{r}
-clussoplot(rescv, analysis="both",model="poisson", Time=5, cv=TRUE)
-```
-
-
 
 
 
@@ -239,17 +232,5 @@ out$table.clusters
 ```
 
 
-
-### Maps
-
-Create maps using `easyplot()`:
-
-
-```{r}
-pdfname <- paste0("outcovars", ".pdf")
-
-easyplot(japan.prefect2, japan.poly2 ,pdfname, rescovars$rrcolors, mods, space="both",
-         probmap=FALSE, obs=TRUE,rr=TRUE)
-```
 
 

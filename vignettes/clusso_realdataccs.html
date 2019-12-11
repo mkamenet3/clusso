@@ -152,6 +152,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## 4 9201   7954     3031 10227 501.6789 0.03259346     35      0      0
 ## 5 9201   7970     2976  9739 531.8578 0.01600942     32      0      1
 ## 6 9202   7906     3097 10565 521.2707 0.05811436     31      0      0</code></pre>
+<p>As a data-cleaning step, we first convert <code>period</code> to a factor in the data frame <code>jbc</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ccsjbc<span class="op">$</span>period &lt;-<span class="st"> </span><span class="kw">as.factor</span>(ccsjbc<span class="op">$</span>period)</code></pre></div>
 </div>
 <div id="set-global-conditions" class="section level3">
 <h3>Set global conditions</h3>
@@ -174,8 +176,9 @@ Time &lt;-<span class="st"> </span><span class="dv">5</span></code></pre></div>
 ## 4 9201   7954     3031 10227 501.6789 0.03259346     35      0      0
 ## 5 9201   7970     2976  9739 531.8578 0.01600942     32      0      1
 ## 6 9202   7906     3097 10565 521.2707 0.05811436     31      0      0</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(resrealccs &lt;-<span class="st"> </span><span class="kw">clusso</span>(<span class="dt">df=</span>ccsjbc, <span class="dt">expected =</span> n, <span class="dt">observed =</span> numcases,<span class="dt">timeperiod =</span> <span class="kw">factor</span>(period), <span class="dt">covars=</span><span class="ot">FALSE</span>,
-             <span class="dt">x=</span> x,<span class="dt">y =</span> y, <span class="dt">rMax =</span>  rMax, <span class="dt">utm=</span><span class="ot">TRUE</span>, <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>, <span class="dt">model=</span><span class="st">&quot;binomial&quot;</span>,<span class="dt">maxclust=</span><span class="dv">11</span>))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(resrealccs &lt;-<span class="st"> </span><span class="kw">clusso</span>(<span class="dt">df=</span>ccsjbc, <span class="dt">expected =</span> n, <span class="dt">observed =</span> numcases,<span class="dt">timeperiod =</span> period,<span class="dt">id=</span>id,
+                                 <span class="dt">covars=</span><span class="ot">FALSE</span>, <span class="dt">x=</span> x,<span class="dt">y =</span> y, <span class="dt">rMax =</span>  rMax, <span class="dt">utm=</span><span class="ot">TRUE</span>, 
+                                 <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>, <span class="dt">model=</span><span class="st">&quot;binomial&quot;</span>,<span class="dt">maxclust=</span><span class="dv">11</span>))</code></pre></div>
 <pre><code>## Running binomial both spatial and spatio-temporal model(s).</code></pre>
 <pre><code>## Creating radius-based potential clusters</code></pre>
 <pre><code>## No covariates found</code></pre>
@@ -226,7 +229,7 @@ Time &lt;-<span class="st"> </span><span class="dv">5</span></code></pre></div>
 <pre><code>## Warning in colormapping(riskratios.qp.s, Time, cv, prob = FALSE): Max riskratios
 ## from AICc greater than 2</code></pre>
 <pre><code>##    user  system elapsed 
-##   44.30    0.38   44.75</code></pre>
+##   55.58    0.55   70.83</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">clussopretty</span>(resrealccs, <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>, <span class="dt">model=</span><span class="st">&quot;binomial&quot;</span>,<span class="dt">clusteridentify=</span><span class="ot">FALSE</span>)</code></pre></div>
 <pre><code>##            model analysistype numclust.AIC numclust.AICc numclust.BIC
 ## 1       Binomial        Space           12            12           12
@@ -262,8 +265,9 @@ Time &lt;-<span class="st"> </span><span class="dv">5</span></code></pre></div>
 <h2>Comparison to Cross-Validation</h2>
 <p>We continue with the same dataset as above, but now explore results by <span class="math inline">\(k\)</span> fold cross-validation. All initial inputs are assumed to be the same.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#perform clusso using cv (5 folds)</span>
-<span class="kw">system.time</span>(resccscv &lt;-<span class="st"> </span><span class="kw">clusso</span>(ccsjbc, <span class="dt">expected =</span> n, <span class="dt">observed =</span> numcases,<span class="dt">timeperiod =</span> <span class="kw">factor</span>(period), <span class="dt">covars=</span><span class="ot">FALSE</span>, 
-                               <span class="dt">x=</span> x,<span class="dt">y =</span> y, <span class="dt">rMax =</span>  rMax, <span class="dt">utm=</span><span class="ot">TRUE</span>, <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>, <span class="dt">model=</span><span class="st">&quot;binomial&quot;</span>,<span class="dt">maxclust=</span><span class="dv">11</span>, <span class="dt">cv=</span><span class="dv">5</span>))</code></pre></div>
+<span class="kw">system.time</span>(resccscv &lt;-<span class="st"> </span><span class="kw">clusso</span>(ccsjbc, <span class="dt">expected =</span> n, <span class="dt">observed =</span> numcases,<span class="dt">timeperiod =</span> period, <span class="dt">id=</span>id,
+                               <span class="dt">covars=</span><span class="ot">FALSE</span>, <span class="dt">x=</span> x,<span class="dt">y =</span> y, <span class="dt">rMax =</span>  rMax, <span class="dt">utm=</span><span class="ot">TRUE</span>, 
+                               <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>, <span class="dt">model=</span><span class="st">&quot;binomial&quot;</span>,<span class="dt">maxclust=</span><span class="dv">11</span>, <span class="dt">cv=</span><span class="dv">5</span>))</code></pre></div>
 <pre><code>## Running cross-validation method for path selection. For AIC, AICc, and BIC, set `cv = NULL`</code></pre>
 <pre><code>## Running binomial both spatial and spatio-temporal model(s).</code></pre>
 <pre><code>## Creating radius-based potential clusters</code></pre>
@@ -281,12 +285,12 @@ Time &lt;-<span class="st"> </span><span class="dv">5</span></code></pre></div>
 <pre><code>## Path selection: cross-validation</code></pre>
 <pre><code>## All models ran successfully</code></pre>
 <pre><code>##    user  system elapsed 
-##  132.22    1.35  138.00</code></pre>
+##  163.58    1.56  186.79</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">clussopretty</span>(resccscv, <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>, <span class="dt">model=</span><span class="st">&quot;binomial&quot;</span>,<span class="dt">clusteridentify=</span><span class="ot">FALSE</span>, <span class="dt">cv=</span><span class="ot">TRUE</span>)</code></pre></div>
 <pre><code>##            model analysistype numclust.cv
 ## 1       Binomial        Space          13
 ## 2       Binomial   Space-Time          13
-## 3 Quasi-Binomial        Space          13
+## 3 Quasi-Binomial        Space          12
 ## 4 Quasi-Binomial   Space-Time          13</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">clussoplot</span>(resccscv, <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>,<span class="dt">model=</span><span class="st">&quot;binomial&quot;</span>, <span class="dt">Time=</span><span class="dv">5</span>, <span class="dt">cv=</span><span class="ot">TRUE</span>)</code></pre></div>
 <pre><code>## In analysis Binomial, Space , number of detected clusters exceeds maxclust. Please increase maxclust and re-run clusso.</code></pre>
@@ -322,8 +326,9 @@ Time &lt;-<span class="st"> </span><span class="dv">5</span></code></pre></div>
 ## 6 9202   7906     3097 10565 521.2707 0.05811436     31      0      0</code></pre>
 <p>There are 5 additional covariates, <code>covar1</code> - <code>covar5</code> that we will want to adjust for as unpenalized terms in the LASSO.</p>
 <p>We now set the argument <code>covars=TRUE</code> to tell <code>clusso()</code> to identify the covariates and to include them in as unpenalized terms in the LASSO model.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(resccscovars&lt;-<span class="st"> </span><span class="kw">clusso</span>(ccsjbc, <span class="dt">expected =</span> n, <span class="dt">observed=</span>numcases,<span class="dt">timeperiod =</span> <span class="kw">factor</span>(period), <span class="dt">covars=</span><span class="ot">TRUE</span>, 
-                               <span class="dt">x=</span> x,<span class="dt">y =</span> y, <span class="dt">rMax =</span>  rMax, <span class="dt">utm=</span><span class="ot">TRUE</span>, <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>, <span class="dt">model=</span><span class="st">&quot;binomial&quot;</span>,<span class="dt">maxclust=</span><span class="dv">11</span>))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(resccscovars&lt;-<span class="st"> </span><span class="kw">clusso</span>(ccsjbc, <span class="dt">expected =</span> n, <span class="dt">observed=</span>numcases,<span class="dt">timeperiod =</span> period, <span class="dt">id=</span>id,
+                                  <span class="dt">covars=</span><span class="ot">TRUE</span>, <span class="dt">x=</span> x,<span class="dt">y =</span> y, <span class="dt">rMax =</span>  rMax, <span class="dt">utm=</span><span class="ot">TRUE</span>,
+                                  <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>, <span class="dt">model=</span><span class="st">&quot;binomial&quot;</span>,<span class="dt">maxclust=</span><span class="dv">11</span>))</code></pre></div>
 <pre><code>## Running binomial both spatial and spatio-temporal model(s).</code></pre>
 <pre><code>## Creating radius-based potential clusters</code></pre>
 <pre><code>## Running with covariates</code></pre>
@@ -334,7 +339,9 @@ Time &lt;-<span class="st"> </span><span class="dv">5</span></code></pre></div>
 <pre><code>## Number of potential clusters to scan through:  66870</code></pre>
 <pre><code>## Path selection: information criteria</code></pre>
 <pre><code>## Lasso complete - extracting estimates and paths</code></pre>
-<pre><code>## Overdispersion estimate: 2145.8257</code></pre>
+<pre><code>## Overdispersion estimate: 2179.5856</code></pre>
+<pre><code>## The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.
+## The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.</code></pre>
 <pre><code>## Running with covariates</code></pre>
 <pre><code>## Number of potential clusters to scan through:  66870</code></pre>
 <pre><code>## Path selection: information criteria</code></pre>
@@ -343,24 +350,177 @@ Time &lt;-<span class="st"> </span><span class="dv">5</span></code></pre></div>
 <pre><code>## Number of potential clusters to scan through:  66870</code></pre>
 <pre><code>## Path selection: information criteria</code></pre>
 <pre><code>## Lasso complete - extracting estimates and paths</code></pre>
-<pre><code>## Overdispersion estimate: 2145.8257</code></pre>
+<pre><code>## Overdispersion estimate: 2179.5856</code></pre>
+<pre><code>## The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.
+## The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.</code></pre>
 <pre><code>## All models ran successfully</code></pre>
+<pre><code>## Warning in colormapping(riskratios.p.st, Time, cv, prob = FALSE): Max riskratios
+## from BIC greater than 2</code></pre>
+<pre><code>## Warning in colormapping(riskratios.p.st, Time, cv, prob = FALSE): Max riskratios
+## from AIC greater than 2</code></pre>
+<pre><code>## Warning in colormapping(riskratios.p.st, Time, cv, prob = FALSE): Max riskratios
+## from AICc greater than 2</code></pre>
+<pre><code>## Warning in colormapping(riskratios.qp.st, Time, cv, prob = FALSE): Max
+## riskratios from BIC greater than 2</code></pre>
+<pre><code>## Warning in colormapping(riskratios.qp.st, Time, cv, prob = FALSE): Max
+## riskratios from AIC greater than 2</code></pre>
+<pre><code>## Warning in colormapping(riskratios.qp.st, Time, cv, prob = FALSE): Max
+## riskratios from AICc greater than 2</code></pre>
+<pre><code>## Warning in colormapping(riskratios.p.s, Time, cv, prob = FALSE): Max riskratios
+## from BIC greater than 2</code></pre>
+<pre><code>## Warning in colormapping(riskratios.p.s, Time, cv, prob = FALSE): Max riskratios
+## from AIC greater than 2</code></pre>
+<pre><code>## Warning in colormapping(riskratios.p.s, Time, cv, prob = FALSE): Max riskratios
+## from AICc greater than 2</code></pre>
+<pre><code>## Warning in colormapping(riskratios.qp.s, Time, cv, prob = FALSE): Max riskratios
+## from BIC greater than 2</code></pre>
+<pre><code>## Warning in colormapping(riskratios.qp.s, Time, cv, prob = FALSE): Max riskratios
+## from AIC greater than 2</code></pre>
+<pre><code>## Warning in colormapping(riskratios.qp.s, Time, cv, prob = FALSE): Max riskratios
+## from AICc greater than 2</code></pre>
 <pre><code>##    user  system elapsed 
-##   14.00    0.22   15.23</code></pre>
+##   58.56    0.40   67.80</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">clussopretty</span>(resccscovars, <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>, <span class="dt">model=</span><span class="st">&quot;binomial&quot;</span>,<span class="dt">clusteridentify =</span> <span class="ot">FALSE</span>)</code></pre></div>
 <pre><code>##            model analysistype numclust.AIC numclust.AICc numclust.BIC
-## 1       Binomial        Space            1             1            1
-## 2       Binomial   Space-Time            1             1            1
-## 3 Quasi-Binomial        Space            1             1            0
-## 4 Quasi-Binomial   Space-Time            1             1            0</code></pre>
+## 1       Binomial        Space           12            12           12
+## 2       Binomial   Space-Time           12            12           12
+## 3 Quasi-Binomial        Space           11            11           11
+## 4 Quasi-Binomial   Space-Time           11            11           11</code></pre>
 <p>We can also extract the coefficients for the unpenalized terms and undo the log-link by exponentiating:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">exp</span>(resccscovars<span class="op">$</span>lassoresult.qp.st<span class="op">$</span>lasso<span class="op">$</span>beta[<span class="op">-</span><span class="kw">c</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">66870</span>), resccscovars<span class="op">$</span>lassoresult.qp.st<span class="op">$</span>numclust.qbic<span class="op">+</span><span class="dv">1</span>])</code></pre></div>
-<pre><code>## time_period1 time_period2 time_period3 time_period4 time_period5       period 
-##    1.0000000    1.0000000    1.0000000    1.0000000    1.0000000    1.0000000 
-##     numcases            n       covar1       covar2       covar3       covar4 
-##    1.0000000    1.0000000    0.9993719    0.9994318    0.9936602    0.9981599 
-##       covar5 
-##    1.0202174</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">out &lt;-<span class="st"> </span><span class="kw">clussopretty</span>(resccscovars, <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>, <span class="dt">model=</span><span class="st">&quot;poisson&quot;</span>,<span class="dt">covars=</span><span class="ot">TRUE</span>)
+out<span class="op">$</span>table.coefs</code></pre></div>
+<pre><code>##         IC         model analysistype time_period1 time_period2 time_period3
+## 1   (Q)AIC       Poisson        Space            0            0            0
+## 2   (Q)AIC       Poisson   Space-Time            0            0            0
+## 3   (Q)AIC       Poisson        Space            0            0            0
+## 4   (Q)AIC       Poisson   Space-Time            0            0            0
+## 5  (Q)AICc Quasi-Poisson        Space            0            0            0
+## 6  (Q)AICc Quasi-Poisson   Space-Time            0            0            0
+## 7  (Q)AICc Quasi-Poisson        Space            0            0            0
+## 8  (Q)AICc Quasi-Poisson   Space-Time            0            0            0
+## 9   (Q)BIC       Poisson        Space            0            0            0
+## 10  (Q)BIC       Poisson   Space-Time            0            0            0
+## 11  (Q)BIC       Poisson        Space            0            0            0
+## 12  (Q)BIC       Poisson   Space-Time            0            0            0
+## 13  (Q)AIC Quasi-Poisson        Space            0            0            0
+## 14  (Q)AIC Quasi-Poisson   Space-Time            0            0            0
+## 15  (Q)AIC Quasi-Poisson        Space            0            0            0
+## 16  (Q)AIC Quasi-Poisson   Space-Time            0            0            0
+## 17 (Q)AICc       Poisson        Space            0            0            0
+## 18 (Q)AICc       Poisson   Space-Time            0            0            0
+## 19 (Q)AICc       Poisson        Space            0            0            0
+## 20 (Q)AICc       Poisson   Space-Time            0            0            0
+## 21  (Q)BIC Quasi-Poisson        Space            0            0            0
+## 22  (Q)BIC Quasi-Poisson   Space-Time            0            0            0
+## 23  (Q)BIC Quasi-Poisson        Space            0            0            0
+## 24  (Q)BIC Quasi-Poisson   Space-Time            0            0            0
+##    time_period4 time_period5       covar1       covar2       covar3      covar4
+## 1             0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 2             0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 3             0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 4             0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 5             0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 6             0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 7             0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 8             0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 9             0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 10            0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 11            0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 12            0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 13            0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 14            0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 15            0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 16            0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 17            0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 18            0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 19            0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 20            0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 21            0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 22            0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 23            0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 24            0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+##         covar5
+## 1  -0.01941128
+## 2  -0.01937164
+## 3  -0.01941128
+## 4  -0.01937164
+## 5  -0.01941128
+## 6  -0.01937164
+## 7  -0.01941128
+## 8  -0.01937164
+## 9  -0.01941128
+## 10 -0.01937164
+## 11 -0.01941128
+## 12 -0.01937164
+## 13 -0.01941128
+## 14 -0.01937164
+## 15 -0.01941128
+## 16 -0.01937164
+## 17 -0.01941128
+## 18 -0.01937164
+## 19 -0.01941128
+## 20 -0.01937164
+## 21 -0.01941128
+## 22 -0.01937164
+## 23 -0.01941128
+## 24 -0.01937164</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">out<span class="op">$</span>table.expcoefs</code></pre></div>
+<pre><code>##         IC         model analysistype time_period1 time_period2 time_period3
+## 1   (Q)AIC       Poisson        Space            1            1            1
+## 2   (Q)AIC       Poisson   Space-Time            1            1            1
+## 3   (Q)AIC       Poisson        Space            1            1            1
+## 4   (Q)AIC       Poisson   Space-Time            1            1            1
+## 5  (Q)AICc Quasi-Poisson        Space            1            1            1
+## 6  (Q)AICc Quasi-Poisson   Space-Time            1            1            1
+## 7  (Q)AICc Quasi-Poisson        Space            1            1            1
+## 8  (Q)AICc Quasi-Poisson   Space-Time            1            1            1
+## 9   (Q)BIC       Poisson        Space            1            1            1
+## 10  (Q)BIC       Poisson   Space-Time            1            1            1
+## 11  (Q)BIC       Poisson        Space            1            1            1
+## 12  (Q)BIC       Poisson   Space-Time            1            1            1
+## 13  (Q)AIC Quasi-Poisson        Space            1            1            1
+## 14  (Q)AIC Quasi-Poisson   Space-Time            1            1            1
+## 15  (Q)AIC Quasi-Poisson        Space            1            1            1
+## 16  (Q)AIC Quasi-Poisson   Space-Time            1            1            1
+## 17 (Q)AICc       Poisson        Space            1            1            1
+## 18 (Q)AICc       Poisson   Space-Time            1            1            1
+## 19 (Q)AICc       Poisson        Space            1            1            1
+## 20 (Q)AICc       Poisson   Space-Time            1            1            1
+## 21  (Q)BIC Quasi-Poisson        Space            1            1            1
+## 22  (Q)BIC Quasi-Poisson   Space-Time            1            1            1
+## 23  (Q)BIC Quasi-Poisson        Space            1            1            1
+## 24  (Q)BIC Quasi-Poisson   Space-Time            1            1            1
+##    time_period4 time_period5    covar1   covar2    covar3    covar4    covar5
+## 1             1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 2             1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 3             1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 4             1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 5             1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 6             1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 7             1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 8             1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 9             1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 10            1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 11            1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 12            1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 13            1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 14            1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 15            1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 16            1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 17            1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 18            1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 19            1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 20            1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 21            1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 22            1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 23            1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 24            1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">out<span class="op">$</span>table.clusters</code></pre></div>
+<pre><code>##           model analysistype numclust.AIC numclust.AICc numclust.BIC
+## 1       Poisson        Space           12            12           12
+## 2       Poisson   Space-Time           12            12           12
+## 3 Quasi-Poisson        Space           11            11           11
+## 4 Quasi-Poisson   Space-Time           11            11           11</code></pre>
 </div>
 </div>
 
