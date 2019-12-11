@@ -71,6 +71,6 @@ x <- utmJapan$utmx/1000
 y <- utmJapan$utmy/1000
 rMax <- 20 
 system.time(resreal <- clusso(df=jbc, expected = expdeath, observed=death,
-   timeperiod = factor(period), covars=FALSE,x= x,y = y, rMax =  rMax, 
+   timeperiod = period, id=id, covars=FALSE,x= x,y = y, rMax =  rMax, 
    utm=TRUE, analysis="both", model="poisson",maxclust=11))}
 }

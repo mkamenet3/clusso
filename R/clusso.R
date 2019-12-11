@@ -38,7 +38,7 @@
 #'y <- utmJapan$utmy/1000
 #'rMax <- 20 
 #'system.time(resreal <- clusso(df=jbc, expected = expdeath, observed=death,
-#'    timeperiod = factor(period), covars=FALSE,x= x,y = y, rMax =  rMax, 
+#'    timeperiod = period, id=id, covars=FALSE,x= x,y = y, rMax =  rMax, 
 #'    utm=TRUE, analysis="both", model="poisson",maxclust=11))}
 clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, utm=TRUE, analysis = c("space","spacetime", "both"),model = c("poisson", "binomial"),maxclust = 11,overdispfloor=TRUE, cv=NULL, collapsetime=FALSE, nsize=NULL){
     requiredcolNames <- c(deparse(substitute(expected)),
