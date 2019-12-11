@@ -57,6 +57,13 @@ head(utmJapan)
 head(japan.poly2)
 head(japan.prefect2)
 head(jbc)
+
+```
+
+As a data-cleaning step, we first convert `period` to a factor in the data frame `jbc`:
+
+```{r}
+jbc$period <- as.factor(jbc$period)
 ```
 
 
@@ -103,7 +110,7 @@ ids <- rep(1:5, each=2)
 calcexpected(observed, pop, period, ids)
 ```
 
-To perform the LASSO-based cluster detection, we use the function `clusso()`. In the first argument, we set the name of the dataframe, `df=jbc`. In the second argument we set the expected counts equal to the name of expected counts in the `jbc` dataframe (`expected = expdeath`). In the third argument, we set the observed counts equal to the name of the observed counts in the `jbc` dataframe (`observed = death`). In the fourth argument, we set the timeperiod equal to the name of the time periods in the `jbc` dataframe and also convert it to a factor in one step (`timeperiod = factor(period)`). In this example, we do not want to include other covariates as un-penalized terms in the model so we set `covars = FALSE`. 
+To perform the LASSO-based cluster detection, we use the function `clusso()`. In the first argument, we set the name of the dataframe, `df=jbc`. In the second argument we set the expected counts equal to the name of expected counts in the `jbc` dataframe (`expected = expdeath`). In the third argument, we set the observed counts equal to the name of the observed counts in the `jbc` dataframe (`observed = death`). In the fourth argument, we set the timeperiod equal to the name of the time periods in the `jbc` dataframe (`timeperiod = period`). This variable has already been converted to a factor in the data-cleaning step above (`jbc$period <- as.factor(jbc$period)`). In this example, we do not want to include other covariates as un-penalized terms in the model so we set `covars = FALSE`. 
 
 The next two arguments are `x` and `y`, which are the UTM easting and northing coordinates, scaled to be in kilometers. The next argument is the maximum radius (in km) for the potential clusters. We set `rMax = rMax`, which we defined above as 20km. 
 The argument `utm` specifies that our coordinates are indeed in UTM coordinates (`utm = TRUE`). For lat/lon coordinates, we would set `utm = FALSE`. The is `analysis` arugment defines the type of analysis to be performed. Options include `space`, `spacetime`, or `both`. Here, we set  `analysis` equal to "both", which will perform both the spatial and spatio-temporal analyses. The argument `model` is the type of model to be used. Currently (2019-11-25), either the Poisson or binomial models can be specified. In this example, we specify the Poisson model. The final required argument is `maxclust`. This is the maximum number of actual clusters expected in the given area. This is based on scientific knowledge of the area. For the Japanese breast cancer data, we set `maxclust=11`. If the number of identified clusters exceeds `maxclust`, a warning will encourage you to increase your set `maxclust`.
@@ -113,7 +120,7 @@ The output of `clusso()` is assigned to the object `resreal`. `resreal` is a lar
 ```{r}
 head(jbc)
 
-system.time(resreal <- clusso(jbc, expected = expdeath, observed=death,timeperiod = factor(period), covars=FALSE, 
+system.time(resreal <- clusso(jbc, expected = expdeath, observed=death,timeperiod = period, covars=FALSE, id = NULL,
                                x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11))
 ```
 
@@ -172,7 +179,7 @@ We continue with the same dataset as above, but now explore results by $k$ fold 
 
 ```{r}
 #perform clusso using cv (5 folds)
-system.time(rescv <- clusso(jbc, expected = expdeath, observed=death,timeperiod = factor(period), covars=FALSE, 
+system.time(rescv <- clusso(jbc, expected = expdeath, observed=death,timeperiod = period, id=id, covars=FALSE,
                                x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11, cv=5))
 
 ```
@@ -209,9 +216,10 @@ There are 5 additional covariates, `covar1` - `covar5` that we will want to adju
 We now set the argument `covars=TRUE` to tell `clusso()` to identify the covariates and to include them in as unpenalized terms in the LASSO model.
 
 ```{r}
-system.time(rescovars<- clusso(jbc, expected = expdeath, observed=death,
-                               timeperiod = period, covars=TRUE, id=id,
-                               x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11))
+system.time(rescovars<- clusso(df=jbc, expected = expdeath, observed=death,
+                               timeperiod = period, id=id, covars=TRUE,
+                               x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11,
+                               overdispfloor = TRUE, cv=NULL, collapsetime = FALSE))
 
 ```
 
@@ -224,7 +232,10 @@ clussopretty(rescovars, analysis="both", model="poisson",clusteridentify = FALSE
 We can also extract the coefficients for the unpenalized terms and undo the log-link by exponentiating. For example, we can look at the results from the quasi-poisson, space-time model:
 
 ```{r}
-exp(rescovars$lassoresult.qp.st$lasso$beta[-c(1:66870), rescovars$lassoresult.qp.st$numclust.qbic+1])
+out <- clussopretty(rescovars, analysis="both", model="poisson",covars=TRUE)
+out$table.coefs
+out$table.expcoefs
+out$table.clusters
 ```
 
 
