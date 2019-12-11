@@ -6,7 +6,7 @@
 \alias{clusso-package}
 \title{clusso: Spatial cluster detection using LASSO}
 \usage{
-clusso(df, expected, observed, timeperiod, covars, id = NULL, x, y, rMax,
+clusso(df, expected, observed, timeperiod, id = NULL, covars, x, y, rMax,
   utm = TRUE, analysis = c("space", "spacetime", "both"),
   model = c("poisson", "binomial"), maxclust = 11,
   overdispfloor = TRUE, cv = NULL, collapsetime = FALSE,
@@ -19,11 +19,10 @@ clusso(df, expected, observed, timeperiod, covars, id = NULL, x, y, rMax,
 
 \item{observed}{Name of variable that contains the observed counts (Poisson models). Number of successes/cases (binomial case).}
 
-\item{timeperiod}{Name of variable that contains the timeperiod in which counts were observed (as factor). If this is variable is not a factor in the dataframe, then it will be automatically converted to one by \code{clusso()} with a warning message.}
+\item{timeperiod}{Name of variable that contains the timeperiod in which counts were observed (as factor). If this is variable is not a factor in the dataframe, then it will be automatically converted to one by \code{clusso()} with a warning message.
+#'@param id If your dataframe contains an ID variable that should not be a covariate, set the name here. If you have excluded the ID from the dataset already, then set to \code{NULL}.}
 
 \item{covars}{Boolean - are there additional covariates in the dataframe beyond the three required? If so, set to \code{TRUE}. Default is \code{FALSE}.}
-
-\item{id}{Optional. If your dataframe contains an ID variable that should not be a covariate, set the name here. If you have excluded the ID from the dataset already, then ignore (or better, explicitly set to \code{NULL}).}
 
 \item{x}{x coordinates (easting/latitude); if utm coordinates, scale to km.}
 
@@ -57,6 +56,8 @@ Runs helper function for both the space and space-time Lasso model on observed d
 Detect a cluster in space or spacetime using Lasso
 
 Set up for clusso
+
+The data frame used in \code{clusso} must have a partiular format (TODO). Aside from the required variables (\code{df},\code{expected}, \code{observed}, \code{timeperiod}) and optional variables (covariates, \code{id}), no other variables should be present in your data frame. Any variables not specified in these slots will be considered to be covariates and will be included in the analysis as un-penalized terms. This may lead to incorrect or null results.
 }
 \examples{
 \donttest{
