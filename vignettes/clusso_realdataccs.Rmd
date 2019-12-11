@@ -61,6 +61,15 @@ head(japan.prefect2)
 head(ccsjbc)
 ```
 
+
+As a data-cleaning step, we first convert `period` to a factor in the data frame `jbc`:
+
+```{r}
+ccsjbc$period <- as.factor(ccsjbc$period)
+```
+
+
+
 ### Set global conditions
 
 When using `clusso`, there are certain global parameters that need to be set.
@@ -91,8 +100,9 @@ The output of `clusso()` is assigned to the object `resreal`. `resreal` is a lar
 ```{r}
 head(ccsjbc)
 
-system.time(resrealccs <- clusso(df=ccsjbc, expected = n, observed = numcases,timeperiod = factor(period), covars=FALSE,
-             x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="binomial",maxclust=11))
+system.time(resrealccs <- clusso(df=ccsjbc, expected = n, observed = numcases,timeperiod = period,id=id,
+                                 covars=FALSE, x= x,y = y, rMax =  rMax, utm=TRUE, 
+                                 analysis="both", model="binomial",maxclust=11))
 
 ```
 
@@ -116,8 +126,9 @@ We continue with the same dataset as above, but now explore results by $k$ fold 
 
 ```{r}
 #perform clusso using cv (5 folds)
-system.time(resccscv <- clusso(ccsjbc, expected = n, observed = numcases,timeperiod = factor(period), covars=FALSE, 
-                               x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="binomial",maxclust=11, cv=5))
+system.time(resccscv <- clusso(ccsjbc, expected = n, observed = numcases,timeperiod = period, id=id,
+                               covars=FALSE, x= x,y = y, rMax =  rMax, utm=TRUE, 
+                               analysis="both", model="binomial",maxclust=11, cv=5))
 clussopretty(resccscv, analysis="both", model="binomial",clusteridentify=FALSE, cv=TRUE)
 
 clussoplot(resccscv, analysis="both",model="binomial", Time=5, cv=TRUE)
@@ -141,8 +152,8 @@ We now set the argument `covars=TRUE` to tell `clusso()` to identify the covaria
 
 
 ```{r}
-system.time(resccscovars<- clusso(ccsjbc, expected = n, observed=numcases,timeperiod = factor(period), covars=TRUE, 
-                                  id=id,x= x,y = y, rMax =  rMax, utm=TRUE,
+system.time(resccscovars<- clusso(ccsjbc, expected = n, observed=numcases,timeperiod = period, id=id,
+                                  covars=TRUE, x= x,y = y, rMax =  rMax, utm=TRUE,
                                   analysis="both", model="binomial",maxclust=11))
 
 ```
@@ -154,13 +165,14 @@ clussopretty(resccscovars, analysis="both", model="binomial",clusteridentify = F
 ```
 
 
-We can also extract the coefficients for the unpenalized terms and undo the log-link by exponentiating:
+We can also extract the coefficients for the unpenalized terms and undo the log-link by exponentiating: 
 
 ```{r}
-exp(resccscovars$lassoresult.qp.st$lasso$beta[-c(1:66870), resccscovars$lassoresult.qp.st$numclust.qbic+1])
+out <- clussopretty(resccscovars, analysis="both", model="poisson",covars=TRUE)
+out$table.coefs
+out$table.expcoefs
+out$table.clusters
 ```
-
-
 
 
 

@@ -10,8 +10,8 @@
 #'@param expected Name of variable that contains the expected counts (Poisson models). Number of trials/sum of cases + controls (binomial case).
 #'@param observed Name of variable that contains the observed counts (Poisson models). Number of successes/cases (binomial case).
 #'@param timeperiod Name of variable that contains the timeperiod in which counts were observed (as factor). If this is variable is not a factor in the dataframe, then it will be automatically converted to one by \code{clusso()} with a warning message.
+#'#'@param id If your dataframe contains an ID variable that should not be a covariate, set the name here. If you have excluded the ID from the dataset already, then set to \code{NULL}.
 #'@param covars Boolean - are there additional covariates in the dataframe beyond the three required? If so, set to \code{TRUE}. Default is \code{FALSE}.
-#'@param id If your dataframe contains an ID variable that should not be a covariate, set the name here. If you have excluded the ID from the dataset already, then set to \code{NULL}.
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
 #'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
 #'@param rMax Set maximum radius for potential clusters (in km).
@@ -40,7 +40,7 @@
 #'system.time(resreal <- clusso(df=jbc, expected = expdeath, observed=death,
 #'    timeperiod = factor(period), covars=FALSE,x= x,y = y, rMax =  rMax, 
 #'    utm=TRUE, analysis="both", model="poisson",maxclust=11))}
-clusso <- function(df, expected, observed, timeperiod,covars,id=NULL,x,y,rMax, utm=TRUE, analysis = c("space","spacetime", "both"),model = c("poisson", "binomial"),maxclust = 11,overdispfloor=TRUE, cv=NULL, collapsetime=FALSE, nsize=NULL){
+clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, utm=TRUE, analysis = c("space","spacetime", "both"),model = c("poisson", "binomial"),maxclust = 11,overdispfloor=TRUE, cv=NULL, collapsetime=FALSE, nsize=NULL){
     requiredcolNames <- c(deparse(substitute(expected)),
                           deparse(substitute(observed)),
                           deparse(substitute(timeperiod)),
@@ -49,14 +49,11 @@ clusso <- function(df, expected, observed, timeperiod,covars,id=NULL,x,y,rMax, u
     observed <- eval(substitute(observed),df)
     timeperiod <- eval(substitute(timeperiod),df)
     id <- eval(substitute(id),df)
-    print(requiredcolNames)
     if(!is.null(id)){
         id<- eval(substitute(id),df)
-        print(head(id))
     }
     else{
         id <- NULL
-        print(head(id))
     }
     if((missing(covars) | covars==FALSE)){
         covars <- FALSE
