@@ -8,7 +8,7 @@ Description:    This package efficiently detects across space and space-time usi
     ((Q)BIC, (Q)AIC, (Q)AICc) as well as cross-validation to determine the optimal path and thereby number of
     clusters in the study region. 
 Depends:
-    R (>= 3.6.1),
+    R (>= 3.5.1),
 Imports:
     glmnet (>= 3.0.1),
     ggplot2 (>= 3.2.1),
