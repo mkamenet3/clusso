@@ -1,11 +1,10 @@
 #' Bernoullii Function
 #' @title dbern
 #' @param Yx Cases (0 or 1).
-#' @param Ex Total number of trials (1's).
 #' @param p Vector of estimated probabilities for each individual.
 #' @return Returns vector of Bernoulli log-likelihood for each proposed path of the LASSO tuning parameter values.
 #' @example 
-dbern <- function(Yx, Ex,p){
+dbern <- function(Yx,p){
     sum(dbinom(Yx, size=1, p,log=TRUE))
 }
 #' Convert linear predictor to probability scale
