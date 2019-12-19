@@ -21,7 +21,7 @@
 #'@param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in \code{glmnet}. If none supplied, default is \code{11}.
 #'@param overdispfloor Default is \code{TRUE}. When \code{TRUE}, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If \code{FALSE}, it will allow for under-dispersion in the model.
 #'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
-#'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time.
+#'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time by summing the counts.
 #'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial/Bernoulli case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
 #'@details The data frame used in \code{clusso} must have a partiular format (TODO). Aside from the required variables (\code{df},\code{expected}, \code{observed}, \code{timeperiod}) and optional variables (covariates, \code{id}), no other variables should be present in your data frame. Any variables not specified in these slots will be considered to be covariates and will be included in the analysis as un-penalized terms. This may lead to incorrect or null results.
 #'@export
@@ -62,7 +62,6 @@ clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, u
         covars <- TRUE
     }
     clst <- toclusso(df, expected, observed,timeperiod, covars, id, requiredcolNames)
-    print(clst)
     expected <- clst$required_df$expected
     observed <- clst$required_df$observed
     period <- clst$required_df$timeperiod
@@ -102,7 +101,7 @@ clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, u
         cv = NULL
     }
     if(collapsetime==TRUE){
-        warning("You've selected to collapse time periods on space. This will results in averaging of counts by geographic unit.
+        warning("You've selected to collapse time periods on space. This will results in summing counts by geographic unit.
                 To allow time to vary across geographic unit, select `collapsetime=FALSE` (DEFAULT).")
     }
     else{
@@ -130,7 +129,7 @@ clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, u
     }
     else if(model=="binomial"){
         if(!is.null(nsize)){
-            
+            nsize = nsize
         }
         else{
             nsize = min(sum(observed), sum(expected))
@@ -143,9 +142,9 @@ clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, u
                both = clussoBinom(analysis="both",x, y, rMax,period, expected, observed, covars, 
                                   Time, utm,  maxclust, overdispfloor,cv, collapsetime, nsize))
     }
-    else if (model == "bernoulli"){
+    else if (model == "bernoulli" | model=="Bernoulli"){
         if(!is.null(nsize)){
-            
+            nsize = nsize
         }
         else{
             nsize = min(sum(observed), sum(expected))
@@ -159,7 +158,7 @@ clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, u
                                   Time, utm,  maxclust, overdispfloor,cv, collapsetime, nsize))
     }
     else{
-        warning("You have not specified a model. Please set 'model' argument to 'poisson' or 'binomial'.")
+        warning("You have not specified a model. Please set 'model' argument to 'poisson', 'binomial', or 'bernoulli'.")
     }
     
 }
@@ -574,9 +573,13 @@ clussoBern <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
     }
     message(paste0("Running Bernoulli ", analysis_name," model(s)."))
     #set up clusters and fitted values
-    clusters <- clusters2df(x,y,rMax, utm=utm, length(x))
-    n_uniq <- length(unique(clusters$center))
-    init <- setVectors(period, expected, observed, covars, Time, byrow = TRUE) 
+    system.time(clusters <- clusters2df(x,y,rMax, utm=utm, length(x)))
+    clusters <- as.data.frame(clusters)
+    colnames(clusters) <- c("center", "x","y","r","n","last")
+    
+    
+    n_uniq <- length(x)#length(unique(clusters$center))
+    init <- setVectors(period, expected, observed, covars, Time+1, byrow = TRUE) 
     Yx <- init$Y.vec #ncases
     Ex <- E1 <- init$E0 #ntrials
     #set vectors
@@ -610,6 +613,7 @@ clussoBern <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
         if(nrow(covars)==0){
             covars <- NULL
         }
+        Time <- Time - 1
     }
     #RUN LASSO
     if(analysis=="spacetime"){
@@ -637,10 +641,10 @@ clussoBern <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
         ##risk ratios
         initial.s <- list(E0 = unlist(vectors.s$E0_0))
         riskratios.p.s <- get_rr(lassoresult.p.s, vectors.s,initial.s,
-                                 as.vector(matrix(E1, ncol=Time)),
-                                 Time,sim=FALSE, cv)
+                                 as.vector(matrix(E1, ncol=Time+1)),
+                                 Time+1,sim=FALSE, cv)
         ##color mapping
-        rrcolors.p.s <- colormapping(riskratios.p.s,Time, cv, prob=FALSE)
+        rrcolors.p.s <- colormapping(riskratios.p.s,Time+1, cv, prob=FALSE)
         #COMBINE RISKRATIOS INTO LISTS
         riskratios <- list(riskratios.p.s = riskratios.p.s)
         rrcolors <- list(rrcolors.p.s = rrcolors.p.s)

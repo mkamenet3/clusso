@@ -22,7 +22,7 @@
 
 setVectors <- function(period, expect, observed, covars, Time, byrow=TRUE) {
     if (byrow==TRUE){
-        if(period[1] == period[2]) stop("Please check the format of the data, you may must sort data by geographic identifier and then time period. It appears that the data is sorted by time period only.")
+        #if(period[1] == period[2]) stop("Please check the format of the data, you may must sort data by geographic identifier and then time period. It appears that the data is sorted by time period only.")
         E0=as.vector(matrix(expect, byrow=TRUE, ncol=Time))
         Y.vec <- as.vector(matrix(observed,byrow=TRUE, ncol=Time))
         Year <- as.vector(matrix(period, byrow=TRUE, ncol=Time)) 

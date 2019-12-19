@@ -48,8 +48,14 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
                                        nfolds = cv,
                                        penalty.factor = penalty)
         }
-        else if(model=="binomial" | model=="Bernoulli"){
+        else if(model=="binomial"){
             lasso <- glmnet::cv.glmnet(sparseMAT, cbind((Ex-Yx),Yx), family=("binomial"), alpha=1, nlambda = 2000,
+                                       standardize = FALSE, intercept=FALSE,dfmax = maxclust,
+                                       nfolds = cv,
+                                       penalty.factor = penalty)
+        }
+        else if(model=="Bernoulli"){
+            lasso <- glmnet::cv.glmnet(sparseMAT, factor(Yx), family=("binomial"), alpha=1, nlambda = 2000,
                                        standardize = FALSE, intercept=FALSE,dfmax = maxclust,
                                        nfolds = cv,
                                        penalty.factor = penalty)
@@ -69,11 +75,18 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
                                     standardize = FALSE, intercept=FALSE,dfmax = maxclust,
                                     penalty.factor = penalty)    
         }
-        else if(model=="binomial" | model=="Bernoulli"){
+        else if(model=="binomial"){
             lasso <- glmnet::glmnet(sparseMAT, cbind((Ex-Yx),Yx), family=("binomial"), alpha=1, 
                                     nlambda = 2000,
                                     standardize = FALSE, intercept=FALSE,dfmax = maxclust,
                                     penalty.factor = penalty)    
+        }
+        else if(model=="Bernoulli"){
+            print("bernoulli space only model")
+            lasso <- glmnet::glmnet(sparseMAT, factor(Yx), family=("binomial"), alpha=1, 
+                                    nlambda = 2000,
+                                    standardize = FALSE, intercept=FALSE,dfmax = maxclust,
+                                    penalty.factor = penalty)
         }
         else{
             stop("No model specified.")
