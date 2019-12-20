@@ -359,6 +359,7 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,co
 #'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
 #'@return List of results for binomial/quasi-binomial models.
 spacetimeLassoBern <- function(lasso, coefs.lasso.all, loglike, mu, K, covars, Yx, Ex, Period, Time, n_uniq, overdispfloor,maxclust, nsize){   
+    print(paste0("Time: ", Time))
         #########################################################
         #Space-Time, Bernoulli
         #########################################################

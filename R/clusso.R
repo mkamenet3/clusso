@@ -62,6 +62,7 @@ clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, u
         covars <- TRUE
     }
     clst <- toclusso(df, expected, observed,timeperiod, covars, id, requiredcolNames)
+    print(str(clst))
     expected <- clst$required_df$expected
     observed <- clst$required_df$observed
     period <- clst$required_df$timeperiod
@@ -237,9 +238,9 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
         sparseMAT <- spaceMat(clusters, numCenters)
         SOAR::Store(sparseMAT)
         #message("Creating space-only matrix")
-        if(nrow(covars)==0){
-            covars <- NULL
-        }
+        # if(nrow(covars)==0){
+        #     covars <- NULL
+        # }
     }
     #RUN LASSO
     if(analysis=="spacetime"){
@@ -422,9 +423,9 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
     else {
         sparseMAT <- spaceMat(clusters, numCenters)
         SOAR::Store(sparseMAT)
-        if(nrow(covars)==0){
-            covars <- NULL
-        }
+        # if(nrow(covars)==0){
+        #     covars <- NULL
+        # }
     }
     #RUN LASSO
     if(analysis=="spacetime"){
@@ -573,7 +574,7 @@ clussoBern <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
     }
     message(paste0("Running Bernoulli ", analysis_name," model(s)."))
     #set up clusters and fitted values
-    system.time(clusters <- clusters2df(x,y,rMax, utm=utm, length(x)))
+    print(system.time(clusters <- clusters2df(x,y,rMax, utm=utm, length(x))))
     clusters <- as.data.frame(clusters)
     colnames(clusters) <- c("center", "x","y","r","n","last")
     
@@ -608,11 +609,12 @@ clussoBern <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
         SOAR::Store(sparseMAT)
     }
     else {
-        sparseMAT <- spaceMat(clusters, numCenters)
+        print(system.time(sparseMAT <- spaceMat(clusters, numCenters)))
+        print(str(sparseMAT))
         SOAR::Store(sparseMAT)
-        if(nrow(covars)==0){
-            covars <- NULL
-        }
+        # if(nrow(covars)==0){
+        #     covars <- NULL
+        # }
         Time <- Time - 1
     }
     #RUN LASSO
