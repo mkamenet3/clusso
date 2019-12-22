@@ -13,10 +13,11 @@
 #' @param maxclust Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in \code{glmnet}. If none supplied, default is \code{11}.
 #' @param overdispfloor Default is \code{TRUE}. When \code{TRUE}, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If \code{FALSE}, it will allow for under-dispersion in the model.
 #' @param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
+#'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time by summing the counts.
 #'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
 #' @return Returns a list of lists with the 1) estimated relative risks for each geographic subregion-time period based on selection by (Q)BIC, (Q)AIC, (Q)AICc, 2) number of identified clusters by (Q)BIC, (Q)AIC, (Q)AICc, 3) original expected counts (Ex), 4) original observed counts (Yx),5) the LASSO object, 6)  list of K values (number of unique values in each LASSO path), 7) and the estimated coefficients from all estimated lambdas.
 
-spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust, overdispfloor, cv, nsize){
+spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust, overdispfloor, cv, nsize, collapsetime){
     #check for covariates
     covars <- vectors$covars
     if(!is.null(covars)){
@@ -109,21 +110,21 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
             mu <- sapply(1:length(lasso$lambda), function(i) exp(xbetaPath[,i]))
             loglike <- sapply(1:length(lasso$lambda), function(i) sum(dpoisson(Yx, mu[,i],Ex)))
             res <- spacetimeLassoPois(lasso, coefs.lasso.all,loglike,mu,K, quasi, 
-                                      covars,Yx, Ex, Period, Time, n_uniq, overdispfloor, maxclust, nsize)
+                                      covars,Yx, Ex, Period, Time, n_uniq, overdispfloor, maxclust, collapsetime,nsize)
         }
         else if(model=="binomial"){
             mu <- sapply(1:length(lasso$lambda), function(i) exp(xbetaPath[,i]))
             phat <-  sapply(1:length(lasso$lambda), function(i) pihat(xbetaPath[,i]))
             loglike <- sapply(1:length(lasso$lambda), function(i) sum(dbin(Yx, Ex, phat[,i])))
             res <- spacetimeLassoBinom(lasso,coefs.lasso.all, loglike, mu, K, quasi,covars,
-                                       Yx, Ex, Period, Time, n_uniq, overdispfloor,maxclust, nsize)
+                                       Yx, Ex, Period, Time, n_uniq, overdispfloor,maxclust,collapsetime, nsize)
         }
         else if(model=="Bernoulli"){
             mu <- sapply(1:length(lasso$lambda), function(i) exp(xbetaPath[,i]))
             phat <-  sapply(1:length(lasso$lambda), function(i) pihat(xbetaPath[,i]))
             loglike <- sapply(1:length(lasso$lambda), function(i) sum(dbern(Yx, phat[,i])))
             res <- spacetimeLassoBern(lasso,coefs.lasso.all, loglike, mu, K, covars,
-                                       Yx, Ex, Period, Time, n_uniq, overdispfloor,maxclust, nsize)
+                                       Yx, Ex, Period, Time, n_uniq, overdispfloor,maxclust,collapsetime, nsize)
         }
         return(res)
     }
@@ -146,9 +147,10 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
 #'@param n_uniq Number of unique centroids in the study area.
 #'@param overdispfloor Default is \code{TRUE}. When TRUE, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under-dispersion in the model.  
 #'@param maxclust  Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{11}.
+#'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time by summing the counts.
 #'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
 #'@return List of results from Poisson/quasi-Poisson models.
-spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, covars,Yx, Ex, Period, Time, n_uniq, overdispfloor, maxclust, nsize){    
+spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, covars,Yx, Ex, Period, Time, n_uniq, overdispfloor, maxclust, collapsetime,nsize){    
     #########################################################
     #Quasi-Poisson only (yes overdispersion)
     #########################################################
@@ -156,12 +158,26 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
     if(quasi == TRUE){
         #message("Returning results for space-time Quasi-Poisson model")
         if(!is.null(covars)){
-            offset_reg <- glm(Yx ~ . + as.factor(Period) + offset(log(Ex)),
-                              data = covars,family=quasipoisson)
+            if(collapsetime==FALSE){
+                offset_reg <- glm(Yx ~ . + as.factor(Period) + offset(log(Ex)),
+                                  data = covars,family=quasipoisson)
+            }
+            else{
+                offset_reg <- glm(Yx ~ . + offset(log(Ex)),
+                                  data = covars,family=quasipoisson)
+            }
+
         }
         else{
-            offset_reg <- glm(Yx ~ 1 + as.factor(Period) + offset(log(Ex)),
-                              family=quasipoisson)
+            if(collapsetime==FALSE){
+                offset_reg <- glm(Yx ~ 1 + as.factor(Period) + offset(log(Ex)),
+                                  family=quasipoisson)
+            }
+            else{
+                offset_reg <- glm(Yx ~ 1 + offset(log(Ex)),
+                                  family=quasipoisson)
+            }
+
         }
         overdisp.est <- overdisp(offset_reg, sim = FALSE, overdispfloor = overdispfloor)
         message(paste("Overdispersion estimate:", round(overdisp.est,4)))
@@ -248,18 +264,31 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
 #'@param n_uniq Number of unique centroids in the study area.
 #'@param overdispfloor Default is \code{TRUE}. When TRUE, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under-dispersion in the model.  
 #'@param maxclust  Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{11}.
+#'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time by summing the counts.
 #'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
 #'@return List of results for binomial/quasi-binomial models.
-spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,covars, Yx, Ex, Period, Time, n_uniq, overdispfloor,maxclust, nsize){   
+spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,covars, Yx, Ex, Period, Time, n_uniq, overdispfloor,maxclust, collapsetime,nsize){   
     if(quasi==TRUE){
         #message("Returning results for space-time Quasi-Poisson model")
         if(!is.null(covars)){
-            offset_reg <- glm(cbind(Yx, (Ex-Yx))~ . + as.factor(Period),
-                              data = covars,family="quasibinomial")
+            if(collapsetime==FALSE){
+                offset_reg <- glm(cbind(Yx, (Ex-Yx))~ . + as.factor(Period),
+                                  data = covars,family="quasibinomial")
+            }
+            else{
+                offset_reg <- glm(cbind(Yx, (Ex-Yx))~ .,
+                                  data = covars,family="quasibinomial")
+            }
         }
         else{
-            offset_reg <- glm(cbind(Yx, (Ex-Yx)) ~ 1 + as.factor(Period),
-                              family=quasibinomial)
+            if(collapsetime==FALSE){
+                offset_reg <- glm(cbind(Yx, (Ex-Yx)) ~ 1 + as.factor(Period),
+                                  family=quasibinomial)
+            }
+            else{
+                offset_reg <- glm(cbind(Yx, (Ex-Yx)) ~ 1,
+                                  family=quasibinomial)
+            }
         }
         overdisp.est <- overdisp(offset_reg, sim = FALSE, overdispfloor = overdispfloor)
         message(paste("Overdispersion estimate:", round(overdisp.est,4)))
@@ -356,9 +385,10 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,co
 #'@param n_uniq Number of unique centroids in the study area.
 #'@param overdispfloor Default is \code{TRUE}. When TRUE, it limits \eqn{\phi} (overdispersion parameter) to be greater or equal to 1. If FALSE, will allow for under-dispersion in the model.  
 #'@param maxclust  Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in the lasso. If none supplied, default is \code{11}.
+#'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time by summing the counts.
 #'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
 #'@return List of results for binomial/quasi-binomial models.
-spacetimeLassoBern <- function(lasso, coefs.lasso.all, loglike, mu, K, covars, Yx, Ex, Period, Time, n_uniq, overdispfloor,maxclust, nsize){   
+spacetimeLassoBern <- function(lasso, coefs.lasso.all, loglike, mu, K, covars, Yx, Ex, Period, Time, n_uniq, overdispfloor,maxclust, collapsetime,nsize){   
     print(paste0("Time: ", Time))
         #########################################################
         #Space-Time, Bernoulli

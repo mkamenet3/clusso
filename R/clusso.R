@@ -268,9 +268,9 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
     }
     else if (analysis=="space"){
         lassoresult.qp.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
-                                           quasi=TRUE, maxclust, overdispfloor,cv, nsize)
+                                           quasi=TRUE, maxclust, overdispfloor,cv, nsize, collapsetime)
         lassoresult.p.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
-                                          quasi=FALSE, maxclust, overdispfloor,cv, nsize)
+                                          quasi=FALSE, maxclust, overdispfloor,cv, nsize, collapsetime)
         message("All models ran successfully")
         #space only
         ##risk ratios
@@ -452,9 +452,9 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
     }
     else if (analysis=="space"){
         lassoresult.p.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
-                                          quasi=FALSE, maxclust, overdispfloor,cv, nsize)
+                                          quasi=FALSE, maxclust, overdispfloor,cv, nsize, collapsetime)
         lassoresult.qp.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
-                                           quasi=TRUE, maxclust, overdispfloor,cv, nsize)
+                                           quasi=TRUE, maxclust, overdispfloor,cv, nsize, collapsetime)
         message("All models ran successfully")
         #space only
         ##risk ratios
