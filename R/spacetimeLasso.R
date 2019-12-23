@@ -35,6 +35,11 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
     Yx <- vectors$Y.vec
     Period <- vectors$Period
     
+    
+    if(collapsetime==TRUE){
+        Time <- Time - 1
+    }
+    
     if(!is.null(cv)){
         message("Path selection: cross-validation")
         if(!is.null(covars)){
@@ -77,6 +82,7 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
                                     penalty.factor = penalty)    
         }
         else if(model=="binomial"){
+            print(table(penalty))
             lasso <- glmnet::glmnet(sparseMAT, cbind((Ex-Yx),Yx), family=("binomial"), alpha=1, 
                                     nlambda = 2000,
                                     standardize = FALSE, intercept=FALSE,dfmax = maxclust,
@@ -288,6 +294,8 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,co
             else{
                 offset_reg <- glm(cbind(Yx, (Ex-Yx)) ~ 1,
                                   family=quasibinomial)
+                #print("quasi-est")
+                #print(summary(offset_reg))
             }
         }
         overdisp.est <- overdisp(offset_reg, sim = FALSE, overdispfloor = overdispfloor)

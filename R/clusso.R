@@ -410,6 +410,7 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
     #create sparseMAT once and cache it   
     potClus <- n_uniq
     numCenters <- n_uniq
+    print(paste0("numCenters: ", numCenters))
     #CREATE sparseMAT and cache it for use throughout this function
     if(collapsetime==FALSE){
         sparseMAT <- spacetimeMat(clusters, numCenters, Time)
@@ -423,6 +424,9 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
     else {
         sparseMAT <- spaceMat(clusters, numCenters)
         SOAR::Store(sparseMAT)
+        print("spaceMAT only")
+        print(str(sparseMAT))
+
         # if(nrow(covars)==0){
         #     covars <- NULL
         # }

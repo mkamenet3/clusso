@@ -50,7 +50,8 @@ clusters2df <- function(xP,yP, r.max, utm=FALSE,n){
     clustersR[,5] <- unlist(lapply(ncR,seq))
     clustersR[,6] <- lastR
     
-    
+    clustersR <- as.data.frame(clustersR)
+    colnames(clustersR) <- c("center","x","r","n","last")
     # clustersR=matrix(cbind(center=rep(indR,ncR),
     #                      x=xP[rep(indR,ncR)],y=yP[rep(indR,ncR)],
     #                      r=rR, 

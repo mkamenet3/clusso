@@ -7,6 +7,7 @@
 #'@param analysis A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.  
 #'@param model A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.
 #'@param Time Number of time periods in the analysis.
+#'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time by summing the counts.
 #'@param cv Boolean. Takes \code{TRUE} if cross-validation was used. Default is \code{FALSE}.
 #'@export
 #'@import data.table
@@ -15,8 +16,14 @@
 #'\donttest{
 #'clussoplot(resreal, analysis="both", model="poisson",Time=5)
 #'}
-clussoplot <- function(outclusso, analysis=c("space","spacetime","both"), model = c("poisson", "binomial"), Time, cv=FALSE){
+clussoplot <- function(outclusso, analysis=c("space","spacetime","both"), model = c("poisson", "binomial"), Time, collapsetime=FALSE,cv=FALSE){
     analysis <- match.arg(analysis, several.ok = FALSE)
+    if(is.null(collapsetime)| missing(collapsetime)){
+        collapsetime <- FALSE
+    }
+    else if(collapsetime==TRUE){
+        collapsetime <- TRUE
+    }
     if (length(model)>1){
         stop("You must select either `poisson` or `binomial`")
     }
@@ -30,17 +37,17 @@ clussoplot <- function(outclusso, analysis=c("space","spacetime","both"), model 
     if(cv==TRUE){
         maxdim <- dim(outclusso$lassoresult.p.st$lasso$glmnet.fit$beta)[1]
         switch(analysis,
-               space = clussoplotCV(outclusso, analysistype=c("p.s", "qp.s"), model, Time, maxdim),
-               spacetime = clussoplotCV(outclusso, analysistype = c("p.st", "qp.st"), model,Time, maxdim),
-               both = clussoplotCV(outclusso, analysistype = c("p.s", "qp.s","p.st", "qp.st"), model,Time, maxdim))    
+               space = clussoplotCV(outclusso, analysistype=c("p.s", "qp.s"), model, Time, maxdim, collapsetime),
+               spacetime = clussoplotCV(outclusso, analysistype = c("p.st", "qp.st"), model,Time, maxdim, collapsetime),
+               both = clussoplotCV(outclusso, analysistype = c("p.s", "qp.s","p.st", "qp.st"), model,Time, maxdim, collapsetime))    
     }
     else{
         #dims
         maxdim <-dim(outclusso$lassoresult.qp.st$lasso$beta)[1]
         switch(analysis,
-               space = clussoplotIC(outclusso, analysistype=c("p.s", "qp.s"), model, Time, maxdim),
-               spacetime = clussoplotIC(outclusso, analysistype = c("p.st", "qp.st"), model, Time, maxdim),
-               both = clussoplotIC(outclusso, analysistype = c("p.s", "qp.s","p.st", "qp.st"), model, Time, maxdim))    
+               space = clussoplotIC(outclusso, analysistype=c("p.s", "qp.s"), model, Time, maxdim, collapsetime),
+               spacetime = clussoplotIC(outclusso, analysistype = c("p.st", "qp.st"), model, Time, maxdim, collapsetime),
+               both = clussoplotIC(outclusso, analysistype = c("p.s", "qp.s","p.st", "qp.st"), model, Time, maxdim, collapsetime))    
     }
     
 }
@@ -55,9 +62,11 @@ clussoplot <- function(outclusso, analysis=c("space","spacetime","both"), model 
 #'@param model A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.
 #'@param Time Number of time periods in the analysis.
 #'@param maxdim Maximum number of potential clusters.
+#'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time by summing the counts.
 #'@import data.table
 #'@return Returns plots based on information criteria.
-clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
+clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim, collapsetime){
+
     for (i in 1:length(analysistype)){
         #Create labels for plots
         #labtype <- ifelse(substr(analysistype[i],1,1)=="p","Poisson", "Quasi-Poisson")
@@ -88,8 +97,15 @@ clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim){
         outclussodframe$k <- eval(parse(text=paste0(prefix, "$lasso$df")))[changepoints_ix]-Time
         #convert to long and exclude unpenalized time
         s <- var <- NULL
-        outclusso_long <- tidyr::gather(outclussodframe, s, var , -c("lams", "k"), factor_key = TRUE) %>%
-            dplyr::filter(!(s %in% (maxdim-Time):maxdim))
+        
+        if(collapsetime==TRUE){
+            outclusso_long <- tidyr::gather(outclussodframe, s, var , -c("lams", "k"), factor_key = TRUE) 
+        }
+        else{
+            outclusso_long <- tidyr::gather(outclussodframe, s, var , -c("lams", "k"), factor_key = TRUE) %>%
+                dplyr::filter(!(s %in% (maxdim-Time):maxdim))
+        }
+      
         #extract nclusters identified by AIC, AICc, and BIC
         numclust.qaic <- eval(parse(text=paste0(prefix,"$numclust.qaic")))
         numclust.qaicc <- eval(parse(text=paste0(prefix,"$numclust.qaicc")))
