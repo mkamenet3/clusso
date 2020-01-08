@@ -69,12 +69,24 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
     }
     else{
         message("Path selection: information criteria")
-        if(!is.null(covars)){
-            penalty <- c(rep(1,(ncol(sparseMAT)-Time)), rep(0,(Time+ncol(covarMAT))))   
+        if(collapsetime==TRUE){
+            if(!is.null(covars)){
+                penalty <- c(rep(1,(ncol(sparseMAT)-Time)), rep(0,(Time+ncol(covarMAT))))   
+            }
+            else{
+                penalty <- c(rep(1,(ncol(sparseMAT)-Time)))    
+            }
         }
+        
         else{
-            penalty <- c(rep(1,(ncol(sparseMAT)-Time)), rep(0,Time))    
+            if(!is.null(covars)){
+                penalty <- c(rep(1,(ncol(sparseMAT)-Time)), rep(0,(Time+ncol(covarMAT))))   
+            }
+            else{
+                penalty <- c(rep(1,(ncol(sparseMAT)-Time)), rep(0,Time))    
+            }
         }
+
         if(model=="poisson"){
             lasso <- glmnet::glmnet(sparseMAT, Yx, family=("poisson"), alpha=1, offset=log(Ex), 
                                     nlambda = 2000,
@@ -89,6 +101,7 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
                                     penalty.factor = penalty)    
         }
         else if(model=="Bernoulli"){
+            print(table(penalty))
             print("bernoulli space only model")
             lasso <- glmnet::glmnet(sparseMAT, factor(Yx), family=("binomial"), alpha=1, 
                                     nlambda = 2000,
@@ -274,6 +287,7 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
 #'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
 #'@return List of results for binomial/quasi-binomial models.
 spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,covars, Yx, Ex, Period, Time, n_uniq, overdispfloor,maxclust, collapsetime,nsize){   
+    print(paste0("TimeBin:", Time))
     if(quasi==TRUE){
         #message("Returning results for space-time Quasi-Poisson model")
         if(!is.null(covars)){
@@ -294,8 +308,6 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,co
             else{
                 offset_reg <- glm(cbind(Yx, (Ex-Yx)) ~ 1,
                                   family=quasibinomial)
-                #print("quasi-est")
-                #print(summary(offset_reg))
             }
         }
         overdisp.est <- overdisp(offset_reg, sim = FALSE, overdispfloor = overdispfloor)
@@ -397,9 +409,8 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,co
 #'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
 #'@return List of results for binomial/quasi-binomial models.
 spacetimeLassoBern <- function(lasso, coefs.lasso.all, loglike, mu, K, covars, Yx, Ex, Period, Time, n_uniq, overdispfloor,maxclust, collapsetime,nsize){   
-    print(paste0("Time: ", Time))
         #########################################################
-        #Space-Time, Bernoulli
+        #Bernoulli
         #########################################################
         #nsize default: (min(sum(Yx),sum(Ex-Yx))
         #QBIC

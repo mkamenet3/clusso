@@ -62,7 +62,6 @@ clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, u
         covars <- TRUE
     }
     clst <- toclusso(df, expected, observed,timeperiod, covars, id, requiredcolNames)
-    print(str(clst))
     expected <- clst$required_df$expected
     observed <- clst$required_df$observed
     period <- clst$required_df$timeperiod
@@ -145,10 +144,13 @@ clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, u
     }
     else if (model == "bernoulli" | model=="Bernoulli"){
         if(!is.null(nsize)){
+            #print(nsize)
             nsize = nsize
         }
         else{
+            
             nsize = min(sum(observed), sum(expected))
+            #print(nsize)
         }
         switch(analysis, 
                space = clussoBern(analysis="space",x, y, rMax,period, expected, observed, covars,
@@ -410,7 +412,7 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
     #create sparseMAT once and cache it   
     potClus <- n_uniq
     numCenters <- n_uniq
-    print(paste0("numCenters: ", numCenters))
+    #print(paste0("numCenters: ", numCenters))
     #CREATE sparseMAT and cache it for use throughout this function
     if(collapsetime==FALSE){
         sparseMAT <- spacetimeMat(clusters, numCenters, Time)
@@ -424,8 +426,8 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
     else {
         sparseMAT <- spaceMat(clusters, numCenters)
         SOAR::Store(sparseMAT)
-        print("spaceMAT only")
-        print(str(sparseMAT))
+        #print("spaceMAT only")
+        #print(str(sparseMAT))
 
         # if(nrow(covars)==0){
         #     covars <- NULL
@@ -479,7 +481,9 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
                     lassoresult.qp.s = lassoresult.qp.s,
                     riskratios = riskratios,
                     rrcolors = rrcolors,
-                    init.vec.s = vectors.s))
+                    init.vec.s = vectors.s,
+                    sparseMAT = sparseMAT,
+                    clustersdf = clusters))
     }
     else{
         #both
@@ -578,12 +582,9 @@ clussoBern <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
     }
     message(paste0("Running Bernoulli ", analysis_name," model(s)."))
     #set up clusters and fitted values
-    print(system.time(clusters <- clusters2df(x,y,rMax, utm=utm, length(x))))
-    clusters <- as.data.frame(clusters)
-    colnames(clusters) <- c("center", "x","y","r","n","last")
+    clusters <- clusters2df(x,y,rMax, utm=utm, length(x))
     
-    
-    n_uniq <- length(x)#length(unique(clusters$center))
+    n_uniq <- length(x) #because each person is a center
     init <- setVectors(period, expected, observed, covars, Time+1, byrow = TRUE) 
     Yx <- init$Y.vec #ncases
     Ex <- E1 <- init$E0 #ntrials
@@ -613,18 +614,14 @@ clussoBern <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
         SOAR::Store(sparseMAT)
     }
     else {
-        print(system.time(sparseMAT <- spaceMat(clusters, numCenters)))
-        print(str(sparseMAT))
+        sparseMAT <- spaceMat(clusters, numCenters)
         SOAR::Store(sparseMAT)
-        # if(nrow(covars)==0){
-        #     covars <- NULL
-        # }
-        Time <- Time - 1
+        #Time <- Time - 1
     }
     #RUN LASSO
     if(analysis=="spacetime"){
         lassoresult.p.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, 
-                                           quasi=FALSE, maxclust, overdispfloor, cv, nsize)
+                                           quasi=FALSE, maxclust, overdispfloor, cv, nsize, collapsetime)
         message("All models ran successfully")
         #space time
         ##risk ratios
@@ -640,32 +637,34 @@ clussoBern <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
                     init.vec = vectors))
     }
     else if (analysis=="space"){
+        #print("space only model")
         lassoresult.p.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
-                                          quasi=FALSE, maxclust, overdispfloor,cv, nsize)
+                                          quasi=FALSE, maxclust, overdispfloor,cv, nsize, collapsetime)
         message("All models ran successfully")
         #space only
         ##risk ratios
         initial.s <- list(E0 = unlist(vectors.s$E0_0))
         riskratios.p.s <- get_rr(lassoresult.p.s, vectors.s,initial.s,
-                                 as.vector(matrix(E1, ncol=Time+1)),
-                                 Time+1,sim=FALSE, cv)
+                                 as.vector(matrix(E1, ncol=Time)),
+                                 Time,sim=FALSE, cv)
         ##color mapping
-        rrcolors.p.s <- colormapping(riskratios.p.s,Time+1, cv, prob=FALSE)
+        rrcolors.p.s <- colormapping(riskratios.p.s,Time, cv, prob=FALSE)
         #COMBINE RISKRATIOS INTO LISTS
         riskratios <- list(riskratios.p.s = riskratios.p.s)
         rrcolors <- list(rrcolors.p.s = rrcolors.p.s)
         return(list(lassoresult.p.s = lassoresult.p.s,
                     riskratios = riskratios,
                     rrcolors = rrcolors,
-                    init.vec.s = vectors.s))
+                    init.vec.s = vectors.s,
+                    sparseMAT = sparseMAT))
     }
     else{
         #both
         
         lassoresult.p.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors,Time, 
-                                           quasi=FALSE, maxclust, overdispfloor, cv, nsize)
+                                           quasi=FALSE, maxclust, overdispfloor, cv, nsize, collapsetime)
         lassoresult.p.s <- spacetimeLasso(model, sparseMAT, n_uniq, vectors.s, Time, 
-                                          quasi=FALSE, maxclust, overdispfloor,cv, nsize)
+                                          quasi=FALSE, maxclust, overdispfloor,cv, nsize, collapsetime)
         message("All models ran successfully")
         #space time
         ##risk ratios
