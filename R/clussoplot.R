@@ -157,7 +157,7 @@ clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim, collapseti
 #'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time by summing the counts.
 #'@import data.table
 #'@return Returns plots based on cross-validation.
-clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim){
+clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim, collapsetime){
     for (i in 1:length(analysistype)){
         #Create labels for plots
         #labtype <- ifelse(substr(analysistype[i],1,1)=="p","Poisson", "Quasi-Poisson")
