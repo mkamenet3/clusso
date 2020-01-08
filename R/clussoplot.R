@@ -38,16 +38,21 @@ clussoplot <- function(outclusso, analysis=c("space","spacetime","both"), model 
         maxdim <- dim(outclusso$lassoresult.p.st$lasso$glmnet.fit$beta)[1]
         switch(analysis,
                space = clussoplotCV(outclusso, analysistype=c("p.s", "qp.s"), model, Time, maxdim, collapsetime),
-               spacetime = clussoplotCV(outclusso, analysistype = c("p.st", "qp.st"), model,Time, maxdim, collapsetime),
-               both = clussoplotCV(outclusso, analysistype = c("p.s", "qp.s","p.st", "qp.st"), model,Time, maxdim, collapsetime))    
+               spacetime = clussoplotCV(outclusso, analysistype = c("p.st", "qp.st"), model,Time, 
+                                        maxdim, collapsetime),
+               both = clussoplotCV(outclusso, analysistype = c("p.s", "qp.s","p.st", "qp.st"),
+                                   model,Time, maxdim, collapsetime))    
     }
     else{
         #dims
         maxdim <-dim(outclusso$lassoresult.qp.st$lasso$beta)[1]
         switch(analysis,
-               space = clussoplotIC(outclusso, analysistype=c("p.s", "qp.s"), model, Time, maxdim, collapsetime),
-               spacetime = clussoplotIC(outclusso, analysistype = c("p.st", "qp.st"), model, Time, maxdim, collapsetime),
-               both = clussoplotIC(outclusso, analysistype = c("p.s", "qp.s","p.st", "qp.st"), model, Time, maxdim, collapsetime))    
+               space = clussoplotIC(outclusso, analysistype=c("p.s", "qp.s"), model, Time, 
+                                    maxdim, collapsetime),
+               spacetime = clussoplotIC(outclusso, analysistype = c("p.st", "qp.st"), model, 
+                                        Time, maxdim, collapsetime),
+               both = clussoplotIC(outclusso, analysistype = c("p.s", "qp.s","p.st", "qp.st"),
+                                   model, Time, maxdim, collapsetime))    
     }
     
 }
@@ -149,6 +154,7 @@ clussoplotIC <- function(outclusso, analysistype, model,Time, maxdim, collapseti
 #'@param model A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.
 #'@param Time Number of time periods in the analysis.
 #'@param maxdim maximum number of potential clusters.
+#'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time by summing the counts.
 #'@import data.table
 #'@return Returns plots based on cross-validation.
 clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim){
@@ -182,8 +188,14 @@ clussoplotCV <- function(outclusso, analysistype,model, Time, maxdim){
         outclussodframe$k <- eval(parse(text=paste0(prefix, "$lasso$glmnet.fit$df")))[changepoints_ix]-Time
         #convert to long and exclude unpenalized time
         s <- var <- NULL
-        outclusso_long <- tidyr::gather(outclussodframe, s, var, -c("lams", "k"), factor_key = TRUE) %>%
-            dplyr::filter(!(s %in% (maxdim-Time):maxdim))
+
+        if(collapsetime==TRUE){
+            outclusso_long <- tidyr::gather(outclussodframe, s, var , -c("lams", "k"), factor_key = TRUE) 
+        }
+        else{
+            outclusso_long <- tidyr::gather(outclussodframe, s, var , -c("lams", "k"), factor_key = TRUE) %>%
+                dplyr::filter(!(s %in% (maxdim-Time):maxdim))
+        }
         numclust.cv <- eval(parse(text=paste0(prefix,"$numclust.cv")))
         kcv <- outclusso_long$lams[which(outclusso_long$k==numclust.cv)][1]
         if(is.na(kcv)){

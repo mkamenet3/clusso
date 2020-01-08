@@ -10,7 +10,7 @@
 #'@param expected Name of variable that contains the expected counts (Poisson models). Number of trials/sum of cases + controls (binomial case). Name of vector of 1's (Bernoulli case).
 #'@param observed Name of variable that contains the observed counts (Poisson models). Name of variable that contains number of successes/cases (binomial case). Name of variable that contains either a success (1) or failure (0) (Bernoulli case).
 #'@param timeperiod Name of variable that contains the timeperiod in which counts were observed (as factor). If this is variable is not a factor in the dataframe, then it will be automatically converted to one by \code{clusso()} with a warning message.
-#'#'@param id If your dataframe contains an ID variable that should not be a covariate, set the name here. If you have excluded the ID from the dataset already, then set to \code{NULL}.
+#'@param id If your dataframe contains an ID variable that should not be a covariate, set the name here. If you have excluded the ID from the dataset already, then set to \code{NULL}.
 #'@param covars Boolean - are there additional covariates in the dataframe beyond the three required? If so, set to \code{TRUE}. Default is \code{FALSE}.
 #'@param x x coordinates (easting/latitude); if utm coordinates, scale to km.
 #'@param y y coordinates (northing/longitude); if utm coordinates, scale to km.
