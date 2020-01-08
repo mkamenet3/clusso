@@ -37,11 +37,26 @@ clusters2df <- function(xP,yP, r.max, utm=FALSE,n){
     lastR = unlist(lastR)
     rR=unlist(apply(tmpR,1, function(x,r) { sort(x[x<=r]) },r=r.max))
     
-    clustersR=data.frame(center=rep(indR,ncR),
-                         x=xP[rep(indR,ncR)],y=yP[rep(indR,ncR)],
-                         r=rR, 
-                         n=unlist(lapply(ncR,seq)),
-                         last=lastR)    
+    # clustersR=data.frame(center=rep(indR,ncR),
+    #                      x=xP[rep(indR,ncR)],y=yP[rep(indR,ncR)],
+    #                      r=rR,
+    #                      n=unlist(lapply(ncR,seq)),
+    #                      last=lastR)
+    clustersR <- matrix(rep(NA,6*length(rep(indR, ncR))), ncol=6)
+    clustersR[,1] <- rep(indR, ncR)
+    clustersR[,2] <- xP[rep(indR,ncR)]
+    clustersR[,3] <- yP[rep(indR,ncR)]
+    clustersR[,4] <- rR
+    clustersR[,5] <- unlist(lapply(ncR,seq))
+    clustersR[,6] <- lastR
+    
+    clustersR <- as.data.frame(clustersR)
+    colnames(clustersR) <- c("center","x","r","n","last")
+    # clustersR=matrix(cbind(center=rep(indR,ncR),
+    #                      x=xP[rep(indR,ncR)],y=yP[rep(indR,ncR)],
+    #                      r=rR, 
+    #                      n=unlist(lapply(ncR,seq)),
+    #                      last=lastR),ncol=6)    
     return(clustersR)
 }
 

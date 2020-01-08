@@ -4,21 +4,27 @@
 #' @param clusters Clusters dataframe that includes the center, x,y, r (radius), n (counter), and last (last observation in potential cluster).
 #' @param numCenters Number of geographic regions/centroids.
 #' @return Returns sparse matrix of 1's indicating each potential cluster in space.
-
 spaceMat <- function(clusters, numCenters){
     potClus <- numCenters
-    mymat <- NULL
+    mymat <- vector("list", nrow(clusters))
     for(i in 1:nrow(clusters)){
-        myvec <- list(as(max_colCpp(numCenters, i, clusters$n, clusters$last), "sparseVector")) 
-        mymat <- c(mymat,myvec) 
+        mymat[[i]] <- as(max_colCpp(numCenters, i, clusters$n, clusters$last), "sparseVector")
     }
-    xx <- NULL
-    jj <- NULL
-    ii <- NULL
+
+    nonzeroelements <- lapply(1:length(mymat), function(i) length(mymat[[i]]@x))
+    veclength <- sum(unlist(nonzeroelements))
+
+    xx <- vector("list", veclength)
+    jj <- vector("list", veclength)
+    ii <- vector("list", veclength)
+
     for(k in 1:length(mymat)){
-        xx<- c(xx, mymat[[k]]@x)
-        jj <- c(jj, mymat[[k]]@i)
-        ii <- c(ii, rep(k,length(mymat[[k]]@x)))
+        xx[[k]] <- mymat[[k]]@x
+        jj[[k]] <- mymat[[k]]@i
+        ii[[k]] <- rep(k,length(mymat[[k]]@x))
     }
+    xx <- unlist(xx)
+    jj <- unlist(jj)
+    ii <- unlist(ii)
     return(Matrix::t(Matrix::sparseMatrix(i = ii, j = jj, x =xx, dims = c(length(mymat), numCenters))))
 }

@@ -12,7 +12,7 @@ test_that("Data imported correct way (byrow check)",{
     observed <- MASS::rnegbin(expected, theta=1000)
     Time = 2
     covars <- NULL
-    expect_error(setVectors(period1, expected, observed, covars, Time, byrow=TRUE))
+    expect_warning(setVectors(period1, expected, observed, covars, Time, byrow=TRUE))
 })
 
 
