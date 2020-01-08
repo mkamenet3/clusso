@@ -4,7 +4,7 @@
 \alias{clussoplotCV}
 \title{clussoplotCV}
 \usage{
-clussoplotCV(outclusso, analysistype, model, Time, maxdim)
+clussoplotCV(outclusso, analysistype, model, Time, maxdim, collapsetime)
 }
 \arguments{
 \item{outclusso}{outclusso Object with output from \code{clusso}.}
