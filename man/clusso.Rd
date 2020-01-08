@@ -19,8 +19,9 @@ clusso(df, expected, observed, timeperiod, id = NULL, covars, x, y, rMax,
 
 \item{observed}{Name of variable that contains the observed counts (Poisson models). Name of variable that contains number of successes/cases (binomial case). Name of variable that contains either a success (1) or failure (0) (Bernoulli case).}
 
-\item{timeperiod}{Name of variable that contains the timeperiod in which counts were observed (as factor). If this is variable is not a factor in the dataframe, then it will be automatically converted to one by \code{clusso()} with a warning message.
-#'@param id If your dataframe contains an ID variable that should not be a covariate, set the name here. If you have excluded the ID from the dataset already, then set to \code{NULL}.}
+\item{timeperiod}{Name of variable that contains the timeperiod in which counts were observed (as factor). If this is variable is not a factor in the dataframe, then it will be automatically converted to one by \code{clusso()} with a warning message.}
+
+\item{id}{If your dataframe contains an ID variable that should not be a covariate, set the name here. If you have excluded the ID from the dataset already, then set to \code{NULL}.}
 
 \item{covars}{Boolean - are there additional covariates in the dataframe beyond the three required? If so, set to \code{TRUE}. Default is \code{FALSE}.}
 

@@ -16,6 +16,8 @@ clussoplotCV(outclusso, analysistype, model, Time, maxdim)
 \item{Time}{Number of time periods in the analysis.}
 
 \item{maxdim}{maximum number of potential clusters.}
+
+\item{collapsetime}{Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time by summing the counts.}
 }
 \value{
 Returns plots based on cross-validation.
