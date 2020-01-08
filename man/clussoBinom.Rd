@@ -42,7 +42,7 @@ clussoBinom(analysis, x, y, rMax, period, expected, observed, covars, Time,
 List of lists output from detection.
 }
 \description{
-This function runs both the space and space-time LASSO binomial model. This function is to be run on observed data. A separate function (clusso) is the helper function which will have
+This function runs both the space and space-time LASSO binomial model. A separate function (clusso) is the helper function which will have
 flexibility to specify the space or spacetime or both models to be run .
 }
 \details{

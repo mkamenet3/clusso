@@ -8,16 +8,16 @@
 \usage{
 clusso(df, expected, observed, timeperiod, id = NULL, covars, x, y, rMax,
   utm = TRUE, analysis = c("space", "spacetime", "both"),
-  model = c("poisson", "binomial"), maxclust = 11,
+  model = c("poisson", "binomial", "bernoulli"), maxclust = 11,
   overdispfloor = TRUE, cv = NULL, collapsetime = FALSE,
   nsize = NULL)
 }
 \arguments{
 \item{df}{Name of dataframe.}
 
-\item{expected}{Name of variable that contains the expected counts (Poisson models). Number of trials/sum of cases + controls (binomial case).}
+\item{expected}{Name of variable that contains the expected counts (Poisson models). Number of trials/sum of cases + controls (binomial case). Name of vector of 1's (Bernoulli case).}
 
-\item{observed}{Name of variable that contains the observed counts (Poisson models). Number of successes/cases (binomial case).}
+\item{observed}{Name of variable that contains the observed counts (Poisson models). Name of variable that contains number of successes/cases (binomial case). Name of variable that contains either a success (1) or failure (0) (Bernoulli case).}
 
 \item{timeperiod}{Name of variable that contains the timeperiod in which counts were observed (as factor). If this is variable is not a factor in the dataframe, then it will be automatically converted to one by \code{clusso()} with a warning message.
 #'@param id If your dataframe contains an ID variable that should not be a covariate, set the name here. If you have excluded the ID from the dataset already, then set to \code{NULL}.}
@@ -34,7 +34,7 @@ clusso(df, expected, observed, timeperiod, id = NULL, covars, x, y, rMax,
 
 \item{analysis}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.}
 
-\item{model}{A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.}
+\item{model}{A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned. For bernoulli, specify \code{"bernoulli"}.}
 
 \item{maxclust}{Upper limit on the maximum number of clusters you expect to find in the region. This equivalent to setting \code{dfmax} in \code{glmnet}. If none supplied, default is \code{11}.}
 
@@ -42,9 +42,9 @@ clusso(df, expected, observed, timeperiod, id = NULL, covars, x, y, rMax,
 
 \item{cv}{Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.}
 
-\item{collapsetime}{Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time.}
+\item{collapsetime}{Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time by summing the counts.}
 
-\item{nsize}{Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.}
+\item{nsize}{Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial/Bernoulli case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.}
 }
 \value{
 Returns list of cluster detection results ready to analyze and plot.

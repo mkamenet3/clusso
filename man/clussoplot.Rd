@@ -5,7 +5,8 @@
 \title{clussoplot}
 \usage{
 clussoplot(outclusso, analysis = c("space", "spacetime", "both"),
-  model = c("poisson", "binomial"), Time, cv = FALSE)
+  model = c("poisson", "binomial"), Time, collapsetime = FALSE,
+  cv = FALSE)
 }
 \arguments{
 \item{outclusso}{outclusso Object with output from \code{clusso}.}
@@ -15,6 +16,8 @@ clussoplot(outclusso, analysis = c("space", "spacetime", "both"),
 \item{model}{A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.}
 
 \item{Time}{Number of time periods in the analysis.}
+
+\item{collapsetime}{Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time by summing the counts.}
 
 \item{cv}{Boolean. Takes \code{TRUE} if cross-validation was used. Default is \code{FALSE}.}
 }

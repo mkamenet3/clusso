@@ -4,7 +4,7 @@
 \alias{clussoplotIC}
 \title{clussoplotIC}
 \usage{
-clussoplotIC(outclusso, analysistype, model, Time, maxdim)
+clussoplotIC(outclusso, analysistype, model, Time, maxdim, collapsetime)
 }
 \arguments{
 \item{outclusso}{outclusso Object with output from \code{clusso}.}
@@ -16,6 +16,8 @@ clussoplotIC(outclusso, analysistype, model, Time, maxdim)
 \item{Time}{Number of time periods in the analysis.}
 
 \item{maxdim}{Maximum number of potential clusters.}
+
+\item{collapsetime}{Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time by summing the counts.}
 }
 \value{
 Returns plots based on information criteria.

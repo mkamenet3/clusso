@@ -5,12 +5,12 @@
 \title{spacetimeLasso}
 \usage{
 spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, quasi, maxclust,
-  overdispfloor, cv, nsize)
+  overdispfloor, cv, nsize, collapsetime)
 }
 \arguments{
 \item{model}{A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.}
 
-\item{sparseMAT}{Large sparse matrix of indicators of space-time potential clusters.}
+\item{sparseMAT}{Large sparse matrix of indicators of space-time potential clusters. For bernoulli, specify \code{"bernoulli"}.}
 
 \item{n_uniq}{Number of unique geographic subregions/centroids (ex: counties, zip code, ,etc). Calculated as the number of unique geographic identifiers.}
 
@@ -27,6 +27,8 @@ spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, quasi, maxclust,
 \item{cv}{Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.}
 
 \item{nsize}{Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.}
+
+\item{collapsetime}{Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time by summing the counts.}
 }
 \value{
 Returns a list of lists with the 1) estimated relative risks for each geographic subregion-time period based on selection by (Q)BIC, (Q)AIC, (Q)AICc, 2) number of identified clusters by (Q)BIC, (Q)AIC, (Q)AICc, 3) original expected counts (Ex), 4) original observed counts (Yx),5) the LASSO object, 6)  list of K values (number of unique values in each LASSO path), 7) and the estimated coefficients from all estimated lambdas.
