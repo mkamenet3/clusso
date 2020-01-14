@@ -51,7 +51,7 @@ clusters2df <- function(xP,yP, r.max, utm=FALSE,n){
     clustersR[,6] <- lastR
     
     clustersR <- as.data.frame(clustersR)
-    colnames(clustersR) <- c("center","x","r","n","last")
+    colnames(clustersR) <- c("center","x","y","r","n","last")
     # clustersR=matrix(cbind(center=rep(indR,ncR),
     #                      x=xP[rep(indR,ncR)],y=yP[rep(indR,ncR)],
     #                      r=rR, 
