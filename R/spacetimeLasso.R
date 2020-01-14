@@ -37,7 +37,8 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
     
     
     if(collapsetime==TRUE){
-        Time <- Time - 1
+        #Time <- Time - 1
+        Time <- 0
     }
     
     if(!is.null(cv)){
