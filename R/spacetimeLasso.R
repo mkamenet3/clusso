@@ -177,6 +177,7 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
     #nsize default: sum(Yx)
     if(quasi == TRUE){
         #message("Returning results for space-time Quasi-Poisson model")
+        print(table(K))
         if(!is.null(covars)){
             if(collapsetime==FALSE){
                 offset_reg <- glm(Yx ~ . + as.factor(Period) + offset(log(Ex)),
@@ -186,6 +187,7 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
                 offset_reg <- glm(Yx ~ . + offset(log(Ex)),
                                   data = covars,family=quasipoisson)
             }
+          
 
         }
         else{
@@ -197,27 +199,31 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
                 offset_reg <- glm(Yx ~ 1 + offset(log(Ex)),
                                   family=quasipoisson)
             }
-
         }
         overdisp.est <- overdisp(offset_reg, sim = FALSE, overdispfloor = overdispfloor)
         message(paste("Overdispersion estimate:", round(overdisp.est,4)))
         if(quasi == TRUE & is.null(overdisp.est)) warning("No overdispersion for quasi-Poisson model. Please check.")
         
         #QBIC
-        PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(nsize))
+        #PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(nsize))
+        PLL.qbic  <- -2*(loglike/overdisp.est) + ((K+1)*log(nsize))
         select.qbic <- which.min(PLL.qbic)
         E.qbic <- mu[,select.qbic]
         numclust.qbic <- K[select.qbic]-Time 
         
+        
         #QAIC
-        PLL.qaic <-  2*(K) - 2*(loglike/overdisp.est)
+        #PLL.qaic <-  2*(K) - 2*(loglike/overdisp.est)
+        PLL.qaic <-  2*(K+1) - 2*(loglike/overdisp.est)
         select.qaic <- which.min(PLL.qaic)
         E.qaic <- mu[,select.qaic]
         numclust.qaic <- K[select.qaic]-Time 
         
         #QAICc
-        PLL.qaicc <- 2*(K) - 2*(loglike/overdisp.est) +
-            ((2*K*(K + 1))/(nsize - K - 1))
+        # PLL.qaicc <- 2*(K) - 2*(loglike/overdisp.est) +
+        #     ((2*K*(K + 1))/(nsize - K - 1))
+        PLL.qaicc <- 2*(K+1) - 2*(loglike/overdisp.est) +
+            ((2*K*(K+1 + 1))/(nsize - K+1 - 1))
         select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaicc]
         numclust.qaicc <- K[select.qaicc]-Time 
