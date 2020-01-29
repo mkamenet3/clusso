@@ -17,9 +17,12 @@
 #' clusters2df(x_utm, y_utm, rMax, utm=TRUE, length(x_utm))
 #' clusters2df(x_latlon, y_latlon, rMax, utm=FALSE, length(x_latlon))
 
-clusters2df <- function(xP,yP, r.max, utm=FALSE,n){
+clusters2df <- function(xP,yP, r.max, utm=FALSE,n, id = NULL){
     message("Creating radius-based potential clusters")
     indR = (1:n)[!duplicated(cbind(xP,yP))] 
+    if (!is.null(id)){
+        idR = id[!duplicated(cbind(xP,yP))]     
+    } else {idR = indR}
     if(utm==FALSE){
         if(mean(nchar(vapply(strsplit(as.character(xP), "[.]"),"[", 1, FUN.VALUE=character(1))))>2 & 
            mean(nchar(vapply(strsplit(as.character(yP), "[.]"),"[", 1, FUN.VALUE=character(1))))>2)
@@ -42,16 +45,18 @@ clusters2df <- function(xP,yP, r.max, utm=FALSE,n){
     #                      r=rR,
     #                      n=unlist(lapply(ncR,seq)),
     #                      last=lastR)
-    clustersR <- matrix(rep(NA,6*length(rep(indR, ncR))), ncol=6)
+    clustersR <- matrix(rep(NA,7*length(rep(indR, ncR))), ncol=7)
     clustersR[,1] <- rep(indR, ncR)
-    clustersR[,2] <- xP[rep(indR,ncR)]
-    clustersR[,3] <- yP[rep(indR,ncR)]
-    clustersR[,4] <- rR
-    clustersR[,5] <- unlist(lapply(ncR,seq))
-    clustersR[,6] <- lastR
+    clustersR[,2] <- rep(idR, ncR)
+    clustersR[,3] <- xP[rep(indR,ncR)]
+    clustersR[,4] <- yP[rep(indR,ncR)]
+    clustersR[,5] <- rR
+    clustersR[,6] <- unlist(lapply(ncR,seq))
+    clustersR[,7] <- lastR
+    
     
     clustersR <- as.data.frame(clustersR)
-    colnames(clustersR) <- c("center","x","y","r","n","last")
+    colnames(clustersR) <- c("center","centerID","x","y","r","n","last")
     # clustersR=matrix(cbind(center=rep(indR,ncR),
     #                      x=xP[rep(indR,ncR)],y=yP[rep(indR,ncR)],
     #                      r=rR, 
