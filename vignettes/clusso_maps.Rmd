@@ -2,7 +2,7 @@
 title: "Using *clusso* with Maps"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Intro to clusso I}
+  %\VignetteIndexEntry{Intro to clusso III}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
@@ -12,9 +12,6 @@ knitr::opts_chunk$set(echo = TRUE, fig.height = 5, fig.width = 8, message = FALS
 ```
 
 #Introduction
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 
 This package is still under development. Please [report any bugs](https://github.com/mkamenet3/clusso/issues).

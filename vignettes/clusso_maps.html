@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+
+<title>Using clusso with Maps</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Using <em>clusso</em> with Maps</h1>
+
+
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This package is still under development. Please <a href="https://github.com/mkamenet3/clusso/issues">report any bugs</a>.</p>
+<p>Messages from <code>clusso</code> have been suppressed for this tutorial, but there are many messages generated that we hope the user will find helpful. Feedback is welcome <a href="https://github.com/mkamenet3/clusso/issues">here</a>.</p>
+<p>This example uses simulated data which are meant for illustration of how to use <code>clusso</code> with maps in <code>R</code>.</p>
+<div id="preparing-the-map" class="section level2">
+<h2>Preparing the Map</h2>
+<p>Load <code>clusso</code>, as well as the <code>tidyverse</code>, <code>tigris</code>, <code>sf</code>, <code>tmap</code>, and <code>sp</code> packages:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;clusso&quot;</span>)
+<span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(tigris)
+<span class="kw">library</span>(sf)
+<span class="kw">library</span>(tmap)
+<span class="kw">library</span>(sp)</code></pre></div>
+<p>Using the <code>counties()</code> function from the <code>tigris</code>, we load a county-level map of Wisconsin. We <code>fortify()</code> the map and create <code>wi_map</code> in order to use it with <code>ggplot2</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">wi &lt;-<span class="st"> </span>tigris<span class="op">::</span><span class="kw">counties</span>(<span class="st">&quot;Wisconsin&quot;</span>, <span class="dt">cb=</span><span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>## 
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |                                                                      |   1%
+  |                                                                            
+  |=                                                                     |   1%
+  |                                                                            
+  |=                                                                     |   2%
+  |                                                                            
+  |==                                                                    |   2%
+  |                                                                            
+  |==                                                                    |   3%
+  |                                                                            
+  |==                                                                    |   4%
+  |                                                                            
+  |===                                                                   |   4%
+  |                                                                            
+  |===                                                                   |   5%
+  |                                                                            
+  |====                                                                  |   5%
+  |                                                                            
+  |====                                                                  |   6%
+  |                                                                            
+  |=====                                                                 |   7%
+  |                                                                            
+  |=====                                                                 |   8%
+  |                                                                            
+  |======                                                                |   8%
+  |                                                                            
+  |======                                                                |   9%
+  |                                                                            
+  |=======                                                               |   9%
+  |                                                                            
+  |=======                                                               |  10%
+  |                                                                            
+  |=======                                                               |  11%
+  |                                                                            
+  |========                                                              |  11%
+  |                                                                            
+  |========                                                              |  12%
+  |                                                                            
+  |=========                                                             |  12%
+  |                                                                            
+  |=========                                                             |  13%
+  |                                                                            
+  |=========                                                             |  14%
+  |                                                                            
+  |==========                                                            |  14%
+  |                                                                            
+  |==========                                                            |  15%
+  |                                                                            
+  |===========                                                           |  15%
+  |                                                                            
+  |===========                                                           |  16%
+  |                                                                            
+  |============                                                          |  16%
+  |                                                                            
+  |============                                                          |  17%
+  |                                                                            
+  |============                                                          |  18%
+  |                                                                            
+  |=============                                                         |  18%
+  |                                                                            
+  |=============                                                         |  19%
+  |                                                                            
+  |==============                                                        |  19%
+  |                                                                            
+  |==============                                                        |  20%
+  |                                                                            
+  |==============                                                        |  21%
+  |                                                                            
+  |===============                                                       |  21%
+  |                                                                            
+  |===============                                                       |  22%
+  |                                                                            
+  |================                                                      |  22%
+  |                                                                            
+  |================                                                      |  23%
+  |                                                                            
+  |================                                                      |  24%
+  |                                                                            
+  |=================                                                     |  24%
+  |                                                                            
+  |=================                                                     |  25%
+  |                                                                            
+  |==================                                                    |  25%
+  |                                                                            
+  |==================                                                    |  26%
+  |                                                                            
+  |===================                                                   |  26%
+  |                                                                            
+  |===================                                                   |  27%
+  |                                                                            
+  |===================                                                   |  28%
+  |                                                                            
+  |====================                                                  |  28%
+  |                                                                            
+  |====================                                                  |  29%
+  |                                                                            
+  |=====================                                                 |  29%
+  |                                                                            
+  |=====================                                                 |  30%
+  |                                                                            
+  |=====================                                                 |  31%
+  |                                                                            
+  |======================                                                |  31%
+  |                                                                            
+  |======================                                                |  32%
+  |                                                                            
+  |=======================                                               |  32%
+  |                                                                            
+  |=======================                                               |  33%
+  |                                                                            
+  |=======================                                               |  34%
+  |                                                                            
+  |========================                                              |  34%
+  |                                                                            
+  |========================                                              |  35%
+  |                                                                            
+  |=========================                                             |  35%
+  |                                                                            
+  |=========================                                             |  36%
+  |                                                                            
+  |==========================                                            |  36%
+  |                                                                            
+  |==========================                                            |  37%
+  |                                                                            
+  |==========================                                            |  38%
+  |                                                                            
+  |===========================                                           |  38%
+  |                                                                            
+  |===========================                                           |  39%
+  |                                                                            
+  |============================                                          |  39%
+  |                                                                            
+  |============================                                          |  40%
+  |                                                                            
+  |============================                                          |  41%
+  |                                                                            
+  |=============================                                         |  41%
+  |                                                                            
+  |=============================                                         |  42%
+  |                                                                            
+  |==============================                                        |  42%
+  |                                                                            
+  |==============================                                        |  43%
+  |                                                                            
+  |==============================                                        |  44%
+  |                                                                            
+  |===============================                                       |  44%
+  |                                                                            
+  |===============================                                       |  45%
+  |                                                                            
+  |================================                                      |  45%
+  |                                                                            
+  |================================                                      |  46%
+  |                                                                            
+  |=================================                                     |  47%
+  |                                                                            
+  |=================================                                     |  48%
+  |                                                                            
+  |==================================                                    |  48%
+  |                                                                            
+  |==================================                                    |  49%
+  |                                                                            
+  |===================================                                   |  49%
+  |                                                                            
+  |===================================                                   |  50%
+  |                                                                            
+  |===================================                                   |  51%
+  |                                                                            
+  |====================================                                  |  51%
+  |                                                                            
+  |====================================                                  |  52%
+  |                                                                            
+  |=====================================                                 |  52%
+  |                                                                            
+  |=====================================                                 |  53%
+  |                                                                            
+  |=====================================                                 |  54%
+  |                                                                            
+  |======================================                                |  54%
+  |                                                                            
+  |======================================                                |  55%
+  |                                                                            
+  |=======================================                               |  55%
+  |                                                                            
+  |=======================================                               |  56%
+  |                                                                            
+  |========================================                              |  57%
+  |                                                                            
+  |========================================                              |  58%
+  |                                                                            
+  |=========================================                             |  58%
+  |                                                                            
+  |=========================================                             |  59%
+  |                                                                            
+  |==========================================                            |  59%
+  |                                                                            
+  |==========================================                            |  60%
+  |                                                                            
+  |==========================================                            |  61%
+  |                                                                            
+  |===========================================                           |  61%
+  |                                                                            
+  |===========================================                           |  62%
+  |                                                                            
+  |============================================                          |  62%
+  |                                                                            
+  |============================================                          |  63%
+  |                                                                            
+  |============================================                          |  64%
+  |                                                                            
+  |=============================================                         |  64%
+  |                                                                            
+  |=============================================                         |  65%
+  |                                                                            
+  |==============================================                        |  65%
+  |                                                                            
+  |==============================================                        |  66%
+  |                                                                            
+  |===============================================                       |  66%
+  |                                                                            
+  |===============================================                       |  67%
+  |                                                                            
+  |===============================================                       |  68%
+  |                                                                            
+  |================================================                      |  68%
+  |                                                                            
+  |================================================                      |  69%
+  |                                                                            
+  |=================================================                     |  69%
+  |                                                                            
+  |=================================================                     |  70%
+  |                                                                            
+  |=================================================                     |  71%
+  |                                                                            
+  |==================================================                    |  71%
+  |                                                                            
+  |==================================================                    |  72%
+  |                                                                            
+  |===================================================                   |  72%
+  |                                                                            
+  |===================================================                   |  73%
+  |                                                                            
+  |====================================================                  |  74%
+  |                                                                            
+  |====================================================                  |  75%
+  |                                                                            
+  |=====================================================                 |  75%
+  |                                                                            
+  |=====================================================                 |  76%
+  |                                                                            
+  |======================================================                |  76%
+  |                                                                            
+  |======================================================                |  77%
+  |                                                                            
+  |======================================================                |  78%
+  |                                                                            
+  |=======================================================               |  78%
+  |                                                                            
+  |=======================================================               |  79%
+  |                                                                            
+  |========================================================              |  79%
+  |                                                                            
+  |========================================================              |  80%
+  |                                                                            
+  |========================================================              |  81%
+  |                                                                            
+  |=========================================================             |  81%
+  |                                                                            
+  |=========================================================             |  82%
+  |                                                                            
+  |==========================================================            |  82%
+  |                                                                            
+  |==========================================================            |  83%
+  |                                                                            
+  |==========================================================            |  84%
+  |                                                                            
+  |===========================================================           |  84%
+  |                                                                            
+  |===========================================================           |  85%
+  |                                                                            
+  |============================================================          |  85%
+  |                                                                            
+  |============================================================          |  86%
+  |                                                                            
+  |=============================================================         |  87%
+  |                                                                            
+  |=============================================================         |  88%
+  |                                                                            
+  |==============================================================        |  88%
+  |                                                                            
+  |==============================================================        |  89%
+  |                                                                            
+  |===============================================================       |  89%
+  |                                                                            
+  |===============================================================       |  90%
+  |                                                                            
+  |===============================================================       |  91%
+  |                                                                            
+  |================================================================      |  91%
+  |                                                                            
+  |================================================================      |  92%
+  |                                                                            
+  |=================================================================     |  92%
+  |                                                                            
+  |=================================================================     |  93%
+  |                                                                            
+  |=================================================================     |  94%
+  |                                                                            
+  |==================================================================    |  94%
+  |                                                                            
+  |==================================================================    |  95%
+  |                                                                            
+  |===================================================================   |  95%
+  |                                                                            
+  |===================================================================   |  96%
+  |                                                                            
+  |====================================================================  |  97%
+  |                                                                            
+  |====================================================================  |  98%
+  |                                                                            
+  |===================================================================== |  98%
+  |                                                                            
+  |===================================================================== |  99%
+  |                                                                            
+  |======================================================================|  99%
+  |                                                                            
+  |======================================================================| 100%</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">wi_map &lt;-<span class="st"> </span><span class="kw">fortify</span>(wi)</code></pre></div>
+<p>To plot the counties of Wisconsin, we use <code>geom_map()</code> (part of <code>ggplot2</code>).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p1 &lt;-<span class="st"> </span><span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span><span class="kw">geom_map</span>(<span class="dt">data=</span>wi_map, <span class="dt">map=</span>wi_map, 
+                    <span class="kw">aes</span>(<span class="dt">x=</span>long, <span class="dt">y=</span>lat, <span class="dt">map_id=</span>id),
+                    <span class="dt">color=</span><span class="st">&quot;black&quot;</span>, <span class="dt">fill=</span><span class="st">&quot;white&quot;</span>, <span class="dt">size=</span><span class="fl">0.25</span>) <span class="op">+</span>
+<span class="st">    </span><span class="kw">coord_map</span>() <span class="op">+</span>
+<span class="st">    </span><span class="kw">ylab</span>(<span class="st">&quot;Latitude&quot;</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">xlab</span>(<span class="st">&quot;Longitude&quot;</span>)
+p1</code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+</div>
+<div id="preparing-the-data" class="section level2">
+<h2>Preparing the Data</h2>
+<p>Next, we simulate some data. For this example, we imagine that in each county there were a total number of people sampled (<strong>ntrials</strong>), some of which have outcome <em>X</em> (<strong>ncases</strong>). We assume the total number of people sampled come from a negative binomial distribution and use <code>rnbinom()</code> to simulate <strong>ntrials</strong>. We assume cases follow a binomial distribution and use <code>rbinom()</code> to draw cases from the population with probability <span class="math inline">\(\pi\)</span>. For illustration of <code>clusso</code>, we put a cluster with elevated rates in Wood, Portage, Waushera, Adams, Juneau, and Marquette counties. We will only be looking at space for this example so there is only a single time period.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#create ncases and ntrials for 72 counties in Wisconsin</span>
+<span class="kw">set.seed</span>(<span class="dv">2</span>)
+ncounties &lt;-<span class="st"> </span><span class="kw">length</span>(<span class="kw">unique</span>(wi<span class="op">@</span>data<span class="op">$</span>NAME))
+ntrials &lt;-<span class="st"> </span><span class="kw">rnbinom</span>(<span class="dt">n=</span>ncounties, <span class="dt">mu=</span><span class="dv">1000</span>, <span class="dt">size =</span><span class="dv">10</span>)
+dat &lt;-<span class="st"> </span><span class="kw">cbind.data.frame</span>(<span class="dt">id=</span><span class="kw">unique</span>(wi<span class="op">@</span>data<span class="op">$</span>NAME),ntrials)
+dat &lt;-<span class="st"> </span>dat <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">ncases =</span> <span class="kw">if_else</span>(id <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Wood&quot;</span>, <span class="st">&quot;Portage&quot;</span>, <span class="st">&quot;Waushara&quot;</span>, <span class="st">&quot;Adams&quot;</span>, <span class="st">&quot;Juneau&quot;</span>,<span class="st">&quot;Marquette&quot;</span>), 
+                            <span class="kw">rbinom</span>(ncounties,ntrials, <span class="fl">0.9</span>), 
+                            <span class="kw">rbinom</span>(ncounties,ntrials, <span class="fl">0.1</span>)),
+           <span class="dt">time =</span> <span class="st">&quot;Period1&quot;</span>)
+<span class="kw">str</span>(dat)</code></pre></div>
+<pre><code>## 'data.frame':    72 obs. of  4 variables:
+##  $ id     : Factor w/ 72 levels &quot;Adams&quot;,&quot;Ashland&quot;,..: 22 57 4 12 26 29 55 62 1 15 ...
+##  $ ntrials: num  668 636 737 743 1262 ...
+##  $ ncases : int  71 66 60 67 106 708 131 89 573 69 ...
+##  $ time   : chr  &quot;Period1&quot; &quot;Period1&quot; &quot;Period1&quot; &quot;Period1&quot; ...</code></pre>
+<p>The dataframe <code>dat</code>, that contains the county name (<em>id</em>), number of people sampled (<em>ntrials</em>), number of people with outcome <em>X</em> (<em>ncases</em>), and number of time periods (<em>time</em>). Next, we need to merge <code>dat</code> with the <code>SpatialPolygonsDataFrame</code>, <code>wi</code>. We use <code>merge()</code> from the <code>sp</code> package to combine the two by county name (county name is the variable <em>NAME</em> in <code>wi</code> and is <em>id</em> in <code>dat</code>).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#merge to map</span>
+widat &lt;-<span class="st">  </span>sp<span class="op">::</span><span class="kw">merge</span>(wi,dat, <span class="dt">by.x=</span><span class="st">&quot;NAME&quot;</span>, <span class="dt">by.y=</span><span class="st">&quot;id&quot;</span>, <span class="dt">duplicateGeoms=</span><span class="ot">TRUE</span>)
+<span class="kw">class</span>(widat)</code></pre></div>
+<pre><code>## [1] &quot;SpatialPolygonsDataFrame&quot;
+## attr(,&quot;package&quot;)
+## [1] &quot;sp&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(widat)</code></pre></div>
+<pre><code>## class       : SpatialPolygonsDataFrame 
+## features    : 6 
+## extent      : -91.55389, -89.7849, 42.50706, 47.0031  (xmin, xmax, ymin, ymax)
+## crs         : +proj=longlat +datum=NAD83 +no_defs +ellps=GRS80 +towgs84=0,0,0 
+## variables   : 12
+## names       :     NAME, STATEFP, COUNTYFP, COUNTYNS,       AFFGEOID, GEOID, LSAD,      ALAND,     AWATER, ntrials, ncases,    time 
+## min values  : Bayfield,      55,      007, 01581063, 0500000US55007, 55007,   06, 1478001876, 1460289843,     636,     60, Period1 
+## max values  :   Sawyer,      55,      113, 01581116, 0500000US55113, 55113,   06, 3827691502,   98737513,    1262,    708, Period1</code></pre>
+<p>In order to extract the centroid from each county, we first convert our new <code>SpatialPolygonsDataFrame</code> to a simple features (<em>sf</em>) object using <code>st_as_sf()</code> from the <code>sf</code> package. It is possible to extract centroids from the <code>SpatialPolygonsDataFrame</code>, but we do so here in order to also illustrate simple features.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#convert to simple features sf</span>
+widatsf &lt;-<span class="st"> </span><span class="kw">st_as_sf</span>(widat)
+<span class="kw">class</span>(widatsf)</code></pre></div>
+<pre><code>## [1] &quot;sf&quot;         &quot;data.frame&quot;</code></pre>
+<p>We extract the centroids using <code>st_centroid()</code> and extract the coordinates using <code>st_coordinates()</code>; both functions are from the <code>sf</code> package.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">coords &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">st_coordinates</span>(<span class="kw">st_centroid</span>(widatsf)))
+<span class="kw">head</span>(coords)</code></pre></div>
+<pre><code>##           X        Y
+## 1 -90.70620 42.86748
+## 2 -91.14454 45.87999
+## 3 -91.20079 46.52376
+## 4 -90.93104 43.23947
+## 5 -90.24206 46.26227
+## 6 -90.11377 43.92460</code></pre>
+<p>We can plot the centroids on top of the base map we created above, <em>p1</em>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p1 <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="dt">data=</span>coords,<span class="kw">aes</span>(<span class="dt">x=</span>X, <span class="dt">y=</span>Y), <span class="dt">color=</span><span class="st">&quot;red&quot;</span>, <span class="dt">shape=</span><span class="dv">3</span>)</code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+</div>
+<div id="using-clusso" class="section level2">
+<h2>Using <code>clusso</code></h2>
+<p>We first set global parameters, namely the maximum radius size for each potential cluster (<code>rMax &lt;- 100</code>), the number of time periods to 1 (<code>Time &lt;- 1</code>). We also extract our <em>x</em> and <em>y</em> coordinates, which are in longitude and latitude, and set them as <code>xx</code> and <code>yy</code>.</p>
+<p>To perform the LASSO-based cluster detection, we use the function <code>clusso()</code>. In the first argument, we set the name of the dataframe, <code>df=widatsf</code>. In the second argument we set <code>expected</code> counts equal to the total number of trials in the <code>widatsf</code> dataframe (<code>expected = ntrials</code>). In the third argument, we set the observed counts equal to the total number of cases in each county in the <code>widatsf</code> dataframe (<code>observed = ncases</code>). In the fourth argument, we set the timeperiod equal to the name of the time periods in the <code>widatsf</code> dataframe (<code>timeperiod = time</code>). In this example, we do not want to include other covariates as un-penalized terms in the model so we set <code>covars = FALSE</code>.</p>
+<p>The next two arguments are <code>x</code> and <code>y</code>, which are the longitude and latitude for each centroids. Since these are longitude and latitude coordinates, we also set <code>utm=FALSE</code>. This will tell <code>clusso</code> to use the <em>great-circle-distance</em> or <em>Haversine</em> distance to calculate the distance between a centroid up to <code>rMax</code>.</p>
+<p>The next argument is the maximum radius (in km) for the potential clusters. We set <code>rMax = rMax</code>, which we defined above as 100km. The argument <code>utm</code> specifies that our coordinates are <em>NOT</em> in UTM coordinates (<code>utm = FALSE</code>). The is <code>analysis</code> argument defines the type of analysis to be performed. Options include <code>space</code>, <code>spacetime</code>, or <code>both</code>. Here, we set <code>analysis</code> equal to <code>space</code>, which will perform only the spatial analysis. The argument <code>model</code> is the type of model to be used. In this example, we specify the <em>binomial</em> model. The argument <code>maxclust</code> is the maximum number of actual clusters expected in the given area. This is based on scientific knowledge of the area. For this dataset, we set <code>maxclust=15</code>. If the number of identified clusters exceeds <code>maxclust</code>, a warning will encourage you to increase your set <code>maxclust</code>.</p>
+<p>The output of <code>clusso()</code> is assigned to the object <code>resclusso</code>. <code>resclusso</code> is a large list of lists. The recommended way to explore the results is to explore the <code>names(resreal)</code> and select each sub-list of interest.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rMax &lt;-<span class="st"> </span><span class="dv">100</span>
+Time &lt;-<span class="st"> </span><span class="dv">1</span>
+
+xx &lt;-<span class="st"> </span>coords<span class="op">$</span>X
+yy &lt;-<span class="st"> </span>coords<span class="op">$</span>Y
+
+
+resclusso &lt;-<span class="st"> </span><span class="kw">clusso</span>(<span class="dt">df=</span>widatsf,
+                    <span class="dt">expected =</span> ntrials,
+                    <span class="dt">observed =</span> ncases,
+                    <span class="dt">timeperiod =</span> time,
+                    <span class="dt">id =</span> NAME,
+                    <span class="dt">covars =</span> <span class="ot">FALSE</span>,
+                    <span class="dt">x=</span> xx,
+                    <span class="dt">y=</span> yy,
+                    <span class="dt">rMax =</span> rMax,
+                    <span class="dt">utm=</span><span class="ot">FALSE</span>,
+                    <span class="dt">analysis =</span> <span class="st">&quot;space&quot;</span>,
+                    <span class="dt">model=</span><span class="st">&quot;binomial&quot;</span>,
+                    <span class="dt">maxclust =</span> <span class="dv">15</span>, <span class="dt">collapsetime =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>## penalty
+##   1 
+## 880 
+## [1] &quot;TimeBin:0&quot;
+## penalty
+##   1 
+## 880 
+## [1] &quot;TimeBin:0&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">clussopretty</span>(resclusso, <span class="dt">analysis=</span><span class="st">&quot;space&quot;</span>, <span class="dt">model=</span><span class="st">&quot;binomial&quot;</span>,<span class="dt">clusteridentify=</span><span class="ot">FALSE</span>)</code></pre></div>
+<pre><code>##            model analysistype numclust.AIC numclust.AICc numclust.BIC
+## 1       Binomial        Space           18            18           18
+## 2 Quasi-Binomial        Space           16            16            9</code></pre>
+</div>
+<div id="plotting-clusso-results-on-the-map" class="section level2">
+<h2>Plotting <code>clusso</code> Results on the Map</h2>
+<p>We set the max and min relative risk for the color scheme using <code>maxrr</code> and <code>minrr</code>. You may want to explore these values depending on the presentation you are using (a shortened maxrr, minrr distance will bring colors in closer and maps on a projector will appear more vivid and darker).</p>
+<p>We extract the relative risk estimates using BIC from <code>resclusso$lassoresult.p.s$E.qbic</code> and then use <code>redblue()</code> to map the estimated relative risks to colors.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">maxrr &lt;-<span class="st"> </span><span class="dv">2</span>
+minrr &lt;-<span class="st"> </span><span class="fl">0.5</span>
+estrr.bic &lt;-<span class="st"> </span>resclusso<span class="op">$</span>lassoresult.p.s<span class="op">$</span>E.qbic
+cluster_ix &lt;-<span class="st"> </span><span class="kw">redblue</span>(<span class="kw">log</span>(maxrr <span class="op">*</span><span class="st">  </span><span class="kw">pmax</span>(minrr, <span class="kw">pmin</span>(estrr.bic, maxrr)))<span class="op">/</span><span class="kw">log</span>(maxrr<span class="op">^</span><span class="dv">2</span>))
+<span class="kw">table</span>(cluster_ix)</code></pre></div>
+<pre><code>## cluster_ix
+## #053061 #114883 #175291 #2B73B2 #3580B9 #4292C2 #D55E4C #F6F6F6 
+##      56       2       4       1       1       1       6       1</code></pre>
+<p>Next, we combine the estimated relative risks (<code>resclusso$lassoresult.p.s$E.qbic</code>), county names (widatsf$NAME), and mapped colors (<code>cluster_ix</code>) into the dataframe <code>rr.bic</code>. We map the county names onto the colors (<code>names(cluster_ix) &lt;- rr.bic\$county</code>).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rr.bic &lt;-<span class="st"> </span><span class="kw">cbind.data.frame</span>(<span class="dt">rr=</span>resclusso<span class="op">$</span>lassoresult.p.s<span class="op">$</span>E.qbic, 
+                           <span class="dt">county=</span>widatsf<span class="op">$</span>NAME, 
+                           <span class="dt">colors =</span> cluster_ix)
+<span class="kw">names</span>(cluster_ix) &lt;-<span class="st"> </span>rr.bic<span class="op">$</span>county</code></pre></div>
+<p>We merge the dataframe <code>rr.bic</code> to the <code>SpatialPolygonsDataFrame</code>, <code>wi</code>, by county name and convert it to a simple features dataframe for use with <code>ggplot2</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">merged.bic&lt;-<span class="st"> </span>sp<span class="op">::</span><span class="kw">merge</span>(wi,rr.bic, <span class="dt">by.x=</span><span class="st">&quot;NAME&quot;</span>, <span class="dt">by.y=</span><span class="st">&quot;county&quot;</span>, <span class="dt">duplicateGeoms=</span><span class="ot">TRUE</span>)
+datdf.bic &lt;-<span class="st"> </span><span class="kw">st_as_sf</span>(merged.bic)</code></pre></div>
+<p>Finally, we use <code>geom_sf()</code> to plot the estimated relative risks onto the map. We use the aesthetic (<code>aes(fill=NAME)</code>) and <code>scale_fill_manual(values=cluster_ix)</code> to plot our pre-defined colors onto the map.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p1<span class="op">+</span><span class="st"> </span><span class="kw">geom_sf</span>(<span class="dt">data=</span>datdf.bic, <span class="kw">aes</span>(<span class="dt">fill=</span>NAME)) <span class="op">+</span>
+<span class="st">    </span><span class="kw">scale_fill_manual</span>(<span class="dt">values=</span>cluster_ix)<span class="op">+</span>
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>,
+          <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">hjust=</span><span class="fl">0.5</span>)) <span class="op">+</span>
+<span class="st">    </span><span class="kw">ggtitle</span>(<span class="st">&quot;Binomial, Space: BIC&quot;</span>) </code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>For a simpler map, we can also isolate the counties with relative risks greater than 1 and only outline county edges with red:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>()<span class="op">+</span><span class="st"> </span><span class="kw">geom_sf</span>(<span class="dt">data=</span>datdf.bic, <span class="dt">lwd=</span><span class="dv">0</span>, <span class="dt">fill=</span><span class="st">'transparent'</span>) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_sf</span>(<span class="dt">data=</span><span class="kw">subset</span>(datdf.bic, rr<span class="op">&gt;</span><span class="dv">1</span>), <span class="dt">color=</span><span class="st">&quot;red&quot;</span>) <span class="op">+</span>
+<span class="st">    </span><span class="kw">theme_bw</span>()<span class="op">+</span>
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>,
+          <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">hjust=</span><span class="fl">0.5</span>)) <span class="op">+</span>
+<span class="st">    </span><span class="kw">ggtitle</span>(<span class="st">&quot;Binomial, Space: BIC&quot;</span>) </code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
