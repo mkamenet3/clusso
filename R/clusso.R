@@ -210,7 +210,7 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, id,covars,
     message(paste0("Running Poisson ", analysis_name," model(s)."))
     #set up clusters and fitted values
     clusters <- clusters2df(x,y,rMax, utm=utm, length(x), id = unique(id))
-    print(head(clusters))
+    #print(head(clusters))
     n <- length(x)
     init <- setVectors(period, expected, observed, covars, Time, byrow=TRUE)
     E1 <- init$E0
