@@ -1,0 +1,136 @@
+---
+title: "Using *clusso* with Maps"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Intro to clusso I}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.height = 5, fig.width = 8, message = FALSE, warning = FALSE)
+```
+
+#Introduction
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Introduction
+
+This package is still under development. Please [report any bugs](https://github.com/mkamenet3/clusso/issues).
+
+Messages from `clusso` have been suppressed for this tutorial, but there are many messages generated that we hope the user will find helpful. Feedback is welcome [here](https://github.com/mkamenet3/clusso/issues).
+
+Load `clusso`, as well as the `tidyverse`, `tigris`, `sf`, and `tmap` packages:
+
+```{r, message=FALSE, warning=FALSE}
+library("clusso")
+library(tidyverse)
+library(tigris)
+library(sf)
+library(tmap)
+library(sp)
+
+```
+
+
+```{r}
+wi <- tigris::counties("Wisconsin", cb=TRUE)
+wi_map <- fortify(wi)
+
+
+p1 <- ggplot() + geom_map(data=wi_map, map=wi_map, 
+                    aes(x=long, y=lat, map_id=id),
+                    color="black", fill="white", size=0.25) +
+    coord_map() +
+    ylab("Latitude") + 
+    xlab("Longitude")
+p1
+```
+
+
+```{r}
+#create ncases and ntrials for 72 counties in Wisconsin
+set.seed(2)
+ncounties <- length(unique(wi@data$NAME))
+ntrials <- rnbinom(n=ncounties, mu=1000, size =10)
+dat <- cbind.data.frame(id=unique(wi@data$NAME),ntrials)
+dat <- dat %>%
+    mutate(ncases = if_else(id %in% c("Wood", "Portage", "Waushara", "Adams", "Juneau","Marquette"), 
+                            rbinom(ncounties,ntrials, 0.9), 
+                            rbinom(ncounties,ntrials, 0.1)),
+           time = "Period1")
+with(dat,plot(ncases/ntrials, type="l"))
+
+#merge to map
+widat <-  sp::merge(wi,dat, by.x="NAME", by.y="id", duplicateGeoms=TRUE)
+class(widat)
+head(widat)
+
+#convert to simple features sf
+widatsf <- st_as_sf(widat)
+class(widatsf)
+coords <- as.data.frame(st_coordinates(st_centroid(widatsf)))
+head(coords)
+
+p1 + geom_point(data=coords,aes(x=X, y=Y), color="red", shape=3)
+
+```
+
+
+
+```{r}
+rMax <- 100
+Time <- 1
+
+xx <- coords$X
+yy <- coords$Y
+
+
+resclusso <- clusso(df=widatsf,
+                    expected = ntrials,
+                    observed = ncases,
+                    timeperiod = time,
+                    id = NAME,
+                    covars = FALSE,
+                    x= xx,
+                    y= yy,
+                    rMax = rMax,
+                    utm=FALSE,
+                    analysis = "space",
+                    model="binomial",
+                    maxclust = 15, collapsetime = TRUE)
+clussopretty(resclusso, analysis="space", model="binomial",clusteridentify=FALSE)
+
+```
+
+```{r}
+maxrr <- 2
+minrr <- 0.5
+estrr.bic <- resclusso$lassoresult.p.s$E.qbic
+cluster_ix <- redblue(log(maxrr *  pmax(minrr, pmin(estrr.bic, maxrr)))/log(maxrr^2))
+rr.bic <- cbind.data.frame(rr=resclusso$lassoresult.p.s$E.qbic, 
+                           county=widatsf$NAME, 
+                           colors = cluster_ix)
+names(cluster_ix) <- rr.bic$county
+
+merged.bic<- sp::merge(wi,rr.bic, by.x="NAME", by.y="county", duplicateGeoms=TRUE)
+datdf.bic <- st_as_sf(merged.bic)
+
+p1+ geom_sf(data=datdf.bic, aes(fill=NAME)) +
+    scale_fill_manual(values=cluster_ix)+
+    theme(legend.position = "none",
+          plot.title = element_text(hjust=0.5)) +
+    ggtitle("Binomial, Space: BIC") 
+
+# 
+# ##RR Truncated
+ggplot()+ geom_sf(data=datdf.bic, lwd=0, fill='transparent') +
+    geom_sf(data=subset(datdf.bic, rr>1), color="red") +
+    theme_bw()+
+    theme(legend.position = "none",
+          plot.title = element_text(hjust=0.5)) +
+    ggtitle("Binomial, Space: BIC") 
+```
+
