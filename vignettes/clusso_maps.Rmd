@@ -16,13 +16,16 @@ knitr::opts_chunk$set(echo = TRUE, fig.height = 5, fig.width = 8, message = FALS
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-#Introduction
 
 This package is still under development. Please [report any bugs](https://github.com/mkamenet3/clusso/issues).
 
 Messages from `clusso` have been suppressed for this tutorial, but there are many messages generated that we hope the user will find helpful. Feedback is welcome [here](https://github.com/mkamenet3/clusso/issues).
 
-Load `clusso`, as well as the `tidyverse`, `tigris`, `sf`, and `tmap` packages:
+This example uses simulated data which are meant for illustration of how to use `clusso` with maps in `R`.
+
+##Preparing the Map
+
+Load `clusso`, as well as the `tidyverse`, `tigris`, `sf`, `tmap`, and `sp` packages:
 
 ```{r, message=FALSE, warning=FALSE}
 library("clusso")
@@ -34,11 +37,17 @@ library(sp)
 
 ```
 
+Using the `counties()` function from the  `tigris`, we load a county-level map of Wisconsin. We `fortify()` the map and create `wi_map` in order to use it with `ggplot2`:
 
 ```{r}
 wi <- tigris::counties("Wisconsin", cb=TRUE)
 wi_map <- fortify(wi)
+```
 
+
+To plot the counties of Wisconsin, we use `geom_map()` (part of `ggplot2`).
+
+```{r}
 
 p1 <- ggplot() + geom_map(data=wi_map, map=wi_map, 
                     aes(x=long, y=lat, map_id=id),
@@ -48,6 +57,10 @@ p1 <- ggplot() + geom_map(data=wi_map, map=wi_map,
     xlab("Longitude")
 p1
 ```
+
+##Preparing the Data
+
+Next, we simulate some data. For this example, we imagine that in each county there were a total number of people sampled (**ntrials**), some of which have outcome *X* (**ncases**). We assume the total number of people sampled come from a negative binomial distribution and use `rnbinom()` to simulate **ntrials**. We assume cases follow a binomial distribution and use `rbinom()` to draw cases from the population with probability $\pi$. For illustration of `clusso`, we put a cluster with elevated rates in Wood, Portage, Waushera, Adams, Juneau, and Marquette counties. We will only be looking at space for this example so there is only a single time period.
 
 
 ```{r}
@@ -61,23 +74,53 @@ dat <- dat %>%
                             rbinom(ncounties,ntrials, 0.9), 
                             rbinom(ncounties,ntrials, 0.1)),
            time = "Period1")
-with(dat,plot(ncases/ntrials, type="l"))
+str(dat)
+```
+
+The dataframe `dat`, that contains the county name (*id*), number of people sampled (*ntrials*), number of people with outcome *X* (*ncases*), and number of time periods (*time*). Next, we need to merge `dat` with the `SpatialPolygonsDataFrame`, `wi`.  We use `merge()` from the `sp` package to combine the two by county name (county name is the variable *NAME* in `wi` and is *id* in `dat`).
+
+```{r}
 
 #merge to map
 widat <-  sp::merge(wi,dat, by.x="NAME", by.y="id", duplicateGeoms=TRUE)
 class(widat)
 head(widat)
+```
 
+In order to extract the centroid from each county, we first convert our new `SpatialPolygonsDataFrame` to a simple features (*sf*) object using `st_as_sf()` from the `sf` package. It is possible to extract centroids from the `SpatialPolygonsDataFrame`, but we do so here in order to also illustrate simple features.
+
+```{r}
 #convert to simple features sf
 widatsf <- st_as_sf(widat)
 class(widatsf)
+```
+
+We extract the centroids using `st_centroid()` and extract the coordinates using `st_coordinates()`; both functions are from the `sf` package.
+
+```{r}
 coords <- as.data.frame(st_coordinates(st_centroid(widatsf)))
 head(coords)
+```
 
+We can plot the centroids on top of the base map we created above, *p1*:
+
+```{r}
 p1 + geom_point(data=coords,aes(x=X, y=Y), color="red", shape=3)
 
 ```
 
+##Using `clusso`
+
+We first set global parameters, namely the maximum radius size for each potential cluster (`rMax <- 100`), the number of time periods to 1 (`Time <- 1`). We also extract our *x* and *y* coordinates, which are in longitude and latitude, and set them as `xx` and `yy`.
+
+
+To perform the LASSO-based cluster detection, we use the function `clusso()`. In the first argument, we set the name of the dataframe, `df=widatsf`. In the second argument we set `expected` counts equal to the total number of trials in the `widatsf` dataframe (`expected = ntrials`). In the third argument, we set the observed counts equal to the total number of cases in each county in the `widatsf` dataframe (`observed = ncases`). In the fourth argument, we set the timeperiod equal to the name of the time periods in the `widatsf` dataframe (`timeperiod = time`).  In this example, we do not want to include other covariates as un-penalized terms in the model so we set `covars = FALSE`. 
+
+The next two arguments are `x` and `y`, which are the longitude and latitude for each centroids. Since these are longitude and latitude coordinates, we also set `utm=FALSE`. This will tell `clusso` to use the *great-circle-distance* or *Haversine* distance to calculate the distance between a centroid up to `rMax`.
+
+The next argument is the maximum radius (in km) for the potential clusters. We set `rMax = rMax`, which we defined above as 100km. The argument `utm` specifies that our coordinates are *NOT* in UTM coordinates (`utm = FALSE`).  The is `analysis` argument defines the type of analysis to be performed. Options include `space`, `spacetime`, or `both`. Here, we set  `analysis` equal to `space`, which will perform only the spatial analysis. The argument `model` is the type of model to be used. In this example, we specify the *binomial* model. The argument `maxclust` is the maximum number of actual clusters expected in the given area. This is based on scientific knowledge of the area. For this dataset, we set `maxclust=15`. If the number of identified clusters exceeds `maxclust`, a warning will encourage you to increase your set `maxclust`.
+
+The output of `clusso()` is assigned to the object `resclusso`. `resclusso` is a large list of lists. The recommended way to explore the results is to explore the `names(resreal)` and select each sub-list of interest.
 
 
 ```{r}
@@ -105,18 +148,42 @@ clussopretty(resclusso, analysis="space", model="binomial",clusteridentify=FALSE
 
 ```
 
+
+##Plotting `clusso` Results on the Map
+
+We set the max and min relative risk for the color scheme using `maxrr` and `minrr`. You  may want to explore these values depending on the presentation you are using (a shortened maxrr, minrr distance will bring colors in closer and maps on a projector will appear more vivid and darker).
+
+We extract the relative risk estimates using BIC from `resclusso$lassoresult.p.s$E.qbic` and then use `redblue()` to map the estimated relative risks to colors.
+
+
 ```{r}
 maxrr <- 2
 minrr <- 0.5
 estrr.bic <- resclusso$lassoresult.p.s$E.qbic
 cluster_ix <- redblue(log(maxrr *  pmax(minrr, pmin(estrr.bic, maxrr)))/log(maxrr^2))
+table(cluster_ix)
+```
+
+Next, we combine the estimated relative risks (`resclusso$lassoresult.p.s$E.qbic`), county names (widatsf$NAME), and mapped colors (`cluster_ix`) into the dataframe `rr.bic`. We map the county names onto the colors (`names(cluster_ix) <- rr.bic\$county`).
+
+```{r}
 rr.bic <- cbind.data.frame(rr=resclusso$lassoresult.p.s$E.qbic, 
                            county=widatsf$NAME, 
                            colors = cluster_ix)
 names(cluster_ix) <- rr.bic$county
+```
 
+We merge the dataframe `rr.bic` to the `SpatialPolygonsDataFrame`, `wi`, by county name and convert it to a simple features dataframe for use with `ggplot2`.
+
+```{r}
 merged.bic<- sp::merge(wi,rr.bic, by.x="NAME", by.y="county", duplicateGeoms=TRUE)
 datdf.bic <- st_as_sf(merged.bic)
+
+```
+
+Finally, we use `geom_sf()` to plot the estimated relative risks onto the map. We use the aesthetic (`aes(fill=NAME)`) and `scale_fill_manual(values=cluster_ix)` to plot our pre-defined colors onto the map.
+
+```{r}
 
 p1+ geom_sf(data=datdf.bic, aes(fill=NAME)) +
     scale_fill_manual(values=cluster_ix)+
@@ -124,8 +191,11 @@ p1+ geom_sf(data=datdf.bic, aes(fill=NAME)) +
           plot.title = element_text(hjust=0.5)) +
     ggtitle("Binomial, Space: BIC") 
 
-# 
-# ##RR Truncated
+```
+
+For a simpler map, we can also isolate the counties with relative risks greater than 1 and only outline county edges with red:
+
+```{r}
 ggplot()+ geom_sf(data=datdf.bic, lwd=0, fill='transparent') +
     geom_sf(data=subset(datdf.bic, rr>1), color="red") +
     theme_bw()+
