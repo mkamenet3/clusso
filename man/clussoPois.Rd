@@ -4,8 +4,8 @@
 \alias{clussoPois}
 \title{clussoPois}
 \usage{
-clussoPois(analysis, x, y, rMax, period, expected, observed, covars, Time,
-  utm, maxclust, overdispfloor, cv, collapsetime, nsize)
+clussoPois(analysis, x, y, rMax, period, expected, observed, id, covars,
+  Time, utm, maxclust, overdispfloor, cv, collapsetime, nsize)
 }
 \arguments{
 \item{analysis}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.}
@@ -21,6 +21,8 @@ clussoPois(analysis, x, y, rMax, period, expected, observed, covars, Time,
 \item{expected}{Vector of expected counts.}
 
 \item{observed}{Vector of observed counts.}
+
+\item{id}{If your dataframe contains an ID variable that should not be a covariate, set the name here. If you have excluded the ID from the dataset already, then set to \code{NULL}.}
 
 \item{covars}{Matrix of covariates.}
 
