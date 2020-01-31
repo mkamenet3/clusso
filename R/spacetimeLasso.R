@@ -95,15 +95,15 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
                                     penalty.factor = penalty)    
         }
         else if(model=="binomial"){
-            print(table(penalty))
+            #print(table(penalty))
             lasso <- glmnet::glmnet(sparseMAT, cbind((Ex-Yx),Yx), family=("binomial"), alpha=1, 
                                     nlambda = 2000,
                                     standardize = FALSE, intercept=FALSE,dfmax = maxclust,
                                     penalty.factor = penalty)    
         }
         else if(model=="Bernoulli"){
-            print(table(penalty))
-            print("bernoulli space only model")
+            #print(table(penalty))
+            #print("bernoulli space only model")
             lasso <- glmnet::glmnet(sparseMAT, factor(Yx), family=("binomial"), alpha=1, 
                                     nlambda = 2000,
                                     standardize = FALSE, intercept=FALSE,dfmax = maxclust,
@@ -177,7 +177,7 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
     #nsize default: sum(Yx)
     if(quasi == TRUE){
         #message("Returning results for space-time Quasi-Poisson model")
-        print(table(K))
+        #print(table(K))
         if(!is.null(covars)){
             if(collapsetime==FALSE){
                 offset_reg <- glm(Yx ~ . + as.factor(Period) + offset(log(Ex)),
@@ -294,7 +294,7 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
 #'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
 #'@return List of results for binomial/quasi-binomial models.
 spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,covars, Yx, Ex, Period, Time, n_uniq, overdispfloor,maxclust, collapsetime,nsize){   
-    print(paste0("TimeBin:", Time))
+    #print(paste0("TimeBin:", Time))
     if(quasi==TRUE){
         #message("Returning results for space-time Quasi-Poisson model")
         if(!is.null(covars)){
@@ -325,20 +325,20 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,co
         #########################################################
         #nsize default: (min(sum(Yx),sum(Ex-Yx))
         #QBIC
-        PLL.qbic  <- -2*(loglike/overdisp.est) + ((K)*log(nsize))
+        PLL.qbic  <- -2*(loglike/overdisp.est) + ((K+1)*log(nsize))
         select.qbic <- which.min(PLL.qbic)
         E.qbic <- mu[,select.qbic]
         numclust.qbic <- K[select.qbic]-Time 
         
         #QAIC
-        PLL.qaic <-  2*(K) - 2*(loglike/overdisp.est)
+        PLL.qaic <-  2*(K+1) - 2*(loglike/overdisp.est)
         select.qaic <- which.min(PLL.qaic)
         E.qaic <- mu[,select.qaic]
         numclust.qaic <- K[select.qaic]-Time 
         
         #QAICc
-        PLL.qaicc <- 2*(K) - 2*(loglike/overdisp.est) +
-            ((2*K*(K + 1))/(nsize - K - 1))
+        PLL.qaicc <- 2*(K+1) - 2*(loglike/overdisp.est) +
+            ((2*(K+1)*(K+1 + 1))/(nsize - K +1 - 1))
         select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaicc]
         numclust.qaicc <- K[select.qaicc]-Time 
