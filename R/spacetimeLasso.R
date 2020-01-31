@@ -223,7 +223,7 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
         # PLL.qaicc <- 2*(K) - 2*(loglike/overdisp.est) +
         #     ((2*K*(K + 1))/(nsize - K - 1))
         PLL.qaicc <- 2*(K+1) - 2*(loglike/overdisp.est) +
-            ((2*K*(K+1 + 1))/(nsize - K+1 - 1))
+            ((2*(K+1)*(K+1 + 1))/(nsize - K+1 - 1))
         select.qaicc <- which.min(PLL.qaicc)
         E.qaicc <- mu[,select.qaicc]
         numclust.qaicc <- K[select.qaicc]-Time 
