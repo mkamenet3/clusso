@@ -120,7 +120,7 @@ The output of `clusso()` is assigned to the object `resreal`. `resreal` is a lar
 ```{r}
 head(jbc)
 
-system.time(resreal <- clusso(jbc, expected = expdeath, observed=death,timeperiod = period, covars=FALSE, id = NULL,
+system.time(resreal <- clusso(jbc, expected = expdeath, observed=death,timeperiod = period, covars=FALSE, id = id,
                                x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11))
 ```
 
