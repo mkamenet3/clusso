@@ -4,8 +4,8 @@
 \alias{clussoBern}
 \title{clussoBern}
 \usage{
-clussoBern(analysis, x, y, rMax, period, expected, observed, covars, Time,
-  utm, maxclust, overdispfloor, cv, collapsetime, nsize)
+clussoBern(analysis, x, y, rMax, period, expected, observed, id, covars,
+  Time, utm, maxclust, overdispfloor, cv, collapsetime, nsize)
 }
 \arguments{
 \item{analysis}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.}
@@ -21,6 +21,8 @@ clussoBern(analysis, x, y, rMax, period, expected, observed, covars, Time,
 \item{expected}{Total number of both cases and controls (or number of trials). This is a vector of 1's for the Bernoulli case.}
 
 \item{observed}{Vector of number of cases (or successes). This is a vectors of 0's or 1's for the Bernoulli case.}
+
+\item{id}{If your dataframe contains an ID variable that should not be a covariate, set the name here. If you have excluded the ID from the dataset already, then set to \code{NULL}.}
 
 \item{covars}{Matrix of covariates.}
 

@@ -4,7 +4,7 @@
 \alias{clusters2df}
 \title{Create the clusters dataframe}
 \usage{
-clusters2df(xP, yP, r.max, utm = FALSE, n)
+clusters2df(xP, yP, r.max, utm = FALSE, n, id = NULL)
 }
 \arguments{
 \item{xP}{vector of x coordinates (easting/latitude); if utm coordinates, scale to km.}

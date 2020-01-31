@@ -102,8 +102,6 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
                                     penalty.factor = penalty)    
         }
         else if(model=="Bernoulli"){
-            #print(table(penalty))
-            #print("bernoulli space only model")
             lasso <- glmnet::glmnet(sparseMAT, factor(Yx), family=("binomial"), alpha=1, 
                                     nlambda = 2000,
                                     standardize = FALSE, intercept=FALSE,dfmax = maxclust,

@@ -125,11 +125,11 @@ clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, u
             nsize = sum(observed)
         }
         switch(analysis, 
-               space = clussoPois(analysis="space",x, y, rMax,period, expected, observed, covars, 
+               space = clussoPois(analysis="space",x, y, rMax,period, expected, observed, id,covars, 
                                   Time, utm,  maxclust,overdispfloor, cv, collapsetime, nsize),
-               spacetime = clussoPois(analysis="spacetime",x, y, rMax,period, expected, observed, covars, 
+               spacetime = clussoPois(analysis="spacetime",x, y, rMax,period, expected, observed, id,covars, 
                                       Time, utm, maxclust,overdispfloor, cv, collapsetime, nsize),
-               both = clussoPois(analysis="both",x, y, rMax,period, expected, observed, covars, 
+               both = clussoPois(analysis="both",x, y, rMax,period, expected, observed, id,covars, 
                                  Time, utm,  maxclust,overdispfloor, cv, collapsetime, nsize))
     }
     else if(model=="binomial"){
@@ -140,11 +140,11 @@ clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, u
             nsize = min(sum(observed), sum(expected))
         }
         switch(analysis, 
-               space = clussoBinom(analysis="space",x, y, rMax,period, expected, observed, covars,
+               space = clussoBinom(analysis="space",x, y, rMax,period, expected, observed, id,covars,
                                    Time, utm, maxclust, overdispfloor,cv, collapsetime, nsize),
-               spacetime = clussoBinom(analysis="spacetime",x, y, rMax,period, expected, observed, covars,
+               spacetime = clussoBinom(analysis="spacetime",x, y, rMax,period, expected, observed,id, covars,
                                        Time, utm,  maxclust, overdispfloor,cv, collapsetime, nsize),
-               both = clussoBinom(analysis="both",x, y, rMax,period, expected, observed, covars, 
+               both = clussoBinom(analysis="both",x, y, rMax,period, expected, observed, id,covars, 
                                   Time, utm,  maxclust, overdispfloor,cv, collapsetime, nsize))
     }
     else if (model == "bernoulli" | model=="Bernoulli"){
@@ -158,11 +158,11 @@ clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, u
             #print(nsize)
         }
         switch(analysis, 
-               space = clussoBern(analysis="space",x, y, rMax,period, expected, observed, covars,
+               space = clussoBern(analysis="space",x, y, rMax,period, expected, observed, id,covars,
                                    Time, utm, maxclust, overdispfloor,cv, collapsetime, nsize),
-               spacetime = clussoBern(analysis="spacetime",x, y, rMax,period, expected, observed, covars,
+               spacetime = clussoBern(analysis="spacetime",x, y, rMax,period, expected, observed, id,covars,
                                        Time, utm,  maxclust, overdispfloor,cv, collapsetime, nsize),
-               both = clussoBern(analysis="both",x, y, rMax,period, expected, observed, covars, 
+               both = clussoBern(analysis="both",x, y, rMax,period, expected, observed, id,covars, 
                                   Time, utm,  maxclust, overdispfloor,cv, collapsetime, nsize))
     }
     else{
@@ -185,6 +185,7 @@ clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, u
 #'@param period Vector of timeperiods in the data set. If this is variable is not a factor in the dataframe, then it will be automatically converted to one by \code{clusso()} with a warning message.
 #'@param expected Vector of expected counts.
 #'@param observed Vector of observed counts. 
+#'@param id If your dataframe contains an ID variable that should not be a covariate, set the name here. If you have excluded the ID from the dataset already, then set to \code{NULL}.
 #'@param covars Matrix of covariates.
 #'@param Time Number of timeperiods in the dataset. This is calculated based on the number of unique timeperiods (factor levels) supplied to \code{clusso}.
 #'@param utm Default is \code{TRUE} (coordinates are in the Universal Transverse Mercator (UTM) coordinate system). If \code{FALSE}, then coordinates will be interpreted as Longitude/Latitude and the Haversine formula will be used to determine the distance between points.
@@ -195,7 +196,7 @@ clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, u
 #'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
 #'@return List of lists output from detection.
 
-clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Time, utm, maxclust, overdispfloor, cv, collapsetime, nsize){
+clussoPois <- function(analysis,x,y,rMax, period, expected, observed, id,covars,Time, utm, maxclust, overdispfloor, cv, collapsetime, nsize){
     model <- "poisson"
     if(analysis=="space"){
         analysis_name<-"spatial"
@@ -208,7 +209,8 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
     }
     message(paste0("Running Poisson ", analysis_name," model(s)."))
     #set up clusters and fitted values
-    clusters <- clusters2df(x,y,rMax, utm=utm, length(x))
+    clusters <- clusters2df(x,y,rMax, utm=utm, length(x), id = unique(id))
+    #print(head(clusters))
     n <- length(x)
     init <- setVectors(period, expected, observed, covars, Time, byrow=TRUE)
     E1 <- init$E0
@@ -374,6 +376,7 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
 #'@param period Vector of timeperiods in the data set. If this is variable is not a factor in the dataframe, then it will be automatically converted to one by \code{clusso()} with a warning message.
 #'@param expected Total number of both cases and controls (or number of trials).
 #'@param observed Vector of number of cases (or successes).
+#'@param id If your dataframe contains an ID variable that should not be a covariate, set the name here. If you have excluded the ID from the dataset already, then set to \code{NULL}.
 #'@param covars Matrix of covariates.
 #'@param Time Number of timeperiods in the dataset. This is calculated based on the number of unique timeperiods (factor levels) supplied to \code{clusso}.
 #'@param utm Default is \code{TRUE} (coordinates are in the Universal Transverse Mercator (UTM) coordinate system). If \code{FALSE}, then coordinates will be interpreted as Longitude/Latitude and the Haversine formula will be used to determine the distance between points.
@@ -384,7 +387,7 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
 #'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
 #'@return List of lists output from detection.
 
-clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Time, utm, maxclust,overdispfloor, cv, collapsetime, nsize){  
+clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, id,covars,Time, utm, maxclust,overdispfloor, cv, collapsetime, nsize){  
     model <- "binomial"
     if(analysis=="space"){
         analysis_name<-"spatial"
@@ -397,7 +400,7 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
     }
     message(paste0("Running binomial ", analysis_name," model(s)."))
     #set up clusters and fitted values
-    clusters <- clusters2df(x,y,rMax, utm=utm, length(x))
+    clusters <- clusters2df(x,y,rMax, utm=utm, length(x), id=id)
     n_uniq <- length(unique(clusters$center))
     init <- setVectors(period, expected, observed, covars, Time, byrow = TRUE) 
     Yx <- init$Y.vec #ncases
@@ -564,6 +567,7 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
 #'@param period Vector of timeperiods in the data set. If this is variable is not a factor in the dataframe, then it will be automatically converted to one by \code{clusso()} with a warning message.
 #'@param expected Total number of both cases and controls (or number of trials). This is a vector of 1's for the Bernoulli case.
 #'@param observed Vector of number of cases (or successes). This is a vectors of 0's or 1's for the Bernoulli case.
+#'@param id If your dataframe contains an ID variable that should not be a covariate, set the name here. If you have excluded the ID from the dataset already, then set to \code{NULL}.
 #'@param covars Matrix of covariates.
 #'@param Time Number of timeperiods in the dataset. This is calculated based on the number of unique timeperiods (factor levels) supplied to \code{clusso}.
 #'@param utm Default is \code{TRUE} (coordinates are in the Universal Transverse Mercator (UTM) coordinate system). If \code{FALSE}, then coordinates will be interpreted as Longitude/Latitude and the Haversine formula will be used to determine the distance between points.
@@ -574,7 +578,7 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, covars,Ti
 #'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial/Bernoulli case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
 #'@return List of lists output from detection.
 
-clussoBern <- function(analysis,x,y,rMax, period, expected, observed, covars,Time, utm, maxclust,overdispfloor, cv, collapsetime, nsize){  
+clussoBern <- function(analysis,x,y,rMax, period, expected, observed, id,covars,Time, utm, maxclust,overdispfloor, cv, collapsetime, nsize){  
     model <- "Bernoulli"
     if(analysis=="space"){
         analysis_name<-"spatial"
@@ -587,7 +591,7 @@ clussoBern <- function(analysis,x,y,rMax, period, expected, observed, covars,Tim
     }
     message(paste0("Running Bernoulli ", analysis_name," model(s)."))
     #set up clusters and fitted values
-    clusters <- clusters2df(x,y,rMax, utm=utm, length(x))
+    clusters <- clusters2df(x,y,rMax, utm=utm, length(x), id = id)
     
     n_uniq <- length(x) #because each person is a center
     init <- setVectors(period, expected, observed, covars, Time+1, byrow = TRUE) 
