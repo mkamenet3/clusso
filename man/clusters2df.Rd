@@ -16,6 +16,8 @@ clusters2df(xP, yP, r.max, utm = FALSE, n, id = NULL)
 \item{utm}{TRUE/FALSE as to whether or not the x and y coordinates are in UTM (TRUE) or LAT/LONG(FALSE).}
 
 \item{n}{Number of coordinate pairs/number of centers.}
+
+\item{id}{identifier for each centroid id. Default is \code{NULL}.}
 }
 \value{
 This function returns a dataframe that contains.

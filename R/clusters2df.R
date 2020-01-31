@@ -5,6 +5,7 @@
 #' @param r.max Maximum radius for potential clusters (in km).
 #' @param utm TRUE/FALSE as to whether or not the x and y coordinates are in UTM (TRUE) or LAT/LONG(FALSE).
 #' @param n Number of coordinate pairs/number of centers.
+#' @param id identifier for each centroid id. Default is \code{NULL}.
 #' @return This function returns a dataframe that contains. 
 #' @examples
 #' rMax = 20
