@@ -12,10 +12,6 @@
 #'@export
 #'@import data.table
 #'@return Returns a ggplot.
-#'@examples
-#'\donttest{
-#'clussoplot(resreal, analysis="both", model="poisson",Time=5)
-#'}
 clussoplot <- function(outclusso, analysis=c("space","spacetime","both"), model = c("poisson", "binomial"), Time, collapsetime=FALSE,cv=FALSE){
     analysis <- match.arg(analysis, several.ok = FALSE)
     if(is.null(collapsetime)| missing(collapsetime)){

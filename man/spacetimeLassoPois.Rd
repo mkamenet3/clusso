@@ -4,9 +4,24 @@
 \alias{spacetimeLassoPois}
 \title{spacetimeLassoPois}
 \usage{
-spacetimeLassoPois(lasso, coefs.lasso.all, loglike, mu, K, quasi, covars,
-  Yx, Ex, Period, Time, n_uniq, overdispfloor, maxclust, collapsetime,
-  nsize)
+spacetimeLassoPois(
+  lasso,
+  coefs.lasso.all,
+  loglike,
+  mu,
+  K,
+  quasi,
+  covars,
+  Yx,
+  Ex,
+  Period,
+  Time,
+  n_uniq,
+  overdispfloor,
+  maxclust,
+  collapsetime,
+  nsize
+)
 }
 \arguments{
 \item{lasso}{Output from \code{glmnet}.}
@@ -45,5 +60,5 @@ spacetimeLassoPois(lasso, coefs.lasso.all, loglike, mu, K, quasi, covars,
 List of results from Poisson/quasi-Poisson models.
 }
 \description{
-spacetimeLassoPois
+Runs the LASSO regularization - Poisson
 }

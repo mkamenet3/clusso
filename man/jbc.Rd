@@ -4,7 +4,8 @@
 \name{jbc}
 \alias{jbc}
 \title{Japanese Breast Cancer Data (JBC)}
-\format{An object of class "data.frame" with 1040 rows and 9 variables:
+\format{
+An object of class "data.frame" with 1040 rows and 9 variables:
 \itemize{
 \item id: identifier for each centroid location.
 \item period: time period at which each centroid location was measured (there are 5 total time periods, coded).
@@ -15,7 +16,8 @@
 \item covar3: simulated covariate 3 (will be unpenalized in model).
 \item covar4: simulated covariate 4 (will be unpenalized in model).
 \item covar5: simulated covariate 5 (will be unpenalized in model).
-}}
+}
+}
 \usage{
 jbc
 }

@@ -3,14 +3,27 @@
 \docType{package}
 \name{clusso}
 \alias{clusso}
-\alias{clusso-package}
-\title{clusso: Spatial cluster detection using LASSO}
+\title{clusso: Regularized Spatial and Spatio-Temporal Cluster Detection}
 \usage{
-clusso(df, expected, observed, timeperiod, id = NULL, covars, x, y, rMax,
-  utm = TRUE, analysis = c("space", "spacetime", "both"),
-  model = c("poisson", "binomial", "bernoulli"), maxclust = 11,
-  overdispfloor = TRUE, cv = NULL, collapsetime = FALSE,
-  nsize = NULL)
+clusso(
+  df,
+  expected,
+  observed,
+  timeperiod,
+  id = NULL,
+  covars,
+  x,
+  y,
+  rMax,
+  utm = TRUE,
+  analysis = c("space", "spacetime", "both"),
+  model = c("poisson", "binomial", "bernoulli"),
+  maxclust = 11,
+  overdispfloor = TRUE,
+  cv = NULL,
+  collapsetime = FALSE,
+  nsize = NULL
+)
 }
 \arguments{
 \item{df}{Name of dataframe.}
@@ -51,10 +64,10 @@ clusso(df, expected, observed, timeperiod, id = NULL, covars, x, y, rMax,
 Returns list of cluster detection results ready to analyze and plot.
 }
 \description{
-Runs helper function for both the space and space-time Lasso model on observed data.
+Runs helper function for both the space and space-time regularization on observed data.
 }
 \details{
-Detect a cluster in space or spacetime using Lasso
+Regularized spatial and spatio-temporal cluster detection using the Lasso penalty
 
 Set up for clusso
 

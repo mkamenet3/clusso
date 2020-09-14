@@ -3,7 +3,6 @@
 #' @param Yx Cases (0 or 1).
 #' @param p Vector of estimated probabilities for each individual.
 #' @return Returns vector of Bernoulli log-likelihood for each proposed path of the LASSO tuning parameter values.
-#' @example 
 dbern <- function(Yx,p){
     sum(dbinom(Yx, size=1, p,log=TRUE))
 }

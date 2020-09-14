@@ -4,7 +4,8 @@
 \name{ccsjbc}
 \alias{ccsjbc}
 \title{Japanese Breast Cancer Data (JBC) - Case-Control Data Example}
-\format{An object of class "data.frame" with 1040 rows and 10 variables:
+\format{
+An object of class "data.frame" with 1040 rows and 10 variables:
 \itemize{
 \item id: identifier for each centroid location.
 \item period: time period at which each centroid location was measured (there are 5 total time periods, coded).
@@ -16,7 +17,8 @@
 \item covar4: simulated covariate 4 (will be unpenalized in model).
 \item covar5: simulated covariate 5 (will be unpenalized in model).
 \item prop: proportion of cases/(cases+controls) (used in exploratory analysis).
-}}
+}
+}
 \usage{
 ccsjbc
 }

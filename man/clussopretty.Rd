@@ -4,9 +4,15 @@
 \alias{clussopretty}
 \title{clussopretty}
 \usage{
-clussopretty(outclusso, analysis = "both", model = c("poisson",
-  "binomial"), clusteridentify = FALSE, clusterRR, cv = FALSE,
-  covars = FALSE)
+clussopretty(
+  outclusso,
+  analysis = "both",
+  model = c("poisson", "binomial"),
+  clusteridentify = FALSE,
+  clusterRR,
+  cv = FALSE,
+  covars = FALSE
+)
 }
 \arguments{
 \item{outclusso}{Object with output from \code{clusso}.}

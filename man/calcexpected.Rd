@@ -26,7 +26,10 @@ Estimate expected counts if data not available
 }
 \examples{
 \donttest{
-data(japanbreastcancer)
-calcexpected(japanbreastcancer$observed, japanbreastcancer$period, 
-   japanbreastcancer$id, family="poisson") }
+set.seed(2)
+period <- rep(c("1","2"), times=5)
+observed <- MASS::rnegbin(n = length(period), mu=20, theta=2)
+pop <-  MASS::rnegbin(n = length(period), mu=200, theta=2)
+ids <- rep(1:5, each=2)
+calcexpected(observed, pop, period, ids) }
 }

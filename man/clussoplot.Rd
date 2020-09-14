@@ -4,9 +4,14 @@
 \alias{clussoplot}
 \title{clussoplot}
 \usage{
-clussoplot(outclusso, analysis = c("space", "spacetime", "both"),
-  model = c("poisson", "binomial"), Time, collapsetime = FALSE,
-  cv = FALSE)
+clussoplot(
+  outclusso,
+  analysis = c("space", "spacetime", "both"),
+  model = c("poisson", "binomial"),
+  Time,
+  collapsetime = FALSE,
+  cv = FALSE
+)
 }
 \arguments{
 \item{outclusso}{outclusso Object with output from \code{clusso}.}
@@ -29,9 +34,4 @@ Plot the coefficient paths from the LASSO-identified potential clusters.
 }
 \details{
 Plot coefficient paths from clusso
-}
-\examples{
-\donttest{
-clussoplot(resreal, analysis="both", model="poisson",Time=5)
-}
 }

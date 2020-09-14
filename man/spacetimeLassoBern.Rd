@@ -4,8 +4,23 @@
 \alias{spacetimeLassoBern}
 \title{spacetimeLassoBern}
 \usage{
-spacetimeLassoBern(lasso, coefs.lasso.all, loglike, mu, K, covars, Yx, Ex,
-  Period, Time, n_uniq, overdispfloor, maxclust, collapsetime, nsize)
+spacetimeLassoBern(
+  lasso,
+  coefs.lasso.all,
+  loglike,
+  mu,
+  K,
+  covars,
+  Yx,
+  Ex,
+  Period,
+  Time,
+  n_uniq,
+  overdispfloor,
+  maxclust,
+  collapsetime,
+  nsize
+)
 }
 \arguments{
 \item{lasso}{Output from \code{glmnet}.}
@@ -42,5 +57,5 @@ spacetimeLassoBern(lasso, coefs.lasso.all, loglike, mu, K, covars, Yx, Ex,
 List of results for binomial/quasi-binomial models.
 }
 \description{
-spacetimeLassoBern
+Runs the LASSO regularization - Bernoulli
 }

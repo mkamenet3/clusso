@@ -4,8 +4,18 @@
 \alias{easyplot}
 \title{Auxiliary Plotting Functions for Japanese Breast Cancer Data}
 \usage{
-easyplot(prefect, polygons, pdfname, rescols, mods, space = c("space",
-  "spacetime", "both", "BIC"), probmap, cv = NULL, obs = NULL, rr)
+easyplot(
+  prefect,
+  polygons,
+  pdfname,
+  rescols,
+  mods,
+  space = c("space", "spacetime", "both", "BIC"),
+  probmap,
+  cv = NULL,
+  obs = NULL,
+  rr
+)
 }
 \arguments{
 \item{prefect}{prefects dataframe}
@@ -31,15 +41,4 @@ spatio-temporal models will be run; if space="both" then all four models will be
 }
 \description{
 Wrapper function easyplot
-}
-\examples{
-\donttest{
-mods <- c("QuasiPoisson", "Poisson")
-pdfname1 <- paste0("rrmaps.pdf")
-pdfname2 <- paste0("probabilitymaps.pdf")
-easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname1,
- res$rrcolors, mods, space="both", probmap=FALSE, obs = NULL, rr=TRUE)
-easyplot(prefect = japan.prefect2 , polygons = japan.poly2 ,pdfname2, 
- res$probcolors, mods, space="both", probmap=TRUE, obs = NULL,rr=FALSE)
-}
 }

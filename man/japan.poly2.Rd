@@ -4,11 +4,13 @@
 \name{japan.poly2}
 \alias{japan.poly2}
 \title{Polygon borders}
-\format{An object of class "data.frame" with 1460 rows and 2 variables:
+\format{
+An object of class "data.frame" with 1460 rows and 2 variables:
 \itemize{
 \item V1: x-coordinate of the vector containing the coordinates of the vertices of the polygon.
 \item V2: y-coordinate of the vector containing the coordinates of the vertices of the polygon.
-}}
+}
+}
 \usage{
 japan.poly2
 }

@@ -4,8 +4,20 @@
 \alias{prob_clusteroverlap}
 \title{prob_clusteroverlap}
 \usage{
-prob_clusteroverlap(sparseMAT, lassoresult, rr, risk.ratio, x, y, rMax,
-  nsim, Time, thresh, ncentroids, nullmod = NULL)
+prob_clusteroverlap(
+  sparseMAT,
+  lassoresult,
+  rr,
+  risk.ratio,
+  x,
+  y,
+  rMax,
+  nsim,
+  Time,
+  thresh,
+  ncentroids,
+  nullmod = NULL
+)
 }
 \arguments{
 \item{sparseMAT}{large sparse matrix created in \code{clusso_sim} function.}
