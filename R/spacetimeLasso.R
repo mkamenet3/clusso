@@ -1,9 +1,7 @@
 #' Spatial and Spatio-Temporal Cluster Detection Using the LASSO
 #' @title 
 #' spacetimeLasso
-#' 
-#' @description 
-#' This function runs the LASSO regularization technique on the large sparse matrix of potential space or space-time clusters.
+#' @description Runs the LASSO regularization on the large sparse matrix of potential space or space-time clusters.
 #'@param model A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.
 #' @param sparseMAT Large sparse matrix of indicators of space-time potential clusters. For bernoulli, specify \code{"bernoulli"}.
 #' @param n_uniq Number of unique geographic subregions/centroids (ex: counties, zip code, ,etc). Calculated as the number of unique geographic identifiers.
@@ -16,6 +14,7 @@
 #'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time by summing the counts.
 #'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
 #' @return Returns a list of lists with the 1) estimated relative risks for each geographic subregion-time period based on selection by (Q)BIC, (Q)AIC, (Q)AICc, 2) number of identified clusters by (Q)BIC, (Q)AIC, (Q)AICc, 3) original expected counts (Ex), 4) original observed counts (Yx),5) the LASSO object, 6)  list of K values (number of unique values in each LASSO path), 7) and the estimated coefficients from all estimated lambdas.
+#' @import glmnet
 
 spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust, overdispfloor, cv, nsize, collapsetime){
     #check for covariates
@@ -150,7 +149,7 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
 
 
 #'@title spacetimeLassoPois
-#'@description
+#'@description Runs the LASSO regularization - Poisson
 #'@param lasso Output from \code{glmnet}.
 #'@param coefs.lasso.all Matrix of coefficient estimates for every lambda in lasso path.
 #'@param loglike Loglikelihood for Poisson model.
@@ -273,7 +272,7 @@ spacetimeLassoPois <- function(lasso, coefs.lasso.all, loglike,mu, K, quasi, cov
 
 
 #'@title spacetimeLassoBinom
-#'@description
+#'@description Runs the LASSO regularization - Binomial
 #'@param lasso Output from \code{glmnet}.
 #'@param coefs.lasso.all Matrix of coefficient estimates for every lambda in lasso path.
 #'@param loglike Loglikelihood for Binomial model
@@ -396,7 +395,7 @@ spacetimeLassoBinom <- function(lasso, coefs.lasso.all, loglike, mu, K, quasi,co
 
 
 #'@title spacetimeLassoBern
-#'@description
+#'@description Runs the LASSO regularization - Bernoulli
 #'@param lasso Output from \code{glmnet}.
 #'@param coefs.lasso.all Matrix of coefficient estimates for every lambda in lasso path.
 #'@param loglike Loglikelihood for Bernoulli model

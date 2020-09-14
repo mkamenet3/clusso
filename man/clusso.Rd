@@ -3,14 +3,27 @@
 \docType{package}
 \name{clusso}
 \alias{clusso}
-\alias{clusso-package}
-\title{clusso: Spatial cluster detection using LASSO}
+\title{clusso: Regularized Spatial and Spatio-Temporal Cluster Detection}
 \usage{
-clusso(df, expected, observed, timeperiod, id = NULL, covars, x, y, rMax,
-  utm = TRUE, analysis = c("space", "spacetime", "both"),
-  model = c("poisson", "binomial", "bernoulli"), maxclust = 11,
-  overdispfloor = TRUE, cv = NULL, collapsetime = FALSE,
-  nsize = NULL)
+clusso(
+  df,
+  expected,
+  observed,
+  timeperiod,
+  id = NULL,
+  covars,
+  x,
+  y,
+  rMax,
+  utm = TRUE,
+  analysis = c("space", "spacetime", "both"),
+  model = c("poisson", "binomial", "bernoulli"),
+  maxclust = 11,
+  overdispfloor = TRUE,
+  cv = NULL,
+  collapsetime = FALSE,
+  nsize = NULL
+)
 }
 \arguments{
 \item{df}{Name of dataframe.}

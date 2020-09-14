@@ -4,8 +4,24 @@
 \alias{clussoBern}
 \title{clussoBern}
 \usage{
-clussoBern(analysis, x, y, rMax, period, expected, observed, id, covars,
-  Time, utm, maxclust, overdispfloor, cv, collapsetime, nsize)
+clussoBern(
+  analysis,
+  x,
+  y,
+  rMax,
+  period,
+  expected,
+  observed,
+  id,
+  covars,
+  Time,
+  utm,
+  maxclust,
+  overdispfloor,
+  cv,
+  collapsetime,
+  nsize
+)
 }
 \arguments{
 \item{analysis}{A string specifying if the spatial (\code{"space"}), spatio-temporal (\code{"spacetime"}), or both spatial and spatio-temporal (\code{"both"}) analysis should be executed.}

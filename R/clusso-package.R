@@ -1,4 +1,4 @@
-#' clusso: Spatial cluster detection using LASSO
+#' clusso: Regularized Spatial and Spatio-Temporal Cluster Detection
 #'
 #' @docType package
 #' @name clusso

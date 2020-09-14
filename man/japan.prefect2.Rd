@@ -4,13 +4,15 @@
 \name{japan.prefect2}
 \alias{japan.prefect2}
 \title{Prefect borders}
-\format{An object of class "data.frame" with 108 rows and 4 variables:
+\format{
+An object of class "data.frame" with 108 rows and 4 variables:
 \itemize{
 \item x1: x-coordinate of points from which to draw.
 \item y1: y-coordinate of points from which to draw.
 \item x2: x-coordinate of points to which to draw.
 \item y2: y-coordinate of points to which to draw.
-}}
+}
+}
 \usage{
 japan.prefect2
 }

@@ -4,9 +4,14 @@
 \alias{clussoplot}
 \title{clussoplot}
 \usage{
-clussoplot(outclusso, analysis = c("space", "spacetime", "both"),
-  model = c("poisson", "binomial"), Time, collapsetime = FALSE,
-  cv = FALSE)
+clussoplot(
+  outclusso,
+  analysis = c("space", "spacetime", "both"),
+  model = c("poisson", "binomial"),
+  Time,
+  collapsetime = FALSE,
+  cv = FALSE
+)
 }
 \arguments{
 \item{outclusso}{outclusso Object with output from \code{clusso}.}

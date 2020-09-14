@@ -4,8 +4,19 @@
 \alias{spacetimeLasso}
 \title{spacetimeLasso}
 \usage{
-spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, quasi, maxclust,
-  overdispfloor, cv, nsize, collapsetime)
+spacetimeLasso(
+  model,
+  sparseMAT,
+  n_uniq,
+  vectors,
+  Time,
+  quasi,
+  maxclust,
+  overdispfloor,
+  cv,
+  nsize,
+  collapsetime
+)
 }
 \arguments{
 \item{model}{A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.}
@@ -34,7 +45,7 @@ spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, quasi, maxclust,
 Returns a list of lists with the 1) estimated relative risks for each geographic subregion-time period based on selection by (Q)BIC, (Q)AIC, (Q)AICc, 2) number of identified clusters by (Q)BIC, (Q)AIC, (Q)AICc, 3) original expected counts (Ex), 4) original observed counts (Yx),5) the LASSO object, 6)  list of K values (number of unique values in each LASSO path), 7) and the estimated coefficients from all estimated lambdas.
 }
 \description{
-This function runs the LASSO regularization technique on the large sparse matrix of potential space or space-time clusters.
+Runs the LASSO regularization on the large sparse matrix of potential space or space-time clusters.
 }
 \details{
 Spatial and Spatio-Temporal Cluster Detection Using the LASSO

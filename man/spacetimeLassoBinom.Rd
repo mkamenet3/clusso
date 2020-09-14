@@ -4,9 +4,24 @@
 \alias{spacetimeLassoBinom}
 \title{spacetimeLassoBinom}
 \usage{
-spacetimeLassoBinom(lasso, coefs.lasso.all, loglike, mu, K, quasi, covars,
-  Yx, Ex, Period, Time, n_uniq, overdispfloor, maxclust, collapsetime,
-  nsize)
+spacetimeLassoBinom(
+  lasso,
+  coefs.lasso.all,
+  loglike,
+  mu,
+  K,
+  quasi,
+  covars,
+  Yx,
+  Ex,
+  Period,
+  Time,
+  n_uniq,
+  overdispfloor,
+  maxclust,
+  collapsetime,
+  nsize
+)
 }
 \arguments{
 \item{lasso}{Output from \code{glmnet}.}
@@ -45,5 +60,5 @@ spacetimeLassoBinom(lasso, coefs.lasso.all, loglike, mu, K, quasi, covars,
 List of results for binomial/quasi-binomial models.
 }
 \description{
-spacetimeLassoBinom
+Runs the LASSO regularization - Binomial
 }

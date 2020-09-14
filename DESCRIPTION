@@ -1,21 +1,17 @@
 Package: clusso
-Title: Space and space-time cluster detection with Lasso
+Title: Regularized Spatial and Spatio-Temporal Cluster Detection
 Version: 0.1
 Authors@R: person("Maria", "Kamenetsky", , "maria.kamenetsky@gmail.com", role = c("aut", "cre"))
-Description:    This package efficiently detects across space and space-time using the LASSO 
-    (least absolute shrinkage and selection operator). Current models include the Poisson and Binomial, 
-    as well as their quasi- counter parts, allowing for overdispersion. This package uses information critera 
-    ((Q)BIC, (Q)AIC, (Q)AICc) as well as cross-validation to determine the optimal path and thereby number of
-    clusters in the study region. 
+Description: Implements Poisson and quasi-Poisson regression with the Lasso (least absolute shrinkage and selection operator) penalty to identify a parsimonious set of disease clusters with elevated or depressed risk relative to the background rate in a study region. The number of clusters and tuning parameters are selected based on (quasi-)information criteria. 
 Depends:
-    R (>= 3.5.1),
-Imports:
+    R (>= 4.0),
     glmnet (>= 3.0.1),
+    Matrix (>= 1.2-17)
+Imports:
     ggplot2 (>= 3.2.1),
     dplyr (>= 0.8.3),
     tidyr (>= 1.0.0),
     magrittr (>= 1.5),
-    Matrix (>= 1.2-17),
     data.table (>= 1.12.6),
     geosphere (>= 1.5-10),
     MASS (>= 7.3-51.4),
@@ -37,5 +33,5 @@ Maintainer: Maria Kamenetsky <maria.kamenetsky@gmail.com>
 BugReports: https://github.com/mkamenet3/clusso/issues
 LazyData: true
 Roxygen: list(markdown = TRUE, roclets = c("rd", "namespace", "collate"))
-RoxygenNote: 7.0.1
+RoxygenNote: 7.1.0
 Suggests: testthat

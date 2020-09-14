@@ -6,8 +6,15 @@
 
 Creates \code{clst} object.}
 \usage{
-toclusso(df, expected, observed, timeperiod, covars, id = NULL,
-  requiredcolNames)
+toclusso(
+  df,
+  expected,
+  observed,
+  timeperiod,
+  covars,
+  id = NULL,
+  requiredcolNames
+)
 }
 \arguments{
 \item{df}{Name of dataframe.}
