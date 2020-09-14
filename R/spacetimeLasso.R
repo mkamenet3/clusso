@@ -1,10 +1,10 @@
-#' Spatial and Spatio-Temporal Cluster Detection Using the LASSO
+#' Regularized spatial and spatio-temporal cluster detecting using the Lasso
 #' @title 
 #' spacetimeLasso
-#' @description Runs the LASSO regularization on the large sparse matrix of potential space or space-time clusters.
+#' @description Executes LASSO regularization on the large sparse matrix of potential space or space-time clusters.
 #'@param model A string specifying which model to use, Poisson or binomial. For Poisson, specify \code{"poisson"} and both the Poisson and quasi-Poisson model results are returned. For binomial, specify \code{"binomial"} and both the binomial and quasi-binomial model results are returned.
 #' @param sparseMAT Large sparse matrix of indicators of space-time potential clusters. For bernoulli, specify \code{"bernoulli"}.
-#' @param n_uniq Number of unique geographic subregions/centroids (ex: counties, zip code, ,etc). Calculated as the number of unique geographic identifiers.
+#' @param n_uniq Number of unique geographic subregions/centroids (ex: counties, zip code ,etc). Calculated as the number of unique geographic identifiers.
 #' @param vectors List of expected and observed counts inherited from \code{setVectors}.
 #' @param Time Number of timeperiods in the dataset. This is calculated based on the number of unique timeperiods (factor levels) supplied to \code{clusso}.
 #' @param quasi Whether or not quasi- models for the Poisson and Binomial models should be executed. Default is quasi=FALSE.
@@ -36,7 +36,6 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
     
     
     if(collapsetime==TRUE){
-        #Time <- Time - 1
         Time <- 0
     }
     

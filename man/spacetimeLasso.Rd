@@ -23,7 +23,7 @@ spacetimeLasso(
 
 \item{sparseMAT}{Large sparse matrix of indicators of space-time potential clusters. For bernoulli, specify \code{"bernoulli"}.}
 
-\item{n_uniq}{Number of unique geographic subregions/centroids (ex: counties, zip code, ,etc). Calculated as the number of unique geographic identifiers.}
+\item{n_uniq}{Number of unique geographic subregions/centroids (ex: counties, zip code ,etc). Calculated as the number of unique geographic identifiers.}
 
 \item{vectors}{List of expected and observed counts inherited from \code{setVectors}.}
 
@@ -45,8 +45,8 @@ spacetimeLasso(
 Returns a list of lists with the 1) estimated relative risks for each geographic subregion-time period based on selection by (Q)BIC, (Q)AIC, (Q)AICc, 2) number of identified clusters by (Q)BIC, (Q)AIC, (Q)AICc, 3) original expected counts (Ex), 4) original observed counts (Yx),5) the LASSO object, 6)  list of K values (number of unique values in each LASSO path), 7) and the estimated coefficients from all estimated lambdas.
 }
 \description{
-Runs the LASSO regularization on the large sparse matrix of potential space or space-time clusters.
+Executes LASSO regularization on the large sparse matrix of potential space or space-time clusters.
 }
 \details{
-Spatial and Spatio-Temporal Cluster Detection Using the LASSO
+Regularized spatial and spatio-temporal cluster detecting using the Lasso
 }

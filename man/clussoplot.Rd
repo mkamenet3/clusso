@@ -35,8 +35,3 @@ Plot the coefficient paths from the LASSO-identified potential clusters.
 \details{
 Plot coefficient paths from clusso
 }
-\examples{
-\donttest{
-clussoplot(resreal, analysis="both", model="poisson",Time=5)
-}
-}

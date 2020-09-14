@@ -1,11 +1,11 @@
-#'Detect a cluster in space or spacetime using Lasso 
+#'Regularized spatial and spatio-temporal cluster detection using the Lasso penalty
 #'
 #' Set up for clusso
 #'
 #'@title
 #'clusso
 #' @description
-#' Runs helper function for both the space and space-time Lasso model on observed data. 
+#' Runs helper function for both the space and space-time regularization on observed data. 
 #'@param df Name of dataframe.
 #'@param expected Name of variable that contains the expected counts (Poisson models). Number of trials/sum of cases + controls (binomial case). Name of vector of 1's (Bernoulli case).
 #'@param observed Name of variable that contains the observed counts (Poisson models). Name of variable that contains number of successes/cases (binomial case). Name of variable that contains either a success (1) or failure (0) (Bernoulli case).

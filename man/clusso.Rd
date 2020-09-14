@@ -64,10 +64,10 @@ clusso(
 Returns list of cluster detection results ready to analyze and plot.
 }
 \description{
-Runs helper function for both the space and space-time Lasso model on observed data.
+Runs helper function for both the space and space-time regularization on observed data.
 }
 \details{
-Detect a cluster in space or spacetime using Lasso
+Regularized spatial and spatio-temporal cluster detection using the Lasso penalty
 
 Set up for clusso
 
