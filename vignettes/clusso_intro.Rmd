@@ -1,5 +1,5 @@
 ---
-title: "Running *clusso* with Areal Data"
+title: "Introduction to *clusso*"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Intro to clusso I}
@@ -17,50 +17,53 @@ This package is still under development. Please [report any bugs](https://github
 
 Messages from `clusso` have been suppressed for this tutorial, but there are many messages generated that we hope the user will find helpful. Feedback is welcome [here](https://github.com/mkamenet3/clusso/issues).
 
-Load `clusso` package:
+Load the `clusso` library:
 
 ```{r, message=FALSE, warning=FALSE}
 library("clusso")
 
 ```
 
+If you haven't already, you can install `clusso` directly from GitHub:
 
-## Using `clusso` with real data (Breast Cancer in Japan)
+```{r, eval=FALSE}
+library("devtools")
+devtools::install_github("mkamenet3/clusso")
+```
+
+
+## Using `clusso` (Breast Cancer in Japan Example)
+
+In this example, we will use simulated data of breast cancer incidence counts across 208 prefects (municipalities) in Japan across 5 time periods.
 
 ### Prepare Data
 
-We load four datasets that comes with the `clusso` package:
+We load four data sets that come with the `clusso` package:
 
 
 ```{r}
 #load data
 data("jbc")
 data("utmJapan")
-data("japan.poly2")
-data("japan.prefect2")
 
 ```
 
 
 To explore the 4 data sets, we apply the `head()` function to each of the data sets.
 
-1. `utmJapan`: data set containing a unique identifier for each centroid (*id*), x-coordinate in UTM (*utmx*), and y-coordinate in UTM (*utmy*)
-1. `japan.poly2`: polygon tesselations
-1. `japan.prefect2`: boundaries for the prefects (geographical boundaries) of the region.
-1. `jbc`: data set containting a unique identifier for each centroid (*id*), period of observation (categorical variable with 5 levels, *period*), death count (*death*), expected death count (*expdeath*). These data are simulated (with some noise) based on observed data.
+1. `utmJapan`: data set containing a unique identifier for each prefect centroid (*id*), x-coordinate in UTM (*utmx*), and y-coordinate in UTM (*utmy*).
+1. `jbc`: data set containing a unique identifier for each centroid (*id*), period of observation (categorical variable with 5 levels, *period*), death count (*death*), expected death count (*expdeath*). These data are simulated (with some noise) based on observed data.
 
 
 
 ```{r}
 #inspect
 head(utmJapan)
-head(japan.poly2)
-head(japan.prefect2)
 head(jbc)
 
 ```
 
-As a data-cleaning step, we first convert `period` to a factor in the data frame `jbc`:
+We first convert `period` to a factor in the data frame `jbc`:
 
 ```{r}
 jbc$period <- as.factor(jbc$period)
@@ -68,12 +71,12 @@ jbc$period <- as.factor(jbc$period)
 
 
 
-### Set global conditions
+### Set global parameters
 
-When using `clusso`, there are certain global parameters that need to be set.
+When using `clusso`, there are global parameters that need to be set first.
 
 
-We take the easting and northing coordinates from the `utmJapan` dataset, set the easting coordinate, `utmx`, to `x` and the northing coordinate, `utmy`, to `y`. Each is divided by 1000 to change the scale from meters to kilometers.
+We take the easting and northing coordinates from the `utmJapan` data set, set the easting coordinate, `utmx`, to `x` and the northing coordinate, `utmy`, to `y`. Each is divided by 1000 to change the scale from meters to kilometers.
 
 
 ```{r}
@@ -81,7 +84,7 @@ x <- utmJapan$utmx/1000
 y <- utmJapan$utmy/1000
 ```
 
-Below, we set the maximum radius for a cluster to 20 km (`rMax=20`) based on scientific knowledge of the area and our definition of a meaningful cluster, set the number of unique time periods to 5 (`Time=5`), and set a floor for overdispersion to avoid estimating underdispersion (`overdispfloor=TRUE`). 
+Below, we set the maximum radius for a cluster to 20 km (`rMax=20`) based on scientific knowledge of the area and our definition of a meaningful cluster. We set the number of unique time periods to 5 (`Time=5`), and set a floor for overdispersion to avoid estimating underdispersion (`overdispfloor=TRUE`). 
 
 
 ```{r}
@@ -90,11 +93,6 @@ Time <- 5
 overdispfloor <- TRUE
 
 ```
-
-
-### Running the models
-
-
 
 If you do not have expected counts readily available, they can be calculated using the auxiliary function `calcexpected()`, from the `clusso` package.
 
@@ -110,27 +108,30 @@ ids <- rep(1:5, each=2)
 calcexpected(observed, pop, period, ids)
 ```
 
-To perform the LASSO-based cluster detection, we use the function `clusso()`. In the first argument, we set the name of the dataframe, `df=jbc`. In the second argument we set the expected counts equal to the name of expected counts in the `jbc` dataframe (`expected = expdeath`). In the third argument, we set the observed counts equal to the name of the observed counts in the `jbc` dataframe (`observed = death`). In the fourth argument, we set the timeperiod equal to the name of the time periods in the `jbc` dataframe (`timeperiod = period`). This variable has already been converted to a factor in the data-cleaning step above (`jbc$period <- as.factor(jbc$period)`). In this example, we do not want to include other covariates as un-penalized terms in the model so we set `covars = FALSE`. 
+In this data example, we already have expected counts and will use the dataframe `jbc`.
+
+### Fitting using `clusso`
+
+
+To perform the regularized spatial and spatio-temporal cluster detection using the Lasso penalty, we use the function `clusso()`. In the first argument, we set the name of the dataframe, `df=jbc`. In the second argument we set the expected counts equal to the name of expected counts in the `jbc` dataframe (`expected = expdeath`). In the third argument, we set the observed counts equal to the name of the observed counts in the `jbc` dataframe (`observed = death`). In the fourth argument, we set the time period equal to the name of the time periods in the `jbc` dataframe (`timeperiod = period`). This variable has already been converted to a factor in the data-cleaning step above (`jbc$period <- as.factor(jbc$period)`). In this example, we do not want to include other covariates as unpenalized terms in the model so we set `covars = FALSE`. 
 
 The next two arguments are `x` and `y`, which are the UTM easting and northing coordinates, scaled to be in kilometers. The next argument is the maximum radius (in km) for the potential clusters. We set `rMax = rMax`, which we defined above as 20km. 
-The argument `utm` specifies that our coordinates are indeed in UTM coordinates (`utm = TRUE`). For lat/lon coordinates, we would set `utm = FALSE`. The is `analysis` arugment defines the type of analysis to be performed. Options include `space`, `spacetime`, or `both`. Here, we set  `analysis` equal to "both", which will perform both the spatial and spatio-temporal analyses. The argument `model` is the type of model to be used. Currently (2019-11-25), either the Poisson or binomial models can be specified. In this example, we specify the Poisson model. The final required argument is `maxclust`. This is the maximum number of actual clusters expected in the given area. This is based on scientific knowledge of the area. For the Japanese breast cancer data, we set `maxclust=11`. If the number of identified clusters exceeds `maxclust`, a warning will encourage you to increase your set `maxclust`.
+The argument `utm` specifies that our coordinates are indeed in UTM coordinates (`utm = TRUE`). For latitude-longitude coordinates, we would set `utm = FALSE`. The is `analysis` argument defines the type of analysis to be performed. Options include `space`, `spacetime`, or `both`. Here, we set  `analysis` equal to "both", which will perform both the spatial and spatio-temporal analyses. The argument `model` is the type of model to be used. Currently (2020-09-14), either the Poisson or binomial models can be specified. In this example, we specify the Poisson model. The final required argument is `maxclust`. This is the maximum number of actual clusters expected in the given area. This is based on scientific knowledge of the area. For the Japanese breast cancer data, we set `maxclust=11`. If the number of identified clusters exceeds `maxclust`, a warning will encourage you to increase your set `maxclust`.
 
 The output of `clusso()` is assigned to the object `resreal`. `resreal` is a large list of lists. The recommended way to explore the results is to explore the `names(resreal)` and select each sub-list of interest.
 
 ```{r}
 head(jbc)
 
-system.time(resreal <- clusso(jbc, expected = expdeath, observed=death,timeperiod = period, covars=FALSE, id = id,
-                               x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11))
+system.time(resreal <- clusso(jbc, expected = expdeath, observed=death,timeperiod = period,
+                              covars=FALSE, id = id, x= x,y = y, rMax =  rMax, 
+                              utm=TRUE, analysis="both", model="poisson",maxclust=11))
 ```
 
-We can also use the function `clussopretty()` to create a nice table for the number of clusters detected:
+We can use the function `clussopretty()` to create a nice table for the number of clusters detected:
 
 ```{r}
 clussopretty(resreal, analysis="both", model="poisson",clusteridentify=FALSE)
-
-names(clussopretty(resreal, analysis="both", model="poisson",clusteridentify=TRUE))
-
 ```
 
 
@@ -146,7 +147,7 @@ clussopretty(resreal, analysis="both", model="poisson", clusteridentify=TRUE, cl
 ```
 
 
-We can also plot the output using `clussoplot()` to visualize the identified clusters along the coefficient path:
+We can plot the output using `clussoplot()` to visualize the coefficient paths, where each line is the path for a potential cluster and the final selected clusters are identified with dashed vertical lines:
 
 ```{r}
 clussoplot(resreal, analysis="both",model="poisson", Time=5, cv=FALSE)
@@ -154,33 +155,16 @@ clussoplot(resreal, analysis="both",model="poisson", Time=5, cv=FALSE)
 
 
 
-If we have polygons and boundary files, we can use the `easyplot()` function. *TODO: Current implementation only works for JBC dataset. Functions will be extended to be more generalizable in the future.*
-
-### Maps
-
-Create maps using the `easyplot()` function.
-
-```{r}
-pdfname <- paste0("out",".pdf")
-mods <- c("QuasiPoisson", "Poisson")
-easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal$rrcolors, mods, space="both", probmap=FALSE, obs=TRUE,rr=TRUE)
-easyplot(japan.prefect2, japan.poly2 ,pdfname, resreal, mods, space="BIC", probmap=FALSE,rr=TRUE)
-
-
-```
- 
-
-
-
 
 ## Comparison to Cross-Validation
 
-We continue with the same dataset as above, but now explore results by $k$ fold cross-validation. All initial inputs are assumed to be the same.
+We continue with the same data set as above, but now explore results by $k$-fold cross-validation. All initial inputs are assumed to be the same. We specify a total of 5 folds using the argument `cv=5` in the `clusso()` function.
 
 ```{r}
 #perform clusso using cv (5 folds)
-system.time(rescv <- clusso(jbc, expected = expdeath, observed=death,timeperiod = period, id=id, covars=FALSE,
-                               x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11, cv=5))
+system.time(rescv <- clusso(jbc, expected = expdeath, observed=death,timeperiod = period, 
+                            id=id, covars=FALSE, x= x,y = y, rMax =  rMax, utm=TRUE, 
+                            analysis="both", model="poisson",maxclust=11, cv=5))
 
 ```
 
@@ -191,9 +175,11 @@ clussopretty(rescv, analysis="both", model="poisson",clusteridentify=FALSE, cv=T
 
 
 
-## Real Data Example with Covariates
+## Example with Covariates
 
-We continue with the Japanese breast cancer dataset imported above. We will again checkout the `head()` of the dataframe, `jbc`. 
+We continue with the Japanese breast cancer data set imported above, but now consider covariates in the model that will be unpenalized. 
+
+We explore the first 6 observations of the `jbc` dataframe using the `head()` function.
 
 
 
@@ -203,16 +189,17 @@ head(jbc)
 ```
 
 
-There are 5 additional covariates, `covar1` - `covar5` that we will want to adjust for as unpenalized terms in the LASSO.
+There are 5 additional covariates, `covar1` - `covar5` that we will want to adjust for in our Poisson or quasi-Poisson regression as unpenalized terms.
 
 
-We now set the argument `covars=TRUE` to tell `clusso()` to identify the covariates and to include them in as unpenalized terms in the LASSO model.
+We now set the argument `covars=TRUE` to tell `clusso()` to identify the covariates and to include them as unpenalized terms:
 
 ```{r}
 system.time(rescovars<- clusso(df=jbc, expected = expdeath, observed=death,
                                timeperiod = period, id=id, covars=TRUE,
-                               x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", model="poisson",maxclust=11,
-                               overdispfloor = TRUE, cv=NULL, collapsetime = FALSE))
+                               x= x,y = y, rMax =  rMax, utm=TRUE, analysis="both", 
+                               model="poisson",maxclust=11,overdispfloor = TRUE,
+                               cv=NULL, collapsetime = FALSE))
 
 ```
 
@@ -222,7 +209,7 @@ Use `clussopretty()` to create a nice table of clusters detected:
 clussopretty(rescovars, analysis="both", model="poisson",clusteridentify = FALSE)
 ```
 
-We can also extract the coefficients for the unpenalized terms and undo the log-link by exponentiating. For example, we can look at the results from the quasi-poisson, space-time model:
+We can also extract the coefficients for the unpenalized terms and undo the log-link by exponentiating:
 
 ```{r}
 out <- clussopretty(rescovars, analysis="both", model="poisson",covars=TRUE)

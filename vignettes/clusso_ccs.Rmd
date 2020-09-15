@@ -1,5 +1,5 @@
 ---
-title: "Running *clusso* with Case-Control Data"
+title: "Using *clusso* with Case-Control Data"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Intro to clusso II}
@@ -24,29 +24,35 @@ library("clusso")
 
 ```
 
+If you haven't already, you can install `clusso` directly from GitHub:
+
+```{r, eval=FALSE}
+library("devtools")
+devtools::install_github("mkamenet3/clusso")
+```
+
+
 
 ## Using `clusso` with case-control data 
 
+In this example, we will use simulated case-control data of across 208 prefects (municipalities) in Japan across 5 time periods.
+
 ### Prepare Data
 
-We load four datasets that comes with the `clusso` package:
+We load four data sets that come with the `clusso` package:
 
 ```{r}
 #load data
 data("ccsjbc")
 data("utmJapan")
-data("japan.poly2")
-data("japan.prefect2")
 
 ```
 
 
-These datasets contain:
+These data sets contain:
 
-1. `ccsjbc`: data set containting a unique identifier for each centroid (*id*), period of observation (categorical variable with 5 levels, *period*), number of cases per each geographic unit (*numcases*), the total number of cases and controls from each geographic unit (*n*). These data are simulated.
-1. `utmJapan`: data set containing a unique identifier for each centroid (*id*), x-coordinate in UTM (*utmx*), and y-coordinate in UTM (*utmy*)
-1. `japan.poly2`: polygon tesselations
-1. `japan.prefect2`: boundaries for the prefects (geographical boundaries) of the region.
+1. `ccsjbc`: data set containing a unique identifier for each prefect centroid (*id*), period of observation (categorical variable with 5 levels, *period*), number of cases per each geographic unit (*numcases*), the total number of cases and controls from each prefect (*n*). These data have been simulated.
+1. `utmJapan`: data set containing a unique identifier for each prefect centroid (*id*), x-coordinate in UTM (*utmx*), and y-coordinate in UTM (*utmy*).
 
 
 To explore the 4 data sets, we apply the `head()` function to each of the data sets.
@@ -56,8 +62,6 @@ To explore the 4 data sets, we apply the `head()` function to each of the data s
 ```{r}
 #inspect
 head(utmJapan)
-head(japan.poly2)
-head(japan.prefect2)
 head(ccsjbc)
 ```
 
@@ -66,20 +70,22 @@ As a data-cleaning step, we first convert `period` to a factor in the data frame
 
 ```{r}
 ccsjbc$period <- as.factor(ccsjbc$period)
+ccsjbc$id <- as.factor(ccsjbc$id)
+
 ```
 
 
 
-### Set global conditions
+### Set global parameters
 
 When using `clusso`, there are certain global parameters that need to be set.
 
-We take the easting and northing coordinates from the `utmJapan` dataset, set the easting coordinate, `utmx`, to `x` and the northing coordinate, `utmy`, to `y`. Each is divided by 1000 to change the scale from meters to kilometers.
+We take the easting and northing coordinates from the `utmJapan` data set, set the easting coordinate, `utmx`, to `xx` and the northing coordinate, `utmy`, to `yy`. Each is divided by 1000 to change the scale from meters to kilometers.
 
 
 ```{r}
-x <- utmJapan$utmx/1000
-y <- utmJapan$utmy/1000
+xx <- utmJapan$utmx/1000
+yy <- utmJapan$utmy/1000
 ```
 
 Below, we set the maximum radius for a cluster to 20 km (`rMax=20`) based on scientific knowledge of the area and our definition of a meaningful cluster, set the number of unique time periods to 5 (`Time=5`). 
@@ -91,50 +97,38 @@ Time <- 5
 ```
 
 
-### Running the models
+### Fitting using `clusso`
 
-
+The argument `model` is the type of model to be used. In this case-control study example, we specify the binomial model.
 
 The output of `clusso()` is assigned to the object `resreal`. `resreal` is a large list of lists. The recommended way to explore the results is to explore the `names(resreal)` and select each sub-list of interest.
 
-```{r}
+```{r, warning=FALSE}
 head(ccsjbc)
 
-system.time(resrealccs <- clusso(df=ccsjbc, expected = n, observed = numcases,timeperiod = period,id=id,
-                                 covars=FALSE, x= x,y = y, rMax =  rMax, utm=TRUE, 
-                                 analysis="both", model="binomial",maxclust=11))
+system.time(resrealccs <- clusso(df=ccsjbc, expected = n, observed = numcases,
+                                 timeperiod = period,id=id,
+                                 covars=FALSE, x= xx,y = yy, 
+                                 rMax =  rMax, utm=TRUE, 
+                                 analysis="both", model="binomial",
+                                 maxclust=15, collapsetime = FALSE))
 
 ```
 
 
-```{r}
+```{r, warning=FALSE}
 clussopretty(resrealccs, analysis="both", model="binomial",clusteridentify=FALSE)
 ```
 
 
 Lastly, we can create plots of the coefficient paths with the function `clussoplot()`:
 
-```{r}
+```{r, warning=FALSE}
 clussoplot(resrealccs, analysis="both", model="binomial",Time=5)
 ```
 
 
-## Comparison to Cross-Validation
-
-We continue with the same dataset as above, but now explore results by $k$ fold cross-validation. All initial inputs are assumed to be the same.
-
-
-```{r}
-#perform clusso using cv (5 folds)
-system.time(resccscv <- clusso(ccsjbc, expected = n, observed = numcases,timeperiod = period, id=id,
-                               covars=FALSE, x= x,y = y, rMax =  rMax, utm=TRUE, 
-                               analysis="both", model="binomial",maxclust=11, cv=5))
-clussopretty(resccscv, analysis="both", model="binomial",clusteridentify=FALSE, cv=TRUE)
-
-clussoplot(resccscv, analysis="both",model="binomial", Time=5, cv=TRUE)
-```
-
-## Real Data Example with Covariates
+## Case-Control Data with Covariates
 
 We continue with the case-control data from Japan. We will again checkout the `head()` of the dataframe, `ccsjbc`. 
 
@@ -151,7 +145,7 @@ We now set the argument `covars=TRUE` to tell `clusso()` to identify the covaria
 
 
 
-```{r}
+```{r, warning=FALSE}
 system.time(resccscovars<- clusso(ccsjbc, expected = n, observed=numcases,timeperiod = period, id=id,
                                   covars=TRUE, x= x,y = y, rMax =  rMax, utm=TRUE,
                                   analysis="both", model="binomial",maxclust=11))
@@ -160,7 +154,7 @@ system.time(resccscovars<- clusso(ccsjbc, expected = n, observed=numcases,timepe
 
 
 
-```{r}
+```{r, warning=FALSE}
 clussopretty(resccscovars, analysis="both", model="binomial",clusteridentify = FALSE)
 ```
 
