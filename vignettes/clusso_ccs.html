@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Using clusso with Case-Control Data</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Using <em>clusso</em> with Case-Control Data</h1>
+
+
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This package is still under development. Please <a href="https://github.com/mkamenet3/clusso/issues">report any bugs</a>.</p>
+<p>Messages from <code>clusso</code> have been suppressed for this tutorial, but there are many messages generated that we hope the user will find helpful. Feedback is welcome <a href="https://github.com/mkamenet3/clusso/issues">here</a>.</p>
+<p>Load <code>clusso</code> package:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;clusso&quot;</span>)</code></pre></div>
+<p>If you haven't already, you can install <code>clusso</code> directly from GitHub:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;devtools&quot;</span>)
+devtools<span class="op">::</span><span class="kw">install_github</span>(<span class="st">&quot;mkamenet3/clusso&quot;</span>)</code></pre></div>
+<div id="using-clusso-with-case-control-data" class="section level2">
+<h2>Using <code>clusso</code> with case-control data</h2>
+<p>In this example, we will use simulated case-control data of across 208 prefects (municipalities) in Japan across 5 time periods.</p>
+<div id="prepare-data" class="section level3">
+<h3>Prepare Data</h3>
+<p>We load four data sets that come with the <code>clusso</code> package:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#load data</span>
+<span class="kw">data</span>(<span class="st">&quot;ccsjbc&quot;</span>)
+<span class="kw">data</span>(<span class="st">&quot;utmJapan&quot;</span>)</code></pre></div>
+<p>These data sets contain:</p>
+<ol style="list-style-type: decimal">
+<li><code>ccsjbc</code>: data set containing a unique identifier for each prefect centroid (<em>id</em>), period of observation (categorical variable with 5 levels, <em>period</em>), number of cases per each geographic unit (<em>numcases</em>), the total number of cases and controls from each prefect (<em>n</em>). These data have been simulated.</li>
+<li><code>utmJapan</code>: data set containing a unique identifier for each prefect centroid (<em>id</em>), x-coordinate in UTM (<em>utmx</em>), and y-coordinate in UTM (<em>utmy</em>).</li>
+</ol>
+<p>To explore the 4 data sets, we apply the <code>head()</code> function to each of the data sets.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#inspect</span>
+<span class="kw">head</span>(utmJapan)</code></pre></div>
+<pre><code>##     id     utmx    utmy
+## 1 9201 399786.6 4047756
+## 2 9202 360917.0 4023885
+## 3 9203 385175.1 4025749
+## 4 9204 371603.4 4018172
+## 5 9205 388154.2 4047900
+## 6 9206 375023.3 4068053</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(ccsjbc)</code></pre></div>
+<pre><code>##     id period numcases     n   covar1     covar2 covar3 covar4 covar5
+## 1 9201   7906     2944 10050 458.5877 0.01894360     34      1      0
+## 2 9201   7922     2997 10032 470.2921 0.08078908     40      1      0
+## 3 9201   7938     3044 10128 490.6435 0.02267590     32      0      1
+## 4 9201   7954     3031 10227 501.6789 0.03259346     35      0      0
+## 5 9201   7970     2976  9739 531.8578 0.01600942     32      0      1
+## 6 9202   7906     3097 10565 521.2707 0.05811436     31      0      0</code></pre>
+<p>As a data-cleaning step, we first convert <code>period</code> to a factor in the data frame <code>jbc</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ccsjbc<span class="op">$</span>period &lt;-<span class="st"> </span><span class="kw">as.factor</span>(ccsjbc<span class="op">$</span>period)
+ccsjbc<span class="op">$</span>id &lt;-<span class="st"> </span><span class="kw">as.factor</span>(ccsjbc<span class="op">$</span>id)</code></pre></div>
+</div>
+<div id="set-global-parameters" class="section level3">
+<h3>Set global parameters</h3>
+<p>When using <code>clusso</code>, there are certain global parameters that need to be set.</p>
+<p>We take the easting and northing coordinates from the <code>utmJapan</code> data set, set the easting coordinate, <code>utmx</code>, to <code>xx</code> and the northing coordinate, <code>utmy</code>, to <code>yy</code>. Each is divided by 1000 to change the scale from meters to kilometers.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">xx &lt;-<span class="st"> </span>utmJapan<span class="op">$</span>utmx<span class="op">/</span><span class="dv">1000</span>
+yy &lt;-<span class="st"> </span>utmJapan<span class="op">$</span>utmy<span class="op">/</span><span class="dv">1000</span></code></pre></div>
+<p>Below, we set the maximum radius for a cluster to 20 km (<code>rMax=20</code>) based on scientific knowledge of the area and our definition of a meaningful cluster, set the number of unique time periods to 5 (<code>Time=5</code>).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rMax &lt;-<span class="st"> </span><span class="dv">20</span> 
+Time &lt;-<span class="st"> </span><span class="dv">5</span></code></pre></div>
+</div>
+<div id="fitting-using-clusso" class="section level3">
+<h3>Fitting using <code>clusso</code></h3>
+<p>The argument <code>model</code> is the type of model to be used. In this case-control study example, we specify the binomial model.</p>
+<p>The output of <code>clusso()</code> is assigned to the object <code>resreal</code>. <code>resreal</code> is a large list of lists. The recommended way to explore the results is to explore the <code>names(resreal)</code> and select each sub-list of interest.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(ccsjbc)</code></pre></div>
+<pre><code>##     id period numcases     n   covar1     covar2 covar3 covar4 covar5
+## 1 9201   7906     2944 10050 458.5877 0.01894360     34      1      0
+## 2 9201   7922     2997 10032 470.2921 0.08078908     40      1      0
+## 3 9201   7938     3044 10128 490.6435 0.02267590     32      0      1
+## 4 9201   7954     3031 10227 501.6789 0.03259346     35      0      0
+## 5 9201   7970     2976  9739 531.8578 0.01600942     32      0      1
+## 6 9202   7906     3097 10565 521.2707 0.05811436     31      0      0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(resrealccs &lt;-<span class="st"> </span><span class="kw">clusso</span>(<span class="dt">df=</span>ccsjbc, <span class="dt">expected =</span> n, <span class="dt">observed =</span> numcases,
+                                 <span class="dt">timeperiod =</span> period,<span class="dt">id=</span>id,
+                                 <span class="dt">covars=</span><span class="ot">FALSE</span>, <span class="dt">x=</span> xx,<span class="dt">y =</span> yy, 
+                                 <span class="dt">rMax =</span>  rMax, <span class="dt">utm=</span><span class="ot">TRUE</span>, 
+                                 <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>, <span class="dt">model=</span><span class="st">&quot;binomial&quot;</span>,
+                                 <span class="dt">maxclust=</span><span class="dv">15</span>, <span class="dt">collapsetime =</span> <span class="ot">FALSE</span>))</code></pre></div>
+<pre><code>## Running binomial both spatial and spatio-temporal model(s).</code></pre>
+<pre><code>## Creating radius-based potential clusters</code></pre>
+<pre><code>## No covariates found</code></pre>
+<pre><code>## Number of potential clusters to scan through:  66870</code></pre>
+<pre><code>## Path selection: information criteria</code></pre>
+<pre><code>## Lasso complete - extracting estimates and paths</code></pre>
+<pre><code>## No covariates found</code></pre>
+<pre><code>## Number of potential clusters to scan through:  66870</code></pre>
+<pre><code>## Path selection: information criteria</code></pre>
+<pre><code>## Lasso complete - extracting estimates and paths</code></pre>
+<pre><code>## Overdispersion estimate: 2169.4765</code></pre>
+<pre><code>## The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.
+## The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.</code></pre>
+<pre><code>## No covariates found</code></pre>
+<pre><code>## Number of potential clusters to scan through:  66870</code></pre>
+<pre><code>## Path selection: information criteria</code></pre>
+<pre><code>## Lasso complete - extracting estimates and paths</code></pre>
+<pre><code>## No covariates found</code></pre>
+<pre><code>## Number of potential clusters to scan through:  66870</code></pre>
+<pre><code>## Path selection: information criteria</code></pre>
+<pre><code>## Lasso complete - extracting estimates and paths</code></pre>
+<pre><code>## Overdispersion estimate: 2169.4765</code></pre>
+<pre><code>## The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.
+## The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.</code></pre>
+<pre><code>## All models ran successfully</code></pre>
+<pre><code>##    user  system elapsed 
+##   57.61    0.57   61.69</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">clussopretty</span>(resrealccs, <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>, <span class="dt">model=</span><span class="st">&quot;binomial&quot;</span>,<span class="dt">clusteridentify=</span><span class="ot">FALSE</span>)</code></pre></div>
+<pre><code>##            model analysistype numclust.AIC numclust.AICc numclust.BIC
+## 1       Binomial        Space           16            16           16
+## 2       Binomial   Space-Time           16            16           16
+## 3 Quasi-Binomial        Space           15            15           12
+## 4 Quasi-Binomial   Space-Time           15            15           12</code></pre>
+</div>
+</div>
+<div id="case-control-data-with-covariates" class="section level2">
+<h2>Case-Control Data with Covariates</h2>
+<p>We continue with the case-control data from Japan. We will again checkout the <code>head()</code> of the dataframe, <code>ccsjbc</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(ccsjbc)</code></pre></div>
+<pre><code>##     id period numcases     n   covar1     covar2 covar3 covar4 covar5
+## 1 9201   7906     2944 10050 458.5877 0.01894360     34      1      0
+## 2 9201   7922     2997 10032 470.2921 0.08078908     40      1      0
+## 3 9201   7938     3044 10128 490.6435 0.02267590     32      0      1
+## 4 9201   7954     3031 10227 501.6789 0.03259346     35      0      0
+## 5 9201   7970     2976  9739 531.8578 0.01600942     32      0      1
+## 6 9202   7906     3097 10565 521.2707 0.05811436     31      0      0</code></pre>
+<p>There are 5 additional covariates, <code>covar1</code> - <code>covar5</code> that we will want to adjust for as unpenalized terms.</p>
+<p>We now set the argument <code>covars=TRUE</code> to tell <code>clusso()</code> to identify the covariates and to include them in as unpenalized terms.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>(resccscovars&lt;-<span class="st"> </span><span class="kw">clusso</span>(ccsjbc, <span class="dt">expected =</span> n, <span class="dt">observed=</span>numcases,<span class="dt">timeperiod =</span> period, <span class="dt">id=</span>id,
+                                  <span class="dt">covars=</span><span class="ot">TRUE</span>, <span class="dt">x=</span> xx,<span class="dt">y =</span> yy, <span class="dt">rMax =</span>  rMax, <span class="dt">utm=</span><span class="ot">TRUE</span>,
+                                  <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>, <span class="dt">model=</span><span class="st">&quot;binomial&quot;</span>,<span class="dt">maxclust=</span><span class="dv">11</span>, <span class="dt">collapsetime=</span><span class="ot">FALSE</span>))</code></pre></div>
+<pre><code>## Running binomial both spatial and spatio-temporal model(s).</code></pre>
+<pre><code>## Creating radius-based potential clusters</code></pre>
+<pre><code>## Running with covariates</code></pre>
+<pre><code>## Number of potential clusters to scan through:  66870</code></pre>
+<pre><code>## Path selection: information criteria</code></pre>
+<pre><code>## Lasso complete - extracting estimates and paths</code></pre>
+<pre><code>## Running with covariates</code></pre>
+<pre><code>## Number of potential clusters to scan through:  66870</code></pre>
+<pre><code>## Path selection: information criteria</code></pre>
+<pre><code>## Lasso complete - extracting estimates and paths</code></pre>
+<pre><code>## Overdispersion estimate: 2179.5856</code></pre>
+<pre><code>## The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.
+## The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.</code></pre>
+<pre><code>## Running with covariates</code></pre>
+<pre><code>## Number of potential clusters to scan through:  66870</code></pre>
+<pre><code>## Path selection: information criteria</code></pre>
+<pre><code>## Lasso complete - extracting estimates and paths</code></pre>
+<pre><code>## Running with covariates</code></pre>
+<pre><code>## Number of potential clusters to scan through:  66870</code></pre>
+<pre><code>## Path selection: information criteria</code></pre>
+<pre><code>## Lasso complete - extracting estimates and paths</code></pre>
+<pre><code>## Overdispersion estimate: 2179.5856</code></pre>
+<pre><code>## The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.
+## The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.</code></pre>
+<pre><code>## All models ran successfully</code></pre>
+<pre><code>##    user  system elapsed 
+##   53.97    0.53   56.50</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">clussopretty</span>(resccscovars, <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>, <span class="dt">model=</span><span class="st">&quot;binomial&quot;</span>,<span class="dt">clusteridentify =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<pre><code>##            model analysistype numclust.AIC numclust.AICc numclust.BIC
+## 1       Binomial        Space           12            12           12
+## 2       Binomial   Space-Time           12            12           12
+## 3 Quasi-Binomial        Space           11            11           11
+## 4 Quasi-Binomial   Space-Time           11            11           11</code></pre>
+<p>We can also extract the coefficients for the unpenalized terms and undo the log-link by exponentiating:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">out &lt;-<span class="st"> </span><span class="kw">clussopretty</span>(resccscovars, <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>, <span class="dt">model=</span><span class="st">&quot;poisson&quot;</span>,<span class="dt">covars=</span><span class="ot">TRUE</span>)
+out<span class="op">$</span>table.coefs</code></pre></div>
+<pre><code>##         IC         model analysistype time_period1 time_period2 time_period3
+## 1   (Q)AIC       Poisson        Space            0            0            0
+## 2   (Q)AIC       Poisson   Space-Time            0            0            0
+## 3   (Q)AIC       Poisson        Space            0            0            0
+## 4   (Q)AIC       Poisson   Space-Time            0            0            0
+## 5  (Q)AICc Quasi-Poisson        Space            0            0            0
+## 6  (Q)AICc Quasi-Poisson   Space-Time            0            0            0
+## 7  (Q)AICc Quasi-Poisson        Space            0            0            0
+## 8  (Q)AICc Quasi-Poisson   Space-Time            0            0            0
+## 9   (Q)BIC       Poisson        Space            0            0            0
+## 10  (Q)BIC       Poisson   Space-Time            0            0            0
+## 11  (Q)BIC       Poisson        Space            0            0            0
+## 12  (Q)BIC       Poisson   Space-Time            0            0            0
+## 13  (Q)AIC Quasi-Poisson        Space            0            0            0
+## 14  (Q)AIC Quasi-Poisson   Space-Time            0            0            0
+## 15  (Q)AIC Quasi-Poisson        Space            0            0            0
+## 16  (Q)AIC Quasi-Poisson   Space-Time            0            0            0
+## 17 (Q)AICc       Poisson        Space            0            0            0
+## 18 (Q)AICc       Poisson   Space-Time            0            0            0
+## 19 (Q)AICc       Poisson        Space            0            0            0
+## 20 (Q)AICc       Poisson   Space-Time            0            0            0
+## 21  (Q)BIC Quasi-Poisson        Space            0            0            0
+## 22  (Q)BIC Quasi-Poisson   Space-Time            0            0            0
+## 23  (Q)BIC Quasi-Poisson        Space            0            0            0
+## 24  (Q)BIC Quasi-Poisson   Space-Time            0            0            0
+##    time_period4 time_period5       covar1       covar2       covar3      covar4
+## 1             0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 2             0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 3             0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 4             0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 5             0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 6             0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 7             0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 8             0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 9             0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 10            0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 11            0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 12            0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 13            0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 14            0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 15            0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 16            0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 17            0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 18            0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 19            0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 20            0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 21            0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 22            0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+## 23            0            0 -0.001121677 0.0001469638 -0.006516330 -0.01492126
+## 24            0            0 -0.001121032 0.0001452889 -0.006522668 -0.01486178
+##         covar5
+## 1  -0.01941128
+## 2  -0.01937164
+## 3  -0.01941128
+## 4  -0.01937164
+## 5  -0.01941128
+## 6  -0.01937164
+## 7  -0.01941128
+## 8  -0.01937164
+## 9  -0.01941128
+## 10 -0.01937164
+## 11 -0.01941128
+## 12 -0.01937164
+## 13 -0.01941128
+## 14 -0.01937164
+## 15 -0.01941128
+## 16 -0.01937164
+## 17 -0.01941128
+## 18 -0.01937164
+## 19 -0.01941128
+## 20 -0.01937164
+## 21 -0.01941128
+## 22 -0.01937164
+## 23 -0.01941128
+## 24 -0.01937164</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">out<span class="op">$</span>table.expcoefs</code></pre></div>
+<pre><code>##         IC         model analysistype time_period1 time_period2 time_period3
+## 1   (Q)AIC       Poisson        Space            1            1            1
+## 2   (Q)AIC       Poisson   Space-Time            1            1            1
+## 3   (Q)AIC       Poisson        Space            1            1            1
+## 4   (Q)AIC       Poisson   Space-Time            1            1            1
+## 5  (Q)AICc Quasi-Poisson        Space            1            1            1
+## 6  (Q)AICc Quasi-Poisson   Space-Time            1            1            1
+## 7  (Q)AICc Quasi-Poisson        Space            1            1            1
+## 8  (Q)AICc Quasi-Poisson   Space-Time            1            1            1
+## 9   (Q)BIC       Poisson        Space            1            1            1
+## 10  (Q)BIC       Poisson   Space-Time            1            1            1
+## 11  (Q)BIC       Poisson        Space            1            1            1
+## 12  (Q)BIC       Poisson   Space-Time            1            1            1
+## 13  (Q)AIC Quasi-Poisson        Space            1            1            1
+## 14  (Q)AIC Quasi-Poisson   Space-Time            1            1            1
+## 15  (Q)AIC Quasi-Poisson        Space            1            1            1
+## 16  (Q)AIC Quasi-Poisson   Space-Time            1            1            1
+## 17 (Q)AICc       Poisson        Space            1            1            1
+## 18 (Q)AICc       Poisson   Space-Time            1            1            1
+## 19 (Q)AICc       Poisson        Space            1            1            1
+## 20 (Q)AICc       Poisson   Space-Time            1            1            1
+## 21  (Q)BIC Quasi-Poisson        Space            1            1            1
+## 22  (Q)BIC Quasi-Poisson   Space-Time            1            1            1
+## 23  (Q)BIC Quasi-Poisson        Space            1            1            1
+## 24  (Q)BIC Quasi-Poisson   Space-Time            1            1            1
+##    time_period4 time_period5    covar1   covar2    covar3    covar4    covar5
+## 1             1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 2             1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 3             1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 4             1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 5             1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 6             1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 7             1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 8             1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 9             1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 10            1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 11            1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 12            1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 13            1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 14            1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 15            1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 16            1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 17            1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 18            1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 19            1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 20            1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 21            1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 22            1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148
+## 23            1            1 0.9988790 1.000147 0.9935049 0.9851895 0.9807759
+## 24            1            1 0.9988796 1.000145 0.9934986 0.9852481 0.9808148</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">out<span class="op">$</span>table.clusters</code></pre></div>
+<pre><code>##           model analysistype numclust.AIC numclust.AICc numclust.BIC
+## 1       Poisson        Space           12            12           12
+## 2       Poisson   Space-Time           12            12           12
+## 3 Quasi-Poisson        Space           11            11           11
+## 4 Quasi-Poisson   Space-Time           11            11           11</code></pre>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
