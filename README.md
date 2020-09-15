@@ -6,7 +6,7 @@ _clusso_
 
 *clusso* is an R package based on "Regularized Spatial and Spatio-Temporal Cluster Detection" (Kamenetsky, Lee, Zhu, Gangnon). *clusso* implements Poisson and quasi-Poisson regression with the Lasso (least absolute shrinkage and selection operator) penalty to identify a parsimonious set of disease clusters with elevated or depressed risk relative to the background rate in a study region. The number of clusters and tuning parameters are selected based on (quasi-)information criteria.
 
-
+Code developed by and repository maintained by M.Kamenetsky.
 
 This package is still under development. Please report bugs or constructive tips to issues [here](https://github.com/mkamenet3/clusso/issues)
 
@@ -33,14 +33,15 @@ Package imports include:
 - ggplot2 (>= 3.2.1),
 - dplyr (>= 0.8.3),
 - tidyr (>= 1.0.0),
-- rlang (>= 0.4.2)
-- geosphere (>= 1.5-10)
-- MASS  (>= 7.3-51.4)
-- RColorBrewer (>= 1.1-2)
-- Rcpp (>= 1.0.3)
-- SOAR (>= 0.99-11)
+- magrittr (>= 1.5),
+- data.table (>= 1.12.6),
+- geosphere (>= 1.5-10),
+- MASS (>= 7.3-51.4),
+- RColorBrewer (>= 1.1-2),
+- Rcpp (>= 1.0.3),
+- SOAR (>= 0.99-11),
 - stringi (>= 1.4.3)
-- data.table (>= 1.12.6)
+
 
 
 

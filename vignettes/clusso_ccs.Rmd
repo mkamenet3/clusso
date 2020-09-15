@@ -121,13 +121,6 @@ clussopretty(resrealccs, analysis="both", model="binomial",clusteridentify=FALSE
 ```
 
 
-Lastly, we can create plots of the coefficient paths with the function `clussoplot()`:
-
-```{r, warning=FALSE}
-clussoplot(resrealccs, analysis="both", model="binomial",Time=5)
-```
-
-
 ## Case-Control Data with Covariates
 
 We continue with the case-control data from Japan. We will again checkout the `head()` of the dataframe, `ccsjbc`. 
@@ -138,17 +131,17 @@ head(ccsjbc)
 ```
 
 
-There are 5 additional covariates, `covar1` - `covar5` that we will want to adjust for as unpenalized terms in the LASSO.
+There are 5 additional covariates, `covar1` - `covar5` that we will want to adjust for as unpenalized terms.
 
 
-We now set the argument `covars=TRUE` to tell `clusso()` to identify the covariates and to include them in as unpenalized terms in the LASSO model.
+We now set the argument `covars=TRUE` to tell `clusso()` to identify the covariates and to include them in as unpenalized terms.
 
 
 
 ```{r, warning=FALSE}
 system.time(resccscovars<- clusso(ccsjbc, expected = n, observed=numcases,timeperiod = period, id=id,
-                                  covars=TRUE, x= x,y = y, rMax =  rMax, utm=TRUE,
-                                  analysis="both", model="binomial",maxclust=11))
+                                  covars=TRUE, x= xx,y = yy, rMax =  rMax, utm=TRUE,
+                                  analysis="both", model="binomial",maxclust=11, collapsetime=FALSE))
 
 ```
 
