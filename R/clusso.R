@@ -209,7 +209,7 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, id,covars,
     }
     message(paste0("Running Poisson ", analysis_name," model(s)."))
     #set up clusters and fitted values
-    clusters <- clusters2df(x,y,rMax, utm=utm, length(x), id = unique(id))
+    clusters <- clusters2df(x,y,rMax, utm=utm, n=length(x), id = unique(id))
     #print(head(clusters))
     n <- length(x)
     init <- setVectors(period, expected, observed, covars, Time, byrow=TRUE)
@@ -400,7 +400,7 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, id,covars
     }
     message(paste0("Running binomial ", analysis_name," model(s)."))
     #set up clusters and fitted values
-    clusters <- clusters2df(x,y,rMax, utm=utm, length(x), id=id)
+    clusters <- clusters2df(x,y,rMax, utm=utm, n=length(x), id=unique(id))
     n_uniq <- length(unique(clusters$center))
     init <- setVectors(period, expected, observed, covars, Time, byrow = TRUE) 
     Yx <- init$Y.vec #ncases
@@ -591,7 +591,7 @@ clussoBern <- function(analysis,x,y,rMax, period, expected, observed, id,covars,
     }
     message(paste0("Running Bernoulli ", analysis_name," model(s)."))
     #set up clusters and fitted values
-    clusters <- clusters2df(x,y,rMax, utm=utm, length(x), id = id)
+    clusters <- clusters2df(x,y,rMax, utm=utm, length(x), id = unique(id))
     
     n_uniq <- length(x) #because each person is a center
     init <- setVectors(period, expected, observed, covars, Time+1, byrow = TRUE) 

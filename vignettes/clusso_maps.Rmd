@@ -34,15 +34,25 @@ library(sp)
 
 ```
 
-Using the `counties()` function from the  `tigris`, we load a county-level map of Wisconsin. We `fortify()` the map and create `wi_map` in order to use it with `ggplot2`:
 
-```{r}
+If you haven't already, you can install `clusso` directly from GitHub:
+
+```{r, eval=FALSE}
+library("devtools")
+devtools::install_github("mkamenet3/clusso")
+```
+
+
+
+Using the `counties()` function from the  `tigris` package, we load a county-level map of Wisconsin. We `fortify()` the map and create `wi_map` in order to use it with `ggplot2`:
+
+```{r, message=FALSE, warning=FALSE}
 wi <- tigris::counties("Wisconsin", cb=TRUE)
 wi_map <- fortify(wi)
 ```
 
 
-To plot the counties of Wisconsin, we use `geom_map()` (part of `ggplot2`).
+To plot the counties of Wisconsin, we use `geom_map()` from the `ggplot2` package:
 
 ```{r}
 
@@ -74,7 +84,10 @@ dat <- dat %>%
 str(dat)
 ```
 
-The dataframe `dat`, that contains the county name (*id*), number of people sampled (*ntrials*), number of people with outcome *X* (*ncases*), and number of time periods (*time*). Next, we need to merge `dat` with the `SpatialPolygonsDataFrame`, `wi`.  We use `merge()` from the `sp` package to combine the two by county name (county name is the variable *NAME* in `wi` and is *id* in `dat`).
+The dataframe `dat`, that contains the county name (*id*), number of people sampled (*ntrials*), number of people with outcome *X* (*ncases*), and number of time periods (*time*). 
+
+
+Next, we need to merge `dat` with the `SpatialPolygonsDataFrame`, `wi`.  We use `merge()` from the `sp` package to combine the two by county name (county name is the variable *NAME* in `wi` and is *id* in `dat`).
 
 ```{r}
 
@@ -84,12 +97,19 @@ class(widat)
 head(widat)
 ```
 
-In order to extract the centroid from each county, we first convert our new `SpatialPolygonsDataFrame` to a simple features (*sf*) object using `st_as_sf()` from the `sf` package. It is possible to extract centroids from the `SpatialPolygonsDataFrame`, but we do so here in order to also illustrate simple features.
+In order to extract the centroid from each county, we first convert our new `SpatialPolygonsDataFrame` to a simple features (*sf*) object using `st_as_sf()` from the `sf` package. It is possible to extract centroids from the `SpatialPolygonsDataFrame`, but we do so here in order to also illustrate the `sf` package:
 
 ```{r}
 #convert to simple features sf
 widatsf <- st_as_sf(widat)
 class(widatsf)
+```
+
+To prepare `widatsf` for use with `clusso()`, we convert `time` and `NAME` to factors:
+
+```{r}
+widatsf$time <- as.factor(widatsf$time)
+widatsf$NAME <- as.factor(widatsf$NAME)
 ```
 
 We extract the centroids using `st_centroid()` and extract the coordinates using `st_coordinates()`; both functions are from the `sf` package.
@@ -99,6 +119,8 @@ coords <- as.data.frame(st_coordinates(st_centroid(widatsf)))
 head(coords)
 ```
 
+
+
 We can plot the centroids on top of the base map we created above, *p1*:
 
 ```{r}
@@ -106,12 +128,41 @@ p1 + geom_point(data=coords,aes(x=X, y=Y), color="red", shape=3)
 
 ```
 
+We can visualize the proportion of cases from the total number of trials by creating a new variable, `prop`:
+
+```{r}
+widatsf <- widatsf %>%
+    mutate(prop = ncases/ntrials)
+
+ggplot(data=widatsf) +
+    geom_histogram(aes(x=prop),binwidth = 0.01, 
+                   fill="grey", color="black") +
+    theme_minimal() +
+    xlab("Proportion") +
+    ggtitle("Histogram of Proportion Cases/Trials")
+
+```
+
+We visualize the proportion on the Wisconsin map. We take the natural log of the proportion to better see small differences at the lower end in the proportion:
+
+```{r}
+
+ggplot(widatsf) + 
+    geom_sf(aes(fill=log(prop))) +
+    scale_fill_viridis_c() +
+    xlab("Longitude") +
+    ylab("Latitude") +
+    ggtitle("(Log) Proportion of Cases/Trials in Wisconsin")
+
+```
+
+
 ##Using `clusso`
 
 We first set global parameters, namely the maximum radius size for each potential cluster (`rMax <- 100`), the number of time periods to 1 (`Time <- 1`). We also extract our *x* and *y* coordinates, which are in longitude and latitude, and set them as `xx` and `yy`.
 
 
-To perform the LASSO-based cluster detection, we use the function `clusso()`. In the first argument, we set the name of the dataframe, `df=widatsf`. In the second argument we set `expected` counts equal to the total number of trials in the `widatsf` dataframe (`expected = ntrials`). In the third argument, we set the observed counts equal to the total number of cases in each county in the `widatsf` dataframe (`observed = ncases`). In the fourth argument, we set the timeperiod equal to the name of the time periods in the `widatsf` dataframe (`timeperiod = time`).  In this example, we do not want to include other covariates as un-penalized terms in the model so we set `covars = FALSE`. 
+To perform the regularized spatial and spatio-temporal cluster detection using the Lasso penalty, we use the function `clusso()`. In the first argument, we set the name of the dataframe, `df=widatsf`. In the second argument we set `expected` counts equal to the total number of trials in the `widatsf` dataframe (`expected = ntrials`). In the third argument, we set the observed counts equal to the total number of cases in each county in the `widatsf` dataframe (`observed = ncases`). In the fourth argument, we set the timeperiod equal to the name of the time periods in the `widatsf` dataframe (`timeperiod = time`).  In this example, we do not want to include other covariates as un-penalized terms in the model so we set `covars = FALSE`. 
 
 The next two arguments are `x` and `y`, which are the longitude and latitude for each centroids. Since these are longitude and latitude coordinates, we also set `utm=FALSE`. This will tell `clusso` to use the *great-circle-distance* or *Haversine* distance to calculate the distance between a centroid up to `rMax`.
 
@@ -126,6 +177,7 @@ Time <- 1
 
 xx <- coords$X
 yy <- coords$Y
+
 
 
 resclusso <- clusso(df=widatsf,
@@ -154,14 +206,14 @@ We extract the relative risk estimates using BIC from `resclusso$lassoresult.p.s
 
 
 ```{r}
-maxrr <- 2
-minrr <- 0.5
+maxrr <- 10
+minrr <- 0.1
 estrr.bic <- resclusso$lassoresult.p.s$E.qbic
 cluster_ix <- redblue(log(maxrr *  pmax(minrr, pmin(estrr.bic, maxrr)))/log(maxrr^2))
 table(cluster_ix)
 ```
 
-Next, we combine the estimated relative risks (`resclusso$lassoresult.p.s$E.qbic`), county names (widatsf$NAME), and mapped colors (`cluster_ix`) into the dataframe `rr.bic`. We map the county names onto the colors (`names(cluster_ix) <- rr.bic\$county`).
+Next, we combine the estimated relative risks (`resclusso$lassoresult.p.s$E.qbic`), county names (`widatsf$NAME`), and mapped colors (`cluster_ix`) into the dataframe `rr.bic`. We map the county names onto the colors (`names(cluster_ix) <- rr.bic$county`).
 
 ```{r}
 rr.bic <- cbind.data.frame(rr=resclusso$lassoresult.p.s$E.qbic, 
@@ -183,10 +235,11 @@ Finally, we use `geom_sf()` to plot the estimated relative risks onto the map. W
 ```{r}
 
 p1+ geom_sf(data=datdf.bic, aes(fill=NAME)) +
+    scale_colour_manual(values = c("red", "blue", "green")) +
     scale_fill_manual(values=cluster_ix)+
-    theme(legend.position = "none",
-          plot.title = element_text(hjust=0.5)) +
+    theme(plot.title = element_text(hjust=0.5)) +
     ggtitle("Binomial, Space: BIC") 
+
 
 ```
 
@@ -194,7 +247,7 @@ For a simpler map, we can also isolate the counties with relative risks greater 
 
 ```{r}
 ggplot()+ geom_sf(data=datdf.bic, lwd=0, fill='transparent') +
-    geom_sf(data=subset(datdf.bic, rr>1), color="red") +
+    geom_sf(data=subset(datdf.bic, rr>1), color="red", size=2) +
     theme_bw()+
     theme(legend.position = "none",
           plot.title = element_text(hjust=0.5)) +
