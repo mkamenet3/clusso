@@ -32,9 +32,9 @@ devtools::install_github("mkamenet3/clusso")
 ```
 
 
-## Using `clusso` (Breast Cancer in Japan Example)
+## Using `clusso` 
 
-In this example, we will use simulated data of breast cancer incidence counts across 208 prefects (municipalities) in Japan across 5 time periods.
+In this example, we will use simulated data of breast cancer incidence counts across 208 prefects (municipalities) in Japan across 5 time periods. These data are based on original incidence counts, but we have added noise to these data.
 
 ### Prepare Data
 
