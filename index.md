@@ -1,37 +1,25 @@
-## Welcome to GitHub Pages
+## clusso
 
-You can use the [editor on GitHub](https://github.com/mkamenet3/clusso/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+Vignettes for the `clusso` package can be found here. This `R` package supplements *Regularized Spatial and Spatio-Temporal Cluster Detection* by Kamenetsky, Lee, Zhu, and Gangnon. 
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+### Installation
+To install `clusso`:
 
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+```
+library("devtools")
+devtools::install_github("mkamenet3/clusso")
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+Required packages include:
 
-### Jekyll Themes
+ - glmnet (>= 3.0.1)
+ - Matrix (>= 1.2-17)
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/mkamenet3/clusso/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
 
-### Support or Contact
+Please report any modifications or issues [here](https://github.com/mkamenet3/clusso/issues).
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+### Vignettes
+
+1. Introduction to `clusso`
+2. Using `clusso` with case-control data
+3. Mapping with `clusso`
