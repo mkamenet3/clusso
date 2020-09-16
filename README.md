@@ -23,14 +23,14 @@ The main function in this package is ```clusso()```, which performs both spatial
 
 `clusso` was built on `R` version 4.0.2 "Taking Off Again" 
 
-Package dependencies include:
+Package dependencies:
 
 
 - glmnet (>= 3.0.1)
 - Matrix (>= 1.2-17)
 
 
-Package imports include:
+Package imports:
 
 - ggplot2 (>= 3.2.1),
 - dplyr (>= 0.8.3),
@@ -43,9 +43,6 @@ Package imports include:
 - Rcpp (>= 1.0.3),
 - SOAR (>= 0.99-11),
 - stringi (>= 1.4.3)
-
-
-
 
 
 
