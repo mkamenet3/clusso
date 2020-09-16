@@ -4,13 +4,15 @@ _clusso_
 
 
 
-*clusso* is an R package based on "Regularized Spatial and Spatio-Temporal Cluster Detection" (Kamenetsky, Lee, Zhu, Gangnon). *clusso* implements Poisson and quasi-Poisson regression with the Lasso (least absolute shrinkage and selection operator) penalty to identify a parsimonious set of disease clusters with elevated or depressed risk relative to the background rate in a study region. The number of clusters and tuning parameters are selected based on (quasi-)information criteria.
+`clusso` is an R package based on *Regularized Spatial and Spatio-Temporal Cluster Detection* (Kamenetsky, Lee, Zhu, Gangnon). *clusso* implements Poisson and quasi-Poisson regression with the Lasso (least absolute shrinkage and selection operator) penalty to identify a parsimonious set of disease clusters with elevated or depressed risk relative to the background rate in a study region. The number of clusters and tuning parameters are selected based on (quasi-)information criteria.
+
+The companion website and vignettes can be found [here](https://mkamenet3.github.io/clusso/). Vignettes use simulated data with added noise based on the breast cancer incidence data set explored in *Regularized Spatial and Spatio-Temporal Cluster Detection*. 
 
 Code developed by and repository maintained by M.Kamenetsky.
 
-This package is still under development. Please report bugs or constructive tips to issues [here](https://github.com/mkamenet3/clusso/issues)
+Please report bugs or constructive tips to issues [here](https://github.com/mkamenet3/clusso/issues)
 
-Detailed examples can be found in the [vignette](github.com/mkamenet3/clusso/tree/master/vignettes)
+
 
 
 The main function in this package is ```clusso()```, which performs both spatial and spatio-temporal cluster detection using the Lasso. Cluster detection can be performed across both space and space and time. Diagnostic tools are also provided for further analysis as well as plotting functions. 
@@ -19,7 +21,7 @@ The main function in this package is ```clusso()```, which performs both spatial
 
 ## Installation
 
-*clusso* was built on `R` version 4.0.2 "Taking Off Again" 
+`clusso` was built on `R` version 4.0.2 "Taking Off Again" 
 
 Package dependencies include:
 
@@ -55,4 +57,9 @@ devtools::install_github("mkamenet3/clusso")
 ```
 
 
+## Vignettes
+
+1. [Introduction to `clusso`](vignettes/clusso_intro.html)
+2. [Mapping with `clusso`](vignettes/clusso_maps.html)
+3. [Using `clusso` with case-control data](vignettes/clusso_ccs.html)
 
