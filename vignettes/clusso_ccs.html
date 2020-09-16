@@ -97,7 +97,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
-<p>This package is still under development. Please <a href="https://github.com/mkamenet3/clusso/issues">report any bugs</a>.</p>
+<p>Please report any issues <a href="https://github.com/mkamenet3/clusso/issues">here</a>.</p>
 <p>Messages from <code>clusso</code> have been suppressed for this tutorial, but there are many messages generated that we hope the user will find helpful. Feedback is welcome <a href="https://github.com/mkamenet3/clusso/issues">here</a>.</p>
 <p>Load <code>clusso</code> package:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;clusso&quot;</span>)</code></pre></div>
@@ -194,7 +194,7 @@ Time &lt;-<span class="st"> </span><span class="dv">5</span></code></pre></div>
 ## The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.</code></pre>
 <pre><code>## All models ran successfully</code></pre>
 <pre><code>##    user  system elapsed 
-##   57.61    0.57   61.69</code></pre>
+##   42.91    0.21   43.28</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">clussopretty</span>(resrealccs, <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>, <span class="dt">model=</span><span class="st">&quot;binomial&quot;</span>,<span class="dt">clusteridentify=</span><span class="ot">FALSE</span>)</code></pre></div>
 <pre><code>##            model analysistype numclust.AIC numclust.AICc numclust.BIC
 ## 1       Binomial        Space           16            16           16
@@ -245,7 +245,7 @@ Time &lt;-<span class="st"> </span><span class="dv">5</span></code></pre></div>
 ## The number of clusters selected by at least one criterion is equal to maxclust. You may want to increase maxclust.</code></pre>
 <pre><code>## All models ran successfully</code></pre>
 <pre><code>##    user  system elapsed 
-##   53.97    0.53   56.50</code></pre>
+##   48.97    0.44   53.26</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">clussopretty</span>(resccscovars, <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>, <span class="dt">model=</span><span class="st">&quot;binomial&quot;</span>,<span class="dt">clusteridentify =</span> <span class="ot">FALSE</span>)</code></pre></div>
 <pre><code>##            model analysistype numclust.AIC numclust.AICc numclust.BIC
 ## 1       Binomial        Space           12            12           12

@@ -97,7 +97,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
-<p>This package is still under development. Please <a href="https://github.com/mkamenet3/clusso/issues">report any bugs</a>.</p>
+<p>Please report any issues <a href="https://github.com/mkamenet3/clusso/issues">here</a>.</p>
 <p>Messages from <code>clusso</code> have been suppressed for this tutorial, but there are many messages generated that we hope the user will find helpful. Feedback is welcome <a href="https://github.com/mkamenet3/clusso/issues">here</a>.</p>
 <p>Load the <code>clusso</code> library:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;clusso&quot;</span>)</code></pre></div>
@@ -208,7 +208,7 @@ ids &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">1
 <pre><code>## Lasso complete - extracting estimates and paths</code></pre>
 <pre><code>## All models ran successfully</code></pre>
 <pre><code>##    user  system elapsed 
-##   31.59    0.31   33.97</code></pre>
+##   25.36    0.34   28.33</code></pre>
 <p>We can use the function <code>clussopretty()</code> to create a nice table for the number of clusters detected:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">clussopretty</span>(resreal, <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>, <span class="dt">model=</span><span class="st">&quot;poisson&quot;</span>,<span class="dt">clusteridentify=</span><span class="ot">FALSE</span>)</code></pre></div>
 <pre><code>##           model analysistype numclust.AIC numclust.AICc numclust.BIC
@@ -252,7 +252,7 @@ ids &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">1
 <pre><code>## Path selection: cross-validation</code></pre>
 <pre><code>## All models ran successfully</code></pre>
 <pre><code>##    user  system elapsed 
-##  121.48    1.75  131.07</code></pre>
+##   80.56    0.86   82.15</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">clussopretty</span>(rescv, <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>, <span class="dt">model=</span><span class="st">&quot;poisson&quot;</span>,<span class="dt">clusteridentify=</span><span class="ot">FALSE</span>, <span class="dt">cv=</span><span class="ot">TRUE</span>)</code></pre></div>
 <pre><code>##           model analysistype numclust.cv
 ## 1       Poisson        Space           7
@@ -302,7 +302,7 @@ ids &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="dv">1
 <pre><code>## Lasso complete - extracting estimates and paths</code></pre>
 <pre><code>## All models ran successfully</code></pre>
 <pre><code>##    user  system elapsed 
-##   34.77    0.48   37.53</code></pre>
+##   22.63    0.28   22.97</code></pre>
 <p>Use <code>clussopretty()</code> to create a nice table of clusters detected:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">clussopretty</span>(rescovars, <span class="dt">analysis=</span><span class="st">&quot;both&quot;</span>, <span class="dt">model=</span><span class="st">&quot;poisson&quot;</span>,<span class="dt">clusteridentify =</span> <span class="ot">FALSE</span>)</code></pre></div>
 <pre><code>##           model analysistype numclust.AIC numclust.AICc numclust.BIC

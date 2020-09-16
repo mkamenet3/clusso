@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE, fig.height = 5, fig.width = 8, message = FALS
 #Introduction
 
 
-This package is still under development. Please [report any bugs](https://github.com/mkamenet3/clusso/issues).
+Please report any issues [here](https://github.com/mkamenet3/clusso/issues).
 
 Messages from `clusso` have been suppressed for this tutorial, but there are many messages generated that we hope the user will find helpful. Feedback is welcome [here](https://github.com/mkamenet3/clusso/issues).
 
