@@ -23,6 +23,7 @@
 #'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
 #'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time by summing the counts.
 #'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial/Bernoulli case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
+#'@param sub Allows you to identify the cluster centers for which to create sets of potential clusters if you do not want potential clusters for all locations in your study region. To do so, you must \code{cbind(x,y)} the centroid locations. Potential clusters for will only be created centered at these points. Default is \code{NULL}.
 #'@details The data frame used in \code{clusso} must have a partiular format (TODO). Aside from the required variables (\code{df},\code{expected}, \code{observed}, \code{timeperiod}) and optional variables (covariates, \code{id}), no other variables should be present in your data frame. Any variables not specified in these slots will be considered to be covariates and will be included in the analysis as un-penalized terms. This may lead to incorrect or null results.
 #'@export
 #'@return Returns list of cluster detection results ready to analyze and plot.
@@ -40,7 +41,7 @@
 #'system.time(resreal <- clusso(df=jbc, expected = expdeath, observed=death,
 #'    timeperiod = period, id=id, covars=FALSE,x= x,y = y, rMax =  rMax, 
 #'    utm=TRUE, analysis="both", model="poisson",maxclust=11))}
-clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, utm=TRUE, analysis = c("space","spacetime", "both"),model = c("poisson", "binomial", "bernoulli"),maxclust = 11,overdispfloor=TRUE, cv=NULL, collapsetime=FALSE, nsize=NULL){
+clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, utm=TRUE, analysis = c("space","spacetime", "both"),model = c("poisson", "binomial", "bernoulli"),maxclust = 11,overdispfloor=TRUE, cv=NULL, collapsetime=FALSE, nsize=NULL, sub=NULL){
     requiredcolNames <- c(deparse(substitute(expected)),
                           deparse(substitute(observed)),
                           deparse(substitute(timeperiod)),
@@ -141,11 +142,11 @@ clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, u
         }
         switch(analysis, 
                space = clussoBinom(analysis="space",x, y, rMax,period, expected, observed, id,covars,
-                                   Time, utm, maxclust, overdispfloor,cv, collapsetime, nsize),
+                                   Time, utm, maxclust, overdispfloor,cv, collapsetime, nsize, sub),
                spacetime = clussoBinom(analysis="spacetime",x, y, rMax,period, expected, observed,id, covars,
                                        Time, utm,  maxclust, overdispfloor,cv, collapsetime, nsize),
                both = clussoBinom(analysis="both",x, y, rMax,period, expected, observed, id,covars, 
-                                  Time, utm,  maxclust, overdispfloor,cv, collapsetime, nsize))
+                                  Time, utm,  maxclust, overdispfloor,cv, collapsetime, nsize, sub))
     }
     else if (model == "bernoulli" | model=="Bernoulli"){
         if(!is.null(nsize)){
@@ -385,9 +386,11 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, id,covars,
 #'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
 #'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time. 
 #'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
+#'@param sub Allows you to identify the cluster centers for which to create sets of potential clusters if you do not want potential clusters for all locations in your study region. To do so, you must \code{cbind(x,y)} the centroid locations. Potential clusters for will only be created centered at these points. Default is \code{NULL}.
 #'@return List of lists output from detection.
 
-clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, id,covars,Time, utm, maxclust,overdispfloor, cv, collapsetime, nsize){  
+clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, id,covars,Time, utm, maxclust,overdispfloor, cv, collapsetime, nsize, sub){  
+    browser()
     model <- "binomial"
     if(analysis=="space"){
         analysis_name<-"spatial"
@@ -401,6 +404,24 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, id,covars
     message(paste0("Running binomial ", analysis_name," model(s)."))
     #set up clusters and fitted values
     clusters <- clusters2df(x,y,rMax, utm=utm, n=length(x), id=unique(id))
+    
+    if (!is.null(sub)){
+        clusters <- clusters
+    } else {
+        # ix_x <- which(clusters$x %in% (test$x/1000))
+        # ix_y <- which(clusters$y %in% (test$y/1000))
+        ix_x <- which(clusters$x %in% (sub[,1]))
+        ix_y <- which(clusters$y %in% (sub[,2]))
+        ix <- intersect(ix_x,ix_y)
+        print(str(ix))
+        clusters <- clusters[ix,]
+    }
+    #need to subset clusters
+    
+        
+        
+        
+    # clusters <- clusters2df(x,y,rMax, utm=utm, n=length(x), id=unique(id))
     n_uniq <- length(unique(clusters$center))
     init <- setVectors(period, expected, observed, covars, Time, byrow = TRUE) 
     Yx <- init$Y.vec #ncases
