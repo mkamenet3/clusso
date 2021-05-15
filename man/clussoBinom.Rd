@@ -20,7 +20,9 @@ clussoBinom(
   overdispfloor,
   cv,
   collapsetime,
-  nsize
+  nsize,
+  focalcells,
+  subxy
 )
 }
 \arguments{
@@ -55,6 +57,10 @@ clussoBinom(
 \item{collapsetime}{Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time.}
 
 \item{nsize}{Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.}
+
+\item{focalcells}{Index of cells from the dataframe that should be the focal cells. Allows you to identify cluster cells for which to create sets of potential clusters if you do not want potential clusters for all locations. Default is \code{NULL}.}
+
+\item{subxy}{Allows you to identify the cluster centers for which to create sets of potential clusters if you do not want potential clusters for all locations in your study region. To do so, you must \code{cbind(x,y)} the centroid locations. Potential clusters for will only be created centered at these points. Default is \code{NULL}.}
 }
 \value{
 List of lists output from detection.

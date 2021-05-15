@@ -25,7 +25,7 @@ This example uses simulated data which are meant for illustration of how to use 
 Load `clusso`, as well as the `tidyverse`, `tigris`, `sf`, `tmap`, and `sp` packages:
 
 ```{r, message=FALSE, warning=FALSE}
-library("clusso")
+library(clusso)
 library(tidyverse)
 library(tigris)
 library(sf)
@@ -56,12 +56,11 @@ To plot the counties of Wisconsin, we use `geom_map()` from the `ggplot2` packag
 
 ```{r}
 
-p1 <- ggplot() + geom_map(data=wi_map, map=wi_map, 
-                    aes(x=long, y=lat, map_id=id),
-                    color="black", fill="white", size=0.25) +
-    coord_map() +
-    ylab("Latitude") + 
-    xlab("Longitude")
+p1 <- ggplot(data=wi_map) + 
+  geom_sf(fill="white") +  
+  theme_bw()+
+  ylab("Latitude") + 
+  xlab("Longitude")
 p1
 ```
 
@@ -73,9 +72,9 @@ Next, we simulate some data. For this example, we imagine that in each county th
 ```{r}
 #create ncases and ntrials for 72 counties in Wisconsin
 set.seed(2)
-ncounties <- length(unique(wi@data$NAME))
+ncounties <- length(unique(wi$NAME))
 ntrials <- rnbinom(n=ncounties, mu=1000, size =10)
-dat <- cbind.data.frame(id=unique(wi@data$NAME),ntrials)
+dat <- cbind.data.frame(id=unique(wi$NAME),ntrials)
 dat <- dat %>%
     mutate(ncases = if_else(id %in% c("Wood", "Portage", "Waushara", "Adams", "Juneau","Marquette"), 
                             rbinom(ncounties,ntrials, 0.9), 
@@ -97,25 +96,18 @@ class(widat)
 head(widat)
 ```
 
-In order to extract the centroid from each county, we first convert our new `SpatialPolygonsDataFrame` to a simple features (*sf*) object using `st_as_sf()` from the `sf` package. It is possible to extract centroids from the `SpatialPolygonsDataFrame`, but we do so here in order to also illustrate the `sf` package:
+
+To prepare `widat` for use with `clusso()`, we convert `time` and `NAME` to factors:
 
 ```{r}
-#convert to simple features sf
-widatsf <- st_as_sf(widat)
-class(widatsf)
-```
-
-To prepare `widatsf` for use with `clusso()`, we convert `time` and `NAME` to factors:
-
-```{r}
-widatsf$time <- as.factor(widatsf$time)
-widatsf$NAME <- as.factor(widatsf$NAME)
+widat$time <- as.factor(widat$time)
+widat$NAME <- as.factor(widat$NAME)
 ```
 
 We extract the centroids using `st_centroid()` and extract the coordinates using `st_coordinates()`; both functions are from the `sf` package.
 
 ```{r}
-coords <- as.data.frame(st_coordinates(st_centroid(widatsf)))
+coords <- as.data.frame(st_coordinates(st_centroid(widat)))
 head(coords)
 ```
 
@@ -131,10 +123,10 @@ p1 + geom_point(data=coords,aes(x=X, y=Y), color="red", shape=3)
 We can visualize the proportion of cases from the total number of trials by creating a new variable, `prop`:
 
 ```{r}
-widatsf <- widatsf %>%
+widat <- widat %>%
     mutate(prop = ncases/ntrials)
 
-ggplot(data=widatsf) +
+ggplot(data=widat) +
     geom_histogram(aes(x=prop),binwidth = 0.01, 
                    fill="grey", color="black") +
     theme_minimal() +
@@ -147,7 +139,7 @@ We visualize the proportion on the Wisconsin map. We take the natural log of the
 
 ```{r}
 
-ggplot(widatsf) + 
+ggplot(widat) + 
     geom_sf(aes(fill=log(prop))) +
     scale_fill_viridis_c() +
     xlab("Longitude") +
@@ -162,7 +154,7 @@ ggplot(widatsf) +
 We first set global parameters, namely the maximum radius size for each potential cluster (`rMax <- 100`), the number of time periods to 1 (`Time <- 1`). We also extract our *x* and *y* coordinates, which are in longitude and latitude, and set them as `xx` and `yy`.
 
 
-To perform the regularized spatial and spatio-temporal cluster detection using the Lasso penalty, we use the function `clusso()`. In the first argument, we set the name of the dataframe, `df=widatsf`. In the second argument we set `expected` counts equal to the total number of trials in the `widatsf` dataframe (`expected = ntrials`). In the third argument, we set the observed counts equal to the total number of cases in each county in the `widatsf` dataframe (`observed = ncases`). In the fourth argument, we set the timeperiod equal to the name of the time periods in the `widatsf` dataframe (`timeperiod = time`).  In this example, we do not want to include other covariates as un-penalized terms in the model so we set `covars = FALSE`. 
+To perform the regularized spatial and spatio-temporal cluster detection using the Lasso penalty, we use the function `clusso()`. In the first argument, we set the name of the dataframe, `df=widat`. In the second argument we set `expected` counts equal to the total number of trials in the `widat` dataframe (`expected = ntrials`). In the third argument, we set the observed counts equal to the total number of cases in each county in the `widat` dataframe (`observed = ncases`). In the fourth argument, we set the timeperiod equal to the name of the time periods in the `widat` dataframe (`timeperiod = time`).  In this example, we do not want to include other covariates as un-penalized terms in the model so we set `covars = FALSE`. 
 
 The next two arguments are `x` and `y`, which are the longitude and latitude for each centroids. Since these are longitude and latitude coordinates, we also set `utm=FALSE`. This will tell `clusso` to use the *great-circle-distance* or *Haversine* distance to calculate the distance between a centroid up to `rMax`.
 
@@ -180,7 +172,7 @@ yy <- coords$Y
 
 
 
-resclusso <- clusso(df=widatsf,
+resclusso <- clusso(df=widat,
                     expected = ntrials,
                     observed = ncases,
                     timeperiod = time,

@@ -1,6 +1,6 @@
 Package: clusso
 Title: Regularized Spatial and Spatio-Temporal Cluster Detection
-Version: 0.1
+Version: 0.2
 Authors@R: person("Maria", "Kamenetsky", , "maria.kamenetsky@gmail.com", role = c("aut", "cre"))
 Description: Implements Poisson and quasi-Poisson regression with the Lasso (least absolute shrinkage and selection operator) penalty to identify a parsimonious set of disease clusters with elevated or depressed risk relative to the background rate in a study region. The number of clusters and tuning parameters are selected based on (quasi-)information criteria. 
 Depends:
@@ -33,5 +33,5 @@ Maintainer: Maria Kamenetsky <maria.kamenetsky@gmail.com>
 BugReports: https://github.com/mkamenet3/clusso/issues
 LazyData: true
 Roxygen: list(markdown = TRUE, roclets = c("rd", "namespace", "collate"))
-RoxygenNote: 7.1.0
-Suggests: testthat
+RoxygenNote: 7.1.1
+Suggests: testthat, rmarkdown

@@ -22,7 +22,9 @@ clusso(
   overdispfloor = TRUE,
   cv = NULL,
   collapsetime = FALSE,
-  nsize = NULL
+  nsize = NULL,
+  focalcells = NULL,
+  subxy = NULL
 )
 }
 \arguments{
@@ -59,6 +61,10 @@ clusso(
 \item{collapsetime}{Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time by summing the counts.}
 
 \item{nsize}{Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial/Bernoulli case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.}
+
+\item{focalcells}{Index of cells from the dataframe that should be the focal cells. Allows you to identify cluster cells for which to create sets of potential clusters if you do not want potential clusters for all locations. Default is \code{NULL}.}
+
+\item{subxy}{Coordinates of focal cells given by \code{cbind(x,y)} the centroid locations. Potential clusters for will only be created centered at these points. Allows you to identify the cluster centers for which to create sets of potential clusters if you do not want potential clusters for all locations in your study region. Default is \code{NULL}.}
 }
 \value{
 Returns list of cluster detection results ready to analyze and plot.
