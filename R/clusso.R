@@ -23,7 +23,8 @@
 #'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
 #'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time by summing the counts.
 #'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial/Bernoulli case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
-#'@param sub Allows you to identify the cluster centers for which to create sets of potential clusters if you do not want potential clusters for all locations in your study region. To do so, you must \code{cbind(x,y)} the centroid locations. Potential clusters for will only be created centered at these points. Default is \code{NULL}.
+#'@param focalcells Index of cells from the dataframe that should be the focal cells. Allows you to identify cluster cells for which to create sets of potential clusters if you do not want potential clusters for all locations. Default is \code{NULL}.
+#'@param subxy  Allows you to identify the cluster centers for which to create sets of potential clusters if you do not want potential clusters for all locations in your study region. To do so, you must \code{cbind(x,y)} the centroid locations. Potential clusters for will only be created centered at these points. Default is \code{NULL}.
 #'@details The data frame used in \code{clusso} must have a partiular format (TODO). Aside from the required variables (\code{df},\code{expected}, \code{observed}, \code{timeperiod}) and optional variables (covariates, \code{id}), no other variables should be present in your data frame. Any variables not specified in these slots will be considered to be covariates and will be included in the analysis as un-penalized terms. This may lead to incorrect or null results.
 #'@export
 #'@return Returns list of cluster detection results ready to analyze and plot.
@@ -41,7 +42,7 @@
 #'system.time(resreal <- clusso(df=jbc, expected = expdeath, observed=death,
 #'    timeperiod = period, id=id, covars=FALSE,x= x,y = y, rMax =  rMax, 
 #'    utm=TRUE, analysis="both", model="poisson",maxclust=11))}
-clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, utm=TRUE, analysis = c("space","spacetime", "both"),model = c("poisson", "binomial", "bernoulli"),maxclust = 11,overdispfloor=TRUE, cv=NULL, collapsetime=FALSE, nsize=NULL, sub=NULL){
+clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, utm=TRUE, analysis = c("space","spacetime", "both"),model = c("poisson", "binomial", "bernoulli"),maxclust = 11,overdispfloor=TRUE, cv=NULL, collapsetime=FALSE, nsize=NULL, focalcells=NULL,subxy =NULL){
     requiredcolNames <- c(deparse(substitute(expected)),
                           deparse(substitute(observed)),
                           deparse(substitute(timeperiod)),
@@ -142,11 +143,11 @@ clusso <- function(df, expected, observed, timeperiod,id=NULL,covars,x,y,rMax, u
         }
         switch(analysis, 
                space = clussoBinom(analysis="space",x, y, rMax,period, expected, observed, id,covars,
-                                   Time, utm, maxclust, overdispfloor,cv, collapsetime, nsize, sub),
+                                   Time, utm, maxclust, overdispfloor,cv, collapsetime, nsize, focalcells, subxy ),
                spacetime = clussoBinom(analysis="spacetime",x, y, rMax,period, expected, observed,id, covars,
-                                       Time, utm,  maxclust, overdispfloor,cv, collapsetime, nsize),
+                                       Time, utm,  maxclust, overdispfloor,cv, collapsetime, nsize,  focalcells, subxy ),
                both = clussoBinom(analysis="both",x, y, rMax,period, expected, observed, id,covars, 
-                                  Time, utm,  maxclust, overdispfloor,cv, collapsetime, nsize, sub))
+                                  Time, utm,  maxclust, overdispfloor,cv, collapsetime, nsize,  focalcells,subxy ))
     }
     else if (model == "bernoulli" | model=="Bernoulli"){
         if(!is.null(nsize)){
@@ -386,12 +387,13 @@ clussoPois <- function(analysis,x,y,rMax, period, expected, observed, id,covars,
 #'@param cv Numeric argument for the number of folds to use if using k-fold cross-validation. Default is \code{NULL}, indicating that cross-validation should not be performed in favor of \code{clusso}.
 #'@param collapsetime Default is \code{FALSE}. Alternative definition for space-only model to instead collapse expected and observed counts across time. 
 #'@param nsize Allows for user-specification of \eqn{n} in information criteria penalty. Default is for finite samples, where in the Poisson case \eqn{n = \mu n} and for the binomial case \eqn{n = min(numcases, numcontrols)}. For the asymptotic case, set to \code{sum(observed)}. Other penalties can also be applied.
-#'@param sub Allows you to identify the cluster centers for which to create sets of potential clusters if you do not want potential clusters for all locations in your study region. To do so, you must \code{cbind(x,y)} the centroid locations. Potential clusters for will only be created centered at these points. Default is \code{NULL}.
+#'@param focalcells 
+#'@param subxy  Allows you to identify the cluster centers for which to create sets of potential clusters if you do not want potential clusters for all locations in your study region. To do so, you must \code{cbind(x,y)} the centroid locations. Potential clusters for will only be created centered at these points. Default is \code{NULL}.
 #'@return List of lists output from detection.
 
-clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, id,covars,Time, utm, maxclust,overdispfloor, cv, collapsetime, nsize, sub){  
-    browser()
+clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, id,covars,Time, utm, maxclust,overdispfloor, cv, collapsetime, nsize, focalcells,subxy ){  
     model <- "binomial"
+    #browser()
     if(analysis=="space"){
         analysis_name<-"spatial"
     }
@@ -405,27 +407,44 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, id,covars
     #set up clusters and fitted values
     clusters <- clusters2df(x,y,rMax, utm=utm, n=length(x), id=unique(id))
     
-    if (!is.null(sub)){
-        clusters <- clusters
-    } else {
-        # ix_x <- which(clusters$x %in% (test$x/1000))
-        # ix_y <- which(clusters$y %in% (test$y/1000))
-        ix_x <- which(clusters$x %in% (sub[,1]))
-        ix_y <- which(clusters$y %in% (sub[,2]))
+    if (!is.null(subxy )){
+        ix_x <- which(clusters$x %in% (subxy [,1]))
+        ix_y <- which(clusters$y %in% (subxy [,2]))
         ix <- intersect(ix_x,ix_y)
         print(str(ix))
         clusters <- clusters[ix,]
+    } else {
+        # ix_x <- which(clusters$x %in% (test$x/1000))
+        # ix_y <- which(clusters$y %in% (test$y/1000))
+        clusters <- clusters
+
     }
     #need to subset clusters
-    
+    if (!is.null(subxy )){
+        n_uniq <- length(unique(clusters$center))
+        #reorder so focalcells first
+        print(str(focalcells))
+        init <- setVectors(c(period[focalcells], period[-focalcells]), 
+                           c(expected[focalcells],expected[-focalcells]), 
+                           c(observed[focalcells],observed[-focalcells]), 
+                           c(covars[focalcells], covars[-focalcells]), 
+                           Time, 
+                           byrow = TRUE) 
+        Yx <- init$Y.vec #ncases
+        Ex <- E1 <- init$E0 #ntrials
+        
+    } else {
+        n_uniq <- length(unique(clusters$center))
+        init <- setVectors(period, expected, observed, covars, Time, byrow = TRUE) 
+        Yx <- init$Y.vec #ncases
+        Ex <- E1 <- init$E0 #ntrials 
+        
+    }
         
         
         
     # clusters <- clusters2df(x,y,rMax, utm=utm, n=length(x), id=unique(id))
-    n_uniq <- length(unique(clusters$center))
-    init <- setVectors(period, expected, observed, covars, Time, byrow = TRUE) 
-    Yx <- init$Y.vec #ncases
-    Ex <- E1 <- init$E0 #ntrials
+
     #set vectors
     if(analysis=="spacetime"){
         vectors <- list(Period = init$Year, Ex=Ex, E0_0=init$E0, Y.vec=init$Y.vec, covars = covars)    
@@ -441,6 +460,7 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, id,covars
     #create sparseMAT once and cache it   
     potClus <- n_uniq
     numCenters <- n_uniq
+
     #print(paste0("numCenters: ", numCenters))
     #CREATE sparseMAT and cache it for use throughout this function
     if(collapsetime==FALSE){
@@ -454,6 +474,9 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, id,covars
     }
     else {
         sparseMAT <- spaceMat(clusters, numCenters)
+        noclust <- Matrix::Matrix(rep(0,((length(x)-length(focalcells))*ncol(sparseMAT))), ncol=ncol(sparseMAT), sparse=TRUE)
+        sparseMAT <- rbind(sparseMAT, noclust)
+        print(str(sparseMAT))
         SOAR::Store(sparseMAT)
         #print("spaceMAT only")
         #print(str(sparseMAT))
@@ -463,6 +486,7 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, id,covars
         # }
     }
     #RUN LASSO
+
     if(analysis=="spacetime"){
         lassoresult.p.st <- spacetimeLasso(model, sparseMAT, n_uniq, vectors, Time, 
                                            quasi=FALSE, maxclust, overdispfloor, cv, nsize, collapsetime = FALSE)
