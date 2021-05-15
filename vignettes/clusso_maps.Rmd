@@ -205,11 +205,11 @@ cluster_ix <- redblue(log(maxrr *  pmax(minrr, pmin(estrr.bic, maxrr)))/log(maxr
 table(cluster_ix)
 ```
 
-Next, we combine the estimated relative risks (`resclusso$lassoresult.p.s$E.qbic`), county names (`widatsf$NAME`), and mapped colors (`cluster_ix`) into the dataframe `rr.bic`. We map the county names onto the colors (`names(cluster_ix) <- rr.bic$county`).
+Next, we combine the estimated relative risks (`resclusso$lassoresult.p.s$E.qbic`), county names (`widat$NAME`), and mapped colors (`cluster_ix`) into the dataframe `rr.bic`. We map the county names onto the colors (`names(cluster_ix) <- rr.bic$county`).
 
 ```{r}
 rr.bic <- cbind.data.frame(rr=resclusso$lassoresult.p.s$E.qbic, 
-                           county=widatsf$NAME, 
+                           county=widat$NAME, 
                            colors = cluster_ix)
 names(cluster_ix) <- rr.bic$county
 ```
