@@ -413,7 +413,7 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, id,covars
         ix_y <- which(clusters$y %in% (subxy [,2]))
         ix <- intersect(ix_x,ix_y)
         ixdiff <- setdiff(1:nrow(clusters),ix)
-        print("subxy")
+        #print("subxy")
     } else {
         clusters <- clusters
     }
@@ -451,11 +451,11 @@ clussoBinom <- function(analysis,x,y,rMax, period, expected, observed, id,covars
         SOAR::Store(sparseMAT)    
     }
     if (!is.null(focalcells)){
-        print("focalcells")
+        #print("focalcells")
         #make all columns ixdiff columns of zero
         sparseMAT[,ixdiff] <-0
         #remove columns that are all zeros
-        colsum0 <- colSums(sparseMAT)
+        colsum0 <- Matrix::colSums(sparseMAT)
         ix0 <- which(colsum0==0)
         sparseMAT <- sparseMAT[,-ix0]
     }else{
