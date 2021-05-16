@@ -19,6 +19,10 @@
 spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust, overdispfloor, cv, nsize, collapsetime){
     #check for covariates
     covars <- vectors$covars
+    
+    if(collapsetime==TRUE){
+        Time <- 0
+    }
     if(!is.null(covars)){
         message("Running with covariates")
         covarMAT <- Matrix::Matrix(data.matrix(covars), sparse=TRUE)
@@ -28,16 +32,12 @@ spacetimeLasso<- function(model, sparseMAT, n_uniq, vectors,Time, quasi,maxclust
     else{
         message("No covariates found")
         message(paste("Number of potential clusters to scan through: ", (dim(sparseMAT)[2]-Time)))
+        print(dim(sparseMAT)[2])
     }
     #Set initial
     Ex <- vectors$Ex
     Yx <- vectors$Y.vec
     Period <- vectors$Period
-    
-    
-    if(collapsetime==TRUE){
-        Time <- 0
-    }
     
     if(!is.null(cv)){
         message("Path selection: cross-validation")
